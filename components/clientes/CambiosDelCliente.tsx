@@ -17,13 +17,13 @@ export default function CambiosDelCliente({ clienteId }: { clienteId: string }) 
   }
 
   return (
-    <div className="mb-4 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <aside className="coach-client-change-log mb-3" aria-label="Cambios recientes del cliente">
       <div className="flex items-center gap-2 px-3.5 py-2.5">
         <Bell size={14} className="flex-shrink-0" style={{ color: 'var(--warning)' }} />
         <span className="flex-1 min-w-0 text-sm font-semibold" style={{ color: 'var(--text)' }}>
           El cliente ha cambiado {cambios.length === 1 ? 'algo' : `${cambios.length} cosas`} en su plan
         </span>
-        <button type="button" onClick={entendido} className="text-xs font-medium px-2.5 py-1 rounded-lg" style={{ background: 'var(--primary-bg)', color: 'var(--primary)' }}>Entendido</button>
+        <button type="button" onClick={entendido} className="coach-client-change-dismiss text-xs font-medium px-2.5 py-1">Marcar revisado</button>
       </div>
       <ul className="space-y-1 px-3.5 pb-3">
         {cambios.map(c => (
@@ -33,6 +33,6 @@ export default function CambiosDelCliente({ clienteId }: { clienteId: string }) 
           </li>
         ))}
       </ul>
-    </div>
+    </aside>
   )
 }

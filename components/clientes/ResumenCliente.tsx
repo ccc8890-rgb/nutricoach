@@ -79,11 +79,11 @@ export function AvisosCliente({ avisos, onTab }: { avisos: Aviso[]; onTab: (t: T
   if (avisos.length === 0) return null
   const hayAlto = avisos.some(a => a.nivel === 'alto')
   const color = hayAlto ? 'var(--error)' : 'var(--warning)'
-  const cls = 'w-full flex items-start gap-2 rounded-xl px-3 py-2 text-left'
-  const estilo = { background: 'var(--bg)', border: '1px solid var(--border)' }
+  const cls = 'coach-client-alert-row w-full flex items-start gap-2 px-3 py-2 text-left'
+  const estilo = undefined
 
   return (
-    <div className="mb-4 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <aside className="coach-client-alerts mb-4">
       <button type="button" onClick={() => setAbierto(v => !v)} aria-expanded={abierto} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left">
         <AlertTriangle size={14} className="flex-shrink-0" style={{ color }} />
         <span className="flex-1 min-w-0 truncate text-sm" style={{ color: 'var(--text)' }}>
@@ -114,7 +114,7 @@ export function AvisosCliente({ avisos, onTab }: { avisos: Aviso[]; onTab: (t: T
           })}
         </ul>
       )}
-    </div>
+    </aside>
   )
 }
 

@@ -147,7 +147,7 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
 }) {
   const posicion = (f: string) => { const i = franjas.indexOf(f); return i === -1 ? franjas.length : i }
   return (
-    <div className={`flex gap-2 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-7 ${T.grid} lg:overflow-visible lg:pb-0`}>
+    <div className={`coach-week-grid flex gap-2 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-7 ${T.grid} lg:overflow-visible lg:pb-0`}>
       {dias.map(d => {
         const sel = diaSel?.dia === d.dia && diaSel.semana === semana
         const items: ({ tipo: 'comida'; c: Comida } | { tipo: 'hueco'; f: string })[] = [
@@ -155,8 +155,8 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
           ...franjas.filter(f => !d.comidas.some(c => c.nombre === f)).map(f => ({ tipo: 'hueco' as const, f })),
         ].sort((a, b) => posicion(a.tipo === 'comida' ? a.c.nombre : a.f) - posicion(b.tipo === 'comida' ? b.c.nombre : b.f))
         return (
-          <div key={d.dia} className={`min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2 lg:min-w-0 lg:w-auto ${T.col}`} style={{ background: sel ? 'var(--surface)' : 'var(--bg)', border: `1px solid ${sel ? 'var(--primary)' : 'var(--border)'}`, boxShadow: sel ? '0 0 0 1px var(--primary)' : undefined }}>
-            <button className="block w-full mb-2 text-left rounded-md" title={objetivos[d.dia]?.consejo ?? 'Ver el detalle del día'} aria-pressed={sel} onClick={() => onDia(d.dia, semana)}>
+          <div key={d.dia} className={`coach-day-column min-w-[180px] w-[180px] flex-shrink-0 p-2 lg:min-w-0 lg:w-auto ${T.col}`} data-selected={sel}>
+            <button className="coach-day-heading block w-full mb-2 text-left" title={objetivos[d.dia]?.consejo ?? 'Ver el detalle del día'} aria-pressed={sel} onClick={() => onDia(d.dia, semana)}>
               <span className="flex w-full items-baseline justify-between">
                 <span className={`${T.dia} font-semibold`} style={{ color: 'var(--text)' }}>{d.dia}</span>
                 {/* En las semanas planificadas la vista previa no lleva guarniciones ni complementos (se añaden al activar la semana):
@@ -171,7 +171,7 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
                 </span>
               )}
             </button>
-            <div className="flex items-center justify-end gap-2 mb-1.5 -mt-1" style={{ color: 'var(--text-muted)' }}>
+            <div className="coach-day-actions flex items-center justify-end gap-2 mb-1.5 -mt-1" style={{ color: 'var(--text-muted)' }}>
               {d.comidas.some(c => c.receta) && <button title="Copiar todos los platos del día" onClick={() => onCopiarDia(d)} className="flex items-center gap-0.5 text-[12px]"><Copy size={11} /> día</button>}
               {portapapeles && <button title="Pegar en este día (sustituye las franjas copiadas)" onClick={() => onPegar(d.dia, semana)} className="flex items-center gap-0.5 text-[12px]" style={{ color: 'var(--primary)' }}><ClipboardPaste size={11} /> pegar</button>}
             </div>
@@ -189,7 +189,7 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
                 )
                 const c = it.c
                 return (
-                  <PlatoArrastrable key={c.id} id={idHueco(semana, d.dia, c.nombre)} origen={{ comida: c, dia: d.dia, semana }} className={`rounded-lg ${T.card}`} style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <PlatoArrastrable key={c.id} id={idHueco(semana, d.dia, c.nombre)} origen={{ comida: c, dia: d.dia, semana }} className={`coach-meal-card ${T.card}`}>
                     <div className="flex items-center justify-between gap-1">
                       <button className={`${T.label} font-semibold uppercase tracking-wide text-left`} style={{ color: 'var(--text-muted)' }} onClick={() => onHueco({ dia: d.dia, franja: c.nombre, semana })}>
                         {c.nombre}{c.recurrente ? ' · diario' : ''}{objetivos[d.dia]?.momento?.pre === c.nombre ? ' · pre' : objetivos[d.dia]?.momento?.post === c.nombre ? ' · post' : ''}
@@ -545,10 +545,10 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   return (
     <DndContext sensors={sensores} collisionDetection={pointerWithin} onDragStart={(e: DragStartEvent) => setArrastrando((e.active.data.current as Origen | undefined)?.comida.receta?.nombre ?? null)} onDragEnd={soltar} onDragCancel={() => setArrastrando(null)}>
     <section className={ampliado ? 'coach-diet-planner is-expanded fixed inset-0 z-[60] overflow-auto p-6' : 'coach-diet-planner p-4'} style={{ background: ampliado ? 'var(--bg)' : undefined, border: ampliado ? 'none' : undefined }}>
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="coach-planner-header flex items-start justify-between gap-3 mb-3">
         <div>
-          <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planificador</p>
-          <h3 className="font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}><CalendarDays size={16} /> {plan.nombre}</h3>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Semana nutricional</p>
+          <h3 className="coach-planner-title font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}><CalendarDays size={16} /> {plan.nombre}</h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
@@ -655,7 +655,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             <button onClick={() => setPortapapeles(null)}><X size={13} /></button>
           </div>
         ) : (
-          <p className="text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra un plato a otro hueco, día o semana para moverlo (con Alt, para copiarlo), o usa el icono de copiar y «pegar».{ocupado === 'mover' ? ` Trabajando…` : ''}</p>
+          <p className="coach-planner-hint text-[12px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra para mover · Alt para copiar · usa copiar y pegar para repetir.{ocupado === 'mover' ? ` Trabajando…` : ''}</p>
         )
       )}
       {vista > 1 && (

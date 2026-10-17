@@ -398,12 +398,144 @@
 .coach-tools-toggle:hover { border-color: var(--border-strong); background: var(--surface-hover); }
 .coach-tools-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.coach-diet-planner { background: var(--client-panel); }
+.coach-diet-planner {
+  overflow: hidden;
+  padding: 0 !important;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
 .coach-diet-planner.is-expanded { border: 0; border-radius: 0; box-shadow: none; }
-.coach-diet-planner > div:first-of-type { padding-bottom: 0.85rem; border-bottom: 1px solid var(--client-section-rule, var(--client-rule)); }
+.coach-diet-planner > div:first-of-type { padding-bottom: 0; border-bottom: 0; }
 .coach-diet-planner [class*='rounded-2xl'],
 .coach-diet-planner [class*='rounded-xl'] { border-radius: 0.18rem; }
 .coach-diet-planner button { font-family: var(--font-instrument), var(--font-geist-sans), sans-serif; }
+
+.coach-planner-header {
+  min-height: 4.75rem;
+  align-items: center;
+  margin-bottom: 0.85rem !important;
+  padding: 0.85rem 0 0.9rem;
+  border-bottom: 1px solid var(--client-section-rule, var(--client-rule));
+}
+.coach-planner-title {
+  margin-top: 0.2rem;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+.coach-planner-header > div:last-child > div:first-child,
+.coach-planner-header > div:last-child > button {
+  border-radius: 0.16rem !important;
+}
+.coach-planner-hint {
+  max-width: 70ch;
+  padding-bottom: 0.7rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  line-height: 1.45;
+}
+
+.coach-week-grid {
+  gap: 0 !important;
+  border-block: 1px solid var(--client-section-rule, var(--client-rule));
+}
+.coach-day-column {
+  position: relative;
+  min-height: 26rem;
+  border: 0;
+  border-right: 1px solid var(--client-section-rule, var(--client-rule));
+  border-radius: 0;
+  background: color-mix(in srgb, var(--client-panel) 76%, transparent);
+  transition: background-color 180ms var(--ease-out-strong);
+}
+.coach-day-column:last-child { border-right: 0; }
+.coach-day-column:hover { background: color-mix(in srgb, var(--surface-hover) 45%, transparent); }
+.coach-day-column[data-selected='true'] {
+  background: color-mix(in srgb, var(--text) 5%, var(--client-panel));
+  box-shadow: inset 0 2px 0 var(--text);
+}
+.coach-day-heading {
+  min-height: 3.65rem;
+  padding: 0.15rem 0.2rem 0.65rem;
+  border-bottom: 1px solid var(--client-section-rule, var(--client-rule));
+  border-radius: 0;
+}
+.coach-day-heading > span:first-child > span:first-child {
+  letter-spacing: -0.025em;
+}
+.coach-day-actions {
+  min-height: 1.6rem;
+  opacity: 0.45;
+  transition: opacity 180ms var(--ease-out-strong);
+}
+.coach-day-column:hover .coach-day-actions,
+.coach-day-column:focus-within .coach-day-actions { opacity: 1; }
+
+.coach-meal-card {
+  position: relative;
+  padding: 0.65rem !important;
+  border: 1px solid var(--client-section-rule, var(--client-rule));
+  border-radius: 0.16rem !important;
+  background: color-mix(in srgb, var(--surface) 88%, var(--bg));
+  box-shadow: none;
+  transition: border-color 160ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong), transform 160ms var(--ease-out-strong);
+}
+.coach-meal-card:hover {
+  z-index: 2;
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+}
+.coach-meal-card > div:first-child button {
+  opacity: 0.55;
+  transition: opacity 150ms var(--ease-out-strong), color 150ms var(--ease-out-strong);
+}
+.coach-meal-card:hover > div:first-child button,
+.coach-meal-card:focus-within > div:first-child button { opacity: 1; }
+.coach-meal-card > button {
+  line-height: 1.25;
+  text-wrap: pretty;
+}
+.coach-meal-card > p:last-child {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+}
+
+.coach-client-change-log,
+.coach-client-alerts {
+  border-block: 1px solid var(--client-section-rule, var(--client-rule));
+  background: transparent;
+}
+.coach-client-change-log > div:first-child,
+.coach-client-alerts > button:first-child { min-height: 3rem; }
+.coach-client-change-log ul { padding-left: 2.2rem; }
+.coach-client-change-dismiss {
+  border: 0;
+  border-radius: 0.14rem;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+.coach-client-change-dismiss:hover { color: var(--text); }
+.coach-client-alert-row {
+  border-top: 1px solid var(--client-section-rule, var(--client-rule));
+  background: transparent;
+}
+.coach-client-alert-row:hover { background: var(--surface-hover); }
+
+@media (max-width: 79.99rem) {
+  .coach-week-grid { gap: 0.45rem !important; border: 0; }
+  .coach-day-column {
+    border: 1px solid var(--client-section-rule, var(--client-rule));
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .coach-planner-header { align-items: flex-start; flex-direction: column; }
+  .coach-planner-header > div:last-child { width: 100%; overflow-x: auto; padding-bottom: 0.2rem; }
+  .coach-day-column { min-height: 22rem; }
+}
 
 .coach-nutrition-module > button {
   min-height: 3.25rem;
