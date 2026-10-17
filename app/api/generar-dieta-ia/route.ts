@@ -96,6 +96,7 @@ export async function POST(request: Request) {
             .from('recetas')
             .select('id, nombre, categoria, kcal, proteinas, carbohidratos, grasas, fibra')
             .or(`coach_id.eq.${user.id},coach_id.is.null`)
+            .eq('estado', 'aprobada')
 
         if (!recetas || recetas.length < 5) {
             await actualizarEstadoError(respuesta_cliente_id, 'Recetas insuficientes (mín. 5)')
