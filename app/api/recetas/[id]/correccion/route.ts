@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { ASPECTOS_IDS, TAG_CORREGIR } from '@/lib/recetas/correcciones'
+import { quitarMarcasReporte } from '@/lib/recetas/reportes'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,7 +43,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const { id } = await params
   const a = await autorizar(req, id)
   if ('error' in a) return a.error
-  const tags = (a.receta.tags ?? []).filter((t: string) => t !== TAG_CORREGIR)
+  const tags = quitarMarcasReporte(a.receta.tags)
   const { error } = await a.srv.from('recetas').update({ tags }).eq('id', id)
   if (error) return NextResponse.json({ error: 'No se pudo quitar la marca' }, { status: 500 })
   await a.srv.from('recetas_auditoria').insert({ receta_id: id, evento: 'correccion_resuelta', issues: {}, origen: 'coach_revision' })
