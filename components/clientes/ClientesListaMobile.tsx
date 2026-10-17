@@ -2,7 +2,8 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Warning } from '@phosphor-icons/react'
+import { ArrowRight, Barbell, CalendarBlank, ForkKnife, Warning } from '@phosphor-icons/react'
+import { OBJETIVO_LABELS } from '@/lib/utils'
 import {
   nombreCliente, getEstadoCliente, estadoStyle, checkinColor,
   diasHastaCaducidad,
@@ -17,6 +18,9 @@ export default function ClientesListaMobile({ clientes }: { clientes: ClienteRow
         const href = c.revisado_por_coach === false ? `/clientes/${c.id}/revisar-rapido` : `/clientes/${c.id}`
         const dias = c.dias_sin_checkin ?? 999
         const caducaDias = diasHastaCaducidad(c)
+        const revision = c.fecha_proxima_revision
+          ? new Date(`${c.fecha_proxima_revision.slice(0, 10)}T12:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).replace('.', '')
+          : null
 
         return (
           <Link
@@ -44,6 +48,13 @@ export default function ClientesListaMobile({ clientes }: { clientes: ClienteRow
                 <span className="text-[13px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={estadoStyle(estado.tone)}>
                   {estado.label}
                 </span>
+              </div>
+
+              <div className="coach-client-mobile-plan">
+                <span data-active={Boolean(c.tiene_dieta_activa)}><ForkKnife size={13} /></span>
+                <span data-active={Boolean(c.tiene_entreno_activo)}><Barbell size={13} /></span>
+                <p>{c.objetivo ? (OBJETIVO_LABELS[c.objetivo] ?? c.objetivo) : 'Sin objetivo'}</p>
+                <p className="ml-auto"><CalendarBlank size={13} /> {revision ?? 'Sin revisión'}</p>
               </div>
 
               {/* Fila 2: membresía */}
@@ -82,11 +93,6 @@ export default function ClientesListaMobile({ clientes }: { clientes: ClienteRow
                     <span className="text-[13px] ml-1" style={{ color: 'var(--text-muted)' }}>adh.</span>
                   </div>
                 )}
-                {/* Dots planes */}
-                <div className="flex gap-1 items-center">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: c.tiene_dieta_activa ? 'var(--success)' : 'var(--border)' }} />
-                  <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: c.tiene_entreno_activo ? 'var(--success)' : 'var(--border)' }} />
-                </div>
               </div>
             </div>
 

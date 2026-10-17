@@ -4,7 +4,7 @@ import type React from 'react'
 export type TipoMembresia = 'trimestral' | 'semestral' | 'anual'
 export type Filtro = 'todos' | 'atencion' | 'nuevos' | 'riesgo' | 'sin_checkin' | 'activos' | 'sin_membresia'
 export type FiltroAlta = 'mes' | 'trimestre' | null
-export type SortKey = 'checkin' | 'nombre' | 'membresia_caduca' | 'score_adherencia' | 'deuda_atencion'
+export type SortKey = 'checkin' | 'nombre' | 'membresia_caduca' | 'proxima_revision' | 'score_adherencia' | 'deuda_atencion'
 
 export type ClienteRow = {
   id: string
@@ -175,6 +175,11 @@ export function aplicarSort(clientes: ClienteRow[], sort: SortKey): ClienteRow[]
     if (sort === 'membresia_caduca') {
       const da = diasHastaCaducidad(a) ?? 9999
       const db = diasHastaCaducidad(b) ?? 9999
+      return da - db
+    }
+    if (sort === 'proxima_revision') {
+      const da = a.fecha_proxima_revision ? new Date(a.fecha_proxima_revision).getTime() : Number.POSITIVE_INFINITY
+      const db = b.fecha_proxima_revision ? new Date(b.fecha_proxima_revision).getTime() : Number.POSITIVE_INFINITY
       return da - db
     }
     if (sort === 'score_adherencia') return (a.score_adherencia ?? 0) - (b.score_adherencia ?? 0)

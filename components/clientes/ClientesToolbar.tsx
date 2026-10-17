@@ -18,6 +18,7 @@ const SORT_LABELS: Record<SortKey, string> = {
   checkin: 'Check-in',
   nombre: 'Nombre',
   membresia_caduca: 'Caduca',
+  proxima_revision: 'Próxima revisión',
   score_adherencia: 'Adherencia',
   deuda_atencion: 'Deuda atención',
 }

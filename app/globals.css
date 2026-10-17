@@ -352,6 +352,31 @@
   color: var(--text-secondary);
   font: 600 0.65rem/1 var(--font-geist-mono), ui-monospace, monospace;
 }
+.coach-client-state {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.16rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+}
+.coach-client-plan-cell {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+}
+.coach-client-plan-cell > span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .coach-client-plan-status { display: flex; align-items: center; gap: 0.35rem; }
 .coach-client-plan-status > span {
   display: grid;
@@ -363,6 +388,43 @@
   color: var(--text-muted);
 }
 .coach-client-plan-status > span[data-active='true'] { border-color: color-mix(in srgb, var(--success) 25%, var(--border)); color: var(--success); }
+.coach-client-empty-value { color: var(--text-muted); font-size: 0.72rem; }
+.coach-client-review-date { display: grid; gap: 0.15rem; }
+.coach-client-review-date strong {
+  color: var(--text-secondary);
+  font: 600 0.76rem/1 var(--font-geist-mono), ui-monospace, monospace;
+}
+.coach-client-review-date span { color: var(--text-muted); font-size: 0.66rem; }
+.coach-client-review-date[data-soon='true'] strong { color: var(--warning); }
+.coach-client-review-date[data-overdue='true'] strong { color: var(--error); }
+.coach-client-mobile-plan {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+  color: var(--text-muted);
+}
+.coach-client-mobile-plan > span {
+  display: grid;
+  width: 1.45rem;
+  height: 1.45rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--client-rule);
+  border-radius: 0.15rem;
+}
+.coach-client-mobile-plan > span[data-active='true'] { border-color: color-mix(in srgb, var(--success) 25%, var(--border)); color: var(--success); }
+.coach-client-mobile-plan p {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .coach-client-table [role='row']:not(:first-child) { min-height: 3.75rem; }
 .coach-client-table [role='columnheader'] { font-family: var(--font-geist-mono), ui-monospace, monospace; }

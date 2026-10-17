@@ -54,7 +54,7 @@ export default function ClientesPage() {
   const [chatsRaw, setChatsRaw] = useEstadoUrl<string>('chats', '0', ['0', '1'])
   const filtroChats = chatsRaw === '1'
   const setFiltroChats = (v: boolean) => setChatsRaw(v ? '1' : '0')
-  const [sort, setSort] = useEstadoUrl<SortKey>('sort', 'checkin', ['checkin', 'nombre', 'membresia_caduca', 'score_adherencia', 'deuda_atencion'])
+  const [sort, setSort] = useEstadoUrl<SortKey>('sort', 'checkin', ['checkin', 'nombre', 'membresia_caduca', 'proxima_revision', 'score_adherencia', 'deuda_atencion'])
 
   const loadRespuestas = useCallback(async () => {
     setRespuestasLoading(true)

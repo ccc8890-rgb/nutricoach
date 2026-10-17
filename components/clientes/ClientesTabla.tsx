@@ -3,6 +3,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, Barbell, ForkKnife, Warning } from '@phosphor-icons/react'
+import { OBJETIVO_LABELS } from '@/lib/utils'
 import {
   nombreCliente, getEstadoCliente, estadoStyle, scoreColor,
   checkinColor, diasHastaCaducidad,
@@ -10,7 +11,7 @@ import {
 } from '@/lib/clientes-utils'
 
 // Rejilla compartida por cabecera y filas: el espacio se reparte entre columnas en vez de quedar en una sola
-const GRID = '44px minmax(260px, 2.4fr) minmax(130px, 1fr) minmax(150px, 1.15fr) minmax(110px, 0.8fr) minmax(130px, 1fr) 20px'
+const GRID = '44px minmax(220px, 1.8fr) minmax(125px, 0.85fr) minmax(175px, 1.15fr) minmax(170px, 1.1fr) minmax(125px, 0.8fr) minmax(115px, 0.75fr) 20px'
 
 interface Props {
   clientes: ClienteRow[]
@@ -62,6 +63,29 @@ function MembresiaCell({ c }: { c: ClienteRow }) {
   )
 }
 
+function RevisionCell({ fecha }: { fecha?: string | null }) {
+  if (!fecha) return <span className="coach-client-empty-value">Sin programar</span>
+
+  const objetivo = new Date(`${fecha.slice(0, 10)}T12:00:00`)
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const dias = Math.ceil((objetivo.getTime() - hoy.getTime()) / 86_400_000)
+  const label = dias < 0
+    ? `${Math.abs(dias)} d vencida`
+    : dias === 0
+      ? 'Hoy'
+      : dias <= 7
+        ? `En ${dias} d`
+        : objetivo.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).replace('.', '')
+
+  return (
+    <div className="coach-client-review-date" data-overdue={dias < 0} data-soon={dias >= 0 && dias <= 7}>
+      <strong>{label}</strong>
+      <span>revisión</span>
+    </div>
+  )
+}
+
 export default function ClientesTabla({ clientes, sort, onSort }: Props) {
   if (clientes.length === 0) return null
 
@@ -71,10 +95,11 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
       <div className="coach-client-table-head hidden lg:grid items-center gap-x-4 px-4 py-3" style={{ gridTemplateColumns: GRID }}>
         <div />
         <ColHeader label="Cliente" sortKey="nombre" current={sort} onSort={onSort} />
-        <ColHeader label="Membresía" sortKey="membresia_caduca" current={sort} onSort={onSort} />
-        <ColHeader label="Seguimiento" sortKey="checkin" current={sort} onSort={onSort} />
-        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Plan</span>
         <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Estado</span>
+        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Plan y objetivo</span>
+        <ColHeader label="Seguimiento" sortKey="checkin" current={sort} onSort={onSort} />
+        <ColHeader label="Próxima revisión" sortKey="proxima_revision" current={sort} onSort={onSort} />
+        <ColHeader label="Membresía" sortKey="membresia_caduca" current={sort} onSort={onSort} />
         <div />
       </div>
 
@@ -113,8 +138,19 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
               </div>
             </div>
 
-            {/* Membresía */}
-            <MembresiaCell c={c} />
+            {/* Estado operativo */}
+            <div>
+              <span className="coach-client-state" style={estadoStyle(estado.tone)}>{estado.label}</span>
+            </div>
+
+            {/* Planes y objetivo */}
+            <div className="coach-client-plan-cell">
+              <div className="coach-client-plan-status">
+                <span data-active={Boolean(c.tiene_dieta_activa)} title={c.tiene_dieta_activa ? 'Dieta activa' : 'Sin dieta activa'}><ForkKnife size={13} /></span>
+                <span data-active={Boolean(c.tiene_entreno_activo)} title={c.tiene_entreno_activo ? 'Entreno activo' : 'Sin entreno activo'}><Barbell size={13} /></span>
+              </div>
+              <span>{c.objetivo ? (OBJETIVO_LABELS[c.objetivo] ?? c.objetivo) : 'Sin objetivo'}</span>
+            </div>
 
             {/* Seguimiento */}
             <div className="flex items-center gap-5">
@@ -128,21 +164,11 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
               </div>
             </div>
 
-            {/* Planes */}
-            <div className="coach-client-plan-status">
-              <span data-active={Boolean(c.tiene_dieta_activa)} title={c.tiene_dieta_activa ? 'Dieta activa' : 'Sin dieta activa'}><ForkKnife size={13} /></span>
-              <span data-active={Boolean(c.tiene_entreno_activo)} title={c.tiene_entreno_activo ? 'Entreno activo' : 'Sin entreno activo'}><Barbell size={13} /></span>
-            </div>
+            {/* Próxima revisión */}
+            <RevisionCell fecha={c.fecha_proxima_revision} />
 
-            {/* Estado */}
-            <div>
-              <span
-                className="inline-block text-[14px] font-bold px-3 py-1 rounded-full whitespace-nowrap"
-                style={estadoStyle(estado.tone)}
-              >
-                {estado.label}
-              </span>
-            </div>
+            {/* Membresía */}
+            <MembresiaCell c={c} />
 
             {/* Flecha */}
             <ArrowRight size={18} style={{ color: 'var(--text-muted)' }} className="transition-transform group-hover:translate-x-0.5" />
