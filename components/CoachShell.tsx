@@ -152,6 +152,7 @@ function CoachTopBar({ pathname }: { pathname: string }) {
 export default function CoachShell({ children, padded = false }: { children: React.ReactNode; padded?: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
+  const mostrarBarraContextual = !pathname?.startsWith('/contenido')
   const [ready, setReady] = useState(() => coachAccessCache === 'coach')
 
   useEffect(() => {
@@ -203,7 +204,7 @@ export default function CoachShell({ children, padded = false }: { children: Rea
       <Sidebar />
       <CoachFloatingControls />
       <main className="coach-atelier-main flex-1 overflow-auto pb-nav-safe layout-main">
-        <CoachTopBar pathname={pathname || '/dashboard'} />
+        {mostrarBarraContextual && <CoachTopBar pathname={pathname || '/dashboard'} />}
         {padded ? <div className="p-6 max-w-[120rem] mx-auto">{children}</div> : children}
       </main>
     </div>
