@@ -32,6 +32,9 @@ r = evaluarSistema({ ejecuciones: [ej('diario', 3), ej('semanal', 50)], integrac
 assert.equal(r.comprobaciones[2].nivel, 'error')
 r = evaluarSistema({ ejecuciones: [ej('diario', 3), ej('semanal', 50)], integraciones: [{ proveedor: 'strava', ultima_sync: h(2), error_ultimo: 'token' }] }, AHORA)
 assert.equal(r.comprobaciones[2].nivel, 'aviso')
+// el aviso dice qué conexión, de quién y qué hacer
+r = evaluarSistema({ ejecuciones: [ej('diario', 3), ej('semanal', 50)], integraciones: [{ proveedor: 'strava', cliente: 'Carlos Casanova', ultima_sync: h(2), error_ultimo: 'Strava activities fetch failed: 403' }] }, AHORA)
+assert.match(r.comprobaciones[2].detalle, /Strava de Carlos Casanova/); assert.match(r.comprobaciones[2].detalle, /desconecte Strava/)
 
 // Semanal: a los 8 días aún vale, a los 10 no
 r = evaluarSistema({ ejecuciones: [ej('diario', 3), ej('semanal', 8 * 24)], integraciones: [] }, AHORA)

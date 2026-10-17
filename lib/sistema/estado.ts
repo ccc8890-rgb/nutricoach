@@ -19,6 +19,7 @@ export interface EjecucionAgente {
 
 export interface IntegracionSync {
   proveedor: string
+  cliente?: string | null
   ultima_sync: string | null
   error_ultimo: string | null
 }
@@ -53,6 +54,22 @@ function comprobarAgentes(modo: 'diario' | 'semanal', ejecuciones: EjecucionAgen
   return { id: `agentes-${modo}`, nombre, nivel: 'ok', detalle: `Corrió ${hace(t, ahora)}.` }
 }
 
+const PROVEEDORES: Record<string, string> = {
+  strava: 'Strava', garmin_connect: 'Garmin Connect', garmin: 'Garmin', google_fit: 'Google Fit',
+  whoop: 'Whoop', coros: 'COROS', terra: 'Terra',
+}
+
+// Qué significa el error y quién tiene que hacer qué.
+function accionPorError(proveedor: string, error: string): string {
+  const nombre = PROVEEDORES[proveedor] ?? proveedor
+  if (/\b40[13]\b|unauthori[sz]ed|forbidden|invalid.?grant|token/i.test(error)) {
+    return `Falta permiso o ha caducado la autorización: que el cliente desconecte ${nombre} y lo conecte otra vez (en Strava, dejando marcado «ver tus actividades»).`
+  }
+  if (/\b429\b|rate/i.test(error)) return 'Demasiadas peticiones: se resuelve solo en unas horas.'
+  if (/\b5\d\d\b|timeout|network|fetch failed/i.test(error)) return `${nombre} no respondió: se reintenta solo en la siguiente sincronización.`
+  return 'Revisar la conexión del cliente.'
+}
+
 function comprobarRelojes(integraciones: IntegracionSync[], ahora: number): ComprobacionSistema {
   const nombre = 'Sincronización de relojes y apps'
   if (integraciones.length === 0) return { id: 'relojes', nombre, nivel: 'ok', detalle: 'Ningún cliente tiene dispositivos conectados.' }
@@ -61,7 +78,7 @@ function comprobarRelojes(integraciones: IntegracionSync[], ahora: number): Comp
   const ultima = Math.max(...tiempos)
   if (ultima === 0) return { id: 'relojes', nombre, nivel: 'aviso', detalle: 'Hay dispositivos conectados pero aún no se ha sincronizado ninguno.' }
   if ((ahora - ultima) / HORA > 36) return { id: 'relojes', nombre, nivel: 'error', detalle: `Última sincronización ${hace(ultima, ahora)}.` }
-  if (conError.length > 0) return { id: 'relojes', nombre, nivel: 'aviso', detalle: `Sincroniza (${hace(ultima, ahora)}), pero ${conError.length} conexión(es) con error.` }
+  if (conError.length > 0) return { id: 'relojes', nombre, nivel: 'aviso', detalle: `Sincroniza (${hace(ultima, ahora)}), pero ${conError.length === 1 ? '1 conexión falla' : `${conError.length} conexiones fallan`}: ${conError.map(i => `${PROVEEDORES[i.proveedor] ?? i.proveedor}${i.cliente ? ` de ${i.cliente}` : ''} («${i.error_ultimo}»). ${accionPorError(i.proveedor, i.error_ultimo ?? '')}`).join(' ')}` }
   return { id: 'relojes', nombre, nivel: 'ok', detalle: `Última sincronización ${hace(ultima, ahora)}.` }
 }
 
