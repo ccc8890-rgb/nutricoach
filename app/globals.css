@@ -322,6 +322,75 @@
 .coach-client-filter:active,
 .coach-client-sort:active { transform: translateY(1px); }
 
+/* Dashboard · estado técnico del sistema */
+.coach-system-strip {
+  border-block: 1px solid var(--border);
+  background: transparent;
+}
+.coach-system-strip__trigger {
+  display: grid;
+  width: 100%;
+  min-height: 2.85rem;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.2rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.coach-system-strip__trigger:hover .coach-system-strip__summary { color: var(--text); }
+.coach-system-strip__trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.coach-system-strip__signal {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--success);
+}
+.coach-system-strip[data-level='aviso'] .coach-system-strip__signal { background: var(--warning); }
+.coach-system-strip[data-level='error'] .coach-system-strip__signal { background: var(--error); }
+.coach-system-strip__label {
+  color: var(--text-muted);
+  font: 600 0.57rem/1 var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.coach-system-strip__summary {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 180ms var(--ease-out-strong);
+}
+.coach-system-strip__detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-muted);
+  font: 550 0.64rem/1 var(--font-geist-mono), ui-monospace, monospace;
+}
+.coach-system-strip__checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0;
+  padding: 0 0 0.75rem 1.05rem;
+}
+.coach-system-strip__checks li {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border-left: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+.coach-system-strip__checks strong { color: var(--text); font-weight: 620; }
+.coach-system-strip__checks strong::after { content: ' · '; color: var(--text-muted); }
+.coach-system-strip__checks li span span { color: var(--text-muted); }
+
 .coach-client-table,
 .coach-client-mobile-list {
   border: 1px solid var(--client-rule);
