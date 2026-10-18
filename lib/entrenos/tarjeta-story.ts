@@ -303,11 +303,12 @@ async function _dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
   const k = String(Math.round(d.kcal)); ctx.fillText(k, 48, 110)
   const wk = ctx.measureText(k).width
   ctx.font = `600 14px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText('KCAL', 48 + wk + 10, 110)
-  ;[[r.pp, 'PROTEÍNA', C_PROT], [r.pc, 'CARBOS', C_CARB], [r.pg, 'GRASAS', C_GRASA]].forEach(([pc, l, c], i) => {
+  ;[[r.pp, 'PROTEÍNA', C_PROT], [r.pc, 'CARBOS', C_CARB], [r.pg, 'GRASAS', C_GRASA]].forEach(([pc, l], i) => {
     const y = 176 + i * 38
     ctx.font = `300 28px ${sora}`; ctx.fillStyle = INK; ctx.fillText(`${pc}%`, 48, y)
-    ctx.fillStyle = c as string; ctx.fillRect(130, y - 13, 10, 10)
-    ctx.font = `500 13px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(l as string, 154, y - 3)
+    // La letra enlaza la fila con su vértice del triángulo; el macro predominante se enciende
+    ctx.font = `700 13px ${mono}`; ctx.fillStyle = i === dom ? INK : MUTED; ctx.fillText(['P', 'C', 'G'][i], 130, y - 3)
+    ctx.font = `500 13px ${mono}`; ctx.fillText(l as string, 154, y - 3)
   })
   return aBlob(canvas)
 }

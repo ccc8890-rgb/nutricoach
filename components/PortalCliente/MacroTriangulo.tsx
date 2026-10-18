@@ -80,9 +80,9 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinM
     for (const [a, b, d] of [[V[0], V[1], V[2]], [V[1], V[2], V[0]], [V[2], V[0], V[1]]] as const) rejilla.push([lerp(a, b, k), lerp(a, d, k)])
   }
   const filas = [
-    { l: 'Proteína', g: p, pc: pct[0], color: 'var(--macro-protein)' },
-    { l: 'Carbos', g: c, pc: pct[1], color: 'var(--macro-carbs)' },
-    { l: 'Grasas', g: g, pc: pct[2], color: 'var(--macro-fat)' },
+    { l: 'Proteína', v: 'P', g: p, pc: pct[0] },
+    { l: 'Carbos', v: 'C', g: c, pc: pct[1] },
+    { l: 'Grasas', v: 'G', g: g, pc: pct[2] },
   ]
 
   return (
@@ -94,11 +94,12 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinM
           </p>
         )}
         <div className={mostrarKcal ? 'mt-5 flex flex-col gap-2' : 'flex flex-col gap-2'}>
-          {filas.map(r => (
+          {filas.map((r, i) => (
             <p key={r.l} className="flex items-baseline gap-2.5 whitespace-nowrap" style={{ color: 'var(--text)' }}>
               <span className="w-[3.1rem] text-[1.55rem] leading-none" style={{ fontFamily: SORA, fontWeight: 300, fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.pc * cuentas)}%</span>
-              <span className="inline-block h-2 w-2 shrink-0" style={{ background: r.color }} />
-              <span className="font-data text-[10px] font-medium tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>{r.l.toUpperCase()}</span>
+              {/* La letra enlaza cada fila con su vértice del triángulo; el macro predominante se enciende */}
+              <span className="font-data w-3 shrink-0 text-[10px] font-bold" style={{ color: i === dom ? 'var(--text)' : 'var(--text-muted)' }}>{r.v}</span>
+              <span className="font-data text-[10px] font-medium tracking-[0.14em]" style={{ color: i === dom ? 'var(--text)' : 'var(--text-muted)' }}>{r.l.toUpperCase()}</span>
               <span className="font-data text-[10px]" style={{ color: 'var(--text-muted)', opacity: 0.7, fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.g * cuentas)} g</span>
             </p>
           ))}

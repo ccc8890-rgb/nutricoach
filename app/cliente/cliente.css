@@ -387,7 +387,10 @@
 .recipe-editorial-item.is-featured > div:first-child { min-height: 13.5rem; border-right: 0; border-bottom: 1px solid var(--editorial-rule); }
 .recipe-editorial-item.is-featured > div:last-child p:first-child { font-size: 1.25rem; line-height: 1.05; letter-spacing: -0.035em; }
 .recipe-personal-archive { padding-top: 1rem; border-top: 1px solid var(--editorial-rule); }
-.client-recipe-editorial [class*='rounded-3xl'] { border-radius: var(--editorial-radius) !important; }
+.client-recipe-editorial [class*='rounded-3xl'],
+.client-recipe-editorial [class*='rounded-2xl'],
+.client-recipe-editorial [class*='rounded-xl'],
+.client-recipe-editorial [class*='rounded-lg'] { border-radius: var(--editorial-radius) !important; }
 .settings-system { border-bottom: 1px solid var(--editorial-rule); }
 .settings-console { --settings-rule: color-mix(in srgb, var(--metal-mid) 34%, var(--border)); }
 .settings-console > .industrial-tabs { margin-bottom: 0.35rem; border: 1px solid var(--settings-rule); background: transparent; gap: 0; }
