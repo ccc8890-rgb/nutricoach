@@ -65,8 +65,10 @@ export interface ScoreCalidadReceta {
   }
 }
 
-const ALCOHOL_RE = /\b(vino|vodka|amaretto|licor|brandy|brandi|ron|whisky|ginebra|tequila|anis|anís|cava|cerveza|jerez|moscatel|vermut|limoncello)\b/i
-const POSTRE_RE = /\b(postre|tiramisu|tiramis[uú]|tarta|bizcocho|helado|brownie|galleta|dulce|flan|natilla|cheesecake)\b/i
+const ALCOHOL_RE = /\b(vino|vodka|amaretto|licor|brandy|brandi|ron|whisky|ginebra|tequila|anis seco|anís seco|cava|cerveza|jerez|moscatel|vermut|limoncello)\b/i
+// «Vinagre de Jerez / de vino / balsámico» no es alcohol; «anís estrellado» tampoco
+const VINAGRE_RE = /vinagre(s)?(\s+(de|al|balsamico|balsámico))?(\s+[a-zñáéíóú]+){0,2}/gi
+const POSTRE_RE = /\b(postres?|tiramisu|tiramis[uú]|tartas?|bizcochos?|helados?|brownies?|galletas?|cookies?|donuts?|dulce de|flan|natillas?|cheesecake|mousse|pudding|mochi|trufas?|crumble|blondis?|brookies?|ganache|twix|caramel|milhojas?|milojas?|coulant|nice cream|mug cake|pastel|arroz con leche|panna cotta|torta)\b/i
 const DEPORTIVO_RE = /\b(prote[ií]na|post[- ]?entreno|pre[- ]?entreno|fit|recovery|energy|energ[eé]tico)\b/i
 const CLINICO_RE = /\b(diabetes|digestiv|fodmap|hipertensi[oó]n|renal|colesterol|gluc[eé]mico|sin gluten|sin lactosa)\b/i
 const HORECA_RE = /\b(restaurante|chef|gastro|men[uú]|raci[oó]n|escandallo|lote|mise)\b/i
@@ -316,8 +318,13 @@ export function clasificarRecetaProfesional(receta: RecetaProfesionalInput): Cla
   const grasas = n(receta.grasas)
   const fibra = n(receta.fibra)
   const tipoPlato = `${receta.tipo_plato || receta.categoria || ''}`.toLowerCase()
-  const alcohol = ALCOHOL_RE.test(texto)
-  const esPostre = POSTRE_RE.test(texto) || tipoPlato.includes('postre')
+  // Alcohol: solo en el nombre y los ingredientes (no en las instrucciones) y sin contar los vinagres.
+  // Antes se miraba todo el texto: gazpacho, salmorejo, rape o curry salían como «alcohol».
+  const textoAlcohol = [receta.nombre, ...(receta.ingredientes || []).map(i => i.nombre_libre || '')].join(' ').replace(VINAGRE_RE, ' ').replace(/\b(pasas?|uvas?)\s+moscatel\b/gi, ' ')
+  const alcohol = ALCOHOL_RE.test(textoAlcohol)
+  // Postre: por lo que ES el plato (nombre, categoría, tipo), no por «dulce» en las instrucciones
+  // (patata dulce, pimentón dulce convertían unas lentejas en «postre indulgente»).
+  const esPostre = POSTRE_RE.test([receta.nombre, receta.categoria, receta.tipo_plato].filter(Boolean).join(' ')) || tipoPlato.includes('postre')
   const proteinaAlta = kcal > 0 ? proteinas * 4 / kcal >= 0.25 : proteinas >= 25
   const energiaDensa = kcal >= 600 || grasas >= 28
 

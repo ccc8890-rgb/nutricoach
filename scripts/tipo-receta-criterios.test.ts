@@ -12,6 +12,7 @@ assert.equal(inferirTipoReceta({ nombre: 'Palitos de Zanahoria con Hummus Casero
 assert.equal(inferirTipoReceta({ nombre: 'Mayonesa de camarones', categoria: 'Comida' }), 'salsa_base')
 assert.equal(inferirTipoReceta({ nombre: 'Aceite de Cebollino', categoria: 'Comida' }), 'salsa_base')
 assert.equal(inferirTipoReceta({ nombre: 'Canelón de arroz al sofrito', categoria: 'Comida', kcal: 266, proteinas: 8 }), 'completa')
+assert.equal(inferirTipoReceta({ nombre: 'Ensalada de quinoa con aguacate y granada', categoria: 'Comida', kcal: 275, proteinas: 6 }), 'guarnicion')
 assert.equal(inferirTipoReceta({ nombre: 'Chimichurri', categoria: 'Snack' }), 'salsa_base')
 assert.equal(inferirTipoReceta({ nombre: 'Salsas de yogur altas en proteína', categoria: 'Snack' }), 'salsa_base')
 assert.equal(inferirTipoReceta({ nombre: 'Batido de proteínas con plátano', categoria: 'Merienda' }), 'bebida')
@@ -28,3 +29,11 @@ assert.equal(cumplePostEntreno({ proteinas: 30, carbohidratos: 55 }), true)
 assert.equal(cumplePostEntreno({ proteinas: 35, carbohidratos: 8 }), false)                           // mug cake sin hidratos
 assert.equal(cumplePostEntreno({ proteinas: 13, carbohidratos: 108 }), false)
 console.log('tipo-receta y criterios OK')
+
+import { cumpleCargaCho, cumpleTapering } from '../lib/recetas/criterios-momento-entreno'
+assert.equal(cumpleCargaCho({ kcal: 587, carbohidratos: 136, grasas: 1, fibra: 4 }), true)     // arroz con leche
+assert.equal(cumpleCargaCho({ kcal: 705, carbohidratos: 133, grasas: 3, fibra: 13 }), false)  // demasiada fibra
+assert.equal(cumpleCargaCho({ kcal: 540, carbohidratos: 51, grasas: 18, fibra: 5 }), false)   // solo 38 % de hidratos
+assert.equal(cumpleTapering({ kcal: 551, carbohidratos: 78, grasas: 9, fibra: 1 }), true)
+assert.equal(cumpleTapering({ kcal: 755, carbohidratos: 79, grasas: 32, fibra: 9 }), false)
+console.log('carga/tapering OK')

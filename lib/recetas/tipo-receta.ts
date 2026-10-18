@@ -29,7 +29,11 @@ export function inferirTipoReceta(r: { nombre: string; categoria?: string | null
 
   const cat = (r.categoria || '').toLowerCase()
   if (cat === 'desayuno') return 'desayuno'
-  if (cat === 'comida' || cat === 'cena') return kcal < 250 && prot < 10 ? 'guarnicion' : 'completa'
+  if (cat === 'comida' || cat === 'cena') {
+    // Ensaladas, cremas y sopas de pocas kcal y poca proteína son acompañamiento, no plato principal
+    const acompanamiento = p.some(w => ['ensalada', 'crema', 'sopa', 'pure', 'gazpacho'].includes(w)) && kcal < 350 && prot < 10
+    return (kcal < 250 && prot < 10) || acompanamiento ? 'guarnicion' : 'completa'
+  }
   // merienda / snack / postre
   return kcal >= 300 && prot >= 15 ? 'completa' : 'snack_postre'
 }

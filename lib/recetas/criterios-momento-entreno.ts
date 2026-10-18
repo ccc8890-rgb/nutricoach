@@ -26,3 +26,18 @@ export function cumplePostEntreno(r: RecetaParaMomento): boolean {
   // Tolerancia de redondeo: 19,5 g ≈ 20 g y 28 g ≈ 30 g
   return !excluida(r) && n(r.proteinas) >= 19.5 && n(r.carbohidratos) >= 28
 }
+
+// Carga de hidratos (8-12 g/kg los 1-2 días previos, Burke 2011) y tapering: comida fácil de digerir, rica en hidratos,
+// con poca grasa y fibra. Mismas preferencias que lib/nutricion/receta-competicion.ts (hidratos ≥60 % de las kcal puntúan
+// al máximo; grasa ≤20 g y fibra <6 g suman). Umbrales exactos: criterio de dietista.
+export function cumpleCargaCho(r: RecetaParaMomento): boolean {
+  const kcal = n(r.kcal)
+  const pct = kcal > 0 ? (n(r.carbohidratos) * 4) / kcal : 0
+  return !excluida(r) && pct >= 0.6 && n(r.carbohidratos) >= 50 && n(r.grasas) <= 20 && n(r.fibra) <= 6
+}
+
+export function cumpleTapering(r: RecetaParaMomento): boolean {
+  const kcal = n(r.kcal)
+  const pct = kcal > 0 ? (n(r.carbohidratos) * 4) / kcal : 0
+  return !excluida(r) && pct >= 0.45 && n(r.grasas) <= 25 && n(r.fibra) <= 8
+}

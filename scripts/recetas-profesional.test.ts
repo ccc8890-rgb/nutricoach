@@ -353,3 +353,12 @@ assert.equal(resumen.estado_sugerido, 'bloqueada')
 }
 
 console.log('recetas-profesional.test.ts OK')
+
+// Falsos positivos corregidos (18-10-2026): vinagre no es alcohol y «dulce» en instrucciones no hace un postre
+const gazpacho = clasificarRecetaProfesional({ nombre: 'Gazpacho andaluz', categoria: 'Comida', kcal: 150, proteinas: 6, grasas: 10, ingredientes: [{ nombre_libre: 'Vinagre de Jerez' }, { nombre_libre: 'Tomate' }] })
+assert.equal(gazpacho.alcohol_culinario, false)
+const lentejas = clasificarRecetaProfesional({ nombre: 'Lentejas estofadas con verduras y arroz', categoria: 'Comida', kcal: 612, proteinas: 28, grasas: 12, instrucciones: 'Añade pimentón dulce y batata dulce', ingredientes: [{ nombre_libre: 'Lentejas' }] })
+assert.notEqual(lentejas.nivel_fit, 'indulgente')
+assert.equal(clasificarRecetaProfesional({ nombre: 'Peras al vino tinto', categoria: 'Postre', kcal: 145, ingredientes: [{ nombre_libre: 'Vino tinto' }] }).alcohol_culinario, true)
+console.log('profesional: falsos positivos OK')
+assert.equal(clasificarRecetaProfesional({ nombre: 'Muesli casero', categoria: 'Desayuno', kcal: 246, ingredientes: [{ nombre_libre: 'Pasas moscatel sin semillas' }] }).alcohol_culinario, false)
