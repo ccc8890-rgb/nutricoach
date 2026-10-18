@@ -1,4 +1,7 @@
 // scripts/clasificar-tipo-receta.mjs
+// OBSOLETO (18-10-2026): clasificaba por subcadena («agua» en «aguacate» → bebida; «pesto/hummus/vinagreta» → salsa).
+// Usar lib/recetas/tipo-receta.ts (regla por palabra) y scripts/corregir-clasificacion-recetas.ts.
+console.error('Script obsoleto: ver el comentario de cabecera.'); process.exit(1)
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
 

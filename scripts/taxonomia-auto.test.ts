@@ -21,7 +21,7 @@ assert.deepEqual(c.objetivos, ['mantenimiento'])
 assert.deepEqual(c.deportes, [])
 
 // Lo ya informado se respeta; los valores fuera de vocabulario se descartan
-const d = completarTaxonomia({ tipo_plato: 'Cena', momentos: ['cena', 'comida_social'], deportes: ['natacion', 'running'], objetivos: ['rendimiento'] })
+const d = completarTaxonomia({ tipo_plato: 'Cena', momentos: ['cena', 'comida_social'], deportes: ['entreno_fuerza', 'running'], objetivos: ['rendimiento'] })
 assert.deepEqual(d.momentos, ['cena'])
 assert.deepEqual(d.deportes, ['running'])
 assert.deepEqual(d.objetivos, ['rendimiento'])

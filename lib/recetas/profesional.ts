@@ -35,6 +35,8 @@ export interface RecetaProfesionalInput {
   porciones?: number | null
   intolerancias?: string[] | null
   tags?: string[] | null
+  /** Momentos ya asignados: si vienen, mandan sobre el texto para decidir pre/post entreno */
+  momentos?: string[] | null
   ingredientes?: IngredienteProfesionalInput[]
 }
 
@@ -331,9 +333,13 @@ export function clasificarRecetaProfesional(receta: RecetaProfesionalInput): Cla
   else if (DEPORTIVO_RE.test(texto)) tipo_uso = 'deportivo'
   if (esPostre) tipo_uso = energiaDensa || alcohol ? 'ocasional' : 'postre'
 
+  // Pre/post entreno son filtros duros del planificador: si la receta ya tiene momentos, mandan ellos
+  // (se validan por composición). Antes bastaba «proteína alta y ≥350 kcal» para ser post-entreno (221 recetas, 46 respaldadas).
+  const momentos = receta.momentos
+  const textoPrePost = momentos ? '' : texto
   let contexto_uso: ContextoUso = 'general'
-  if (/pre[- ]?entreno/i.test(texto)) contexto_uso = 'pre_entreno'
-  else if (/post[- ]?entreno|recovery/i.test(texto) || (proteinaAlta && kcal >= 350)) contexto_uso = 'post_entreno'
+  if (momentos?.includes('pre_entreno') || /pre[- ]?entreno/i.test(textoPrePost)) contexto_uso = 'pre_entreno'
+  else if (momentos?.includes('post_entreno') || /post[- ]?entreno|recovery/i.test(textoPrePost)) contexto_uso = 'post_entreno'
   else if (/tupper|batch/i.test(texto)) contexto_uso = 'tupper'
   else if (/cena/i.test(tipoPlato) && kcal <= 450) contexto_uso = 'cena_ligera'
   else if (HORECA_RE.test(texto)) contexto_uso = 'menu_horeca'

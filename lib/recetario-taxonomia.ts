@@ -15,6 +15,7 @@ export const RECETA_DEPORTES = [
   'triatlon',
   'crossfit',
   'endurance',
+  'natacion',
   'general',
 ] as const
 
@@ -84,6 +85,7 @@ export const RECETA_LABELS: Record<string, string> = {
   ciclismo: 'Ciclismo',
   triatlon: 'Triatlón',
   crossfit: 'CrossFit',
+  natacion: 'Natación',
   endurance: 'Endurance',
   general: 'General',
   funcional: 'Funcional',

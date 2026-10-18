@@ -37,6 +37,9 @@ const LABELS: Record<string, string> = {
     rendimiento: 'Rendimiento',
     running: 'Running',
     hyrox: 'Hyrox',
+    natacion: 'Natación',
+    carga_cho: 'Carga CHO',
+    postre: 'Postre',
     endurance: 'Endurance',
     post_entreno: 'Post',
     pre_entreno: 'Pre',
@@ -53,7 +56,8 @@ const LABELS: Record<string, string> = {
     snack: 'Snack',
 }
 
-const OMITTED_CARD_TAGS = new Set(['salud_general'])
+// Valores por defecto que no distinguen una receta de otra (74 % de las recetas eran «mantenimiento + salud general»)
+const OMITTED_CARD_TAGS = new Set(['salud_general', 'mantenimiento', 'general'])
 
 function normaliseTag(value: string) {
     return value.trim().toLocaleLowerCase('es-ES').replace(/[\s_-]+/g, '')
@@ -91,8 +95,6 @@ export function RecipeCardPremium({
     adherencia_score,
     recipe_intelligence_score,
     recipe_intelligence_tier,
-    macro_flex_score,
-    planning_roles,
     className = '',
 }: RecipeCardPremiumProps) {
     const [imgLoaded, setImgLoaded] = useState(false)
@@ -106,14 +108,11 @@ export function RecipeCardPremium({
             if (!tags.some(existing => normaliseTag(existing) === normaliseTag(label))) tags.push(label)
         }
 
-        ;[...(momentos ?? []), ...(deportes ?? []), ...(objetivos ?? []), ...(estilos ?? [])]
+        // Orden de utilidad: momento, deporte, estilo, objetivo. «Macros ajustables» y «Nutrición deportiva» se
+        // retiraron: salían en el 80 % y el 20 % de las recetas (dulces y salsas incluidos) y no informaban.
+        ;[...(momentos ?? []), ...(deportes ?? []), ...(estilos ?? []), ...(objetivos ?? [])]
             .filter(item => !OMITTED_CARD_TAGS.has(item))
             .forEach(item => add(humaniseTag(item)))
-
-        if (macro_flex_score !== null && macro_flex_score !== undefined && macro_flex_score >= 75) {
-            add('Macros ajustables')
-        }
-        if (planning_roles?.includes('performance_fuel')) add('Nutrición deportiva')
 
         return tags.slice(0, 2)
     })()

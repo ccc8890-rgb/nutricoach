@@ -5,6 +5,7 @@ import {
   resumenCalidadReceta,
   type RecetaProfesionalInput,
 } from './profesional'
+import { completarTaxonomia } from './taxonomia-auto'
 
 type SupabaseService = ReturnType<typeof createServiceSupabase>
 
@@ -34,6 +35,13 @@ interface RecetaDb {
   alcohol_culinario?: boolean | null
   clasificacion_manual?: boolean | null
   quality_estado_sugerido?: string | null
+  momentos?: string[] | null
+  objetivos?: string[] | null
+  deportes?: string[] | null
+  estilos?: string[] | null
+  tiempo_prep_min?: number | null
+  tiempo_coccion_min?: number | null
+  apto_rendimiento?: boolean | null
 }
 
 interface IngredienteDb {
@@ -65,6 +73,7 @@ function toInput(receta: RecetaDb, ingredientes: IngredienteDb[], conPrecio: Set
     porciones: receta.porciones,
     intolerancias: receta.intolerancias,
     tags: receta.tags,
+    momentos: receta.momentos?.length ? receta.momentos : null,
     ingredientes: ingredientes.map(i => {
       const alimento = Array.isArray(i.alimentos) ? i.alimentos[0] : i.alimentos
       return {
@@ -92,7 +101,8 @@ export async function auditarRecetaProfesional(
         id, nombre, descripcion, instrucciones, categoria, tipo_plato, dificultad,
         imagen_url, url_origen, kcal, proteinas, carbohidratos, grasas, fibra,
         porciones, intolerancias, tags, score_calidad, nivel_fit, tipo_uso,
-        contexto_uso, apta_cliente, alcohol_culinario, clasificacion_manual, quality_estado_sugerido
+        contexto_uso, apta_cliente, alcohol_culinario, clasificacion_manual, quality_estado_sugerido,
+        momentos, objetivos, deportes, estilos, tiempo_prep_min, tiempo_coccion_min, apto_rendimiento
       `)
       .eq('id', recetaId)
       .single(),
@@ -138,7 +148,17 @@ export async function auditarRecetaProfesional(
     estado_sugerido: resumen.estado_sugerido,
   }
 
+  // Toda receta que pasa por la auditoría (alta por URL, Content Radar, edición, aprobación) completa la
+  // taxonomía que le falte, sin pisar lo ya informado. Un solo punto en vez de uno por cada camino de alta.
+  const tax = completarTaxonomia(typedReceta)
+  const huecos: Record<string, string[]> = {}
+  if (!typedReceta.momentos?.length && tax.momentos.length) huecos.momentos = tax.momentos
+  if (!typedReceta.objetivos?.length && tax.objetivos.length) huecos.objetivos = tax.objetivos
+  if (!typedReceta.estilos?.length && tax.estilos.length) huecos.estilos = tax.estilos
+  if (!typedReceta.deportes?.length && tax.deportes.length) huecos.deportes = tax.deportes
+
   const update = {
+    ...huecos,
     score_calidad: score.score,
     score_calidad_detalle: score.desglose,
     nivel_fit: clasificacion.nivel_fit,
