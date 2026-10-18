@@ -10,6 +10,7 @@ Detalle y lecciones: [`docs/18-10-2026_auditoria-garmin-y-entrenador-ia.md`](doc
 - **Los datos de Garmin llegan** (70 días sin huecos, 116 entrenos); lo que falta es del reloj (sueño 2/70, HRV semanal, fuerza sin registrar).
 - **El plan no cambia solo:** aprobar un análisis solo deja constancia; cambia con el botón de cada decisión (pasos o mover de día). Agentes antiguos siguen apagados.
 - **Nuevo:** aviso `recuperacion_baja` (preparación ≤ 30 dos días), estrés -1 descartado, emparejado de sesiones por semana (`emparejarSesiones`), Entrenador IA en 4 pasos, `completarCambio` (la IA deja listo pasos o fechas) y botón **Mover y actualizar el reloj** (`lib/rendimiento/mover-sesion.ts`, solo esa fecha, con deshacer).
+- **Añadido después:** avisos al mover si choca con otra sesión exigente (mismo día, anterior o siguiente) y Cardio/Funcional/HIIT/Fuerza de Garmin cuentan como fuerza.
 - **Sin comprobar:** envío real a Garmin tras mover, aspecto en pantalla, y que mover no cambia la dieta de ese día.
 
 ## ✅ 14-10-2026 (tarde-noche, Claude) — Tarjetas para stories, diagrama ternario e icono nuevo

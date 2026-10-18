@@ -13,6 +13,9 @@
 5. **Decisiones aplicables:** `completarCambio` (`analisis-rendimiento.ts`) pide aparte a la IA los pasos exactos o las fechas de mover cuando la propuesta no los trae; se valida con `validarPasos` / `evaluarMover`. Las generales del motor siguen sin botón.
 6. **Mover sesión de día** (`lib/rendimiento/mover-sesion.ts`, rama `mover` de `aplicar-decision.ts`): usa `calendario_entreno_ajustes` (solo esa fecha), deshacer = devolverla a su día, refresca Garmin con el cron del cliente (`?cliente=` sin `forzar`, ya no anota en `cron_ejecuciones`).
 
+7. **Fuerza en Garmin** (`lib/rendimiento/deportes.ts`): cuentan como fuerza `strength_training`, `hiit`, `cardio`, `indoor_cardio`, `fitness_equipment`, `functional_training`, `crossfit`, `cross_training` (antes solo las dos primeras, y las híbridas grabadas como Cardio quedaban en «otros»). Test en `scripts/deportes.test.ts`.
+8. **Avisos al mover** (`ES_EXIGENTE` en `mover-sesion.ts`, `vistaPreviaMover`): si la sesión movida es exigente, avisa de otra exigente el mismo día, el anterior o el siguiente. No bloquea el botón.
+
 ## Verificación
 `tsc`, ESLint, `verificar:motor` 63/63, `scripts/rendimiento.test.ts` (incluye emparejado semanal). Ida y vuelta real de mover/deshacer en el plan de Carlos (ajustes vuelven a 3). Análisis real generado: las 2 decisiones de la IA salen con botón.
 
@@ -28,4 +31,4 @@
 - Hay un script de otra sesión (`scripts/` de clientes ficticios) con una contraseña de prueba en claro (`TestNutri2026!`); es de clientes ficticios, pero conviene pasarla a variable de entorno.
 
 ## Pendiente
-Ver el bloque en pantalla; comprobar el reloj tras el primer «mover»; avisos de recuperación (primer disparo previsto 19-10 ~09:44 local); fuerza/híbridas sin registrar en Garmin (probar HIIT/Cardio); reconectar Strava con Premium.
+Ver el bloque en pantalla; comprobar el reloj tras el primer «mover»; avisos de recuperación (primer disparo previsto 19-10 ~09:44 local); grabar la próxima híbrida en el reloj como Fuerza o HIIT y comprobar en la BD que llega al día siguiente; reconectar Strava con Premium.
