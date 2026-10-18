@@ -1,6 +1,6 @@
 // lib/plan-recetas.ts
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { RESTRICCION_A_ALERGENO, RESTRICCION_A_TAG_POSITIVO, expandirEvitar } from '@/lib/nutricion/compatibilidad-receta'
+import { RESTRICCION_A_ALERGENO, RESTRICCION_A_TAG_POSITIVO, RESTRICCION_A_EVITAR, expandirEvitar } from '@/lib/nutricion/compatibilidad-receta'
 import type { RecetaCandidata, TipoReceta } from '@/types'
 import { obtenerPerfilCliente } from '@/lib/agentes/perfil-gusto'
 import { ajusteClinico, reglasClinicas } from '@/lib/nutricion/reglas-clinicas'
@@ -81,6 +81,9 @@ interface FiltroCliente {
   // Texto libre del cuestionario: de aquí salen las reglas clínicas (dislipidemia, hipertensión, diabetes, anemia)
   condiciones_salud?: string | null
 }
+
+// Candidatas mínimas para que una semana (7 días) no repita: los filtros blandos no deben dejar menos
+const POOL_SEMANA = 7
 
 // Mapeo objetivo → valores apta_cliente aceptados
 const OBJETIVO_APTA: Record<string, string[]> = {
@@ -203,6 +206,9 @@ export async function filtrarRecetasPorSlot(
       ? evitarRaw.split(',').map(s => s.trim()).filter(Boolean)
       : []
 
+  // Dietas sin etiqueta propia (pescetariano) → lo que hay que evitar
+  evitarArr.push(...restricciones.flatMap(r => RESTRICCION_A_EVITAR[r.toLowerCase()] ?? []))
+
   if (evitarArr.length > 0) {
     const evitarLower = evitarArr.map(a => a.toLowerCase()).flatMap(expandirEvitar)
     candidatas = candidatas.filter(r => {
@@ -247,9 +253,11 @@ export async function filtrarRecetasPorSlot(
   const aptasCalidad = candidatas.filter(r => (r.score_calidad ?? 50) >= 50)
   if (aptasCalidad.length >= 3) candidatas = aptasCalidad
 
-  // Filtro blando: excluir recientes si quedan >=3
+  // Filtro blando: excluir recientes SOLO si queda variedad para una semana (7). Con un pool pequeño (p. ej. 13
+  // desayunos veganos) quitar lo de las últimas 2 semanas dejaba 6 y forzaba repetir; en ese caso los recientes
+  // se quedan y restan puntuación más abajo.
   const sinRecientes = candidatas.filter(r => !recientesIds.has(r.id))
-  if (sinRecientes.length >= 3) candidatas = sinRecientes
+  if (sinRecientes.length >= POOL_SEMANA) candidatas = sinRecientes
 
   // Filtro blando: tags clínicos (SOP, Hashimoto, Rendimiento, peri-entreno)
   // Solo se aplica si hay tags requeridos Y quedan >=3 candidatas tras el filtro
@@ -258,7 +266,7 @@ export async function filtrarRecetasPorSlot(
       const rec = r as Record<string, unknown>
       return Object.entries(tagsClinicosRequeridos).every(([tag, val]) => rec[tag] === val)
     })
-    if (conTags.length >= 3) candidatas = conTags
+    if (conTags.length >= POOL_SEMANA) candidatas = conTags   // mismo criterio: no vaciar el pool por un filtro blando
   }
 
   // Cargar perfil de gusto del cliente (puede ser null si no hay datos aún)
@@ -387,6 +395,9 @@ export async function filtrarRecetasPorSlot(
         macroFlexScore * 0.03 +
         chefHealthyScore * 0.02
     }
+
+    // Recientes que se quedaron en el pool (por ser pocas recetas): bajan, no desaparecen
+    if (recientesIds.has(r.id)) sortScore *= 0.9
 
     // «No romper con su vida»: bonus si se parece a lo que ya come en esta franja; baja si ya la cambió una vez
     if (prefs) {

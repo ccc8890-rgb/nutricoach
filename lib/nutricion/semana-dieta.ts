@@ -41,7 +41,7 @@ type PerfilFiltro = { condiciones_salud?: string | null; alimentos_evitar_extra?
 
 const RESTRICCION_INFERIDA_POR_PALABRA: Array<[string, string]> = [
   ['lactosa', 'sin lactosa'], ['lácteos', 'sin lactosa'], ['gluten', 'sin gluten'], ['celiac', 'sin gluten'],
-  ['marisco', 'sin mariscos'], ['crustáceo', 'sin mariscos'],
+  ['marisco', 'sin mariscos'], ['crustáceo', 'sin mariscos'], ['pescetarian', 'pescetariano'],
 ]
 
 // Mismo criterio que `generar-plan-inicial` (secciones 9b): evitar = 3 fuentes combinadas, y las
