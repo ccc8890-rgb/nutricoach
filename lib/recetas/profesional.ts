@@ -353,7 +353,9 @@ export function clasificarRecetaProfesional(receta: RecetaProfesionalInput): Cla
   else if (/desayuno/i.test(tipoPlato) && kcal <= 450) contexto_uso = 'desayuno_rapido'
 
   let apta_cliente: AptaCliente = 'general'
-  if (alcohol || nivel_fit === 'indulgente' || nivel_fit === 'no_fit') apta_cliente = 'requiere_revision'
+  // El alcohol de un plato cocinado se evapora en buena parte: no penaliza la receta. `alcohol_culinario` queda como dato
+  // por si un cliente declara «sin alcohol».
+  if (nivel_fit === 'indulgente' || nivel_fit === 'no_fit') apta_cliente = 'requiere_revision'
   else if (tipo_uso === 'clinico') apta_cliente = 'clinica'
   else if (proteinaAlta && kcal >= 350) apta_cliente = 'atleta'
   else if (proteinaAlta && kcal <= 500) apta_cliente = 'perdida_grasa'
