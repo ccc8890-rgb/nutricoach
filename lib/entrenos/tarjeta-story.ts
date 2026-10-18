@@ -2,6 +2,7 @@
 // Tarjeta vertical (1080×1920) con el resumen de una sesión para compartir en Instagram Stories.
 // Se dibuja en un canvas (sin dependencias) y sale como PNG.
 import { normalizarBloqueSesion } from '@/lib/training/session-blocks'
+import { etiquetaTipoSesion, tituloSesionSinModalidad, type TipoSesion } from '@/lib/training/session-type-presentation'
 
 export interface DatosTarjeta {
   fecha: string // YYYY-MM-DD
@@ -17,6 +18,23 @@ export interface DatosTarjeta {
     peso: string | null
     bloque?: string | null
   }>
+}
+
+/** Datos de la tarjeta de una sesión a partir de la sesión y su detalle cargado (Semana y Mes). */
+export function datosTarjetaDeSesion(
+  s: { fecha: string; nombre: string; tipo_sesion: TipoSesion; km?: number | null; duracion_estimada_min?: number | null },
+  ejercicios: Array<{ ejercicio?: { nombre?: string | null } | null; series: number | null; repeticiones: string | null; peso_sugerido: string | null; bloque?: string | null }>,
+  semana?: string | null,
+): DatosTarjeta {
+  return {
+    fecha: s.fecha,
+    tipo: etiquetaTipoSesion(s.tipo_sesion),
+    titulo: tituloSesionSinModalidad(s.nombre, s.tipo_sesion),
+    semana: semana ?? null,
+    duracionMin: s.duracion_estimada_min ?? null,
+    km: s.km ?? null,
+    ejercicios: ejerciciosPrincipales(ejercicios.map(e => ({ nombre: e.ejercicio?.nombre ?? '', series: e.series, repeticiones: e.repeticiones, peso: e.peso_sugerido, bloque: e.bloque })).filter(e => e.nombre)),
+  }
 }
 
 const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']

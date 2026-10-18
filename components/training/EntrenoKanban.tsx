@@ -22,6 +22,8 @@ import { textoKm } from '@/lib/entrenos/km-sesion'
 import { DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import { lunesDe, sumarDias } from '@/lib/entrenos/calendario-ajustes'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
+import CompartirSesion from './CompartirSesion'
+import { dibujarTarjeta, datosTarjetaDeSesion } from '@/lib/entrenos/tarjeta-story'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { etiquetaTipoSesion, tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
 
@@ -144,6 +146,12 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
                         {seleccionadaId === s.id && (
                             <div className="training-week-detail">
                                 <p>{tituloSesionSinModalidad(s.nombre, s.tipo_sesion)}</p>
+                                {Array.isArray(detalles[s.id]) && s.fecha && (
+                                    <CompartirSesion generar={(tema) => dibujarTarjeta(datosTarjetaDeSesion(
+                                        { fecha: s.fecha!, nombre: s.nombre, tipo_sesion: s.tipo_sesion, km: s.km },
+                                        detalles[s.id] as EjercicioDetalle[],
+                                    ), tema)} />
+                                )}
                                 {detalles[s.id] === 'cargando' ? (
                                     <div className="flex justify-center py-6"><SpinnerGap size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
                                 ) : (
@@ -158,7 +166,7 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
                 ))}
                 {moverId && sesiones.some(s => s.id === moverId) && (
                     <div className="training-week-move-picker" aria-label="Mover entrenamiento a otro día">
-                        {DIAS.map(destino => <button key={destino} type="button" disabled={destino === dia} onClick={() => onMover(destino)}>{DIAS_ABREV[destino]}</button>)}
+                        {DIAS.map(destino => <button key={destino} type="button" disabled={destino === dia || diaPasado(sesiones.find(s => s.id === moverId)?.fecha, destino)} onClick={() => onMover(destino)}>{DIAS_ABREV[destino]}</button>)}
                     </div>
                 )}
             </div>
@@ -172,6 +180,12 @@ const colision: CollisionDetection = (args) => {
     const impactos = bajoPuntero.length > 0 ? bajoPuntero : rectIntersection(args)
     const sesiones = impactos.filter(i => !DIAS.includes(String(i.id)) && i.id !== args.active.id)
     return sesiones.length > 0 ? sesiones : impactos.filter(i => i.id !== args.active.id)
+}
+
+const hoyLocalISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+/** ¿El día `destino` de la semana de `fecha` ya pasó? (no se puede colocar ahí una sesión) */
+function diaPasado(fecha: string | undefined, destino: string): boolean {
+    return !!fecha && sumarDias(lunesDe(fecha), DIAS_SEMANA_ORDEN[destino] ?? 0) < hoyLocalISO()
 }
 
 /** Fecha (esta semana) del día de una sesión: la progresión del bloque depende de la semana. */

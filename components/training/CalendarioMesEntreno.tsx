@@ -5,6 +5,8 @@ import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, PersonSimpleRun, Warning } from '@phosphor-icons/react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
+import CompartirSesion from './CompartirSesion'
+import { dibujarTarjeta, datosTarjetaDeSesion } from '@/lib/entrenos/tarjeta-story'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
 
@@ -265,6 +267,12 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                       <p className="font-bold leading-tight" style={{ color: 'var(--text)' }}>
                         {tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion)}
                       </p>
+                      {!sesion.prevision && Array.isArray(detalles[`${sesion.id}|${diaSeleccionado}`]) && (
+                        <CompartirSesion generar={(tema) => dibujarTarjeta(datosTarjetaDeSesion(
+                          { fecha: diaSeleccionado, nombre: sesion.nombre, tipo_sesion: sesion.tipo_sesion, km: sesion.km },
+                          detalles[`${sesion.id}|${diaSeleccionado}`] as EjercicioDetalle[],
+                        ), tema)} />
+                      )}
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                         {sesion.prevision ? `Previsión${textoKm(sesion.km) ? ` · ≈ ${textoKm(sesion.km)}` : ''}` : <>{textoKm(sesion.km) ? `${textoKm(sesion.km)} · ` : ''}{sesion.ejercicios_count} ejercicios{sesion.completada ? ' · registrada' : ''}</>}
                       </p>
