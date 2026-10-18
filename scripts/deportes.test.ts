@@ -10,6 +10,8 @@ assert.equal(deporteDe('indoor_cycling'), 'ciclismo')
 assert.equal(deporteDe('lap_swimming'), 'natacion')
 assert.equal(deporteDe('open_water_swimming'), 'natacion')
 assert.equal(deporteDe('strength_training'), 'fuerza')
+for (const t of ['hiit', 'cardio', 'indoor_cardio', 'fitness_equipment', 'functional_training']) assert.equal(deporteDe(t), 'fuerza', t)
+assert.equal(deporteDe('yoga'), 'otros')
 assert.equal(deporteDe('hiking'), 'otros')
 assert.equal(deporteDe(null), 'otros')
 

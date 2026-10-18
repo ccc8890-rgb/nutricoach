@@ -17,7 +17,8 @@ const CICLISMO = new Set([
   'cyclocross', 'bmx', 'e_bike_fitness', 'e_bike_mountain', 'track_cycling', 'recumbent_cycling',
 ])
 const NATACION = new Set(['lap_swimming', 'open_water_swimming', 'swimming'])
-const FUERZA = new Set(['strength_training', 'hiit'])
+// Garmin llama a las sesiones de gimnasio, híbridas o funcionales con varios tipos según cómo se grabe (Fuerza, HIIT, Cardio, Funcional…).
+const FUERZA = new Set(['strength_training', 'hiit', 'cardio', 'indoor_cardio', 'fitness_equipment', 'functional_training', 'crossfit', 'cross_training'])
 
 export function deporteDe(tipo: string | null | undefined): Deporte {
   if (!tipo) return 'otros'

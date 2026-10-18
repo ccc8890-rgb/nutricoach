@@ -10,6 +10,9 @@ export interface MoverGuardado { sesion_id: string; desde: string; hasta: string
 /** Cuántos días por delante se admite mover una sesión. */
 export const HORIZONTE_MOVER_DIAS = 28
 
+/** Sesiones que cargan mucho las piernas o el sistema (calidad, tirada, híbridas de pierna): no conviene pegarlas entre sí. */
+export const ES_EXIGENTE = /series|tempo|intervalo|tirada|pierna|h[ií]brid|sled|calidad|umbral|fartlek|pliometr|competici/i
+
 export const fechaCorta = (f: string) => `${diaSemanaDe(f)} ${f.slice(8, 10)}-${f.slice(5, 7)}`
 
 export function moverValido(x: unknown): x is MoverGuardado {
@@ -19,7 +22,7 @@ export function moverValido(x: unknown): x is MoverGuardado {
 }
 
 export type EvaluacionMover =
-  | { ok: true; planId: string; nombre: string; cambios: CambioBD[]; enDestino: string[]; esDescanso: boolean }
+  | { ok: true; planId: string; nombre: string; cambios: CambioBD[]; enDestino: string[]; esDescanso: boolean; vecinos: { fecha: string; nombres: string[] }[] }
   | { ok: false; error: string }
 
 /** Comprueba, con el calendario REAL de hoy, que la sesión ocurre en `desde` y se puede llevar a `hasta`. */
@@ -44,7 +47,12 @@ export async function evaluarMover(db: SupabaseClient, clienteId: string, m: Mov
     return { ok: false, error: ocurre ? `El ${fechaCorta(hasta)} ya tiene esta sesión` : `Esta sesión ya no está el ${fechaCorta(desde)} (el calendario ha cambiado desde el análisis)` }
   }
   const enDestino = ocurrenciasDelDia(hasta, sesiones ?? [], ajustes, activa(hasta)).map(o => String(o.sesion.nombre))
-  return { ok: true, planId: plan.id as string, nombre: String(sesion.nombre), cambios, enDestino, esDescanso: enDestino.length === 0 }
+  // Día anterior y posterior al destino, ya sin la sesión que se mueve (para avisar de dos días duros seguidos).
+  const vecinos = [sumarDias(hasta, -1), sumarDias(hasta, 1)].map(f => ({
+    fecha: f,
+    nombres: ocurrenciasDelDia(f, sesiones ?? [], ajustes, activa(f)).filter(o => o.sesion.id !== sesion.id).map(o => String(o.sesion.nombre)),
+  })).filter(v => v.nombres.length > 0)
+  return { ok: true, planId: plan.id as string, nombre: String(sesion.nombre), cambios, enDestino, esDescanso: enDestino.length === 0, vecinos }
 }
 
 /** Escribe los cambios en la tabla de ajustes. */

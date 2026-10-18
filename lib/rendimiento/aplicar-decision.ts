@@ -5,7 +5,7 @@ import { validarPasos, resumenSesion, type Paso } from '@/lib/entrenos/pasos'
 import { ritmosDesdeVdot, type Ritmos } from '@/lib/entrenos/ritmos'
 import { validarCambioPasos } from './cambio-sesion'
 import { enviarSesionAGarmin, ErrorGarmin } from '@/lib/integraciones/garmin-workouts'
-import { evaluarMover, fechaCorta, moverValido, persistirCambios, sincronizarGarminAtleta, type MoverGuardado } from './mover-sesion'
+import { ES_EXIGENTE, evaluarMover, fechaCorta, moverValido, persistirCambios, sincronizarGarminAtleta, type MoverGuardado } from './mover-sesion'
 
 export interface DecisionGuardada {
   sesion?: string
@@ -76,6 +76,8 @@ export async function vistaPreviaMover(db: SupabaseClient, clienteId: string, d:
   if (!ev.ok) return { ...base, sesionNombre: 'Sesión', actual: [fechaCorta(m.desde)], nuevo: [fechaCorta(m.hasta)], valido: false, error: ev.error }
   const avisos = [
     ev.esDescanso ? `El ${fechaCorta(m.hasta)} está libre.` : `Ese día ya hay: ${ev.enDestino.join(', ')}.`,
+    ...(ES_EXIGENTE.test(ev.nombre) && ev.enDestino.some(n => ES_EXIGENTE.test(n)) ? ['Ojo: ese día ya tiene otra sesión exigente.'] : []),
+    ...(ES_EXIGENTE.test(ev.nombre) ? ev.vecinos.filter(v => v.nombres.some(n => ES_EXIGENTE.test(n))).map(v => `Ojo: ${v.fecha < m.hasta ? 'el día anterior' : 'el día siguiente'} (${fechaCorta(v.fecha)}) hay otra sesión exigente: ${v.nombres.filter(n => ES_EXIGENTE.test(n)).join(', ')}.`) : []),
     'Solo cambia esa fecha; la plantilla semanal y la dieta de ese día siguen igual.',
   ]
   return { ...base, sesionNombre: ev.nombre, actual: [`${fechaCorta(m.desde)} · ${ev.nombre}`], nuevo: [`${fechaCorta(m.hasta)} · ${ev.nombre}`], valido: true, avisos }
