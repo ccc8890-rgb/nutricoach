@@ -13,7 +13,7 @@ import EntrenoKanban from './EntrenoKanban'
 import { textoKm } from '@/lib/entrenos/km-sesion'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import CompartirSesion from './CompartirSesion'
-import { dibujarTarjeta, ejerciciosPrincipales } from '@/lib/entrenos/tarjeta-story'
+import { dibujarTarjeta, dibujarTarjetaSemana, ejerciciosPrincipales } from '@/lib/entrenos/tarjeta-story'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { EditorialMasthead, IndustrialTabs } from '@/components/PortalCliente/editorial'
 import { buildExerciseChecklistKey } from '@/lib/training/exercise-checklist'
@@ -188,6 +188,21 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
               )
             })}
           </div>
+          {(() => {
+            const lista = verSemana === '1' ? semanaSig?.sesiones : sesiones
+            if (!lista || lista.length === 0) return null
+            const etiquetaSemana = bloque ? (() => { const n = bloque.semana_actual + Number(verSemana); return n >= 1 && n <= bloque.semanas_totales ? `SEMANA ${n}/${bloque.semanas_totales}` : null })() : null
+            return (
+              <div className="flex items-center justify-between gap-2 px-1">
+                <p className="font-mono text-[10px] tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>TARJETA DE LA SEMANA</p>
+                <CompartirSesion key={verSemana} generar={(tema) => dibujarTarjetaSemana({
+                  rango: rangoSemana(Number(verSemana)).toUpperCase(),
+                  semana: etiquetaSemana,
+                  sesiones: lista.map(s => ({ dia: s.dia_semana, tipo: etiquetaTipoSesion(s.tipo_sesion), titulo: tituloSesionSinModalidad(s.nombre, s.tipo_sesion), km: s.km })),
+                }, tema)} />
+              </div>
+            )
+          })()}
           {verSemana === '1' ? (
             cargandoSig && !semanaSig ? (
               <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>

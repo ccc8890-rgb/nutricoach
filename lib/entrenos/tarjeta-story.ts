@@ -337,8 +337,69 @@ async function _dibujarPlatoMedidor(d: DatosPlato): Promise<Blob> {
   })
   return aBlob(canvas)
 }
+
+export interface DatosSemana {
+  rango: string // «19–25 OCT»
+  semana?: string | null // «SEMANA 3/4»
+  sesiones: Array<{ dia: string; tipo: string; titulo: string; km?: number | null }>
+}
+
+const ABREV_DIA: Record<string, string> = { Lunes: 'LUN', Martes: 'MAR', Miércoles: 'MIÉ', Jueves: 'JUE', Viernes: 'VIE', Sábado: 'SÁB', Domingo: 'DOM' }
+const DIAS_ORDEN = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+
+/** Sticker de la semana: los 7 días (descanso atenuado), una fila por sesión y el total de sesiones y km. */
+async function _dibujarTarjetaSemana(d: DatosSemana): Promise<Blob> {
+  const W = 640, P = 48
+  type FilaSemana = { dia: string; s: DatosSemana['sesiones'][number] | null; primera: boolean }
+  const filas: FilaSemana[] = DIAS_ORDEN.flatMap((dia): FilaSemana[] => {
+    const del = d.sesiones.filter(s => s.dia === dia)
+    return del.length ? del.map((s, i) => ({ dia, s, primera: i === 0 })) : [{ dia, s: null, primera: true }]
+  })
+  const hSesion = 62, hDescanso = 42
+  const H = P + 34 + filas.reduce((a, f) => a + (f.s ? hSesion : hDescanso), 0) + 104
+  const { canvas, ctx, sans, mono, sora } = await prepararCanvas(W, H)
+  ctx.textAlign = 'left'
+  ctx.font = `500 13px ${mono}`; ctx.fillStyle = MUTED
+  ctx.fillText(d.rango, P, P + 8)
+  if (d.semana) { ctx.textAlign = 'right'; ctx.fillText(d.semana, W - P, P + 8); ctx.textAlign = 'left' }
+  let y = P + 34
+  filas.forEach(f => {
+    const h = f.s ? hSesion : hDescanso
+    ctx.fillStyle = `rgba(${RGB},0.16)`; ctx.fillRect(P, y, W - P * 2, 1.5)
+    ctx.globalAlpha = f.s ? 1 : 0.4
+    if (f.primera) { ctx.font = `500 13px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(ABREV_DIA[f.dia] ?? f.dia.slice(0, 3).toUpperCase(), P, y + (f.s ? 36 : 27)) }
+    if (f.s) {
+      ctx.font = `500 11px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(f.s.tipo, P + 62, y + 24)
+      ctx.font = `300 20px ${sora}`; ctx.fillStyle = INK
+      const km = f.s.km ? `${String(f.s.km).replace('.', ',')} km` : ''
+      ctx.font = `500 15px ${mono}`; const wkm = km ? ctx.measureText(km).width : 0
+      ctx.font = `300 20px ${sora}`
+      ctx.fillText(recortar(ctx, f.s.titulo, W - P * 2 - 62 - wkm - 16), P + 62, y + 48)
+      if (km) { ctx.font = `500 15px ${mono}`; ctx.fillStyle = METAL; ctx.textAlign = 'right'; ctx.fillText(km, W - P, y + 48); ctx.textAlign = 'left' }
+    } else {
+      ctx.font = `200 16px ${sora}`; ctx.fillStyle = INK; ctx.fillText('Descanso', P + 62, y + 27)
+    }
+    ctx.globalAlpha = 1
+    y += h
+  })
+  ctx.fillStyle = `rgba(${RGB},0.38)`; ctx.fillRect(P, y, W - P * 2, 1.5)
+  const kmTotal = d.sesiones.reduce((a, s) => a + (s.km ?? 0), 0)
+  const bloques: Array<[string, string]> = [[String(d.sesiones.length), d.sesiones.length === 1 ? 'SESIÓN' : 'SESIONES']]
+  if (kmTotal > 0) bloques.push([String(Math.round(kmTotal * 10) / 10).replace('.', ','), 'KM'])
+  let x = P
+  bloques.forEach(([n, l]) => {
+    ctx.font = `200 38px ${sora}`; ctx.fillStyle = INK; ctx.fillText(n, x, y + 56)
+    const w = ctx.measureText(n).width
+    ctx.font = `500 11px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(l, x, y + 78)
+    x += Math.max(w, ctx.measureText(l).width) + 40
+  })
+  void sans
+  return aBlob(canvas)
+}
+
 export const dibujarTarjeta = (d: DatosTarjeta, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarTarjeta(d) })
 export const dibujarTarjetaPlato = (d: DatosPlato, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarTarjetaPlato(d) })
 export const dibujarPlatoRegla = (d: DatosPlato, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarPlatoRegla(d) })
 export const dibujarPlatoTernario = (d: DatosPlato, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarPlatoTernario(d) })
 export const dibujarPlatoMedidor = (d: DatosPlato, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarPlatoMedidor(d) })
+export const dibujarTarjetaSemana = (d: DatosSemana, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarTarjetaSemana(d) })
