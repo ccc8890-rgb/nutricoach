@@ -38,6 +38,15 @@ function iconoTipo(tipo: SesionSemana['tipo_sesion'], size = 16) {
   return tipo === 'carrera' ? <SneakerMove size={size} weight="regular" /> : <Dumbbell size={size} />
 }
 
+/** Rango «19–25 oct» de la semana (lunes a domingo) que queda `offset` semanas después de la actual. */
+function rangoSemana(offset: number): string {
+  const hoy = new Date()
+  const lunes = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + (hoy.getDay() === 0 ? -6 : 1 - hoy.getDay()) + offset * 7)
+  const domingo = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + 6)
+  const mes = (d: Date) => d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')
+  return lunes.getMonth() === domingo.getMonth() ? `${lunes.getDate()}–${domingo.getDate()} ${mes(domingo)}` : `${lunes.getDate()} ${mes(lunes)} – ${domingo.getDate()} ${mes(domingo)}`
+}
+
 const fechaLocalHoy = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
 
 export default function EntrenoSubTabs({ planNombre }: { planId: string; planNombre: string }) {
@@ -48,6 +57,11 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
     bloque?: { fase: string; semana_actual: number; semanas_totales: number } | null
     tu_bloque?: TuBloqueDatos | null
   }>('/api/entrenos/semana-completa', fetchJson)
+  // Semana siguiente: solo se pide al elegirla (en lectura, para organizarse)
+  const [verSemana, setVerSemana] = useEstadoUrl<'0' | '1'>('ew', '0', ['0', '1'])
+  const { data: semanaSig, isLoading: cargandoSig } = useSWR<{ sesiones?: SesionSemana[] }>(
+    subTab === 'semana' && verSemana === '1' ? '/api/entrenos/semana-completa?offset=1' : null, fetchJson)
+  const esDomingo = new Date().getDay() === 0
   const sesiones = semana?.sesiones ?? []
   const bloque = semana?.bloque ?? null
   const tuBloque = semana?.tu_bloque ?? null
@@ -159,13 +173,39 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
           </div>
         )
       ) : subTab === 'semana' ? (
-        sesiones.length > 0 ? (
-          <EntrenoKanban sesiones={sesiones} />
-        ) : (
-          <div className="rounded-3xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Tu coach todavía no ha cargado sesiones para esta semana.</p>
+        <>
+          <div className="flex gap-2" role="tablist" aria-label="Semana">
+            {([['0', 'Esta semana'], ['1', 'Próxima']] as const).map(([v, etiqueta]) => {
+              const activa = verSemana === v
+              return (
+                <button key={v} type="button" role="tab" aria-selected={activa} onClick={() => setVerSemana(v)}
+                  className="relative flex-1 px-3 py-2 text-left"
+                  style={{ border: `1px solid ${activa ? 'var(--text)' : 'var(--editorial-rule, var(--border))'}`, borderRadius: 6, background: activa ? 'var(--editorial-field, var(--surface))' : 'transparent' }}>
+                  <span className="block text-xs font-semibold" style={{ color: activa ? 'var(--text)' : 'var(--text-muted)' }}>{etiqueta}</span>
+                  <span className="block font-mono text-[10px] tracking-[0.1em]" style={{ color: 'var(--text-muted)' }}>{rangoSemana(Number(v))}</span>
+                  {v === '1' && esDomingo && !activa && <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full" style={{ background: 'var(--text)' }} aria-label="Ya puedes ver la semana que viene" />}
+                </button>
+              )
+            })}
           </div>
-        )
+          {verSemana === '1' ? (
+            cargandoSig && !semanaSig ? (
+              <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
+            ) : (semanaSig?.sesiones?.length ?? 0) > 0 ? (
+              <EntrenoKanban key="sig" sesiones={semanaSig!.sesiones!} soloLectura />
+            ) : (
+              <div className="rounded-3xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Todavía no hay sesiones previstas para la semana que viene.</p>
+              </div>
+            )
+          ) : sesiones.length > 0 ? (
+            <EntrenoKanban key="act" sesiones={sesiones} />
+          ) : (
+            <div className="rounded-3xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Tu coach todavía no ha cargado sesiones para esta semana.</p>
+            </div>
+          )}
+        </>
       ) : (
         <CalendarioMesEntreno mostrarToggleSemanaMes={false} />
       )}

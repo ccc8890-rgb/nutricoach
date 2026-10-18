@@ -257,7 +257,7 @@ function PortalClientePageContent() {
     const url = new URL(window.location.href)
     url.searchParams.set('tab', tab)
     // Cada pestaña solo conserva sus propios parámetros
-    const propios: Record<string, string[]> = { recetas: ['sub', 'q', 'cat', 'tag'], dieta: ['vista', 'dd'], entreno: ['et', 'em', 'ed'] }
+    const propios: Record<string, string[]> = { recetas: ['sub', 'q', 'cat', 'tag'], dieta: ['vista', 'dd'], entreno: ['et', 'em', 'ed', 'ew'] }
     Object.entries(propios).forEach(([t, claves]) => { if (t !== tab) claves.forEach(k => url.searchParams.delete(k)) })
     window.history.replaceState(window.history.state, '', url)
   }, [tab])

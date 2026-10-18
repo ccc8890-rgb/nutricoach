@@ -7,13 +7,13 @@ import { pasosParaFecha } from '@/lib/entrenos/sesion-semana'
 import { ocurrenciasDelDia, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
 import { plantillaActivaEn } from '@/lib/entrenos/ventana-plan'
 
-function startOfWeek() {
+function startOfWeek(offsetSemanas = 0) {
   const now = new Date()
   const day = now.getDay()
   // Monday-first week
   const diff = (day === 0 ? -6 : 1 - day)
   const monday = new Date(now)
-  monday.setDate(now.getDate() + diff)
+  monday.setDate(now.getDate() + diff + offsetSemanas * 7)
   monday.setHours(0, 0, 0, 0)
   return monday
 }
@@ -46,7 +46,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ sesiones: [], plan_nombre: '' })
   }
 
-  const weekStart = startOfWeek()
+  // ?offset=N (0-8): semana en curso o las siguientes, solo para verlas y organizarse
+  const offsetPedido = parseInt(new URL(request.url).searchParams.get('offset') ?? '0', 10)
+  const weekStart = startOfWeek(Number.isFinite(offsetPedido) ? Math.min(Math.max(offsetPedido, 0), 8) : 0)
   const weekEnd = new Date(weekStart)
   weekEnd.setDate(weekStart.getDate() + 6)
 

@@ -61,12 +61,13 @@ function iconoTipo(tipo: SesionKanban['tipo_sesion'], size = 14) {
     return tipo === 'carrera' ? <PersonSimpleRun size={size} /> : <Barbell size={size} />
 }
 
-function SesionCard({ sesion, orden, seleccionada, moviendo, onSeleccionar, onAbrirMover }: {
+function SesionCard({ sesion, orden, seleccionada, moviendo, soloLectura, onSeleccionar, onAbrirMover }: {
     sesion: SesionKanban
     /** "1/2" cuando el día tiene más de una sesión */
     orden?: string
     seleccionada: boolean
     moviendo: boolean
+    soloLectura?: boolean
     onSeleccionar: () => void
     onAbrirMover: () => void
 }) {
@@ -93,7 +94,7 @@ function SesionCard({ sesion, orden, seleccionada, moviendo, onSeleccionar, onAb
                 <span className="training-week-session__meta">{textoKm(sesion.km) ? `${textoKm(sesion.km)} · ` : ''}{sesion.ejercicios_count} ejercicios</span>
                 <CaretDown size={14} className={seleccionada ? 'rotate-180' : ''} />
             </button>
-            <button
+            {!soloLectura && <button
                 type="button"
                 className="training-week-session__move"
                 onClick={(event) => { event.stopPropagation(); onAbrirMover() }}
@@ -101,18 +102,19 @@ function SesionCard({ sesion, orden, seleccionada, moviendo, onSeleccionar, onAb
                 {...attributes}
             >
                 {moviendo ? 'Cancelar' : 'Mover'}
-            </button>
+            </button>}
         </div>
     )
 }
 
-function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, onSeleccionar, onAbrirMover, onMover }: {
+function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, soloLectura, onSeleccionar, onAbrirMover, onMover }: {
     dia: string
     sesiones: SesionKanban[]
     seleccionadaId: string | null
     moverId: string | null
     detalles: Record<string, EjercicioDetalle[] | 'cargando'>
     extras: Record<string, ExtrasSesion | null>
+    soloLectura?: boolean
     onSeleccionar: (id: string) => void
     onAbrirMover: (id: string) => void
     onMover: (dia: string) => void
@@ -135,6 +137,7 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
                             orden={sesiones.length > 1 ? `${i + 1}/${sesiones.length}` : undefined}
                             seleccionada={seleccionadaId === s.id}
                             moviendo={moverId === s.id}
+                            soloLectura={soloLectura}
                             onSeleccionar={() => onSeleccionar(s.id)}
                             onAbrirMover={() => onAbrirMover(s.id)}
                         />
@@ -179,7 +182,8 @@ function fechaDeSesion(dia: string | null | undefined): string {
     return orden === undefined ? iso : sumarDias(lunesDe(iso), orden)
 }
 
-export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }) {
+/** soloLectura: semanas siguientes, para verlas y organizarse sin moverlas. */
+export default function EntrenoKanban({ sesiones, soloLectura = false }: { sesiones: SesionKanban[]; soloLectura?: boolean }) {
     const [sesionesLocal, setSesionesLocal] = useState(sesiones)
     const [moviendo, setMoviendo] = useState(false)
     const [moverId, setMoverId] = useState<string | null>(null)
@@ -199,7 +203,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
         if (detalles[sesionId] && detalles[sesionId] !== 'cargando') return
         setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
         try {
-            const res = await fetch(`/api/cliente/sesion/${sesionId}?fecha=${fechaDeSesion(sesionesLocal.find(x => x.id === sesionId)?.dia_semana)}`)
+            const res = await fetch(`/api/cliente/sesion/${sesionId}?fecha=${sesionesLocal.find(x => x.id === sesionId)?.fecha ?? fechaDeSesion(sesionesLocal.find(x => x.id === sesionId)?.dia_semana)}`)
             const data = await res.json()
             setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
             setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))
@@ -295,7 +299,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
         <div>
             <div className="training-week-intro">
                 <span>Agenda semanal</span>
-                <p>Toca una sesión para desplegarla. Arrastra con <strong>Mover</strong>: a otro día para cambiarla de día, o sobre otra sesión del mismo día para reordenarlas. También puedes tocar <strong>Mover</strong> y elegir día.</p>
+                {soloLectura ? <p>Toca una sesión para ver sus ejercicios y organizarte con tiempo.</p> : <p>Toca una sesión para desplegarla. Arrastra con <strong>Mover</strong>: a otro día para cambiarla de día, o sobre otra sesión del mismo día para reordenarlas. También puedes tocar <strong>Mover</strong> y elegir día.</p>}
                 {moviendo && <small><SpinnerGap size={11} className="animate-spin" /> Guardando cambio…</small>}
             </div>
             <DndContext sensors={sensors} collisionDetection={colision} onDragEnd={handleDragEnd}>
@@ -309,6 +313,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
                             moverId={moverId}
                             detalles={detalles}
                             extras={extras}
+                            soloLectura={soloLectura}
                             onSeleccionar={toggleSeleccion}
                             onAbrirMover={(id) => setMoverId(current => current === id ? null : id)}
                             onMover={(nuevoDia) => moverId && moverSesion(moverId, nuevoDia)}
