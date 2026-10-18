@@ -131,7 +131,7 @@ assert.ok(codigos(calcularAlertas({ resumen: rs({}), semanas: [], diasParaCompet
 console.log('alertas: OK')
 
 // ── Cumplimiento ──
-import { evaluarCumplimiento, repsPlanificadas, emparejarEntreno, fechaDeLaSemana } from '../lib/rendimiento/cumplimiento'
+import { evaluarCumplimiento, repsPlanificadas, emparejarEntreno, emparejarSesiones, fechaDeLaSemana } from '../lib/rendimiento/cumplimiento'
 import { esCarrera } from '../lib/rendimiento/carga'
 import type { Paso } from '../lib/entrenos/pasos'
 const pasosSeries: Paso[] = [
@@ -182,6 +182,25 @@ assert.equal(emparejarEntreno('2026-10-14', '2026-10-20', [e1, e2], esCarrera).e
 assert.equal(emparejarEntreno('2026-10-16', '2026-10-20', [e1, e2], esCarrera).estado, 'saltada')
 assert.equal(emparejarEntreno('2026-10-25', '2026-10-20', [e1, e2], esCarrera).estado, 'pendiente')
 assert.equal(emparejarEntreno('2026-10-12', '2026-10-20', [{ ...e1, tipo: 'strength_training' }], esCarrera).estado, 'saltada') // la fuerza no cuenta como carrera
+
+// Emparejado por semana: una tirada prevista el sábado hecha el domingo, o el miércoles, cuenta como hecha otro día; un entreno no se reparte entre dos sesiones.
+{
+  const run = (fecha: string, min: number) => ({ fecha, tipo: 'running', duracion_s: min * 60, vueltas: null, raw: null })
+  const ses = [{ clave: 'rod', fecha: '2026-10-16', duracionS: 2400 }, { clave: 'tir', fecha: '2026-10-17', duracionS: 6000 }]
+  const a = emparejarSesiones(ses, '2026-10-20', [run('2026-10-16', 40), run('2026-10-19', 100)], esCarrera)
+  assert.equal(a.get('rod')!.estado, 'hecha')
+  assert.equal(a.get('tir')!.estado, 'saltada') // el 19 es de la semana siguiente
+  const b = emparejarSesiones(ses, '2026-10-20', [run('2026-10-16', 40), run('2026-10-18', 100)], esCarrera)
+  assert.equal(b.get('tir')!.estado, 'otro_dia')
+  const c = emparejarSesiones(ses, '2026-10-20', [run('2026-10-14', 100)], esCarrera) // miércoles, lejos de ambas
+  assert.equal(c.get('tir')!.estado, 'otro_dia')
+  assert.equal(c.get('rod')!.estado, 'saltada') // el mismo entreno no vale para las dos; la de 100 min es la tirada
+  const d = emparejarSesiones(ses, '2026-10-20', [run('2026-10-14', 5)], esCarrera)
+  assert.equal(d.get('tir')!.estado, 'saltada') // 5 min no es una sesión
+  const e = emparejarSesiones([{ clave: 'x', fecha: '2026-10-17', workoutId: 99 }], '2026-10-20', [run('2026-10-17', 90), { ...run('2026-10-15', 60), raw: { workout_id: 99 } }], esCarrera)
+  assert.equal(e.get('x')!.entreno!.fecha, '2026-10-15') // manda el id del reloj
+  assert.equal(e.get('x')!.estado, 'otro_dia')
+}
 console.log('cumplimiento: OK')
 
 // ── Barandillas de cambios de la IA ──

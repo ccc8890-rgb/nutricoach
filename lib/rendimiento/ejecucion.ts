@@ -5,7 +5,7 @@ import { validarPasos, type Paso } from '@/lib/entrenos/pasos'
 import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
 import { esCarrera } from './carga'
 import { lunesDe } from './panel'
-import { evaluarCumplimiento, emparejarEntreno, fechaDeLaSemana, type Cumplimiento, type EntrenoEmparejable, type EstadoSesion } from './cumplimiento'
+import { evaluarCumplimiento, emparejarSesiones, fechaDeLaSemana, type Cumplimiento, type EntrenoEmparejable, type EstadoSesion } from './cumplimiento'
 
 export interface EjecucionSesion {
   sesionId: string
@@ -24,6 +24,13 @@ export interface ResumenEjecucion {
   /** Desde cuándo se compara: la semana en que empezó el plan activo. */
   desdeSemana: string | null
   planNombre: string | null
+}
+
+/** Duración prevista de una sesión de pasos; los tramos en metros se estiman a 5:30/km. */
+function duracionPrevistaS(pasos: Paso[]): number | null {
+  const tramo = (p: { duracion: { unidad: string; valor?: number } }) => (p.duracion.unidad === 'segundos' ? p.duracion.valor ?? 0 : p.duracion.unidad === 'metros' ? ((p.duracion.valor ?? 0) / 1000) * 330 : 0)
+  const total = pasos.reduce((a, p) => a + (p.tipo === 'repetir' ? p.veces * p.pasos.reduce((b, q) => b + tramo(q), 0) : tramo(p)), 0)
+  return total > 0 ? total : null
 }
 
 export async function construirEjecucion(db: SupabaseClient, clienteId: string, hoy: string, semanasMax = 4): Promise<ResumenEjecucion> {
@@ -56,26 +63,27 @@ export async function construirEjecucion(db: SupabaseClient, clienteId: string, 
     .order('fecha')
   const lista = (entrenos ?? []) as EntrenoEmparejable[]
 
-  const salida: EjecucionSesion[] = []
-  for (const semana of lunes) {
-    for (const s of sesiones) {
-      const v = validarPasos(s.pasos)
-      const fecha = fechaDeLaSemana(semana, s.dia_semana ?? '')
-      if (!v.ok || !fecha) continue
-      const { estado, entreno } = emparejarEntreno(fecha, hoy, lista, esCarrera, s.garmin_workout_id)
-      salida.push({
-        sesionId: s.id,
-        nombre: s.nombre,
-        diaSemana: s.dia_semana,
-        semana,
-        fechaPrevista: fecha,
-        estado,
-        fechaReal: entreno?.fecha ?? null,
-        duracionMin: entreno?.duracion_s ? Math.round(entreno.duracion_s / 60) : null,
-        cumplimiento: entreno ? evaluarCumplimiento(v.pasos as Paso[], entreno.vueltas, ritmos) : null,
-      })
+  const previstas = lunes.flatMap(semana => sesiones.flatMap(s => {
+    const v = validarPasos(s.pasos)
+    const fecha = fechaDeLaSemana(semana, s.dia_semana ?? '')
+    return v.ok && fecha ? [{ semana, s, v, fecha, clave: `${semana}|${s.id}` }] : []
+  }))
+  const emparejadas = emparejarSesiones(previstas.map(p => ({ clave: p.clave, fecha: p.fecha, workoutId: p.s.garmin_workout_id, duracionS: duracionPrevistaS(p.v.pasos as Paso[]) })), hoy, lista, esCarrera)
+
+  const salida: EjecucionSesion[] = previstas.map(({ semana, s, v, fecha, clave }) => {
+    const { estado, entreno } = emparejadas.get(clave)!
+    return {
+      sesionId: s.id,
+      nombre: s.nombre,
+      diaSemana: s.dia_semana,
+      semana,
+      fechaPrevista: fecha,
+      estado,
+      fechaReal: entreno?.fecha ?? null,
+      duracionMin: entreno?.duracion_s ? Math.round(entreno.duracion_s / 60) : null,
+      cumplimiento: entreno ? evaluarCumplimiento(v.pasos as Paso[], entreno.vueltas, ritmos) : null,
     }
-  }
+  })
   salida.sort((a, b) => b.fechaPrevista.localeCompare(a.fechaPrevista))
   return { sesiones: salida, desdeSemana: lunes[0], planNombre: plan.nombre }
 }

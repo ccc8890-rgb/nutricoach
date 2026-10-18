@@ -146,6 +146,68 @@ function sumarDias(f: string, n: number) {
   return d.toISOString().slice(0, 10)
 }
 
+export interface SesionAEmparejar {
+  clave: string
+  /** Fecha en que tocaba la sesión. */
+  fecha: string
+  /** Id del entreno enviado al reloj, si lo hay. */
+  workoutId?: string | number | null
+  /** Duración prevista en segundos, si se conoce: ayuda a distinguir una tirada de un rodaje. */
+  duracionS?: number | null
+}
+
+/** Una carrera de menos de esto (calentamiento suelto, paseo) no cuenta como sesión hecha otro día. */
+const MIN_DURACION_OTRO_DIA_S = 15 * 60
+
+const lunesDeFecha = (f: string) => {
+  const d = new Date(`${f}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7))
+  return d.toISOString().slice(0, 10)
+}
+
+/**
+ * Empareja varias sesiones previstas con los entrenos de carrera reales sin usar el mismo entreno dos veces.
+ * Orden de prioridad: id del reloj (cualquier día) → mismo día → un día antes o después → cualquier otro día de esa semana.
+ * En cada paso se reparten primero los pares más claros: más cercanos en fecha (y, en el último paso, en duración).
+ */
+export function emparejarSesiones(
+  sesiones: SesionAEmparejar[],
+  hoy: string,
+  entrenos: EntrenoEmparejable[],
+  esDeCarrera: (tipo: string | null) => boolean,
+): Map<string, { estado: EstadoSesion; entreno: EntrenoEmparejable | null }> {
+  const carreras = entrenos.filter(e => esDeCarrera(e.tipo))
+  const usados = new Set<EntrenoEmparejable>()
+  const hecho = new Map<string, { estado: EstadoSesion; entreno: EntrenoEmparejable | null }>()
+  const dias = (a: string, b: string) => Math.abs(Date.parse(`${a}T12:00:00Z`) - Date.parse(`${b}T12:00:00Z`)) / 86_400_000
+  const reps = (e: EntrenoEmparejable) => (e.vueltas?.some(v => v.tipo === 'ACTIVE') ? 1 : 0)
+  const difDuracion = (ses: SesionAEmparejar, e: EntrenoEmparejable) => (ses.duracionS && e.duracion_s ? Math.abs(ses.duracionS - e.duracion_s) : 0)
+
+  const paso = (ok: (ses: SesionAEmparejar, e: EntrenoEmparejable) => boolean, duracionPrimero = false) => {
+    const pares = sesiones.flatMap(ses => carreras.filter(e => ok(ses, e)).map(e => ({ ses, e })))
+    pares.sort((x, y) => {
+      const d = dias(x.e.fecha, x.ses.fecha) - dias(y.e.fecha, y.ses.fecha)
+      const t = difDuracion(x.ses, x.e) - difDuracion(y.ses, y.e)
+      return (duracionPrimero ? t || d : d || t) || reps(y.e) - reps(x.e) || (y.e.duracion_s ?? 0) - (x.e.duracion_s ?? 0)
+    })
+    for (const { ses, e } of pares) {
+      if (hecho.has(ses.clave) || usados.has(e)) continue
+      usados.add(e)
+      hecho.set(ses.clave, { estado: e.fecha === ses.fecha ? 'hecha' : 'otro_dia', entreno: e })
+    }
+  }
+
+  paso((ses, e) => ses.workoutId != null && e.raw?.workout_id != null && String(e.raw.workout_id) === String(ses.workoutId))
+  paso((ses, e) => e.fecha === ses.fecha)
+  paso((ses, e) => dias(e.fecha, ses.fecha) === 1)
+  paso((ses, e) => lunesDeFecha(e.fecha) === lunesDeFecha(ses.fecha) && e.fecha <= hoy && (e.duracion_s ?? 0) >= MIN_DURACION_OTRO_DIA_S, true)
+
+  for (const ses of sesiones) {
+    if (!hecho.has(ses.clave)) hecho.set(ses.clave, { estado: ses.fecha >= hoy ? 'pendiente' : 'saltada', entreno: null })
+  }
+  return hecho
+}
+
 /**
  * Busca el entreno de carrera de una sesión prevista: primero el del mismo día, luego el de un día antes o después.
  * Entre varios candidatos gana el que tiene repeticiones marcadas y, si no, el más largo.
