@@ -15,6 +15,8 @@ export interface DecisionIA {
   direccion?: Direccion
   sesion_id?: string
   pasos?: unknown
+  /** Mover la sesión de día solo en una fecha concreta. */
+  mover?: { sesion_id: string; desde: string; hasta: string }
 }
 
 export interface DecisionRevisada extends DecisionIA {

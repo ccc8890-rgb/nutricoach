@@ -18,6 +18,7 @@ export interface DecisionFinal {
   direccion?: Direccion
   sesion_id?: string
   pasos?: unknown
+  mover?: { sesion_id: string; desde: string; hasta: string }
   origen: 'regla' | 'ia'
   regla?: string
   riesgo: Riesgo
@@ -56,7 +57,7 @@ export function componerDecisiones(args: {
     const fiabilidad = calcularFiabilidad({ datos: datosGenerales, persistencia: 0.5, nivelesEvidencia: d.estudios.map(e => e.nivel), origen: 'ia' })
     return {
       sesion: d.sesion, cambio: d.cambio, razon: d.razon, evidencia: textoEvidencia(d.estudios), confianza: fiabilidad.valor,
-      metrica_objetivo: d.metrica_objetivo, direccion: d.direccion, sesion_id: d.sesion_id, pasos: d.pasos,
+      metrica_objetivo: d.metrica_objetivo, direccion: d.direccion, sesion_id: d.sesion_id, pasos: d.pasos, mover: d.mover,
       origen: 'ia', riesgo: d.riesgo, segura: false, fiabilidad, estudios: d.estudios, avisos: d.avisos,
     }
   })

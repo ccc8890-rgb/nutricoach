@@ -153,6 +153,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  if (!forzar) await registrarCron(db, 'enviar-garmin', resumen.errores.length, `${resumen.enviados} enviadas${resumen.limpiados ? `, ${resumen.limpiados} antiguas quitadas` : ''}${resumen.errores.length ? `; ${resumen.errores[0]}` : ''}`)
+  if (!soloCliente) await registrarCron(db, 'enviar-garmin', resumen.errores.length, `${resumen.enviados} enviadas${resumen.limpiados ? `, ${resumen.limpiados} antiguas quitadas` : ''}${resumen.errores.length ? `; ${resumen.errores[0]}` : ''}`)
   return NextResponse.json(resumen)
 }

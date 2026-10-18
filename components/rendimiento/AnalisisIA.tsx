@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { estadoAnalisis, etiquetaDecision, glosarSiglas, porQueResumen, titularDe, TEXTO_ESTADO, TEXTO_ETIQUETA } from '@/lib/rendimiento/presentacion'
 
-interface VistaPrevia { sesionNombre: string; actual: string[]; nuevo: string[]; distanciaActualKm: number | null; distanciaNuevaKm: number | null; valido: boolean; error?: string }
+interface VistaPrevia { sesionNombre: string; actual: string[]; nuevo: string[]; distanciaActualKm: number | null; distanciaNuevaKm: number | null; valido: boolean; error?: string; avisos?: string[]; tipo?: 'pasos' | 'mover' }
 interface EstudioRef { titulo: string; anio: string | null; doi: string | null; nivel: string }
 interface Decision {
   sesion: string; cambio: string; razon: string; evidencia: string; confianza: number
@@ -72,9 +72,10 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
 
   async function aplicar(a: Analisis, indice: number, deshacer = false) {
     const d = a.payload.decisiones?.[indice]
+    const mover = d?.vistaPrevia?.tipo === 'mover'
     const texto = deshacer
-      ? '¿Deshacer el cambio y volver a los pasos anteriores? Se reenviará al reloj.'
-      : `¿Aplicar este cambio a «${d?.vistaPrevia?.sesionNombre ?? 'la sesión'}» y enviarlo al reloj?`
+      ? (mover ? '¿Deshacer el cambio y devolver la sesión a su día? Se actualizará el reloj.' : '¿Deshacer el cambio y volver a los pasos anteriores? Se reenviará al reloj.')
+      : (mover ? `¿Mover «${d?.vistaPrevia?.sesionNombre ?? 'la sesión'}» de ${d?.vistaPrevia?.actual[0]?.split(' · ')[0]} a ${d?.vistaPrevia?.nuevo[0]?.split(' · ')[0]} y actualizar el reloj?` : `¿Aplicar este cambio a «${d?.vistaPrevia?.sesionNombre ?? 'la sesión'}» y enviarlo al reloj?`)
     if (!window.confirm(texto)) return
     setAplicando(indice); setError(null); setAviso(null)
     try {
@@ -133,7 +134,7 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
         </details>
         {vp && (
           <div className="mt-2 rounded-md p-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <p className="mb-1.5 text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>Sesión «{vp.sesionNombre}»</p>
+            <p className="mb-1.5 text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{vp.tipo === 'mover' ? 'Mover de día' : 'Cambiar pasos'} · «{vp.sesionNombre}»</p>
             <div className="grid gap-3 text-xs sm:grid-cols-2">
               <div>
                 <p className="mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Ahora{vp.distanciaActualKm ? ` · ${vp.distanciaActualKm} km` : ''}</p>
@@ -144,6 +145,7 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
                 {vp.nuevo.map((l, k) => <p key={k} style={{ color: 'var(--text)' }}>{l}</p>)}
               </div>
             </div>
+            {vp.valido && !d.aplicada && vp.avisos?.map((av, k) => <p key={k} className="mt-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>{av}</p>)}
             {!vp.valido && <p className="mt-2 text-xs" style={{ color: '#E0557A' }}>No se puede aplicar: {vp.error}</p>}
             {vp.valido && (
               <div className="mt-2.5 flex flex-wrap items-center gap-2 border-t pt-2.5" style={{ borderColor: 'var(--border-light)' }}>
@@ -157,7 +159,7 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
                 ) : (
                   <>
                     <button disabled={aplicando === i} onClick={() => aplicar(ultimo!, i)} className="rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-60" style={{ background: 'var(--text)', color: 'var(--bg)' }}>
-                      {aplicando === i ? 'Aplicando…' : 'Aplicar al plan y enviar al reloj'}
+                      {aplicando === i ? 'Aplicando…' : vp.tipo === 'mover' ? 'Mover y actualizar el reloj' : 'Aplicar al plan y enviar al reloj'}
                     </button>
                     <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Te pide confirmación y se puede deshacer.</span>
                   </>

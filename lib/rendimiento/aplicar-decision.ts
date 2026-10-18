@@ -5,6 +5,7 @@ import { validarPasos, resumenSesion, type Paso } from '@/lib/entrenos/pasos'
 import { ritmosDesdeVdot, type Ritmos } from '@/lib/entrenos/ritmos'
 import { validarCambioPasos } from './cambio-sesion'
 import { enviarSesionAGarmin, ErrorGarmin } from '@/lib/integraciones/garmin-workouts'
+import { evaluarMover, fechaCorta, moverValido, persistirCambios, sincronizarGarminAtleta, type MoverGuardado } from './mover-sesion'
 
 export interface DecisionGuardada {
   sesion?: string
@@ -13,7 +14,9 @@ export interface DecisionGuardada {
   direccion?: string
   sesion_id?: string
   pasos?: unknown
-  aplicada?: { at: string; anteriores: unknown } | null
+  /** Mover la sesión de día solo en esa fecha (en lugar de cambiar sus pasos). */
+  mover?: MoverGuardado
+  aplicada?: { at: string; anteriores?: unknown } | null
 }
 
 export interface VistaPrevia {
@@ -25,6 +28,9 @@ export interface VistaPrevia {
   distanciaNuevaKm: number | null
   valido: boolean
   error?: string
+  /** Cosas a tener en cuenta antes de aplicar (p. ej. qué más hay ese día). */
+  avisos?: string[]
+  tipo?: 'pasos' | 'mover'
 }
 
 /** Forma canónica para comparar: sin notas de texto y con las claves ordenadas. */
@@ -57,7 +63,26 @@ async function sesionDelPlanActivo(db: SupabaseClient, clienteId: string, sesion
   return plan ? s : null
 }
 
+export async function vistaPreviaMover(db: SupabaseClient, clienteId: string, d: DecisionGuardada, hoy = new Date().toISOString().slice(0, 10)): Promise<VistaPrevia | null> {
+  const m = d.mover
+  if (!moverValido(m)) return null
+  const base = { sesionId: m.sesion_id, distanciaActualKm: null, distanciaNuevaKm: null, tipo: 'mover' as const }
+  // Ya aplicado: se enseña lo que se hizo (y se podrá deshacer); no se vuelve a evaluar contra el calendario.
+  if (d.aplicada) {
+    const ev = await evaluarMover(db, clienteId, m, hoy, true)
+    return { ...base, sesionNombre: ev.ok ? ev.nombre : 'Sesión', actual: [fechaCorta(m.desde)], nuevo: [fechaCorta(m.hasta)], valido: ev.ok, error: ev.ok ? undefined : ev.error }
+  }
+  const ev = await evaluarMover(db, clienteId, m, hoy)
+  if (!ev.ok) return { ...base, sesionNombre: 'Sesión', actual: [fechaCorta(m.desde)], nuevo: [fechaCorta(m.hasta)], valido: false, error: ev.error }
+  const avisos = [
+    ev.esDescanso ? `El ${fechaCorta(m.hasta)} está libre.` : `Ese día ya hay: ${ev.enDestino.join(', ')}.`,
+    'Solo cambia esa fecha; la plantilla semanal y la dieta de ese día siguen igual.',
+  ]
+  return { ...base, sesionNombre: ev.nombre, actual: [`${fechaCorta(m.desde)} · ${ev.nombre}`], nuevo: [`${fechaCorta(m.hasta)} · ${ev.nombre}`], valido: true, avisos }
+}
+
 export async function vistaPreviaDecision(db: SupabaseClient, clienteId: string, d: DecisionGuardada): Promise<VistaPrevia | null> {
+  if (d.mover) return vistaPreviaMover(db, clienteId, d)
   if (!d.sesion_id || !d.pasos) return null
   const sesion = await sesionDelPlanActivo(db, clienteId, d.sesion_id)
   if (!sesion) return null
@@ -94,6 +119,7 @@ export async function aplicarDecision(
   if (!tarea) return { ok: false, error: 'Análisis no encontrado', status: 404 }
   const payload = (tarea.payload ?? {}) as { decisiones?: DecisionGuardada[] }
   const d = payload.decisiones?.[p.indice]
+  if (d?.mover) return aplicarMoverDecision(db, p, tarea.id, payload, d)
   if (!d?.sesion_id || !d.pasos) return { ok: false, error: 'Esta decisión no trae un cambio de pasos aplicable', status: 422 }
 
   const sesion = await sesionDelPlanActivo(db, p.clienteId, d.sesion_id)
@@ -137,4 +163,35 @@ export async function aplicarDecision(
     garmin = { enviado: false, aviso: e instanceof ErrorGarmin ? e.mensaje : 'No se pudo enviar al reloj ahora; se reintentará con el envío diario' }
   }
   return { ok: true, accion: p.deshacer ? 'deshecha' : 'aplicada', garmin }
+}
+
+async function aplicarMoverDecision(
+  db: SupabaseClient,
+  p: { clienteId: string; indice: number; deshacer?: boolean },
+  tareaId: string,
+  payload: { decisiones?: DecisionGuardada[] },
+  d: DecisionGuardada,
+): Promise<ResultadoAplicar> {
+  const m = d.mover
+  if (!moverValido(m)) return { ok: false, error: 'La propuesta de mover la sesión no es válida', status: 422 }
+  if (p.deshacer && !d.aplicada) return { ok: false, error: 'Este cambio no está aplicado', status: 409 }
+  if (!p.deshacer && d.aplicada) return { ok: false, error: 'Este cambio ya está aplicado', status: 409 }
+
+  const hoy = new Date().toISOString().slice(0, 10)
+  const ev = await evaluarMover(db, p.clienteId, m, hoy, !!p.deshacer)
+  if (!ev.ok) return { ok: false, error: ev.error, status: 409 }
+  if (!(await persistirCambios(db, ev.planId, ev.cambios))) return { ok: false, error: 'No se pudo cambiar el calendario', status: 500 }
+
+  const decisiones = [...(payload.decisiones ?? [])]
+  decisiones[p.indice] = p.deshacer ? { ...d, aplicada: null } : { ...d, aplicada: { at: new Date().toISOString() } }
+  const { error } = await db.from('agente_tareas').update({ payload: { ...payload, decisiones } }).eq('id', tareaId)
+  if (error) {
+    // Sin constancia no se podría deshacer: se devuelve el calendario a como estaba.
+    const inv = await evaluarMover(db, p.clienteId, m, hoy, !p.deshacer)
+    if (inv.ok) await persistirCambios(db, inv.planId, inv.cambios)
+    return { ok: false, error: 'No se pudo guardar el registro del cambio; no se ha modificado nada', status: 500 }
+  }
+
+  const g = await sincronizarGarminAtleta(p.clienteId)
+  return { ok: true, accion: p.deshacer ? 'deshecha' : 'aplicada', garmin: { enviado: g.ok, fecha: p.deshacer ? m.desde : m.hasta, aviso: g.aviso } }
 }

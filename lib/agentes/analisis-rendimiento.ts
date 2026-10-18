@@ -10,6 +10,8 @@ import { llamarIA } from '@/lib/ia/enrutador'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
 import { validarPasos, type Paso } from '@/lib/entrenos/pasos'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { evaluarMover, fechasDeSesion, moverValido, type MoverGuardado } from '@/lib/rendimiento/mover-sesion'
 import { CLAVES_METRICA, type ClaveMetrica, type Direccion } from '@/lib/rendimiento/seguimiento'
 import { citasDe, estudiosPorDoi } from '@/lib/rendimiento/evidencia'
 import { evaluarReglas, type ResultadoReglas } from '@/lib/rendimiento/reglas'
@@ -58,34 +60,43 @@ Responde SOLO con este JSON:
 }
 "prioridad": 1 (urgente) a 10 (rutinaria). "lecturas": máximo 4. "decisiones": máximo 2 y solo nuevas.`
 
-const SYSTEM_PASOS = `Conviertes una decisión de entrenamiento en los pasos exactos de una sesión de carrera. Recibes la sesión (sesion_id, pasos_actuales), la decisión (cambio y razón) y los ritmos del atleta.
-Responde SOLO con JSON: {"aplicable": true|false, "pasos": [...]}.
-- "aplicable": true solo si la decisión se puede expresar cambiando los pasos de ESTA sesión (ritmo, volumen, intensidad). Si es mover la sesión de día, un consejo general o afecta a otra sesión, devuelve {"aplicable": false}.
-- "pasos": la sesión COMPLETA ya modificada, en el mismo formato JSON que pasos_actuales (tipos calentamiento, trabajo, recuperacion, enfriamiento y bloques {"tipo":"repetir","veces":N,"pasos":[...]}; duración {"unidad":"metros"|"segundos","valor":N}; objetivo {"tipo":"ritmo","min_seg_km":N,"max_seg_km":N} con un rango de 10-15 s/km). Conserva los campos "nota" y cambia solo lo que la decisión pide. Un número menor de seg/km es más rápido.`
+const SYSTEM_CAMBIO = `Conviertes una decisión de entrenamiento en un cambio concreto que el coach pueda aplicar con un botón. Recibes la sesión (sesion_id y, si tiene, pasos_actuales), las fechas en que ocurre, el calendario de los próximos días, la decisión (cambio y razón) y los ritmos del atleta.
+Responde SOLO con JSON: {"tipo": "pasos" | "mover" | "ninguno", "pasos": [...], "mover": {"desde": "AAAA-MM-DD", "hasta": "AAAA-MM-DD"}}.
+- "pasos": la decisión cambia ritmo, volumen o intensidad DENTRO de esta sesión. Devuelve en "pasos" la sesión COMPLETA ya modificada, en el mismo formato JSON que pasos_actuales (tipos calentamiento, trabajo, recuperacion, enfriamiento y bloques {"tipo":"repetir","veces":N,"pasos":[...]}; duración {"unidad":"metros"|"segundos","valor":N}; objetivo {"tipo":"ritmo","min_seg_km":N,"max_seg_km":N} con un rango de 10-15 s/km). Conserva los campos "nota" y cambia solo lo que la decisión pide. Un número menor de seg/km es más rápido. Solo si la sesión tiene pasos_actuales.
+- "mover": la decisión pide pasar ESTA sesión a otro día solo esta vez. "desde" debe ser una de las fechas en que la sesión ocurre y "hasta" una fecha del calendario (hoy o posterior). Elige la primera ocurrencia futura que encaje con lo que dice la decisión («esta semana», «el martes»…).
+- "ninguno": es un consejo general, intercambia dos sesiones, afecta a otra sesión o no se puede expresar así.`
 
 const sinTildes = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+const DIAS_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
 
-/** Si el modelo propuso un cambio de una sesión con pasos pero no los incluyó, se los pide aparte para que el coach tenga botón. */
-async function completarPasos<T extends { sesion: string; cambio: string; razon: string; sesion_id?: string; pasos?: unknown }>(
-  decisiones: T[], sesiones: { id: string; nombre: string; pasos: unknown }[], ritmos: string, desdeMs: number,
+/** Si el modelo propuso un cambio concreto de una sesión pero no lo dejó listo para aplicar (pasos nuevos o mover de día), se lo pide aparte para que el coach tenga botón. */
+async function completarCambio<T extends { sesion: string; cambio: string; razon: string; sesion_id?: string; pasos?: unknown; mover?: MoverGuardado }>(
+  decisiones: T[], sesiones: { id: string; nombre: string; pasos: unknown }[], ritmos: string, desdeMs: number, db: SupabaseClient, clienteId: string, hoy: string,
 ): Promise<T[]> {
   return Promise.all(decisiones.map(async d => {
-    if (d.pasos || Date.now() - desdeMs > 235_000) return d
+    if ((d.pasos && d.sesion_id) || Date.now() - desdeMs > 235_000) return d
     const nombre = sinTildes(d.sesion)
     const ses = nombre === 'general' ? null : sesiones.find(x => { const n = sinTildes(x.nombre); return n === nombre || n.includes(nombre) || nombre.includes(n) })
     if (!ses) return d
     try {
+      const fechas = await fechasDeSesion(db, clienteId, ses.id, hoy)
+      const calendario = Array.from({ length: 14 }, (_, i) => { const f = new Date(`${hoy}T12:00:00Z`); f.setUTCDate(f.getUTCDate() + i); const iso = f.toISOString().slice(0, 10); return `${DIAS_ES[f.getUTCDay()]} ${iso}` }).join(', ')
       const crudo = (await llamarIA('analisis_rendimiento', {
-        sistema: SYSTEM_PASOS,
-        usuario: `SESIÓN: ${ses.nombre}\nsesion_id: ${ses.id}\npasos_actuales: ${JSON.stringify(ses.pasos)}\nRITMOS: ${ritmos}\nDECISIÓN: ${d.cambio}\nRAZÓN: ${d.razon}`,
+        sistema: SYSTEM_CAMBIO,
+        usuario: `HOY: ${DIAS_ES[new Date(`${hoy}T12:00:00Z`).getUTCDay()]} ${hoy}\nCALENDARIO: ${calendario}\nSESIÓN: ${ses.nombre}\nsesion_id: ${ses.id}\nOCURRE EN: ${fechas.join(', ') || 'sin fechas próximas'}\npasos_actuales: ${ses.pasos ? JSON.stringify(ses.pasos) : 'no tiene (no se pueden cambiar pasos)'}\nRITMOS: ${ritmos}\nDECISIÓN: ${d.cambio}\nRAZÓN: ${d.razon}`,
         json: true, presupuestoMs: 45_000, maxTokens: 4000, esfuerzo: 'low',
       })).texto
       const m = crudo.match(/\{[\s\S]*\}/)
-      const j = m ? JSON.parse(m[0]) as { aplicable?: boolean; pasos?: unknown } : null
-      if (!j?.aplicable || j.pasos === undefined) return d
-      const v = validarPasos(j.pasos)
-      if (!v.ok || JSON.stringify(v.pasos) === JSON.stringify(ses.pasos)) return d
-      return { ...d, sesion_id: ses.id, pasos: v.pasos }
+      const j = m ? JSON.parse(m[0]) as { tipo?: string; pasos?: unknown; mover?: { desde?: unknown; hasta?: unknown } } : null
+      if (j?.tipo === 'pasos' && ses.pasos && j.pasos !== undefined) {
+        const v = validarPasos(j.pasos)
+        if (v.ok && JSON.stringify(v.pasos) !== JSON.stringify(ses.pasos)) return { ...d, sesion_id: ses.id, pasos: v.pasos }
+      }
+      if (j?.tipo === 'mover' && j.mover) {
+        const mv = { sesion_id: ses.id, desde: String(j.mover.desde), hasta: String(j.mover.hasta) }
+        if (moverValido(mv) && (await evaluarMover(db, clienteId, mv, hoy)).ok) return { ...d, mover: mv }
+      }
+      return d
     } catch { return d }
   }))
 }
@@ -190,7 +201,7 @@ export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: {
   const validadas = validarDecisionesIA(s?.decisiones ?? [], ctx.estado, motor.propuestas)
   const descartadas = validadas.descartadas
   const ritmosTxt = ctx.estado.ritmos ? Object.entries(ctx.estado.ritmos).map(([k, v]) => `${k} ${Math.floor(Number(v) / 60)}:${String(Math.round(Number(v) % 60)).padStart(2, '0')}/km`).join(', ') : 'n/d'
-  const aceptadas = await completarPasos(validadas.aceptadas, ctx.sesionesEditables, ritmosTxt, inicioMs)
+  const aceptadas = await completarCambio(validadas.aceptadas, ctx.sesionesEditables, ritmosTxt, inicioMs, db, clienteId, hoy)
   const decisiones = componerDecisiones({
     reglas: motor.propuestas,
     estudiosPorDoi: porDoi,

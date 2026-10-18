@@ -21,7 +21,7 @@ export interface ContextoRendimiento {
   estudios: EstudioCitable[]
   /** Foto numérica del atleta que consume el motor de reglas. */
   estado: EstadoAtleta
-  /** Sesiones del plan activo con pasos estructurados: lo único que se puede modificar con un botón. */
+  /** Todas las sesiones del plan activo (pasos solo si tienen): se pueden mover de día; con pasos, también modificar. */
   sesionesEditables: { id: string; nombre: string; pasos: unknown }[]
 }
 
@@ -96,7 +96,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     const { data: s } = await db.from('sesiones_entrenamiento').select('id,nombre,dia_semana,fase_bloque,contexto_ia,pasos').eq('plan_id', plan.id).order('orden')
     nombresSesionesPlan = (s ?? []).map(x => String(x.nombre ?? ''))
     sesionesConPasos = (s ?? []).map(x => ({ nombre: x.nombre ?? null, pasos: x.pasos }))
-    sesionesEditables = (s ?? []).filter(x => x.pasos).map(x => ({ id: String(x.id), nombre: String(x.nombre ?? ''), pasos: x.pasos }))
+    sesionesEditables = (s ?? []).map(x => ({ id: String(x.id), nombre: String(x.nombre ?? ''), pasos: x.pasos ?? null }))
     sesionesPlan = (s ?? []).map(x => `${x.dia_semana}: ${x.nombre}${x.fase_bloque ? ` [${x.fase_bloque}]` : ''}${x.contexto_ia ? ` (${x.contexto_ia})` : ''}${x.pasos ? ` [sesion_id:${x.id}] pasos_actuales=${JSON.stringify(x.pasos)}` : ' [sin pasos estructurados: no modificable]'}`)
   }
 
