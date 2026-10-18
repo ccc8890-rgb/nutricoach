@@ -62,8 +62,8 @@ function corregir(r: R): R {
   // 3. contexto_uso: pre/post solo si la composición lo respalda
   if (!r.clasificacion_manual) {
     let c = r.contexto_uso as string
-    if (post) c = 'post_entreno'
-    else if (pre) c = 'pre_entreno'
+    if (pre) c = 'pre_entreno'   // mismo desempate que clasificarRecetaProfesional
+    else if (post) c = 'post_entreno'
     else if (c === 'post_entreno' || c === 'pre_entreno') {
       const t = arr(r.tags).map(x => x.toLowerCase())
       const total = (Number(r.tiempo_prep_min) || 0) + (Number(r.tiempo_coccion_min) || 0)

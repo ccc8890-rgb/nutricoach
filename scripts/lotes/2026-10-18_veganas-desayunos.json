@@ -1,0 +1,418 @@
+{
+ "lote": "veganas-3-desayunos-2026-10-18",
+ "tipo_plato": "Desayuno",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 380,
+  "kcal_max": 700,
+  "proteina_pct_min_vegano": 0.17
+ },
+ "alimentos": {
+  "aceite": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aguacate": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "almendra": {
+   "nombre": "Almendra Hacendado sin piel",
+   "prefijo": "3a38b590",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "arce": {
+   "nombre": "Sirope de arce",
+   "prefijo": "34d6fafa",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "avena": {
+   "nombre": "Avena",
+   "prefijo": "31b21452",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "canela": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "chia": {
+   "nombre": "Semillas de chía",
+   "prefijo": "b5b5e57f",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "curcuma": {
+   "nombre": "Cúrcuma",
+   "prefijo": "94ba864e",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "edamame": {
+   "nombre": "Edamame",
+   "prefijo": "642cd6e3",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "espinacas": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "fresa": {
+   "nombre": "Fresa",
+   "prefijo": "b54b6e8b",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "granola": {
+   "nombre": "Granola",
+   "prefijo": "54fee582",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "hgarb": {
+   "nombre": "Harina de garbanzo",
+   "prefijo": "50bcb9d4",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "hummus": {
+   "nombre": "Hummus",
+   "prefijo": "2856bf23",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Sésamo"
+   ],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "mango": {
+   "nombre": "Mango",
+   "prefijo": "4166da6e",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pan": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "pepino": {
+   "nombre": "Pepino",
+   "prefijo": "2e8d5d64",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pipas": {
+   "nombre": "Pipas de calabaza tostadas",
+   "prefijo": "0123ea99",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pita": {
+   "nombre": "Pan de pita",
+   "prefijo": "d21b8e95",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "platano": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "prot": {
+   "nombre": "Proteína vegetal (polvo)",
+   "prefijo": "957b6d12",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "soja": {
+   "nombre": "Bebida de soja con calcio y vitaminas sin azúcares añadidos",
+   "prefijo": "8de6665d",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "tempeh": {
+   "nombre": "Tempeh",
+   "prefijo": "bca25e6d",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "tomate": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Gachas de avena con proteína vegetal, plátano y chía",
+   "descripcion": "Gachas cremosas con 30 g de proteína vegetal para un desayuno saciante.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "avena",
+     60
+    ],
+    [
+     "soja",
+     250
+    ],
+    [
+     "prot",
+     25
+    ],
+    [
+     "platano",
+     100
+    ],
+    [
+     "chia",
+     10
+    ],
+    [
+     "canela",
+     2
+    ]
+   ],
+   "instrucciones": "1. Calienta la bebida de soja con la avena y la canela 5 minutos, removiendo.\n2. Apártalo del fuego, deja templar 1 minuto y mezcla la proteína en polvo hasta que quede sin grumos.\n3. Sirve con el plátano en rodajas y la chía por encima.",
+   "consejos": "Si quedan muy espesas, añade un chorrito de bebida de soja."
+  },
+  {
+   "nombre": "Tostadas de tempeh con aguacate y tomate",
+   "descripcion": "Tostadas saladas con tempeh dorado: proteína completa y grasa buena.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pan",
+     80
+    ],
+    [
+     "tempeh",
+     100
+    ],
+    [
+     "aguacate",
+     60
+    ],
+    [
+     "tomate",
+     80
+    ],
+    [
+     "aceite",
+     5
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Corta el tempeh en lonchas finas y dóralo en la sartén con el aceite 3 minutos por lado.\n2. Tuesta el pan y cubre con el aguacate machacado con unas gotas de limón.\n3. Añade las lonchas de tempeh y el tomate en rodajas.",
+   "consejos": "Un poco de sal y pimienta negra realzan el tempeh. La vitamina C (limón, pimiento, naranja) ayuda a absorber el hierro de las legumbres y la soja."
+  },
+  {
+   "nombre": "Pudding de chía con proteína, fresas y almendras",
+   "descripcion": "Pudding frío preparado la noche anterior, con 30 g de proteína.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "chia",
+     30
+    ],
+    [
+     "soja",
+     250
+    ],
+    [
+     "prot",
+     20
+    ],
+    [
+     "fresa",
+     120
+    ],
+    [
+     "almendra",
+     15
+    ],
+    [
+     "arce",
+     10
+    ]
+   ],
+   "instrucciones": "1. Mezcla en un bote la bebida de soja, la proteína en polvo y la chía hasta que no queden grumos.\n2. Tapa y refrigera al menos 4 horas, mejor toda la noche.\n3. Sirve con las fresas troceadas, las almendras picadas y el sirope de arce.",
+   "consejos": "Remuévelo a los 10 minutos de prepararlo para que la chía no haga bloques."
+  },
+  {
+   "nombre": "Tortitas de garbanzo con espinacas y hummus",
+   "descripcion": "Tortitas saladas sin huevo ni lácteos, con proteína de legumbre.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "hgarb",
+     80
+    ],
+    [
+     "espinacas",
+     80
+    ],
+    [
+     "curcuma",
+     1
+    ],
+    [
+     "hummus",
+     60
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "tomate",
+     80
+    ]
+   ],
+   "instrucciones": "1. Mezcla la harina de garbanzo con 130 ml de agua, la cúrcuma y una pizca de sal hasta obtener una masa fluida.\n2. Saltea las espinacas 2 minutos con una gota de aceite y añádelas a la masa.\n3. Cocina dos tortitas en una sartén antiadherente con el resto del aceite, 3 minutos por lado.\n4. Sirve con el hummus y el tomate en rodajas.",
+   "consejos": "Deja reposar la masa 10 minutos antes de cocinar: queda más tierna."
+  },
+  {
+   "nombre": "Smoothie bowl de mango y espinacas con proteína",
+   "descripcion": "Bowl frío y espeso con fruta, espinacas y 30 g de proteína.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "mango",
+     150
+    ],
+    [
+     "platano",
+     80
+    ],
+    [
+     "espinacas",
+     40
+    ],
+    [
+     "soja",
+     200
+    ],
+    [
+     "prot",
+     25
+    ],
+    [
+     "granola",
+     25
+    ],
+    [
+     "chia",
+     10
+    ]
+   ],
+   "instrucciones": "1. Tritura el mango, el plátano, las espinacas, la bebida de soja y la proteína hasta obtener una crema espesa.\n2. Pásala a un bol y cúbrela con la granola y la chía.",
+   "consejos": "Congela la fruta en trozos para un bowl más espeso y frío."
+  },
+  {
+   "nombre": "Pita de hummus, edamame y verduras",
+   "descripcion": "Pan de pita relleno de legumbre y verdura crujiente, listo en 10 minutos.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pita",
+     70
+    ],
+    [
+     "edamame",
+     80
+    ],
+    [
+     "hummus",
+     50
+    ],
+    [
+     "pepino",
+     60
+    ],
+    [
+     "tomate",
+     50
+    ],
+    [
+     "pipas",
+     10
+    ]
+   ],
+   "instrucciones": "1. Descongela o cuece el edamame y mézclalo con el hummus.\n2. Abre la pita, rellénala con la mezcla, el pepino y el tomate en láminas.\n3. Termina con las pipas de calabaza.",
+   "consejos": "Caliéntala 1 minuto en la tostadora para que quede más aromática."
+  }
+ ],
+ "tipo_receta": "desayuno"
+}

@@ -1,0 +1,343 @@
+{
+ "lote": "veganas-3-meriendas-2026-10-18",
+ "tipo_plato": "Merienda",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 220,
+  "kcal_max": 480,
+  "proteina_pct_min_vegano": 0.2
+ },
+ "alimentos": {
+  "almendra": {
+   "nombre": "Almendra Hacendado sin piel",
+   "prefijo": "3a38b590",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "arce": {
+   "nombre": "Sirope de arce",
+   "prefijo": "34d6fafa",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "avena": {
+   "nombre": "Avena",
+   "prefijo": "31b21452",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "cacahuete": {
+   "nombre": "Crema de cacahuete (natural)",
+   "prefijo": "6328f4b9",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Cacahuetes"
+   ],
+   "origen": "vegetal"
+  },
+  "canela": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "chia": {
+   "nombre": "Semillas de chía",
+   "prefijo": "b5b5e57f",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "datiles": {
+   "nombre": "Dátiles medjool",
+   "prefijo": "e6dd0fa6",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "edamame": {
+   "nombre": "Edamame",
+   "prefijo": "642cd6e3",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "espinacas": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "hummus": {
+   "nombre": "Hummus",
+   "prefijo": "2856bf23",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Sésamo"
+   ],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pan": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "pimiento": {
+   "nombre": "Pimiento rojo",
+   "prefijo": "d106e3bb",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pipas": {
+   "nombre": "Pipas de calabaza tostadas",
+   "prefijo": "0123ea99",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pita": {
+   "nombre": "Pan de pita",
+   "prefijo": "d21b8e95",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "platano": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "prot": {
+   "nombre": "Proteína vegetal (polvo)",
+   "prefijo": "957b6d12",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "seitan": {
+   "nombre": "Seitán Bio",
+   "prefijo": "24ef9ec3",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "soja": {
+   "nombre": "Bebida de soja con calcio y vitaminas sin azúcares añadidos",
+   "prefijo": "8de6665d",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "tomate": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Batido verde de soja, plátano y espinacas",
+   "descripcion": "Batido cremoso con 30 g de proteína y apenas sabor a espinaca.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "soja",
+     300
+    ],
+    [
+     "prot",
+     25
+    ],
+    [
+     "platano",
+     100
+    ],
+    [
+     "espinacas",
+     40
+    ],
+    [
+     "chia",
+     5
+    ]
+   ],
+   "instrucciones": "1. Pon todos los ingredientes en la batidora con unos cubitos de hielo.\n2. Tritura 1 minuto hasta que quede liso y sirve enseguida.",
+   "consejos": "Si usas plátano congelado queda más espeso, como un helado."
+  },
+  {
+   "nombre": "Tostada de hummus, edamame y tomate",
+   "descripcion": "Merienda salada con proteína de soja y legumbre.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pan",
+     60
+    ],
+    [
+     "hummus",
+     60
+    ],
+    [
+     "edamame",
+     70
+    ],
+    [
+     "tomate",
+     70
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Tuesta el pan y úntalo con el hummus.\n2. Reparte el edamame cocido y el tomate en rodajas.\n3. Exprime unas gotas de limón por encima.",
+   "consejos": "Con una pizca de pimentón o comino queda más sabrosa."
+  },
+  {
+   "nombre": "Edamame con limón y pipas de calabaza",
+   "descripcion": "Snack caliente de vaina con 26 g de proteína.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "edamame",
+     180
+    ],
+    [
+     "pipas",
+     15
+    ],
+    [
+     "limon",
+     10
+    ]
+   ],
+   "instrucciones": "1. Cuece el edamame 3 minutos en agua con sal y escúrrelo.\n2. Aliña con el zumo de limón y espolvorea las pipas.",
+   "consejos": "Se come sacando los granos de la vaina con los dientes."
+  },
+  {
+   "nombre": "Bolitas de dátil, almendra y proteína",
+   "descripcion": "Bolitas sin horno, con dátil y 25 g de proteína vegetal.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "datiles",
+     50
+    ],
+    [
+     "prot",
+     25
+    ],
+    [
+     "almendra",
+     20
+    ],
+    [
+     "avena",
+     20
+    ],
+    [
+     "canela",
+     2
+    ]
+   ],
+   "instrucciones": "1. Tritura los dátiles deshuesados con las almendras hasta obtener una pasta.\n2. Añade la avena, la proteína, la canela y 1 cucharada de agua; amasa.\n3. Forma 6 bolitas y refrigéralas 30 minutos.",
+   "consejos": "Se conservan 5 días en la nevera: prepara tandas para toda la semana."
+  },
+  {
+   "nombre": "Mini pita de seitán con pimiento y hummus",
+   "descripcion": "Bocadillo rápido con 32 g de proteína de trigo.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pita",
+     50
+    ],
+    [
+     "seitan",
+     100
+    ],
+    [
+     "pimiento",
+     50
+    ],
+    [
+     "hummus",
+     30
+    ]
+   ],
+   "instrucciones": "1. Dora el seitán en lonchas en una sartén seca 2 minutos por lado.\n2. Calienta la pita, úntala con el hummus y rellena con el seitán y el pimiento en tiras.",
+   "consejos": "El pimiento crudo aporta vitamina C, que favorece la absorción del hierro."
+  },
+  {
+   "nombre": "Barritas de avena, plátano y cacahuete sin horno",
+   "descripcion": "Barritas de cuchara con 30 g de proteína, sin horno.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "avena",
+     40
+    ],
+    [
+     "cacahuete",
+     20
+    ],
+    [
+     "prot",
+     25
+    ],
+    [
+     "platano",
+     60
+    ],
+    [
+     "arce",
+     10
+    ]
+   ],
+   "instrucciones": "1. Machaca el plátano y mézclalo con la crema de cacahuete y el sirope.\n2. Añade la avena y la proteína en polvo y amasa; si hace falta, agrega un chorrito de agua.\n3. Extiéndelo en un molde pequeño, presiona y refrigera 1 hora antes de cortar.",
+   "consejos": "Cortadas en porciones se guardan 4 días en la nevera."
+  }
+ ],
+ "tipo_receta": "snack_postre"
+}

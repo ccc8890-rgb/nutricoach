@@ -1,0 +1,449 @@
+{
+ "lote": "veganas-3-cenas-2026-10-18",
+ "tipo_plato": "Cena",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 400,
+  "kcal_max": 750,
+  "proteina_pct_min_vegano": 0.17
+ },
+ "alimentos": {
+  "aceite": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "alubia": {
+   "nombre": "Alubia cocida roja",
+   "prefijo": "35e28212",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "arrozint": {
+   "nombre": "Arroz integral",
+   "prefijo": "b5839902",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "basmati": {
+   "nombre": "Arroz basmati cocido",
+   "prefijo": "8c5f6c49",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "boniato": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "brocoli": {
+   "nombre": "Brócoli",
+   "prefijo": "8820b293",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "calabaza": {
+   "nombre": "Calabaza",
+   "prefijo": "cfd9ca77",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cebolla": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "coco": {
+   "nombre": "Leche de coco",
+   "prefijo": "c661ff5c",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "coliflor": {
+   "nombre": "Coliflor",
+   "prefijo": "e5efc372",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "comino": {
+   "nombre": "Comino",
+   "prefijo": "88959dfb",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "curcuma": {
+   "nombre": "Cúrcuma",
+   "prefijo": "94ba864e",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "espinacas": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "fideos": {
+   "nombre": "Fideos",
+   "prefijo": "794bf491",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "hgarb": {
+   "nombre": "Harina de garbanzo",
+   "prefijo": "50bcb9d4",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "lentejas": {
+   "nombre": "Lentejas cocidas",
+   "prefijo": "e69fd4f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimenton": {
+   "nombre": "Pimentón dulce",
+   "prefijo": "e4fdfad8",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimiento": {
+   "nombre": "Pimiento rojo",
+   "prefijo": "d106e3bb",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pipas": {
+   "nombre": "Pipas de calabaza tostadas",
+   "prefijo": "0123ea99",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "quinoa": {
+   "nombre": "Quinoa",
+   "prefijo": "53587262",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "seitan": {
+   "nombre": "Seitán Bio",
+   "prefijo": "24ef9ec3",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "sojasalsa": {
+   "nombre": "Salsa de soja",
+   "prefijo": "caa47a33",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Soja",
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "tahini": {
+   "nombre": "tahini",
+   "prefijo": "6e801766",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Sésamo"
+   ],
+   "origen": "vegetal"
+  },
+  "tempeh": {
+   "nombre": "Tempeh",
+   "prefijo": "bca25e6d",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "tofu": {
+   "nombre": "Tofu firme",
+   "prefijo": "c0736451",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "tomatetri": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "zanahoria": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Curry de lentejas y espinacas con arroz basmati",
+   "descripcion": "Curry cremoso de lentejas con espinacas, rico en hierro y proteína.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "lentejas",
+     200
+    ],
+    [
+     "espinacas",
+     100
+    ],
+    [
+     "coco",
+     40
+    ],
+    [
+     "tomatetri",
+     100
+    ],
+    [
+     "cebolla",
+     60
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "curcuma",
+     2
+    ],
+    [
+     "comino",
+     2
+    ],
+    [
+     "basmati",
+     150
+    ],
+    [
+     "aceite",
+     6
+    ]
+   ],
+   "instrucciones": "1. Sofríe la cebolla y el ajo picados en el aceite 5 minutos con la cúrcuma y el comino.\n2. Añade el tomate y las lentejas; cocina 8 minutos.\n3. Incorpora las espinacas y la leche de coco y cocina 3 minutos más.\n4. Sirve con el arroz basmati.",
+   "consejos": "La vitamina C (limón, pimiento, naranja) ayuda a absorber el hierro de las legumbres y la soja. Un chorrito de limón al final lo mejora."
+  },
+  {
+   "nombre": "Salteado de seitán con brócoli y fideos",
+   "descripcion": "Salteado rápido de estilo oriental con 50 g de proteína.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "fideos",
+     70
+    ],
+    [
+     "seitan",
+     150
+    ],
+    [
+     "brocoli",
+     150
+    ],
+    [
+     "zanahoria",
+     60
+    ],
+    [
+     "sojasalsa",
+     12
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "aceite",
+     8
+    ]
+   ],
+   "instrucciones": "1. Cuece los fideos según el paquete y escúrrelos.\n2. Saltea el ajo, la zanahoria en bastones y el brócoli en ramilletes con el aceite 5 minutos.\n3. Añade el seitán en tiras y la salsa de soja; saltea 3 minutos.\n4. Mezcla con los fideos y sirve.",
+   "consejos": "Cocina a fuego fuerte y poco tiempo para que la verdura quede crujiente."
+  },
+  {
+   "nombre": "Tofu crujiente con coliflor asada y quinoa",
+   "descripcion": "Tofu rebozado en harina de garbanzo, con coliflor y quinoa.",
+   "tiempo_prep_min": 40,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "tofu",
+     200
+    ],
+    [
+     "hgarb",
+     20
+    ],
+    [
+     "coliflor",
+     200
+    ],
+    [
+     "quinoa",
+     60
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "tahini",
+     10
+    ],
+    [
+     "limon",
+     10
+    ],
+    [
+     "comino",
+     2
+    ]
+   ],
+   "instrucciones": "1. Asa la coliflor en ramilletes con la mitad del aceite y el comino 25 minutos a 200 °C.\n2. Corta el tofu en dados, pásalo por la harina de garbanzo y dóralo en la sartén con el resto del aceite 8 minutos.\n3. Cuece la quinoa 12 minutos.\n4. Mezcla el tahini con el limón y 2 cucharadas de agua para la salsa y sirve todo junto.",
+   "consejos": "Presiona el tofu 10 minutos con papel de cocina antes de cortarlo: queda más crujiente."
+  },
+  {
+   "nombre": "Crema de calabaza con tempeh crujiente y pipas",
+   "descripcion": "Crema suave de calabaza con tempeh dorado: 32 g de proteína.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "calabaza",
+     300
+    ],
+    [
+     "cebolla",
+     60
+    ],
+    [
+     "boniato",
+     100
+    ],
+    [
+     "tempeh",
+     120
+    ],
+    [
+     "pipas",
+     15
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "comino",
+     2
+    ],
+    [
+     "pimenton",
+     2
+    ]
+   ],
+   "instrucciones": "1. Sofríe la cebolla en el aceite, añade la calabaza y el boniato en trozos y cubre con agua; cuece 20 minutos.\n2. Tritura con el comino y sal hasta que quede fina.\n3. Dora el tempeh en dados en una sartén con el pimentón 5 minutos.\n4. Sirve la crema con el tempeh y las pipas por encima.",
+   "consejos": "Si la quieres más ligera, usa menos boniato y más calabaza."
+  },
+  {
+   "nombre": "Alubias rojas guisadas con arroz integral y pimiento",
+   "descripcion": "Guiso reconfortante de legumbre con arroz integral, rico en hierro.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "alubia",
+     250
+    ],
+    [
+     "arrozint",
+     50
+    ],
+    [
+     "pimiento",
+     100
+    ],
+    [
+     "tomatetri",
+     100
+    ],
+    [
+     "cebolla",
+     60
+    ],
+    [
+     "pimenton",
+     3
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "espinacas",
+     60
+    ]
+   ],
+   "instrucciones": "1. Cuece el arroz integral 25 minutos en agua con sal y escúrrelo.\n2. Sofríe la cebolla, el ajo y el pimiento en el aceite 6 minutos con el pimentón.\n3. Añade el tomate y las alubias; cocina 10 minutos.\n4. Incorpora las espinacas, cocina 2 minutos y sirve sobre el arroz.",
+   "consejos": "La vitamina C (limón, pimiento, naranja) ayuda a absorber el hierro de las legumbres y la soja."
+  }
+ ],
+ "tipo_receta": "completa"
+}

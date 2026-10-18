@@ -1,0 +1,393 @@
+{
+ "lote": "veganas-3-entreno-2026-10-18",
+ "tipo_plato": "Comida",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 400,
+  "kcal_max": 800,
+  "proteina_pct_min_vegano": 0.15,
+  "hc_pct_min": 0.45
+ },
+ "alimentos": {
+  "aceite": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "avena": {
+   "nombre": "Avena",
+   "prefijo": "31b21452",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "basmati": {
+   "nombre": "Arroz basmati cocido",
+   "prefijo": "8c5f6c49",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "boniato": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "brocoli": {
+   "nombre": "Brócoli",
+   "prefijo": "8820b293",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "canela": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cebolla": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cuscus": {
+   "nombre": "Cuscús",
+   "prefijo": "11d56939",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "guisantes": {
+   "nombre": "Guisantes congelados (cocidos)",
+   "prefijo": "2faee000",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "lentejas": {
+   "nombre": "Lentejas cocidas",
+   "prefijo": "e69fd4f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pasas": {
+   "nombre": "Pasas",
+   "prefijo": "ad30a656",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pasta": {
+   "nombre": "Pasta (seca)",
+   "prefijo": "13f26d7a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "platano": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "prot": {
+   "nombre": "Proteína vegetal (polvo)",
+   "prefijo": "957b6d12",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "quinoa": {
+   "nombre": "Quinoa",
+   "prefijo": "53587262",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "seitan": {
+   "nombre": "Seitán Bio",
+   "prefijo": "24ef9ec3",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "soja": {
+   "nombre": "Bebida de soja con calcio y vitaminas sin azúcares añadidos",
+   "prefijo": "8de6665d",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "sojasalsa": {
+   "nombre": "Salsa de soja",
+   "prefijo": "caa47a33",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Soja",
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "sojatex": {
+   "nombre": "Soja texturizada (seca)",
+   "prefijo": "97c4e147",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "tempeh": {
+   "nombre": "Tempeh",
+   "prefijo": "bca25e6d",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "tomatetri": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "zanahoria": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "zumo": {
+   "nombre": "Zumo de naranja",
+   "prefijo": "f2671248",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Arroz basmati con seitán, guisantes y salsa de soja",
+   "descripcion": "Plato completo con hidratos y 50 g de proteína vegetal.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "basmati",
+     250
+    ],
+    [
+     "seitan",
+     150
+    ],
+    [
+     "guisantes",
+     80
+    ],
+    [
+     "sojasalsa",
+     10
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "cebolla",
+     40
+    ]
+   ],
+   "instrucciones": "1. Sofríe la cebolla y el ajo picados en el aceite 4 minutos.\n2. Añade el seitán en dados y dóralo 3 minutos.\n3. Incorpora el arroz cocido, los guisantes y la salsa de soja; saltea 4 minutos.",
+   "consejos": "Usa arroz cocido del día anterior: queda más suelto.",
+   "perfil": "post"
+  },
+  {
+   "nombre": "Pasta con ragú de soja texturizada y lentejas",
+   "descripcion": "Ragú vegano de proteína alta con pasta y hierro de legumbre.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pasta",
+     90
+    ],
+    [
+     "sojatex",
+     30
+    ],
+    [
+     "lentejas",
+     120
+    ],
+    [
+     "tomatetri",
+     150
+    ],
+    [
+     "cebolla",
+     50
+    ],
+    [
+     "zanahoria",
+     50
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "ajo",
+     5
+    ]
+   ],
+   "instrucciones": "1. Hidrata la soja texturizada 10 minutos en agua caliente y escúrrela.\n2. Sofríe la cebolla, la zanahoria y el ajo picados en el aceite 6 minutos.\n3. Añade la soja, las lentejas y el tomate; cocina a fuego suave 12 minutos.\n4. Cuece la pasta, escúrrela y mézclala con el ragú.",
+   "consejos": "La vitamina C (limón, pimiento, naranja) ayuda a absorber el hierro de las legumbres y la soja.",
+   "perfil": "post"
+  },
+  {
+   "nombre": "Bowl de quinoa, tempeh y boniato asado",
+   "descripcion": "Bowl completo con quinoa, tempeh y boniato, con 38 g de proteína.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "quinoa",
+     70
+    ],
+    [
+     "tempeh",
+     120
+    ],
+    [
+     "boniato",
+     200
+    ],
+    [
+     "brocoli",
+     100
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "sojasalsa",
+     10
+    ]
+   ],
+   "instrucciones": "1. Asa el boniato en dados 25 minutos a 200 °C.\n2. Cuece la quinoa 12 minutos en el doble de agua.\n3. Dora el tempeh en dados en una sartén con el aceite 5 minutos y añade la salsa de soja.\n4. Cuece el brócoli al vapor 5 minutos y monta el bol.",
+   "consejos": "Aliña con unas gotas de limón: la vitamina C mejora la absorción del hierro.",
+   "perfil": "post"
+  },
+  {
+   "nombre": "Batido de plátano, avena y proteína vegetal",
+   "descripcion": "Batido espeso con 38 g de proteína y 63 g de hidratos.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "soja",
+     300
+    ],
+    [
+     "avena",
+     40
+    ],
+    [
+     "prot",
+     30
+    ],
+    [
+     "platano",
+     120
+    ]
+   ],
+   "instrucciones": "1. Tritura todos los ingredientes con hielo durante 1 minuto.\n2. Sirve enseguida.",
+   "consejos": "Si lo quieres más fino, usa copos de avena molidos.",
+   "perfil": "post",
+   "tipo_plato": "Merienda",
+   "tipo_receta": "snack_postre"
+  },
+  {
+   "nombre": "Cuscús dulce con pasas, naranja y canela",
+   "descripcion": "Plato ligero y fácil de digerir, rico en hidratos y casi sin grasa.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "cuscus",
+     90
+    ],
+    [
+     "pasas",
+     20
+    ],
+    [
+     "zumo",
+     150
+    ],
+    [
+     "canela",
+     2
+    ]
+   ],
+   "instrucciones": "1. Hidrata el cuscús con agua hirviendo (la misma cantidad) tapado 5 minutos.\n2. Suelta los granos con un tenedor y mezcla con las pasas y la canela.\n3. Riega con el zumo de naranja y sirve templado o frío.",
+   "consejos": "Perfecto cuando necesitas energía sin sobrecargar el estómago.",
+   "perfil": "pre",
+   "tipo_plato": "Desayuno",
+   "tipo_receta": "desayuno"
+  }
+ ],
+ "apto_rendimiento": true,
+ "tipo_receta": "completa",
+ "criterios_por_perfil": {
+  "post": {
+   "kcal_min": 400,
+   "kcal_max": 800,
+   "proteina_pct_min_vegano": 0.15,
+   "hc_pct_min": 0.45
+  },
+  "pre": {
+   "kcal_min": 250,
+   "kcal_max": 600,
+   "hc_pct_min": 0.6,
+   "grasa_pct_max": 0.15
+  }
+ }
+}
