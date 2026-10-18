@@ -13,7 +13,7 @@ const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Mn}/gu,
 
 // tag positivo → palabras de ingrediente que lo implican. Se compara por palabra completa.
 const REGLAS: Record<string, RegExp> = {
-  Gluten: /\b(trigo|pan|panes|pasta|espagueti|espaguetis|macarron(es)?|fideos?|cuscus|bagel|granola|cereales?|galletas?|harina de trigo|harina|seitan|cebada|bulgur|pita|tortilla de trigo|wraps?|focaccia|pizza|rebozad[oa]|empanad[oa]|croutons?|tostadas?|sandwich|bocadillo|tallarines|lasana|canelon(es)?|pan rallado|obleas?|hojaldre|masa|centeno|espelta|kamut|cerveza|salsa de soja|weetabix|muesli)\b/,
+  Gluten: /\b(trigo|pan|panes|pasta|espagueti|espaguetis|macarron(es)?|fideos?|cuscus|bagel|granola|cereales?|galletas?|harina de trigo|harina|seitan|cebada|bulgur|pita|tortilla de trigo|wraps?|focaccia|pizza|rebozad[oa]|empanad[oa]|croutons?|tostadas?|sandwich|bocadillo|tallarines|lasana|canelon(es)?|pan rallado|obleas?|hojaldre|masa|centeno|espelta|kamut|cerveza|salsa de soja|weetabix|muesli|avena|copos de avena)\b/,
   'Frutos Secos': /\b(almendras?|nueces?|nuez|avellanas?|anacardos?|pistachos?|pecanas?|macadamias?|castanas?|frutos secos|mantequilla de almendras?|crema de almendras?|praline|turron)\b/,
   Cacahuetes: /\b(cacahuetes?|mani|crema de cacahuete)\b/,
   Huevos: /\b(huevos?|claras?|yemas?|mayonesa|alioli|merengue|tortilla francesa|tortilla de patata|revuelto)\b/,
@@ -25,7 +25,7 @@ const REGLAS: Record<string, RegExp> = {
   Sésamo: /\b(sesamo|tahini)\b/,
 }
 // El alimento no es lo que parece (evitar falsos positivos): «pasta de curry/tomate/…», «leche de coco/almendra/avena/soja»
-const EXCLUIR = /(konjac|everything bagel|pasta fusilli 100|almendra tostada|pipas|semillas|nuez moscada|obleas de arroz|papel de arroz|tostad[oa]s? (de )?(sesamo|calabaza)|pasta de (curry|tomate|sesamo|almendras?|cacahuetes?|datiles|aceitunas?|dientes)|leche de (coco|almendras?|avena|soja|arroz)|bebida de|queso vegano|yogur de (soja|coco)|mantequilla de (almendras?|cacahuete)|pan de pescado|harina de (arroz|garbanzo|avena|maiz|almendra|coco|legumbres)|crema de cacahuete|nata vegetal|mantequilla vegetal)/
+const EXCLUIR = /(sin gluten|konjac|everything bagel|pasta fusilli 100|almendra tostada|pipas|semillas|nuez moscada|obleas de arroz|papel de arroz|tostad[oa]s? (de )?(sesamo|calabaza)|pasta de (curry|tomate|sesamo|almendras?|cacahuetes?|datiles|aceitunas?|dientes)|leche de (coco|almendras?|avena|soja|arroz)|bebida de|queso vegano|yogur de (soja|coco)|mantequilla de (almendras?|cacahuete)|pan de pescado|harina de (arroz|garbanzo|maiz|almendra|coco|legumbres)|crema de cacahuete|nata vegetal|mantequilla vegetal)/
 
 async function main() {
   const filas: Array<{ id: string; nombre: string; intolerancias: string[] | null; receta_ingredientes: { nombre_libre: string | null; alimento: { nombre: string } | { nombre: string }[] | null }[] }> = []

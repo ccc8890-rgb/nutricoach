@@ -249,6 +249,22 @@ export async function filtrarRecetasPorSlot(
   const verificadas = candidatas.filter(r => r.verificacion != null)
   if (verificadas.length >= 3) candidatas = verificadas
 
+  // Filtro blando: densidad proteica. Escalar cantidades clava las kcal pero NO la proteína: la receta elegida ya trae
+  // su proporción. Una con el 17 % de sus kcal en proteína no llega a un plan que pide el 29 % (Marta: −15 %), y una
+  // con el 30 % se pasa en un plan de proteína limitada (ERC: 59 g = 11 % de las kcal → +21 %). Se prefieren recetas
+  // cuya densidad esté cerca de la del plan, solo si quedan ≥7 candidatas.
+  if (targetKcal > 0 && targetProt > 0) {
+    const densObjetivo = (targetProt * 4) / targetKcal
+    const dens = (r: { kcal?: number | null; proteinas?: number | null }) => ((r.proteinas ?? 0) * 4) / Math.max(1, r.kcal ?? 0)
+    if (densObjetivo >= 0.2) {
+      const proteicas = candidatas.filter(r => (r.kcal ?? 0) > 0 && dens(r) >= densObjetivo * 0.8)
+      if (proteicas.length >= POOL_SEMANA) candidatas = proteicas
+    } else if (densObjetivo <= 0.14) {
+      const moderadas = candidatas.filter(r => (r.kcal ?? 0) > 0 && dens(r) <= densObjetivo * 1.6)
+      if (moderadas.length >= POOL_SEMANA) candidatas = moderadas
+    }
+  }
+
   // Filtro blando: score_calidad mínimo (solo si quedan >=3)
   const aptasCalidad = candidatas.filter(r => (r.score_calidad ?? 50) >= 50)
   if (aptasCalidad.length >= 3) candidatas = aptasCalidad
