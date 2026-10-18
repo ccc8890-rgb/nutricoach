@@ -13,6 +13,10 @@ Detalle y lecciones: [`docs/18-10-2026_auditoria-garmin-y-entrenador-ia.md`](doc
 - **Añadido después:** avisos al mover si choca con otra sesión exigente (mismo día, anterior o siguiente) y Cardio/Funcional/HIIT/Fuerza de Garmin cuentan como fuerza.
 - **Sin comprobar:** envío real a Garmin tras mover, aspecto en pantalla, y que mover no cambia la dieta de ese día.
 
+## ✅ 18-10-2026 (tarde, Claude) — Tarjetas de macros, entreno y semana; triángulo en el recetario; semana siguiente
+
+Resumen y pendientes en la fila de `NUTRICION/CLAUDE.md`. Claves técnicas: `lib/entrenos/tarjeta-story.ts` (`dibujarPlatoTernario`, `dibujarTarjeta`, `dibujarTarjetaSemana`, `datosTarjetaDeSesion`; el canvas lee la fuente de `--font-sora`); `components/PortalCliente/MacroTriangulo.tsx` (animación, macro predominante); `components/training/EntrenoSubTabs.tsx` (selector de semana, `ew` en la URL; el portal lo conserva en `app/cliente/page.tsx`) y `EntrenoKanban.tsx` (`soloLectura`); `app/api/entrenos/semana-completa` (`?offset=0-8`); `app/api/cliente/entrenos/mover-dia` (mover sesiones pasadas no hechas). Sin migraciones ni rutas nuevas; sin secretos en los diffs; el offset se acota a 0-8 y la ruta sigue exigiendo sesión.
+
 ## ✅ 14-10-2026 (tarde-noche, Claude) — Tarjetas para stories, diagrama ternario e icono nuevo
 
 - **Qué hay:** botón (icono de Instagram) en Entreno → Hoy y en el detalle de receta → vista previa → «Compartir» (hoja de iOS) o «Copiar». Tarjetas PNG pequeñas, panel translúcido y esquinas casi rectas, pensadas como **sticker sobre foto/vídeo propio**. Todo se genera en el navegador (canvas): sin rutas API, sin subir nada. Código: `lib/entrenos/tarjeta-story.ts` (`dibujarTarjeta` entreno, `dibujarPlatoTernario` plato, firma con `marcaTriangulo`), `components/training/CompartirSesion.tsx` (modal + compartir/copiar), `components/PortalCliente/MacroTriangulo.tsx` (versión en pantalla), estilos `.share-story*` en `app/cliente/cliente.css`.
