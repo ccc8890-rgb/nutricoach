@@ -57,10 +57,10 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinM
   }, [])
 
   // Fases (todas dentro de la misma línea de tiempo 0 → 1)
-  const rejillaOp = suave(t / 0.25)
-  const contorno = muySuave(t / 0.45)
-  const viaje = muySuave((t - 0.2) / 0.6)
-  const lineas = suave((t - 0.6) / 0.3)
+  const rejillaOp = 0.45 + 0.55 * suave(t / 0.2) // el triángulo ya está ahí antes de llegar; lo que se anima es el reparto
+  const viaje = muySuave((t - 0.08) / 0.55)          // el punto viaja desde el centro hasta su sitio
+  const crece = muySuave((t - 0.55) / 0.35)          // la línea del macro predominante crece desde el punto hacia su vértice
+  const lineas = suave((t - 0.75) / 0.25)            // las otras dos aparecen al final, tenues
   const cuentas = suave((t - 0.05) / 0.75)
 
   const side = 170
@@ -123,14 +123,14 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinM
         </defs>
         <path d={`M${V[0].x} ${V[0].y} L${V[1].x} ${V[1].y} L${V[2].x} ${V[2].y} Z`} fill={`url(#${uid}-velo)`} opacity={rejillaOp} />
         {rejilla.map(([a, b], i) => <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="var(--text-muted)" strokeOpacity={0.22 * rejillaOp} strokeWidth="1" />)}
-        <path d={`M${V[0].x} ${V[0].y} L${V[1].x} ${V[1].y} L${V[2].x} ${V[2].y} Z`} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - contorno} fill="none" stroke="var(--text-muted)" strokeOpacity="0.7" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={`M${V[0].x} ${V[0].y} L${V[1].x} ${V[1].y} L${V[2].x} ${V[2].y} Z`} fill="none" stroke="var(--text-muted)" strokeOpacity={0.7 * rejillaOp} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
         {V.map((v, i) => (
-          <line key={i} x1={punto.x} y1={punto.y} x2={v.x} y2={v.y} stroke="var(--text)"
-            strokeOpacity={(i === dom ? 0.5 : 0.2) * lineas} strokeWidth={i === dom ? 1.6 : 1} strokeDasharray={i === dom ? undefined : '3 4'}
-            filter={i === dom && lineas > 0.5 ? `url(#${uid}-glow)` : undefined} />
+          <line key={i} x1={punto.x} y1={punto.y} x2={i === dom ? punto.x + (v.x - punto.x) * crece : v.x} y2={i === dom ? punto.y + (v.y - punto.y) * crece : v.y} stroke="var(--text)"
+            strokeOpacity={i === dom ? 0.5 * clamp(crece * 4) : 0.2 * lineas} strokeWidth={i === dom ? 1.6 : 1} strokeDasharray={i === dom ? undefined : '3 4'}
+            filter={i === dom && crece > 0.3 ? `url(#${uid}-glow)` : undefined} />
         ))}
         {/* Halo: respira muy despacio una vez llegado; un anillo se expande al aterrizar */}
-        <circle cx={punto.x} cy={punto.y} r="22" fill={`url(#${uid}-halo)`} opacity={suave((t - 0.5) / 0.4)} className={llegado ? 'macro-tri-respira' : undefined} />
+        <circle cx={punto.x} cy={punto.y} r="22" fill={`url(#${uid}-halo)`} opacity={suave((t - 0.4) / 0.4)} className={llegado ? 'macro-tri-respira' : undefined} />
         {llegado && <circle cx={punto.x} cy={punto.y} r="6" fill="none" stroke="var(--text)" strokeWidth="1" className="macro-tri-onda" />}
         <circle cx={punto.x} cy={punto.y} r="5.5" fill="var(--text)" filter={`url(#${uid}-glow)`} opacity={viaje > 0.02 ? 1 : 0} />
         {V.map((v, i) => (
