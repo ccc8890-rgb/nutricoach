@@ -80,8 +80,9 @@ async function prepararCanvas(w: number, h: number) {
   const css = getComputedStyle(document.documentElement)
   const sans = css.getPropertyValue('--font-instrument').trim() || 'system-ui, sans-serif'
   const mono = css.getPropertyValue('--font-geist-mono').trim() || 'ui-monospace, monospace'
+  const sora = css.getPropertyValue('--font-sora').trim() || sans
   try {
-    await Promise.all([document.fonts.load(`300 80px ${sans}`), document.fonts.load(`700 40px ${sans}`), document.fonts.load(`600 30px ${mono}`)])
+    await Promise.all([document.fonts.load(`300 80px ${sans}`), document.fonts.load(`700 40px ${sans}`), document.fonts.load(`600 30px ${mono}`), document.fonts.load(`200 80px ${sora}`), document.fonts.load(`300 26px ${sora}`)])
   } catch { /* fuente de respaldo */ }
   // Se dibuja a 3× para que no pierda definición cuando Instagram la reescala y comprime
   const canvas = document.createElement('canvas')
@@ -96,7 +97,7 @@ async function prepararCanvas(w: number, h: number) {
   ctx.strokeStyle = `rgba(${RGB},0.38)`
   ctx.strokeRect(1, 1, w - 2, h - 2)
   marcasEsquina(ctx, w, h)
-  return { canvas, ctx, sans, mono }
+  return { canvas, ctx, sans, mono, sora }
 }
 
 const aBlob = (c: HTMLCanvasElement) => new Promise<Blob>((ok, ko) => c.toBlob(b => (b ? ok(b) : ko(new Error('canvas'))), 'image/png'))
@@ -110,53 +111,13 @@ function marcasEsquina(ctx: CanvasRenderingContext2D, w: number, h: number) {
   }
 }
 
-export type VarianteMarca = '1' | '3' | 'h'
-let varianteMarca: VarianteMarca = '3'
-/** Para probar variantes del símbolo de la firma. */
-export function usarVarianteMarca(v: VarianteMarca) { varianteMarca = v }
-
-/** Símbolo: triángulo (proteína · carbos · grasa) con un punto luminoso que marca el equilibrio. */
-function marcaTriangulo(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, v: VarianteMarca) {
-  const TAU = Math.PI * 2
-  const vert = [0, 1, 2].map(i => ({ x: cx + Math.sin((i * TAU) / 3) * r, y: cy - Math.cos((i * TAU) / 3) * r + r * 0.12 }))
-  const F = [0.36, 0.34, 0.3]
-  const px = vert.reduce((a, q, i) => a + q.x * F[i], 0), py = vert.reduce((a, q, i) => a + q.y * F[i], 0)
-  const tonos = [C_PROT, C_CARB, C_GRASA]
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round'
-  if (v === '1') {
-    ctx.beginPath(); vert.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y))); ctx.closePath()
-    ctx.lineWidth = 1.6; ctx.strokeStyle = METAL; ctx.stroke()
-  }
-  if (v === '1' || v === 'h') {
-    const m = vert.map((q, i) => ({ x: (q.x + vert[(i + 1) % 3].x) / 2, y: (q.y + vert[(i + 1) % 3].y) / 2 }))
-    ctx.beginPath(); m.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y))); ctx.closePath()
-    ctx.lineWidth = 0.8; ctx.strokeStyle = `rgba(${RGB},0.35)`; ctx.stroke()
-  }
-  if (v === '3' || v === 'h') {
-    for (let i = 0; i < 3; i++) {
-      const a = vert[i], b = vert[(i + 1) % 3]
-      const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, g = r * 0.2
-      ctx.beginPath(); ctx.moveTo(a.x + ux * g, a.y + uy * g); ctx.lineTo(b.x - ux * g, b.y - uy * g)
-      ctx.lineWidth = 2; ctx.strokeStyle = tonos[i]; ctx.stroke()
-    }
-  }
-  ctx.save(); ctx.shadowColor = `rgba(${GLOW},0.95)`; ctx.shadowBlur = 8
-  ctx.beginPath(); ctx.arc(px, py, 2.8, 0, TAU); ctx.fillStyle = PUNTO; ctx.fill(); ctx.restore()
-}
-
-/** Firma: solo el símbolo del triángulo, centrado (sin nombre mientras no esté decidido). */
-function firma(ctx: CanvasRenderingContext2D, w: number, y: number, _mono: string) {
-  void _mono
-  marcaTriangulo(ctx, w / 2, y - 1, 15, varianteMarca)
-}
-
 /** Sticker de la sesión: filas «01 · nombre · 4×6 · 80 kg» separadas por líneas finas. Sin títulos. */
 async function _dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
   const filas = d.ejercicios.slice(0, 6)
   const W = 640
   const P = 48
   const rowH = 62
-  const H = P + rowH * filas.length + 74
+  const H = P + rowH * filas.length + 26
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   filas.forEach((e, i) => {
     const y = P + rowH * i
@@ -179,7 +140,6 @@ async function _dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
     ctx.fillStyle = `rgba(${RGB},0.16)`
     if (i < filas.length - 1) ctx.fillRect(P, y + rowH - 4, W - P * 2, 1.5)
   })
-  firma(ctx, W, H - 40, mono)
   return aBlob(canvas)
 }
 
@@ -234,7 +194,6 @@ async function _dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
     ctx.fillText(c.etiqueta, cx, cy + R + 36)
     if (i > 0) { ctx.fillStyle = METAL; ctx.fillText(`${Math.round(c.tramos[0].frac * 100)}%`, cx, cy + R + 58) }
   })
-  firma(ctx, W, H - 34, mono)
   return aBlob(canvas)
 }
 
@@ -279,18 +238,20 @@ async function _dibujarPlatoRegla(d: DatosPlato): Promise<Blob> {
     ctx.font = `600 13px ${mono}`; ctx.fillStyle = c as string; ctx.fillText(`g ${l}`, x + wn + 6, by + bh + 58)
     x += anchos[i] + gap
   })
-  firma(ctx, W, H - 28, mono)
   return aBlob(canvas)
 }
 
-/** V2 «Ternario»: un punto en un triángulo (proteína · carbos · grasa); su posición ES el ratio del plato. */
+/** V2 «Ternario»: un punto en un triángulo (proteína · carbos · grasa); su posición ES el ratio del plato. El macro predominante ilumina su línea. */
 async function _dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
   const W = 720, H = 300
-  const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
+  const { canvas, ctx, mono, sora } = await prepararCanvas(W, H)
   const r = repartoPlato(d)
+  const fr = [r.fp, r.fc, r.fg]
+  const dom = fr.indexOf(Math.max(...fr))
   const side = 200, hgt = side * Math.sqrt(3) / 2
   const cx = W - 150, top = 52
   const vp = { x: cx, y: top }, vc = { x: cx - side / 2, y: top + hgt }, vg = { x: cx + side / 2, y: top + hgt }
+  const V = [vp, vc, vg]
   // rejilla al 25 / 50 / 75 %
   ctx.lineWidth = 1; ctx.strokeStyle = `rgba(${RGB},0.16)`
   for (const f of [0.25, 0.5, 0.75]) {
@@ -304,26 +265,32 @@ async function _dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
   ctx.lineWidth = 2; ctx.strokeStyle = `rgba(${RGB},0.5)`; ctx.stroke()
   const px = vp.x * r.fp + vc.x * r.fc + vg.x * r.fg
   const py = vp.y * r.fp + vc.y * r.fc + vg.y * r.fg
-  ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5; ctx.strokeStyle = `rgba(${GLOW},0.35)`
-  for (const v of [vp, vc, vg]) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(v.x, v.y); ctx.stroke() }
+  V.forEach((v, i) => {
+    const es = i === dom
+    ctx.setLineDash(es ? [] : [4, 5]); ctx.lineWidth = es ? 1.8 : 1.2
+    ctx.strokeStyle = `rgba(${GLOW},${es ? 0.5 : 0.2})`
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(v.x, v.y); ctx.stroke()
+  })
   ctx.setLineDash([])
   ctx.save(); ctx.shadowColor = `rgba(${GLOW},0.95)`; ctx.shadowBlur = 20
   ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2); ctx.fillStyle = PUNTO; ctx.fill(); ctx.restore()
-  ctx.font = `600 14px ${mono}`; ctx.fillStyle = MUTED; ctx.textAlign = 'center'
-  ctx.fillText('P', vp.x, vp.y - 10); ctx.fillText('C', vc.x - 14, vc.y + 5); ctx.fillText('G', vg.x + 14, vg.y + 5)
-  // lectura a la izquierda
-  ctx.textAlign = 'left'
-  ctx.font = `200 84px ${sans}`; ctx.fillStyle = INK
-  const k = String(Math.round(d.kcal)); ctx.fillText(k, 48, 118)
-  ctx.font = `600 15px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText('KCAL', 48, 146)
-  ;[[d.p, 'PROT', r.pp, C_PROT], [d.c, 'CARB', r.pc, C_CARB], [d.g, 'GRASA', r.pg, C_GRASA]].forEach(([g, l, pc, c], i) => {
-    const y = 188 + i * 26
-    ctx.fillStyle = c as string; ctx.fillRect(48, y - 12, 10, 10)
-    ctx.font = `300 22px ${sans}`; ctx.fillStyle = INK; ctx.fillText(`${Math.round(g as number)} g`, 70, y)
-    ctx.font = `600 13px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(`${l}  ${pc}%`, 146, y)
+  ctx.textAlign = 'center'
+  ;[['P', vp.x, vp.y - 10], ['C', vc.x - 14, vc.y + 5], ['G', vg.x + 14, vg.y + 5]].forEach(([l, x, y], i) => {
+    ctx.font = `${i === dom ? 700 : 600} 14px ${mono}`; ctx.fillStyle = i === dom ? INK : MUTED
+    ctx.fillText(l as string, x as number, y as number)
   })
+  // lectura a la izquierda: kcal y reparto en %
   ctx.textAlign = 'left'
-  firma(ctx, W, H - 30, mono)
+  ctx.font = `200 88px ${sora}`; ctx.fillStyle = INK
+  const k = String(Math.round(d.kcal)); ctx.fillText(k, 48, 110)
+  const wk = ctx.measureText(k).width
+  ctx.font = `600 14px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText('KCAL', 48 + wk + 10, 110)
+  ;[[r.pp, 'PROTEÍNA', C_PROT], [r.pc, 'CARBOS', C_CARB], [r.pg, 'GRASAS', C_GRASA]].forEach(([pc, l, c], i) => {
+    const y = 176 + i * 38
+    ctx.font = `300 28px ${sora}`; ctx.fillStyle = INK; ctx.fillText(`${pc}%`, 48, y)
+    ctx.fillStyle = c as string; ctx.fillRect(130, y - 13, 10, 10)
+    ctx.font = `500 13px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(l as string, 154, y - 3)
+  })
   return aBlob(canvas)
 }
 
@@ -336,7 +303,6 @@ async function _dibujarPlatoMedidor(d: DatosPlato): Promise<Blob> {
   ctx.font = `200 84px ${sans}`; ctx.fillStyle = INK
   ctx.fillText(String(Math.round(d.kcal)), 48, 122)
   ctx.font = `600 15px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText('KCAL POR RACIÓN', 48, 152)
-  firma(ctx, 330, H - 34, mono)
   const cols: Array<[number, number, string, string]> = [[r.pp, d.p, 'PROT', C_PROT], [r.pc, d.c, 'CARB', C_CARB], [r.pg, d.g, 'GRASA', C_GRASA]]
   const x0 = 380, colW = 100, seg = 20, sh = 6, sg = 3
   cols.forEach(([pc, g, l, c], i) => {

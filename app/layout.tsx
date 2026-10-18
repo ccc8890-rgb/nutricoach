@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
-import { Instrument_Sans } from 'next/font/google'
+import { Instrument_Sans, Sora } from 'next/font/google'
 import Script from "next/script"
 import "./globals.css"
 import { ToastProvider } from '@/components/ui/Toast'
@@ -10,6 +10,13 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 const instrumentSans = Instrument_Sans({
   subsets: ['latin'],
   variable: '--font-instrument',
+  display: 'swap',
+})
+
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['200', '300'],
+  variable: '--font-sora',
   display: 'swap',
 })
 
@@ -46,7 +53,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" data-scroll-behavior="smooth" className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${instrumentSans.variable}`} suppressHydrationWarning>
+    <html lang="es" data-scroll-behavior="smooth" className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${instrumentSans.variable} ${sora.variable}`} suppressHydrationWarning>
       <head>
         {/* Fotos de recetas: abre conexión con Cloudinary desde el principio (ahorra DNS+TLS en la primera foto) */}
         <link rel="preconnect" href="https://res.cloudinary.com" />

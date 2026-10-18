@@ -9,7 +9,8 @@ import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta, clasificarIntolerancia, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
-import { MacroRing, IngredientChecklist, StepByStep } from '@/components/premium'
+import { IngredientChecklist, StepByStep } from '@/components/premium'
+import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
 import { listaRecordada } from '@/lib/useEstadoUrl'
 import BarraRevision from '@/components/recetas/BarraRevision'
 import ReportarProblema from '@/components/recetas/ReportarProblema'
@@ -536,15 +537,15 @@ export default function DetalleRecetaPage() {
               border: '1px solid var(--border)',
             }}
           >
-            {/* MacroRing */}
-            <div className="flex-shrink-0">
+            {/* Reparto de macros */}
+            <div className="w-full flex-shrink-0 sm:w-[330px]">
               {macrosPorPorcion ? (
-                <MacroRing
+                <MacroTriangulo
                   kcal={macrosPorPorcion.kcal}
-                  proteinas={macrosPorPorcion.proteinas}
-                  carbohidratos={macrosPorPorcion.carbohidratos}
-                  grasas={macrosPorPorcion.grasas}
-                  size={130}
+                  p={macrosPorPorcion.proteinas}
+                  c={macrosPorPorcion.carbohidratos}
+                  g={macrosPorPorcion.grasas}
+                  sinMarco
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center" style={{ width: 130, height: 130 }}>
