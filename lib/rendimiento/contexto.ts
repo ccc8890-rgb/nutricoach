@@ -83,7 +83,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   const media = (v: (number | null)[]) => { const x = v.filter((n): n is number => typeof n === 'number'); return x.length ? x.reduce((a, b) => a + b, 0) / x.length : null }
   const rhrReciente = media(bienestar.slice(-7).map(b => b.rhr))
   const rhrBase = media(bienestar.slice(0, -7).map(b => b.rhr))
-  const alertas = calcularAlertas({ resumen: panel.resumen, semanas: panel.semanas, diasParaCompeticion: diasComp, rhr: { reciente: rhrReciente, base: rhrBase } })
+  const alertas = calcularAlertas({ resumen: panel.resumen, semanas: panel.semanas, diasParaCompeticion: diasComp, rhr: { reciente: rhrReciente, base: rhrBase }, preparacionReciente: bienestar.slice(-3).map(b => b.readiness).filter((n): n is number => typeof n === 'number') })
 
   // Sesiones del plan activo
   let sesionesPlan: string[] = []

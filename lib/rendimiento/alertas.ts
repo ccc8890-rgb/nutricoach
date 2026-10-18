@@ -22,12 +22,22 @@ export interface EntradaAlertas {
   rhr?: { reciente: number | null; base: number | null }
   /** Porcentaje del tiempo de las últimas 4 semanas en zonas 4-5 de pulso (0-100). */
   pctIntenso28d?: number | null
+  /** Preparación para entrenar de Garmin (0-100) de los últimos días con dato, del más antiguo al más reciente. */
+  preparacionReciente?: number[]
 }
+
+/** Preparación de Garmin igual o inferior a esto, dos días seguidos, cuenta como recuperación baja. */
+const PREPARACION_BAJA = 30
 
 export function calcularAlertas(e: EntradaAlertas): AlertaRendimiento[] {
   const a: AlertaRendimiento[] = []
   const r = e.resumen
   if (!r) return a
+
+  const prep = (e.preparacionReciente ?? []).slice(-2)
+  if (prep.length === 2 && prep.every(p => p <= PREPARACION_BAJA)) {
+    a.push({ codigo: 'recuperacion_baja', gravedad: 'alta', texto: `La preparación para entrenar de Garmin lleva dos días en ${prep[0]} y ${prep[1]} (≤ ${PREPARACION_BAJA}): conviene suavizar la próxima sesión de calidad.` })
+  }
 
   if (r.rampa7 > 8) {
     a.push({ codigo: 'rampa_alta', gravedad: 'alta', texto: `La forma sube ${r.rampa7} puntos en 7 días (más de ~8 aumenta el riesgo de lesión o sobrecarga).` })

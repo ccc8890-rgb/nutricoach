@@ -181,7 +181,7 @@ export async function syncGarminDay(
     body_battery_max: summary.bodyBatteryHighestValue ?? undefined,
     body_battery_min: summary.bodyBatteryLowestValue ?? undefined,
     body_battery_end: summary.bodyBatteryMostRecentValue ?? undefined,
-    stress_avg: summary.averageStressLevel ?? undefined,
+    stress_avg: summary.averageStressLevel != null && summary.averageStressLevel >= 0 ? summary.averageStressLevel : undefined,
     training_readiness: readiness?.score ?? undefined,
     distancia_km: summary.totalDistanceMeters
       ? parseFloat((summary.totalDistanceMeters / 1000).toFixed(2))
@@ -200,7 +200,7 @@ export async function syncGarminDay(
       min_moderada: summary.moderateIntensityMinutes,
       min_intensa: summary.vigorousIntensityMinutes,
       // Estrés
-      stress_avg: summary.averageStressLevel,
+      stress_avg: summary.averageStressLevel != null && summary.averageStressLevel >= 0 ? summary.averageStressLevel : null,
       stress_max: summary.maxStressLevel,
       stress_pct_bajo: summary.lowStressPercentage,
       stress_pct_medio: summary.mediumStressPercentage,
