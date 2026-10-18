@@ -4,6 +4,14 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 18-10-2026 (tarde, Claude) — Auditoría Garmin → análisis → plan y botones del Entrenador IA
+
+Detalle y lecciones: [`docs/18-10-2026_auditoria-garmin-y-entrenador-ia.md`](docs/18-10-2026_auditoria-garmin-y-entrenador-ia.md). Commits `e37c909`, `12ade42`, `8faafc7`, `bdeeccb`; `verificar:motor` 63/63.
+- **Los datos de Garmin llegan** (70 días sin huecos, 116 entrenos); lo que falta es del reloj (sueño 2/70, HRV semanal, fuerza sin registrar).
+- **El plan no cambia solo:** aprobar un análisis solo deja constancia; cambia con el botón de cada decisión (pasos o mover de día). Agentes antiguos siguen apagados.
+- **Nuevo:** aviso `recuperacion_baja` (preparación ≤ 30 dos días), estrés -1 descartado, emparejado de sesiones por semana (`emparejarSesiones`), Entrenador IA en 4 pasos, `completarCambio` (la IA deja listo pasos o fechas) y botón **Mover y actualizar el reloj** (`lib/rendimiento/mover-sesion.ts`, solo esa fecha, con deshacer).
+- **Sin comprobar:** envío real a Garmin tras mover, aspecto en pantalla, y que mover no cambia la dieta de ese día.
+
 ## ✅ 14-10-2026 (tarde-noche, Claude) — Tarjetas para stories, diagrama ternario e icono nuevo
 
 - **Qué hay:** botón (icono de Instagram) en Entreno → Hoy y en el detalle de receta → vista previa → «Compartir» (hoja de iOS) o «Copiar». Tarjetas PNG pequeñas, panel translúcido y esquinas casi rectas, pensadas como **sticker sobre foto/vídeo propio**. Todo se genera en el navegador (canvas): sin rutas API, sin subir nada. Código: `lib/entrenos/tarjeta-story.ts` (`dibujarTarjeta` entreno, `dibujarPlatoTernario` plato, firma con `marcaTriangulo`), `components/training/CompartirSesion.tsx` (modal + compartir/copiar), `components/PortalCliente/MacroTriangulo.tsx` (versión en pantalla), estilos `.share-story*` en `app/cliente/cliente.css`.
