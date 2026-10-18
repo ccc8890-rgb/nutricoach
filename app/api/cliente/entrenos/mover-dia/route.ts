@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { esFechaISO, lunesDe, sumarDias, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
 import { plantillaActivaEn } from '@/lib/entrenos/ventana-plan'
-import { decidirMovimientoSesion, registrarCambioCliente, textoSesionDevuelta, textoSesionMovida } from '@/lib/entrenos/cambios-cliente'
+import { decidirMovimientoSesion, puedeMoverSesion, registrarCambioCliente, textoSesionDevuelta, textoSesionMovida } from '@/lib/entrenos/cambios-cliente'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const hoyMadrid = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' })
@@ -34,17 +34,19 @@ export async function POST(request: NextRequest) {
   const destino = sumarDias(lunesDe(fechaOrigen), indiceDestino)
   if (destino === fechaOrigen) return NextResponse.json({ ok: true })
   const hoy = hoyMadrid()
-  if (destino < hoy) return NextResponse.json({ error: 'No puedes colocar una sesión en un día que ya pasó' }, { status: 400 })
-  // Una sesión pasada solo se puede mover si no se hizo (para recuperar un día perdido)
+  // Una sesión pasada solo se puede mover si no se hizo (para recuperar un día perdido); nunca a un día que ya pasó
+  let hechaEnOrigen = false
   if (fechaOrigen < hoy) {
     const { data: ejercicios } = await admin.from('sesion_ejercicios').select('id').eq('sesion_id', sesionId)
     const ids = (ejercicios ?? []).map(e => e.id)
     if (ids.length > 0) {
       const { count } = await admin.from('registros_sets').select('id', { count: 'exact', head: true })
         .eq('cliente_id', cliente.id).eq('fecha', fechaOrigen).in('sesion_ejercicio_id', ids)
-      if ((count ?? 0) > 0) return NextResponse.json({ error: 'Esa sesión ya la hiciste, no se puede mover' }, { status: 400 })
+      hechaEnOrigen = (count ?? 0) > 0
     }
   }
+  const permiso = puedeMoverSesion({ fechaOrigen, destino, hoy, hechaEnOrigen })
+  if (!permiso.ok) return NextResponse.json({ error: permiso.mensaje }, { status: 400 })
   if (!plantillaActivaEn(plan.created_at, plan.duracion_semanas)(destino)) return NextResponse.json({ error: 'Solo puedes mover dentro de tu bloque actual' }, { status: 400 })
 
   const { data: ajustesBD } = await admin.from('calendario_entreno_ajustes').select('id, sesion_id, tipo, fecha_origen, fecha').eq('plan_id', plan.id).eq('sesion_id', sesionId)

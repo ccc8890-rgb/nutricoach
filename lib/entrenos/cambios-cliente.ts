@@ -44,3 +44,13 @@ export function decidirMovimientoSesion(i: { fechaOrigen: string; destino: strin
   if (i.diaPlantilla !== diaSemanaDe(i.fechaOrigen)) return { accion: 'error', mensaje: 'Esa sesión no toca ese día' }
   return { accion: 'insertar', fila: { tipo: 'mover', fecha_origen: i.fechaOrigen, fecha: i.destino } }
 }
+
+/**
+ * ¿Se puede mover una sesión? Nunca a un día que ya pasó; una sesión de un día pasado solo si no se hizo (para recuperar un día perdido).
+ * `hoy` en ISO (hora de Madrid).
+ */
+export function puedeMoverSesion(i: { fechaOrigen: string; destino: string; hoy: string; hechaEnOrigen: boolean }): { ok: true } | { ok: false; mensaje: string } {
+  if (i.destino < i.hoy) return { ok: false, mensaje: 'No puedes colocar una sesión en un día que ya pasó' }
+  if (i.fechaOrigen < i.hoy && i.hechaEnOrigen) return { ok: false, mensaje: 'Esa sesión ya la hiciste, no se puede mover' }
+  return { ok: true }
+}

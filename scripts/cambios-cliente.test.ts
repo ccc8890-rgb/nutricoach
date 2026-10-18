@@ -18,3 +18,16 @@ assert.deepEqual(decidirMovimientoSesion({ fechaOrigen: '2026-10-25', destino: '
 // La devuelve a su día de siempre (24): se borra el ajuste
 assert.deepEqual(decidirMovimientoSesion({ fechaOrigen: '2026-10-25', destino: '2026-10-24', diaPlantilla: 'Sábado', existente: mov }), { accion: 'borrar', ajusteId: 'a1' })
 console.log('cambios-cliente (movimiento) OK')
+
+import { puedeMoverSesion } from '../lib/entrenos/cambios-cliente'
+const hoy = '2026-10-18'
+// Recuperar un día perdido: sesión del 14 (no hecha) a hoy y a mañana
+assert.deepEqual(puedeMoverSesion({ fechaOrigen: '2026-10-14', destino: hoy, hoy, hechaEnOrigen: false }), { ok: true })
+assert.deepEqual(puedeMoverSesion({ fechaOrigen: '2026-10-14', destino: '2026-10-19', hoy, hechaEnOrigen: false }), { ok: true })
+// Ya hecha: no se mueve
+assert.equal(puedeMoverSesion({ fechaOrigen: '2026-10-14', destino: hoy, hoy, hechaEnOrigen: true }).ok, false)
+// Nunca a un día pasado, esté hecha o no
+assert.equal(puedeMoverSesion({ fechaOrigen: '2026-10-19', destino: '2026-10-17', hoy, hechaEnOrigen: false }).ok, false)
+// Futuro a futuro de siempre
+assert.deepEqual(puedeMoverSesion({ fechaOrigen: '2026-10-20', destino: '2026-10-22', hoy, hechaEnOrigen: false }), { ok: true })
+console.log('cambios-cliente (mover pasadas) OK')

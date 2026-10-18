@@ -1,6 +1,7 @@
 // lib/entrenos/tarjeta-story.ts
 // Tarjeta vertical (1080×1920) con el resumen de una sesión para compartir en Instagram Stories.
 // Se dibuja en un canvas (sin dependencias) y sale como PNG.
+import { repartoKcal } from '@/lib/nutricion/reparto-macros'
 import { normalizarBloqueSesion } from '@/lib/training/session-blocks'
 import { etiquetaTipoSesion, tituloSesionSinModalidad, type TipoSesion } from '@/lib/training/session-type-presentation'
 
@@ -218,9 +219,8 @@ async function _dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
 // ── Variantes no circulares del plato (a elegir) ─────────────────────────────
 
 function repartoPlato(d: DatosPlato) {
-  const kp = Math.max(d.p, 0) * 4, kc = Math.max(d.c, 0) * 4, kg = Math.max(d.g, 0) * 9
-  const t = kp + kc + kg || 1
-  return { fp: kp / t, fc: kc / t, fg: kg / t, pp: Math.round((kp / t) * 100), pc: Math.round((kc / t) * 100), pg: Math.round((kg / t) * 100) }
+  const { f, pct } = repartoKcal(d.p, d.c, d.g)
+  return { fp: f[0], fc: f[1], fg: f[2], pp: pct[0], pc: pct[1], pg: pct[2] }
 }
 
 /** V1 «Regla»: una barra proporcional con escala de medición y el ratio escrito P : C : G. */

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useRef, useState } from 'react'
+import { repartoKcal } from '@/lib/nutricion/reparto-macros'
 
 interface Props {
   kcal: number
@@ -23,11 +24,7 @@ const muySuave = (x: number) => 1 - Math.pow(1 - clamp(x), 4)
  * La animación de entrada arranca al llegar a la tarjeta al hacer scroll (no al montar la página).
  */
 export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinMarco = false }: Props) {
-  const kp = Math.max(p, 0) * 4, kc = Math.max(c, 0) * 4, kg = Math.max(g, 0) * 9
-  const total = kp + kc + kg || 1
-  const f = [kp / total, kc / total, kg / total]
-  const pct = f.map(x => Math.round(x * 100))
-  const dom = f.indexOf(Math.max(...f))
+  const { f, pct, dom } = repartoKcal(p, c, g)
   const uid = useId().replace(/:/g, '')
 
   // Entrada: arranca cuando la tarjeta se ve (≥ 45 %) y solo una vez
