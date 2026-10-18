@@ -21,6 +21,8 @@ export interface ContextoRendimiento {
   estudios: EstudioCitable[]
   /** Foto numérica del atleta que consume el motor de reglas. */
   estado: EstadoAtleta
+  /** Sesiones del plan activo con pasos estructurados: lo único que se puede modificar con un botón. */
+  sesionesEditables: { id: string; nombre: string; pasos: unknown }[]
 }
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`
@@ -89,10 +91,12 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   let sesionesPlan: string[] = []
   let nombresSesionesPlan: string[] = []
   let sesionesConPasos: { nombre: string | null; pasos: unknown }[] = []
+  let sesionesEditables: { id: string; nombre: string; pasos: unknown }[] = []
   if (plan) {
     const { data: s } = await db.from('sesiones_entrenamiento').select('id,nombre,dia_semana,fase_bloque,contexto_ia,pasos').eq('plan_id', plan.id).order('orden')
     nombresSesionesPlan = (s ?? []).map(x => String(x.nombre ?? ''))
     sesionesConPasos = (s ?? []).map(x => ({ nombre: x.nombre ?? null, pasos: x.pasos }))
+    sesionesEditables = (s ?? []).filter(x => x.pasos).map(x => ({ id: String(x.id), nombre: String(x.nombre ?? ''), pasos: x.pasos }))
     sesionesPlan = (s ?? []).map(x => `${x.dia_semana}: ${x.nombre}${x.fase_bloque ? ` [${x.fase_bloque}]` : ''}${x.contexto_ia ? ` (${x.contexto_ia})` : ''}${x.pasos ? ` [sesion_id:${x.id}] pasos_actuales=${JSON.stringify(x.pasos)}` : ' [sin pasos estructurados: no modificable]'}`)
   }
 
@@ -150,5 +154,6 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     hayDatos: recientes.length > 0,
     estudios,
     estado,
+    sesionesEditables,
   }
 }

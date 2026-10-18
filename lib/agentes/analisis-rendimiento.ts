@@ -39,7 +39,7 @@ REGLAS DE TRABAJO:
 9. Las zonas de pulso de Garmin son por % del pulso máximo y pueden quedar por debajo del umbral real: un rodaje suave con calor o poca base puede caer en Z4. Para el reparto de intensidad fíate de la sección REPARTO DE INTENSIDAD (calculada con el pulso de umbral del atleta) y antes de decir que algo fue intenso contrasta ritmo y pulso.
 10. La sección EJECUCIÓN DE LAS SESIONES dice si lo planificado se cumplió (ritmos por repetición, caída al final, sesiones saltadas). Es lo más importante para juzgar si el plan funciona: si no se cumple, plantea si el objetivo es demasiado exigente o si faltó recuperación antes de tocar la carga.
 11. Ritmos: un número MENOR de min/km es MÁS RÁPIDO (4:38 es más rápido que 4:49). Comprueba la dirección de cada comparación antes de escribirla, y no afirmes que algo es más rápido o lento que un umbral sin hacer esa comprobación. Si los ritmos por tramo empeoran hacia el final, dilo (caída).
-12. PASOS NUEVOS (opcional). Solo si el cambio afecta a una sesión que tenga [sesion_id:...] en el contexto, puedes añadir "sesion_id" (copiado tal cual) y "pasos": la sesión COMPLETA ya modificada, en el mismo formato JSON que "pasos_actuales" (tipos: calentamiento, trabajo, recuperacion, enfriamiento y bloques {"tipo":"repetir","veces":N,"pasos":[...]}; duración {"unidad":"metros"|"segundos","valor":N}; objetivo {"tipo":"ritmo","min_seg_km":N,"max_seg_km":N} con un rango de 10-15 s/km). Parte siempre de pasos_actuales, conserva sus campos "nota" y cambia solo lo que justifica la decisión. Si el cambio es genérico o la sesión no tiene pasos, NO incluyas "pasos". Un coach humano revisará y aplicará el cambio.
+12. PASOS NUEVOS (opcional). Solo si el cambio afecta a una sesión que tenga [sesion_id:...] en el contexto, puedes añadir "sesion_id" (copiado tal cual) y "pasos": la sesión COMPLETA ya modificada, en el mismo formato JSON que "pasos_actuales" (tipos: calentamiento, trabajo, recuperacion, enfriamiento y bloques {"tipo":"repetir","veces":N,"pasos":[...]}; duración {"unidad":"metros"|"segundos","valor":N}; objetivo {"tipo":"ritmo","min_seg_km":N,"max_seg_km":N} con un rango de 10-15 s/km). Parte siempre de pasos_actuales, conserva sus campos "nota" y cambia solo lo que justifica la decisión. Si el cambio modifica el ritmo, el volumen o la intensidad de una sesión con [sesion_id:...], DEBES incluir "sesion_id" y "pasos" (así el coach lo aplica con un botón). Solo omítelos si el cambio es genérico, mueve la sesión de día o la sesión no tiene pasos. Un coach humano revisará y aplicará el cambio.
 13. Sé coherente con tus propias cifras: si dices que un límite se supera, no propongas algo que lo supera.
 14b. La deriva cardiaca del contexto se calcula SIN los primeros 10 minutos de cada carrera (el pulso sube solo al entrar en calor) y solo con carreras continuas de 30+ min tras ese calentamiento; la referencia <5 % es orientativa (criterio de desacoplamiento Pa:Hr). Si hay pocas carreras con deriva, no saques conclusiones de ella.
 14c. Respeta el PERFIL: nivel, días disponibles, lesiones y restricciones del atleta. No propongas más sesiones que días disponibles, ni cargas o ejercicios que una lesión declarada contraindique, y si el atleta vuelve de un parón no subas carga.
@@ -57,6 +57,38 @@ Responde SOLO con este JSON:
   "score_confianza": 0.0
 }
 "prioridad": 1 (urgente) a 10 (rutinaria). "lecturas": máximo 4. "decisiones": máximo 2 y solo nuevas.`
+
+const SYSTEM_PASOS = `Conviertes una decisión de entrenamiento en los pasos exactos de una sesión de carrera. Recibes la sesión (sesion_id, pasos_actuales), la decisión (cambio y razón) y los ritmos del atleta.
+Responde SOLO con JSON: {"aplicable": true|false, "pasos": [...]}.
+- "aplicable": true solo si la decisión se puede expresar cambiando los pasos de ESTA sesión (ritmo, volumen, intensidad). Si es mover la sesión de día, un consejo general o afecta a otra sesión, devuelve {"aplicable": false}.
+- "pasos": la sesión COMPLETA ya modificada, en el mismo formato JSON que pasos_actuales (tipos calentamiento, trabajo, recuperacion, enfriamiento y bloques {"tipo":"repetir","veces":N,"pasos":[...]}; duración {"unidad":"metros"|"segundos","valor":N}; objetivo {"tipo":"ritmo","min_seg_km":N,"max_seg_km":N} con un rango de 10-15 s/km). Conserva los campos "nota" y cambia solo lo que la decisión pide. Un número menor de seg/km es más rápido.`
+
+const sinTildes = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+
+/** Si el modelo propuso un cambio de una sesión con pasos pero no los incluyó, se los pide aparte para que el coach tenga botón. */
+async function completarPasos<T extends { sesion: string; cambio: string; razon: string; sesion_id?: string; pasos?: unknown }>(
+  decisiones: T[], sesiones: { id: string; nombre: string; pasos: unknown }[], ritmos: string, desdeMs: number,
+): Promise<T[]> {
+  return Promise.all(decisiones.map(async d => {
+    if (d.pasos || Date.now() - desdeMs > 235_000) return d
+    const nombre = sinTildes(d.sesion)
+    const ses = nombre === 'general' ? null : sesiones.find(x => { const n = sinTildes(x.nombre); return n === nombre || n.includes(nombre) || nombre.includes(n) })
+    if (!ses) return d
+    try {
+      const crudo = (await llamarIA('analisis_rendimiento', {
+        sistema: SYSTEM_PASOS,
+        usuario: `SESIÓN: ${ses.nombre}\nsesion_id: ${ses.id}\npasos_actuales: ${JSON.stringify(ses.pasos)}\nRITMOS: ${ritmos}\nDECISIÓN: ${d.cambio}\nRAZÓN: ${d.razon}`,
+        json: true, presupuestoMs: 45_000, maxTokens: 4000, esfuerzo: 'low',
+      })).texto
+      const m = crudo.match(/\{[\s\S]*\}/)
+      const j = m ? JSON.parse(m[0]) as { aplicable?: boolean; pasos?: unknown } : null
+      if (!j?.aplicable || j.pasos === undefined) return d
+      const v = validarPasos(j.pasos)
+      if (!v.ok || JSON.stringify(v.pasos) === JSON.stringify(ses.pasos)) return d
+      return { ...d, sesion_id: ses.id, pasos: v.pasos }
+    } catch { return d }
+  }))
+}
 
 export interface ResultadoAnalisis {
   ok: boolean
@@ -124,6 +156,7 @@ export function textoMotor(m: ResultadoReglas): string {
 export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: { forzar?: boolean } = {}): Promise<ResultadoAnalisis> {
   const db = createServiceSupabase()
   const hoy = new Date().toISOString().slice(0, 10)
+  const inicioMs = Date.now()
 
   if (!opciones.forzar) {
     const hace6 = new Date(Date.now() - 6 * 86_400_000).toISOString()
@@ -154,7 +187,10 @@ export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: {
   // Sin IA el análisis sale igualmente con lo que dice el motor; sin IA y sin propuestas no hay nada que enseñar.
   if (!s && motor.propuestas.length === 0) return { ok: false, motivo: 'La IA no ha respondido ahora y el motor no tiene propuestas; inténtalo de nuevo en unos minutos' }
 
-  const { aceptadas, descartadas } = validarDecisionesIA(s?.decisiones ?? [], ctx.estado, motor.propuestas)
+  const validadas = validarDecisionesIA(s?.decisiones ?? [], ctx.estado, motor.propuestas)
+  const descartadas = validadas.descartadas
+  const ritmosTxt = ctx.estado.ritmos ? Object.entries(ctx.estado.ritmos).map(([k, v]) => `${k} ${Math.floor(Number(v) / 60)}:${String(Math.round(Number(v) % 60)).padStart(2, '0')}/km`).join(', ') : 'n/d'
+  const aceptadas = await completarPasos(validadas.aceptadas, ctx.sesionesEditables, ritmosTxt, inicioMs)
   const decisiones = componerDecisiones({
     reglas: motor.propuestas,
     estudiosPorDoi: porDoi,
