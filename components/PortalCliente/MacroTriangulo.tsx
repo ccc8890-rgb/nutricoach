@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 interface Props {
   kcal: number
@@ -12,29 +12,56 @@ interface Props {
   sinMarco?: boolean
 }
 
-/** Reparto de calorías de una receta en un diagrama ternario: el punto cae donde coinciden proteína, carbos y grasa. */
+const SORA = 'var(--font-sora), var(--font-instrument), sans-serif'
+const DURACION_MS = 2600
+const clamp = (x: number) => Math.min(Math.max(x, 0), 1)
+const suave = (x: number) => 1 - Math.pow(1 - clamp(x), 3) // salida suave
+const muySuave = (x: number) => 1 - Math.pow(1 - clamp(x), 4)
+
+/**
+ * Reparto de calorías de una receta en un diagrama ternario: el punto cae donde coinciden proteína, carbos y grasa.
+ * La animación de entrada arranca al llegar a la tarjeta al hacer scroll (no al montar la página).
+ */
 export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinMarco = false }: Props) {
   const kp = Math.max(p, 0) * 4, kc = Math.max(c, 0) * 4, kg = Math.max(g, 0) * 9
   const total = kp + kc + kg || 1
   const f = [kp / total, kc / total, kg / total]
   const pct = f.map(x => Math.round(x * 100))
   const dom = f.indexOf(Math.max(...f))
+  const uid = useId().replace(/:/g, '')
 
-  // Entrada animada: el contorno se dibuja y el punto viaja desde el centro hasta su posición (como los anillos)
+  // Entrada: arranca cuando la tarjeta se ve (≥ 45 %) y solo una vez
   const [t, setT] = useState(0)
+  const [llegado, setLlegado] = useState(false)
+  const raiz = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setT(1); return }
+    const el = raiz.current
+    if (typeof window === 'undefined' || !el) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || typeof IntersectionObserver === 'undefined') { setT(1); setLlegado(true); return }
     let raf = 0
-    const ini = performance.now() + 150, dur = 900
-    const paso = (ahora: number) => {
-      const x = Math.min(Math.max((ahora - ini) / dur, 0), 1)
-      setT(1 - Math.pow(1 - x, 3))
-      if (x < 1) raf = requestAnimationFrame(paso)
+    const arrancar = () => {
+      const ini = performance.now() + 120
+      const paso = (ahora: number) => {
+        const x = clamp((ahora - ini) / DURACION_MS)
+        setT(x)
+        if (x < 1) raf = requestAnimationFrame(paso)
+        else setLlegado(true)
+      }
+      raf = requestAnimationFrame(paso)
     }
-    raf = requestAnimationFrame(paso)
-    return () => cancelAnimationFrame(raf)
+    const obs = new IntersectionObserver(entradas => {
+      if (entradas.some(e => e.isIntersecting)) { obs.disconnect(); arrancar() }
+    }, { threshold: 0.45 })
+    obs.observe(el)
+    return () => { obs.disconnect(); cancelAnimationFrame(raf) }
   }, [])
+
+  // Fases (todas dentro de la misma línea de tiempo 0 → 1)
+  const rejillaOp = suave(t / 0.25)
+  const contorno = muySuave(t / 0.45)
+  const viaje = muySuave((t - 0.2) / 0.6)
+  const lineas = suave((t - 0.6) / 0.3)
+  const cuentas = suave((t - 0.05) / 0.75)
 
   const side = 170
   const h = (side * Math.sqrt(3)) / 2
@@ -46,11 +73,11 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinM
   ]
   const destino = { x: V.reduce((a, v, i) => a + v.x * f[i], 0), y: V.reduce((a, v, i) => a + v.y * f[i], 0) }
   const centro = { x: (V[0].x + V[1].x + V[2].x) / 3, y: (V[0].y + V[1].y + V[2].y) / 3 }
-  const punto = { x: centro.x + (destino.x - centro.x) * t, y: centro.y + (destino.y - centro.y) * t }
-  const lerp = (a: { x: number; y: number }, b: { x: number; y: number }, t: number) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t })
+  const punto = { x: centro.x + (destino.x - centro.x) * viaje, y: centro.y + (destino.y - centro.y) * viaje }
+  const lerp = (a: { x: number; y: number }, b: { x: number; y: number }, k: number) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k })
   const rejilla: Array<[{ x: number; y: number }, { x: number; y: number }]> = []
-  for (const t of [0.25, 0.5, 0.75]) {
-    for (const [a, b, d] of [[V[0], V[1], V[2]], [V[1], V[2], V[0]], [V[2], V[0], V[1]]] as const) rejilla.push([lerp(a, b, t), lerp(a, d, t)])
+  for (const k of [0.25, 0.5, 0.75]) {
+    for (const [a, b, d] of [[V[0], V[1], V[2]], [V[1], V[2], V[0]], [V[2], V[0], V[1]]] as const) rejilla.push([lerp(a, b, k), lerp(a, d, k)])
   }
   const filas = [
     { l: 'Proteína', g: p, pc: pct[0], color: 'var(--macro-protein)' },
@@ -59,33 +86,67 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinM
   ]
 
   return (
-    <div className={`flex items-center justify-between gap-3 ${sinMarco ? '' : 'rounded-[6px] p-4'}`} style={sinMarco ? undefined : { border: '1px solid var(--editorial-rule, var(--border))', background: 'var(--surface)' }}>
+    <div ref={raiz} className={`flex items-center justify-between gap-3 ${sinMarco ? '' : 'rounded-[6px] p-4'}`} style={sinMarco ? undefined : { border: '1px solid var(--editorial-rule, var(--border))', background: 'var(--surface)' }}>
       <div className="min-w-0">
         {mostrarKcal && (
-          <p className="text-4xl leading-none" style={{ color: 'var(--text)', fontFamily: 'var(--font-sora), var(--font-instrument), sans-serif', fontWeight: 200 }}>
-            {Math.round(kcal)} <span className="text-[10px] font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>KCAL</span>
+          <p className="text-5xl leading-none" style={{ color: 'var(--text)', fontFamily: SORA, fontWeight: 200, fontVariantNumeric: 'tabular-nums' }}>
+            {Math.round(kcal * cuentas)} <span className="font-data text-[10px] font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>KCAL</span>
           </p>
         )}
-        <div className={mostrarKcal ? 'mt-4 flex flex-col gap-1.5' : 'flex flex-col gap-1.5'}>
+        <div className={mostrarKcal ? 'mt-5 flex flex-col gap-2' : 'flex flex-col gap-2'}>
           {filas.map(r => (
-            <p key={r.l} className="flex items-baseline gap-2 whitespace-nowrap text-sm" style={{ color: 'var(--text)' }}>
+            <p key={r.l} className="flex items-baseline gap-2.5 whitespace-nowrap" style={{ color: 'var(--text)' }}>
+              <span className="w-[3.1rem] text-[1.55rem] leading-none" style={{ fontFamily: SORA, fontWeight: 300, fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.pc * cuentas)}%</span>
               <span className="inline-block h-2 w-2 shrink-0" style={{ background: r.color }} />
-              <span className="font-data">{Math.round(r.g)}&nbsp;g</span>
-              <span className="font-data text-[10px] tracking-[0.1em]" style={{ color: 'var(--text-muted)' }}>{r.l.toUpperCase()} {r.pc}%</span>
+              <span className="font-data text-[10px] font-medium tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>{r.l.toUpperCase()}</span>
+              <span className="font-data text-[10px]" style={{ color: 'var(--text-muted)', opacity: 0.7, fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.g * cuentas)} g</span>
             </p>
           ))}
         </div>
       </div>
-      <svg viewBox="0 0 210 200" style={{ width: '48%', maxWidth: 210, height: 'auto' }} role="img" aria-label={`Reparto de calorías: ${pct[0]} % proteína, ${pct[1]} % carbos, ${pct[2]} % grasa`} className="shrink-0">
-        {rejilla.map(([a, b], i) => <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="var(--text-muted)" strokeOpacity="0.22" strokeWidth="1" />)}
-        <path d={`M${V[0].x} ${V[0].y} L${V[1].x} ${V[1].y} L${V[2].x} ${V[2].y} Z`} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - t} fill="none" stroke="var(--text-muted)" strokeOpacity="0.7" strokeWidth="1.5" strokeLinejoin="round" />
-        {V.map((v, i) => <line key={i} x1={punto.x} y1={punto.y} x2={v.x} y2={v.y} stroke="var(--text)" strokeOpacity={(i === dom ? 0.5 : 0.2) * t} strokeWidth={i === dom ? 1.6 : 1} strokeDasharray={i === dom ? undefined : '3 4'} />)}
-        <circle cx={punto.x} cy={punto.y} r="9" fill="var(--text)" opacity="0.15" />
-        <circle cx={punto.x} cy={punto.y} r="5.5" fill="var(--text)" />
-        <text x={V[0].x} y={V[0].y - 8} textAnchor="middle" className="font-data" fontSize="10" fontWeight={dom === 0 ? 700 : 400} fill={dom === 0 ? 'var(--text)' : 'var(--text-muted)'}>P</text>
-        <text x={V[1].x - 8} y={V[1].y + 4} textAnchor="end" className="font-data" fontSize="10" fontWeight={dom === 1 ? 700 : 400} fill={dom === 1 ? 'var(--text)' : 'var(--text-muted)'}>C</text>
-        <text x={V[2].x + 8} y={V[2].y + 4} textAnchor="start" className="font-data" fontSize="10" fontWeight={dom === 2 ? 700 : 400} fill={dom === 2 ? 'var(--text)' : 'var(--text-muted)'}>G</text>
+      <svg viewBox="0 0 210 200" style={{ width: '48%', maxWidth: 210, height: 'auto', overflow: 'visible' }} role="img" aria-label={`Reparto de calorías: ${pct[0]} % proteína, ${pct[1]} % carbos, ${pct[2]} % grasas`} className="shrink-0">
+        <defs>
+          {/* Halo suave alrededor del punto y velo de luz dentro del triángulo */}
+          <radialGradient id={`${uid}-halo`}>
+            <stop offset="0%" stopColor="var(--text)" stopOpacity="0.55" />
+            <stop offset="45%" stopColor="var(--text)" stopOpacity="0.14" />
+            <stop offset="100%" stopColor="var(--text)" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id={`${uid}-velo`} cx={punto.x} cy={punto.y} r={side * 0.75} gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="var(--text)" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="var(--text)" stopOpacity="0" />
+          </radialGradient>
+          <filter id={`${uid}-glow`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.2" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        <path d={`M${V[0].x} ${V[0].y} L${V[1].x} ${V[1].y} L${V[2].x} ${V[2].y} Z`} fill={`url(#${uid}-velo)`} opacity={rejillaOp} />
+        {rejilla.map(([a, b], i) => <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="var(--text-muted)" strokeOpacity={0.22 * rejillaOp} strokeWidth="1" />)}
+        <path d={`M${V[0].x} ${V[0].y} L${V[1].x} ${V[1].y} L${V[2].x} ${V[2].y} Z`} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - contorno} fill="none" stroke="var(--text-muted)" strokeOpacity="0.7" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+        {V.map((v, i) => (
+          <line key={i} x1={punto.x} y1={punto.y} x2={v.x} y2={v.y} stroke="var(--text)"
+            strokeOpacity={(i === dom ? 0.5 : 0.2) * lineas} strokeWidth={i === dom ? 1.6 : 1} strokeDasharray={i === dom ? undefined : '3 4'}
+            filter={i === dom && lineas > 0.5 ? `url(#${uid}-glow)` : undefined} />
+        ))}
+        {/* Halo: respira muy despacio una vez llegado; un anillo se expande al aterrizar */}
+        <circle cx={punto.x} cy={punto.y} r="22" fill={`url(#${uid}-halo)`} opacity={suave((t - 0.5) / 0.4)} className={llegado ? 'macro-tri-respira' : undefined} />
+        {llegado && <circle cx={punto.x} cy={punto.y} r="6" fill="none" stroke="var(--text)" strokeWidth="1" className="macro-tri-onda" />}
+        <circle cx={punto.x} cy={punto.y} r="5.5" fill="var(--text)" filter={`url(#${uid}-glow)`} opacity={viaje > 0.02 ? 1 : 0} />
+        {V.map((v, i) => (
+          <text key={i} x={v.x + (i === 1 ? -8 : i === 2 ? 8 : 0)} y={v.y + (i === 0 ? -8 : 4)} textAnchor={i === 0 ? 'middle' : i === 1 ? 'end' : 'start'}
+            className="font-data" fontSize="10" fontWeight={dom === i ? 700 : 400} fill={dom === i ? 'var(--text)' : 'var(--text-muted)'} opacity={rejillaOp}>
+            {['P', 'C', 'G'][i]}
+          </text>
+        ))}
       </svg>
+      <style>{`
+        @keyframes macro-tri-respira { 0%,100% { transform: scale(1); opacity: .9 } 50% { transform: scale(1.18); opacity: 1 } }
+        @keyframes macro-tri-onda { 0% { transform: scale(1); opacity: .7 } 100% { transform: scale(5); opacity: 0 } }
+        .macro-tri-respira { transform-box: fill-box; transform-origin: center; animation: macro-tri-respira 5.5s ease-in-out infinite }
+        .macro-tri-onda { transform-box: fill-box; transform-origin: center; animation: macro-tri-onda 2s cubic-bezier(.2,.7,.2,1) 1 both }
+        @media (prefers-reduced-motion: reduce) { .macro-tri-respira, .macro-tri-onda { animation: none } }
+      `}</style>
     </div>
   )
 }
