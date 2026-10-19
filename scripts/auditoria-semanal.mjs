@@ -26,6 +26,9 @@ const ri = run('npx', ['tsx', 'scripts/recalcular-recipe-intelligence.ts', '--ap
 console.log(/"file"/.test(ri) ? 'Puntuaciones de inteligencia de receta recalculadas' : 'ERROR recalculando puntuaciones')
 console.log(lineas(run('npx', ['tsx', 'scripts/batch-audit-profesional.ts', '--apply']), /^Auditadas/))
 console.log(lineas(run('npx', ['tsx', 'scripts/verificar-recetas-auto.ts', '--apply']), /^Aprobadas/))
+// Fases (bizcocho, salsa…) de las recetas nuevas: la IA solo agrupa y el script comprueba que ningún texto cambia (por eso puede ir sin supervisión)
+const fas = run('node', ['scripts/organizar-fases-recetas.mjs', '--auto', '--limite=15'])
+console.log(lineas(fas, /^\d+ candidatas|^aplicada/))
 const pas = run('node', ['scripts/auditar-pasos-ingredientes.mjs'])
 console.log(pas.split('\n')[0])
 const urg = (mat.match(/URGENTES[^:]*: (\d+)/) || [])[1]

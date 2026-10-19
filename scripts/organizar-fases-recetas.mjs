@@ -3,6 +3,7 @@
  * que tienen varias piezas. SUPERVISADO: la IA solo decide la agrupación; los textos no se reescriben.
  *   node scripts/organizar-fases-recetas.mjs --limite=10            # propone y valida, NO escribe en la BD
  *   node scripts/organizar-fases-recetas.mjs --aplica --solo-validas # escribe las que pasaron (copia en salidas/)
+ *   node scripts/organizar-fases-recetas.mjs --auto --limite=15     # propone y aplica solo las válidas (lo usa la pasada autónoma; recuerda lo ya decidido)
  * Requiere la migración 20261019100000 (columna receta_ingredientes.grupo). NO forma parte de la pasada autónoma.
  * Validación: cada ingrediente en exactamente una fase; el texto de los pasos queda idéntico (solo se insertan líneas «## Fase»).
  */
@@ -12,7 +13,12 @@ const env = Object.fromEntries(fs.readFileSync('.env.local', 'utf8').split('\n')
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
 const arg = (n, d) => (process.argv.find(a => a.startsWith('--' + n + '='))?.split('=')[1]) ?? d
 const LIMITE = Number(arg('limite', 10)), APLICA = process.argv.includes('--aplica'), SOLO_VALIDAS = process.argv.includes('--solo-validas')
+const AUTO = process.argv.includes('--auto')
 const FICHERO = 'salidas/propuestas-fases.json'
+// Lo ya decidido (una sola pieza / aplicada / intentos fallidos) para no gastar IA otra vez con la misma receta
+const DECIDIDAS = 'salidas/fases-decididas.json'
+const decididas = fs.existsSync(DECIDIDAS) ? JSON.parse(fs.readFileSync(DECIDIDAS, 'utf8')) : {}
+const guardarDecididas = () => fs.writeFileSync(DECIDIDAS, JSON.stringify(decididas))
 const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim()
 const SENAL = /\b(para (el|la|los|las) (bizcocho|base|masa|salsa|crema|relleno|cobertura|glaseado|topping|toppings|aliño|marinada|frosting|ganache|mousse|bols?)|bizcocho|ganache|frosting|glaseado|topping|cobertura|relleno|marinad|aliño|aderezo|salsa)\b/
 
@@ -29,18 +35,22 @@ async function deepseek(prompt) {
 const all = async (t, c, f) => { const o = []; for (let i = 0; ; i += 1000) { let q = sb.from(t).select(c).range(i, i + 999); if (f) q = f(q); const { data, error } = await q; if (error) throw error; o.push(...data); if (data.length < 1000) break } return o }
 const sinCabeceras = t => t.split('\n').filter(l => !/^\s*#{2,3}\s/.test(l)).map(l => l.trim()).filter(Boolean).join('\n')
 
+async function aplicar(p, copia) {
+  const { data: r } = await sb.from('recetas').select('id, instrucciones').eq('id', p.id).single()
+  if (!r || sinCabeceras(r.instrucciones || '') !== sinCabeceras(p.instrucciones_original)) { console.log('SALTADA (la receta cambió):', p.nombre); return false }
+  copia.push({ id: p.id, instrucciones: r.instrucciones, grupos: p.grupos_antes })
+  for (const [id, grupo] of Object.entries(p.grupo_por_ingrediente)) await sb.from('receta_ingredientes').update({ grupo }).eq('id', id)
+  await sb.from('recetas').update({ instrucciones: p.instrucciones_con_fases }).eq('id', p.id)
+  console.log('aplicada:', p.nombre, '→', p.fases.join(' / '))
+  return true
+}
+const guardarCopia = copia => { if (copia.length) fs.writeFileSync(`salidas/copia-fases-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.json`, JSON.stringify(copia, null, 1)) }
+
 if (APLICA) {
   const props = JSON.parse(fs.readFileSync(FICHERO, 'utf8')).filter(p => p.fases && (!SOLO_VALIDAS || p.errores.length === 0))
   const copia = []
-  for (const p of props) {
-    const { data: r } = await sb.from('recetas').select('id, instrucciones').eq('id', p.id).single()
-    if (!r || sinCabeceras(r.instrucciones || '') !== sinCabeceras(p.instrucciones_original)) { console.log('SALTADA (la receta cambió):', p.nombre); continue }
-    copia.push({ id: p.id, instrucciones: r.instrucciones, grupos: p.grupos_antes })
-    for (const [id, grupo] of Object.entries(p.grupo_por_ingrediente)) await sb.from('receta_ingredientes').update({ grupo }).eq('id', id)
-    await sb.from('recetas').update({ instrucciones: p.instrucciones_con_fases }).eq('id', p.id)
-    console.log('aplicada:', p.nombre, '→', p.fases.join(' / '))
-  }
-  fs.writeFileSync(`salidas/copia-fases-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(copia, null, 1))
+  for (const p of props) await aplicar(p, copia)
+  guardarCopia(copia)
   process.exit(0)
 }
 
@@ -52,7 +62,8 @@ for (const i of ings) { if (!porReceta.has(i.receta_id)) porReceta.set(i.receta_
 // Candidatas: sin fases ya puestas, con bastantes ingredientes y señales de varias piezas en el texto
 const candidatas = recetas.filter(r => {
   const li = porReceta.get(r.id) ?? []
-  if (li.length < 7 || li.some(i => i.grupo)) return false
+  if (li.length < 6 || li.some(i => i.grupo)) return false
+  if (decididas[r.id] === 'una_pieza' || decididas[r.id] === 'aplicada' || (decididas[r.id] ?? 0) >= 2) return false
   const txt = norm(r.instrucciones)
   return SENAL.test(txt) && !/^\s*#{2,3}\s/m.test(r.instrucciones || '')
 }).sort((a, b) => (porReceta.get(b.id).length - porReceta.get(a.id).length))
@@ -106,6 +117,12 @@ Reglas: nombres cortos (1-3 palabras, sin «Para el»), cada ingrediente en UNA 
     p = { ...p, fases: fases.map(f => f.nombre), grupo_por_ingrediente, grupos_antes: li.map(i => ({ id: i.id, grupo: i.grupo ?? null })), instrucciones_original: r.instrucciones, instrucciones_con_fases: conFases, resumen: fases.map(f => `${f.nombre}: ${(f.ingredientes ?? []).map(n => li[n - 1]?.nombre_libre).join(', ')}`) }
   }
   salida.push(p)
+  if (AUTO) {
+    if (!p.fases && out) decididas[r.id] = 'una_pieza'
+    else if (p.fases && !errores.length) { const copia = []; if (await aplicar(p, copia)) decididas[r.id] = 'aplicada'; guardarCopia(copia) }
+    else decididas[r.id] = (typeof decididas[r.id] === 'number' ? decididas[r.id] : 0) + 1
+    guardarDecididas()
+  }
   console.log(`${p.fases ? (errores.length ? '✗' : '✓') : '·'} ${r.nombre}${p.fases ? ' → ' + p.fases.join(' / ') : ' (una sola pieza)'}${errores.length ? '  ' + errores.join('; ') : ''}`)
 }
 fs.writeFileSync(FICHERO, JSON.stringify(salida, null, 1))
