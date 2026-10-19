@@ -6,6 +6,7 @@ import { fetchJson } from '@/lib/cliente/cache-swr'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
+import { BotonFavorita } from './BotonFavorita'
 import { MagnifyingGlass, ForkKnife, SlidersHorizontal, X, Rows, SquaresFour } from '@phosphor-icons/react'
 
 const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre'] as const
@@ -246,6 +247,7 @@ export default function RecetarioExplorador({
                         <ForkKnife size={20} style={{ color: 'var(--text-muted)' }} />
                       </div>
                     )}
+                    <BotonFavorita receta={r} codigo={codigo} className="absolute right-1 top-1 rounded-full" />
                   </div>
                   <p className="text-[11px] font-semibold leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
                   {r.kcal ? (
@@ -273,6 +275,7 @@ export default function RecetarioExplorador({
                       <ForkKnife size={24} style={{ color: 'var(--text-muted)' }} />
                     </div>
                   )}
+                  <BotonFavorita receta={r} codigo={codigo} className="absolute right-2 top-2 rounded-full" />
                 </div>
                 <div className="p-2.5">
                   <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>

@@ -6,6 +6,7 @@ import FotoReceta from '@/components/PortalCliente/FotoReceta'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Clock, Loader2, AlertTriangle, UtensilsCrossed, PlayCircle } from 'lucide-react'
+import { BotonFavorita } from '@/components/PortalCliente/BotonFavorita'
 import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
 import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
 import { StepByStep } from '@/components/premium/StepByStep'
@@ -30,6 +31,7 @@ interface RecetaDetalle {
   carbohidratos?: number | null
   grasas?: number | null
   tiempo_prep_min?: number | null
+  categoria?: string | null
 }
 
 interface IngredienteConAlimento {
@@ -38,26 +40,34 @@ interface IngredienteConAlimento {
   cantidad_gramos: number
   cantidad_original?: number | null
   unidad_display?: string | null
+  grupo?: string | null
   alimento?: { nombre: string } | null
 }
 
 /** Copia local de app/recetas/[id]/page.tsx — mismo parseo, sin las
  * dependencias de coach de esa página (quality gate, edición, precios). */
-function parsePasos(text: string | null | undefined): { number: number; content: string; title?: string }[] {
+function parsePasos(text: string | null | undefined): { number: number; content: string; title?: string; grupo?: string }[] {
   if (!text) return []
-  const lines = text.split('\n').filter(l => l.trim())
-  const numbered = lines.filter(l => /^\s*(?:Paso\s*)?\d+[.)\-:]/.test(l))
+  // Una línea «## Bizcocho» abre una fase de la receta; los pasos que vienen detrás pertenecen a ella
+  let grupo: string | undefined
+  const lines: { l: string; grupo?: string }[] = []
+  for (const raw of text.split('\n')) {
+    const h = raw.match(/^\s*#{2,3}\s+(.+?)\s*$/)
+    if (h) { grupo = h[1]; continue }
+    if (raw.trim()) lines.push({ l: raw, grupo })
+  }
+  const numbered = lines.filter(x => /^\s*(?:Paso\s*)?\d+[.)\-:]/.test(x.l))
   if (numbered.length >= 2) {
-    return numbered.map((l, i) => {
-      const clean = l.replace(/^\s*(?:Paso\s*)?\d+[.)\-:]\s*/, '').trim()
+    return numbered.map((x, i) => {
+      const clean = x.l.replace(/^\s*(?:Paso\s*)?\d+[.)\-:]\s*/, '').trim()
       const colonIdx = clean.indexOf(':')
       if (colonIdx > 0 && colonIdx < 40) {
-        return { number: i + 1, title: clean.slice(0, colonIdx).trim(), content: clean.slice(colonIdx + 1).trim() }
+        return { number: i + 1, title: clean.slice(0, colonIdx).trim(), content: clean.slice(colonIdx + 1).trim(), grupo: x.grupo }
       }
-      return { number: i + 1, content: clean }
+      return { number: i + 1, content: clean, grupo: x.grupo }
     })
   }
-  return lines.map((l, i) => ({ number: i + 1, content: l.trim() }))
+  return lines.map((x, i) => ({ number: i + 1, content: x.l.trim(), grupo: x.grupo }))
 }
 
 // Las cantidades de los pasos son las de la receta ENTERA (p. ej. «1 kg de carne» para 5 raciones) y no
@@ -70,6 +80,7 @@ export default function RecetaClientePage() {
 
   const [cocinarPara, setCocinarPara] = useState(1)
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
+  const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
   // Caché compartida con el portal (persistente): al reabrir una receta el detalle y la foto salen al instante.
   // `montado` evita desajuste de hidratación: la caché solo existe en el cliente.
   const [montado, setMontado] = useState(false)
@@ -91,13 +102,27 @@ export default function RecetaClientePage() {
   // Sin ración de un plan (recetario): el cliente elige para cuántas raciones cocina y se recalcula
   const nVista = racionesVista ?? porciones
   const factorVista = nVista / porciones
+  // Con «tu ración» la lista viene del plan (sin fase): la fase se recupera por el nombre del ingrediente de la receta
+  const normalizar = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+  const grupoPorNombre = new Map<string, string>()
+  for (const ing of ingredientes) {
+    if (!ing.grupo) continue
+    for (const n of [ing.alimento?.nombre, ing.nombre_libre]) if (n) grupoPorNombre.set(normalizar(n), ing.grupo)
+  }
   const ingredientesFormato = racion
-    ? racion.plato.ingredientes.map((ing, i) => ({ id: `r${i}`, nombre: ing.nombre, cantidad: `${Math.round(ing.gramos * k)}g` }))
+    ? racion.plato.ingredientes.map((ing, i) => ({ id: `r${i}`, nombre: ing.nombre, cantidad: `${Math.round(ing.gramos * k)}g`, grupo: grupoPorNombre.get(normalizar(ing.nombre)) ?? null }))
     : ingredientes.map(ing => ({
         id: ing.id,
         nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
         cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
+        grupo: ing.grupo ?? null,
       }))
+  // Las fases de los ingredientes salen en el orden en que se cocinan (el de los pasos)
+  const ordenFases = [...new Set(parsePasos(receta?.instrucciones).map(p => p.grupo).filter(Boolean))]
+  if (ordenFases.length > 1) {
+    const pos = (g?: string | null) => { const i = g ? ordenFases.indexOf(g) : -1; return i < 0 ? ordenFases.length : i }
+    ingredientesFormato.sort((a, b) => pos(a.grupo) - pos(b.grupo))
+  }
   const cantidadesDistintas = racion
     ? porciones > 1 || (receta?.kcal ? Math.abs(racion.plato.kcal / receta.kcal - 1) > 0.1 : false)
     : nVista !== porciones
@@ -124,7 +149,14 @@ export default function RecetaClientePage() {
           >
             <ArrowLeft size={18} />
           </Link>
-          <p className="truncate text-sm font-bold" style={{ color: 'var(--text)' }}>{receta?.nombre ?? 'Receta'}</p>
+          <p className="min-w-0 flex-1 truncate text-sm font-bold" style={{ color: 'var(--text)' }}>{receta?.nombre ?? 'Receta'}</p>
+          {receta && codigo && (
+            <BotonFavorita
+              codigo={codigo}
+              receta={{ id: receta.id, nombre: receta.nombre, imagen_url: receta.imagen_url ?? null, kcal: receta.kcal ?? null, proteinas: receta.proteinas ?? null, categoria: receta.categoria ?? null }}
+              className="shrink-0 !h-10 !w-10 rounded-2xl"
+            />
+          )}
         </div>
       </div>
 
@@ -221,21 +253,43 @@ export default function RecetaClientePage() {
               </>
             )}
 
-            {ingredientesFormato.length > 0 && (
-              <div>
-                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                  {racion ? `Cantidades para ${k === 1 ? 'tu ración' : `${k} raciones`}.` : `Cantidades para ${nVista} ${nVista === 1 ? 'ración' : 'raciones'}.`}
-                </p>
-                <IngredientChecklist ingredientes={ingredientesFormato} />
+            {(ingredientesFormato.length > 0 || pasos.length > 0) && (
+              <div className="flex flex-col gap-3">
+                {/* Una sola lista a la vez: la receta no se hace larguísima con scroll */}
+                <div className="flex overflow-hidden" role="tablist" aria-label="Ingredientes o preparación" style={{ border: '1px solid var(--border)' }}>
+                  {([
+                    ['ingredientes', `Ingredientes · ${ingredientesFormato.length}`, ingredientesFormato.length],
+                    ['preparacion', `Preparación · ${pasos.length}`, pasos.length],
+                  ] as const).filter(([, , n]) => n > 0).map(([clave, etiqueta]) => (
+                    <button key={clave} role="tab" aria-selected={seccion === clave} onClick={() => setSeccion(clave)}
+                      className="flex-1 px-3 py-2.5 text-xs font-semibold"
+                      style={{ background: seccion === clave ? 'var(--primary)' : 'transparent', color: seccion === clave ? 'var(--bg)' : 'var(--text-muted)' }}>
+                      {etiqueta}
+                    </button>
+                  ))}
+                </div>
+
+                {seccion === 'ingredientes' && ingredientesFormato.length > 0 && (
+                  <div>
+                    <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                      {racion ? `Cantidades para ${k === 1 ? 'tu ración' : `${k} raciones`}.` : `Cantidades para ${nVista} ${nVista === 1 ? 'ración' : 'raciones'}.`}
+                    </p>
+                    <IngredientChecklist ingredientes={ingredientesFormato} sinCabecera />
+                  </div>
+                )}
+
+                {(seccion === 'preparacion' || ingredientesFormato.length === 0) && pasos.length > 0 && (
+                  <>
+                    {cantidadesDistintas && (
+                      <p className="text-xs rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                        Los pasos no llevan cantidades: usa siempre las de la lista de ingredientes, que están ajustadas {racion ? 'a tu ración' : `a ${nVista} ${nVista === 1 ? 'ración' : 'raciones'}`}.
+                      </p>
+                    )}
+                    <StepByStep pasos={pasos} sinCabecera />
+                  </>
+                )}
               </div>
             )}
-
-            {cantidadesDistintas && pasos.length > 0 && (
-              <p className="text-xs rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                Los pasos no llevan cantidades: usa siempre las de la lista de ingredientes de arriba, que están ajustadas {racion ? 'a tu ración' : `a ${nVista} ${nVista === 1 ? 'ración' : 'raciones'}`}.
-              </p>
-            )}
-            {pasos.length > 0 && <StepByStep pasos={pasos} />}
 
             {receta.consejos && (
               <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>

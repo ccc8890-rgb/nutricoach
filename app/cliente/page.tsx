@@ -28,6 +28,7 @@ import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { useMarcarSalidaAlAbrirDetalle, useRestaurarRetorno } from '@/lib/cliente/retorno'
 import RecetarioExploradorEstatico from '@/components/PortalCliente/RecetarioExplorador'
+import RecetasFavoritasEstatico from '@/components/PortalCliente/RecetasFavoritas'
 import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
 import SuplementacionPortalEstatico from '@/components/PortalCliente/SuplementacionPortal'
 import { EditorialMasthead, HoyEditorial, IndustrialTabs, LiquidDock } from '@/components/PortalCliente/editorial'
@@ -51,6 +52,7 @@ const EntrenoSubTabs = aislar(EntrenoSubTabsEstatico)
 const ListaCompraPortal = aislar(dynamic(() => import('@/components/PortalCliente/ListaCompraPortal')))
 const MisPlatos = aislar(dynamic(() => import('@/components/PortalCliente/MisPlatos')))
 const RecetarioExplorador = aislar(RecetarioExploradorEstatico)
+const RecetasFavoritas = aislar(RecetasFavoritasEstatico)
 const ChatPanel = aislar(dynamic(() => import('@/components/PortalCliente/ChatPanel')))
 const AjustesTabs = aislar(AjustesTabsEstatico)
 const DatosCliente = aislar(dynamic(() => import('@/components/PortalCliente/DatosCliente')))
@@ -186,7 +188,7 @@ function PortalClientePageContent() {
     return TABS_VALIDOS.includes(tabParam as Tab) ? (tabParam as Tab) : 'hoy'
   })
   // En la URL (no en estado local): al volver desde una receta reaparece «Archivo completo», no «En tu plan»
-  const [subRecetas, setSubRecetas] = useEstadoUrl<'plan' | 'recetario' | null>('sub', null, ['plan', 'recetario'])
+  const [subRecetas, setSubRecetas] = useEstadoUrl<'plan' | 'recetario' | 'favoritas' | null>('sub', null, ['plan', 'recetario', 'favoritas'])
   const [vistaPlan, setVistaPlan] = useState<'lista' | 'cuadricula'>('lista')
   useEffect(() => {
     try {
@@ -257,7 +259,7 @@ function PortalClientePageContent() {
     const url = new URL(window.location.href)
     url.searchParams.set('tab', tab)
     // Cada pestaña solo conserva sus propios parámetros
-    const propios: Record<string, string[]> = { recetas: ['sub', 'q', 'cat', 'tag'], dieta: ['vista', 'dd'], entreno: ['et', 'em', 'ed', 'ew'] }
+    const propios: Record<string, string[]> = { recetas: ['sub', 'q', 'cat', 'tag', 'fcat'], dieta: ['vista', 'dd'], entreno: ['et', 'em', 'ed', 'ew'] }
     Object.entries(propios).forEach(([t, claves]) => { if (t !== tab) claves.forEach(k => url.searchParams.delete(k)) })
     window.history.replaceState(window.history.state, '', url)
   }, [tab])
@@ -580,7 +582,7 @@ function PortalClientePageContent() {
                     <IndustrialTabs
                       ariaLabel="Vista de recetas"
                       activeKey={activa}
-                      items={[{ key: 'plan', label: 'En tu plan' }, { key: 'recetario', label: 'Archivo completo' }]}
+                      items={[{ key: 'plan', label: 'En tu plan' }, { key: 'favoritas', label: 'Favoritas' }, { key: 'recetario', label: 'Archivo completo' }]}
                       onChange={setSubRecetas}
                     />
                   )
@@ -659,6 +661,10 @@ function PortalClientePageContent() {
                     )}
                     <MisPlatos codigo={codigo} clienteId={cliente.id} />
                   </>
+                )}
+
+                {(subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')) === 'favoritas' && (
+                  <RecetasFavoritas codigo={codigo} recetaHref={recetaHref} />
                 )}
 
                 {(subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')) === 'recetario' && (
