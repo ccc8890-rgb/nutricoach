@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Versión con la que se construyó esta copia de la app (la PWA la compara con /api/version)
+  env: { NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ?? 'dev' },
   images: {
     loader: 'custom',
     loaderFile: './lib/cloudinary-loader.ts',
