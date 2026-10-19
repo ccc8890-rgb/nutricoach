@@ -4,6 +4,15 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 19-10-2026 (mediodía, Claude) — Pestaña «Datos» del cliente: rendimiento de entrenamiento por deporte
+
+- **Qué:** `components/PortalCliente/DatosCliente.tsx` reescrito. Solo entrenamiento. Pestañas General/Carrera/Fuerza/Bici/Natación (solo con datos) y periodo 42/90/180/365 días. Estilo editorial (`.datos-*` al final de `app/cliente/cliente.css`; los módulos de `components/rendimiento/` se aplanan con `.datos-rend`).
+- **API:** `GET /api/cliente/[codigo]/rendimiento?dias=14-365` → `PanelRendimiento` + `umbrales` + `ejecucion` + `sesiones[]` ligeras (fecha, deporte, min, km, ritmo, fc, tss, potencia, zonas) para los gráficos por sesión y el mapa de actividad. Auth: `autorizarAccesoPlan` (cliente propietario o su coach); sin `err.message`.
+- **Reglas:** del panel del coach solo se reutilizan módulos que reciben datos por props (`ResumenDeporte`, `BaseAerobica`, `DistribucionIntensidad`, `DerivaCardiaca`, `TecnicaCarrera`, `EntrenosTabla`, `Grafica`). Los que hacen fetch con `clienteId` a rutas del coach (`AnalisisIA`, `PlanObjetivo`, `ZonasVdot`, `SeguimientoResultados`, `SubirActividadFit`) NO van al portal.
+- **Sin uso ahora:** `/api/cliente/[codigo]/datos`, `lib/rendimiento/datos-cliente.ts` y `scripts/datos-cliente.test.ts` (la versión anterior de la pestaña: recuperación, sueño, base aeróbica, peso). No borrados; si Carlos quiere recuperación/sueño, volver a una sección aparte.
+- **Auditoría de cierre:** ruta nueva con sesión + propiedad (401 sin sesión comprobado en producción), sin secretos ni tablas/migraciones nuevas, solo lectura. `tsc`, ESLint, `npm run build`, `cliente-visual-system` y `datos-cliente` OK. **No visto en pantalla** (390 px, claro/oscuro, datos reales de Carlos).
+- **Pendiente:** fuerza sin tonelaje/progresión de cargas (vendría de `registros_sets`); poner el deporte elegido en la URL (hoy `useState`; el portal descarta parámetros ajenos); ver recuperación/sueño en una sección propia si se quiere.
+
 ## ✅ 18-10-2026 (tarde, Claude) — Auditoría Garmin → análisis → plan y botones del Entrenador IA
 
 Detalle y lecciones: [`docs/18-10-2026_auditoria-garmin-y-entrenador-ia.md`](docs/18-10-2026_auditoria-garmin-y-entrenador-ia.md). Commits `e37c909`, `12ade42`, `8faafc7`, `bdeeccb`; `verificar:motor` 63/63.
