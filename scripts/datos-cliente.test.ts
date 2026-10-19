@@ -42,17 +42,4 @@ assert.equal(construirDatosCliente(panel, dos, hoy).sueno, null)
 const cuatro = filas.map((f, i) => (i >= 16 ? { ...f, sueno_h: 7.5 } : f))
 assert.equal(construirDatosCliente(panel, cuatro, hoy).sueno?.mediaHoras, 7.5)
 
-// Semana: siempre 7 días de lunes a domingo; sin entrenos, todo a cero
-assert.equal(d.semanaDias.length, 7)
-assert.equal(d.semanaDias[0].fecha, '2026-10-05') // lunes de la semana del 11-10 (domingo)
-assert.equal(d.semanaDias[6].fecha, hoy)
-assert.ok(d.semanaDias.every(x => x.minutos === 0 && x.sesiones === 0))
-
-// Batería y estrés: series de días con dato; sin forma ni intensidad sin entrenos
-assert.equal(d.bienestar.bateria.length, 20)
-assert.equal(d.forma, null)
-assert.equal(d.intensidad, null)
-assert.equal(d.vo2max, null)
-assert.deepEqual(d.ultimosEntrenos, [])
-
 console.log('datos-cliente.test.ts OK')

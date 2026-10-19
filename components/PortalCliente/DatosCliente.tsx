@@ -1,268 +1,352 @@
 'use client'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Grafica, { type Fila } from '@/components/rendimiento/Grafica'
-import { MetricRail, TechnicalReadout } from '@/components/PortalCliente/editorial'
-import type { DatosCliente as Datos, Tendencia } from '@/lib/rendimiento/datos-cliente'
+import ResumenDeporte from '@/components/rendimiento/ResumenDeporte'
+import BaseAerobica from '@/components/rendimiento/BaseAerobica'
+import DistribucionIntensidad from '@/components/rendimiento/DistribucionIntensidad'
+import DerivaCardiaca from '@/components/rendimiento/DerivaCardiaca'
+import TecnicaCarrera from '@/components/rendimiento/TecnicaCarrera'
+import EntrenosTabla from '@/components/rendimiento/EntrenosTabla'
+import { COLOR, ZONAS_FC, fechaCorta, mmss, type DatosPanel } from '@/components/rendimiento/comun'
+import { IndustrialTabs, MetricRail, TechnicalReadout } from '@/components/PortalCliente/editorial'
+import { NOMBRE_DEPORTE, type Deporte } from '@/lib/rendimiento/deportes'
 
-const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`
-// Mismos tonos que --semantic-* (los SVG de la gráfica necesitan el valor literal).
-const COLOR = { metal: '#AEB4BC', verde: '#6AAF85', ambar: '#C8A96A', rojo: '#B86A6A' }
-const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
-const DEPORTE: Record<string, string> = { running: 'Carrera', ciclismo: 'Bici', natacion: 'Natación', fuerza: 'Fuerza', otros: 'Otro' }
-
-const horas = (min: number) => (min >= 60 ? `${Math.floor(min / 60)}h ${String(min % 60).padStart(2, '0')}` : `${min} min`)
-const fechaCorta = (f: string) => {
-  const d = new Date(`${f}T12:00:00Z`)
-  return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).replace('.', '').toUpperCase()
+interface Sesion {
+  fecha: string; nombre: string | null; tipo: string | null; deporte: Deporte
+  min: number; km: number | null; ritmo: number | null; fc: number | null; tss: number | null
+  pot: number | null; potNorm: number | null; zonas: number[] | null
 }
+type Datos = DatosPanel & { sesiones: Sesion[] }
+type Vista = 'general' | 'running' | 'fuerza' | 'ciclismo' | 'natacion'
 
-function Bloque({ n, titulo, ayuda, children }: { n: string; titulo: string; ayuda: string; children: ReactNode }) {
+const RANGOS = [{ d: 42, t: '6 sem' }, { d: 90, t: '3 meses' }, { d: 180, t: '6 meses' }, { d: 365, t: '1 año' }]
+const COLOR_DEP: Record<string, string> = { running: '#5B8DEF', fuerza: '#C8A96A', ciclismo: '#6AAF85', natacion: '#8A9AB8', otros: '#7B818A' }
+
+const horas = (min: number) => (min >= 60 ? `${Math.floor(min / 60)}h ${String(Math.round(min % 60)).padStart(2, '0')}` : `${Math.round(min)} min`)
+const suma = (v: number[]) => v.reduce((a, b) => a + b, 0)
+const dia = (f: string) => Math.round(new Date(`${f}T12:00:00Z`).getTime() / 86_400_000)
+
+function Bloque({ n, titulo, nota, children }: { n?: string; titulo: string; nota?: string; children: ReactNode }) {
   return (
     <section className="datos-bloque">
       <header className="datos-bloque__head">
-        <span>{n}</span>
+        <span>{n ?? '·'}</span>
         <h2>{titulo}</h2>
       </header>
-      <div className="datos-bloque__body">{children}</div>
-      <details className="datos-bloque__ayuda">
-        <summary>¿Qué es esto?</summary>
-        <p>{ayuda}</p>
-      </details>
+      <div className="datos-bloque__body">
+        {nota && <p className="datos-nota">{nota}</p>}
+        {children}
+      </div>
     </section>
   )
 }
 
-/** Medidor semicircular fino, tipo instrumento. */
-function Arco({ valor, color }: { valor: number; color: string }) {
-  const r = 52
-  const largo = Math.PI * r
-  const p = Math.min(100, Math.max(0, valor)) / 100
-  return (
-    <svg viewBox="0 0 120 70" className="datos-arco" role="img" aria-label={`Recuperación ${valor} de 100`}>
-      <path d="M8 62 A52 52 0 0 1 112 62" fill="none" stroke="var(--editorial-rule)" strokeWidth="3" strokeLinecap="butt" />
-      <path d="M8 62 A52 52 0 0 1 112 62" fill="none" stroke={color} strokeWidth="3" strokeDasharray={`${largo * p} ${largo}`} />
-      {[0, 25, 50, 75, 100].map(t => {
-        const a = Math.PI * (1 - t / 100)
-        const x1 = 60 + Math.cos(a) * 58, y1 = 62 - Math.sin(a) * 58
-        const x2 = 60 + Math.cos(a) * 63, y2 = 62 - Math.sin(a) * 63
-        return <line key={t} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--text-muted)" strokeWidth="0.8" />
-      })}
-    </svg>
-  )
-}
+/** Mapa de actividad tipo contribuciones: 18 semanas, una celda por día, intensidad = carga (TSS) del día. */
+function MapaActividad({ sesiones, hoy }: { sesiones: Sesion[]; hoy: string }) {
+  const { columnas, max, total, activos } = useMemo(() => {
+    const porDia = new Map<string, { tss: number; min: number; n: number }>()
+    for (const s of sesiones) {
+      const x = porDia.get(s.fecha) ?? { tss: 0, min: 0, n: 0 }
+      x.tss += s.tss ?? 0; x.min += s.min; x.n += 1
+      porDia.set(s.fecha, x)
+    }
+    const hoyD = new Date(`${hoy}T12:00:00Z`)
+    const offsetLunes = (hoyD.getUTCDay() + 6) % 7
+    const inicio = hoyD.getTime() - (offsetLunes + 17 * 7) * 86_400_000
+    const cols: { fecha: string; v: number; min: number; n: number; futuro: boolean }[][] = []
+    for (let c = 0; c < 18; c++) {
+      const col = []
+      for (let r = 0; r < 7; r++) {
+        const fecha = new Date(inicio + (c * 7 + r) * 86_400_000).toISOString().slice(0, 10)
+        const x = porDia.get(fecha)
+        col.push({ fecha, v: x?.tss ?? 0, min: x?.min ?? 0, n: x?.n ?? 0, futuro: fecha > hoy })
+      }
+      cols.push(col)
+    }
+    const todos = cols.flat()
+    return { columnas: cols, max: Math.max(40, ...todos.map(x => x.v)), total: todos.reduce((a, x) => a + x.n, 0), activos: todos.filter(x => x.n > 0).length }
+  }, [sesiones, hoy])
 
-function MiniTendencia({ titulo, t, unidad, color }: { titulo: string; t: Tendencia; unidad: string; color: string }) {
-  const filas = useMemo<Fila[]>(() => t.puntos.map(p => ({ fecha: p.fecha, v: p.valor })), [t])
-  const lectura = t.posicion === 'dentro' ? 'dentro de tu rango habitual' : t.posicion === 'sobre' ? 'por encima de tu rango habitual' : t.posicion === 'bajo' ? 'por debajo de tu rango habitual' : 'aún sin rango habitual (faltan días)'
   return (
-    <div className="datos-mini">
-      <p><b>{titulo}: {t.actual}{unidad ? ` ${unidad}` : ''}</b> · {lectura}</p>
-      <Grafica datos={filas} alto={90} banda={t.normal} series={[{ key: 'v', label: titulo, color }]} formato={v => `${Math.round(v)}${unidad ? ` ${unidad}` : ''}`} />
+    <div>
+      <div className="datos-mapa" role="img" aria-label={`${total} sesiones en 18 semanas, ${activos} días activos`}>
+        {columnas.map((col, i) => (
+          <div key={i} className="datos-mapa__col">
+            {col.map(c => (
+              <i key={c.fecha} className={c.futuro ? 'is-futuro' : undefined}
+                style={c.n > 0 ? { opacity: 0.28 + 0.72 * Math.min(1, (c.v || 20) / max), background: 'var(--metal-bright)' } : undefined}
+                title={c.n > 0 ? `${fechaCorta(c.fecha)} · ${c.n} ses. · ${horas(c.min)} · carga ${Math.round(c.v)}` : fechaCorta(c.fecha)} />
+            ))}
+          </div>
+        ))}
+      </div>
+      <p className="datos-leyenda"><span>{activos} días activos</span><span>·</span><span>{total} sesiones</span><span>·</span><span>18 semanas</span></p>
     </div>
   )
 }
 
-/** Pestaña «Datos»: recuperación, semana, forma, sueño, intensidad y progreso, con lo que el reloj y los entrenos realmente miden. */
-export default function DatosCliente({ codigo, ultimoPeso, cambioPeso, onVerProgreso, onAjustes }: {
+/** Tiempo acumulado en cada zona de pulso de las sesiones dadas. */
+function ZonasAcumuladas({ sesiones }: { sesiones: Sesion[] }) {
+  const z = [0, 0, 0, 0, 0]
+  for (const s of sesiones) s.zonas?.forEach((v, i) => { if (i < 5) z[i] += v })
+  const tot = suma(z)
+  if (tot <= 0) return <p className="datos-nota">Sin datos de zonas de pulso en este periodo.</p>
+  return (
+    <div>
+      <div className="datos-zonas" role="img" aria-label="Tiempo por zona de pulso">
+        {z.map((v, i) => <span key={i} style={{ width: `${(v / tot) * 100}%`, background: ZONAS_FC[i] }} />)}
+      </div>
+      <MetricRail>
+        {z.map((v, i) => <TechnicalReadout key={i} label={`Z${i + 1}`} value={Math.round((v / tot) * 100)} unit="%" detail={horas(v / 60)} />)}
+      </MetricRail>
+    </div>
+  )
+}
+
+function Sesiones({ sesiones }: { sesiones: Sesion[] }) {
+  if (!sesiones.length) return <p className="datos-nota">Todavía no hay sesiones.</p>
+  return (
+    <ul className="datos-sesiones">
+      {sesiones.map((e, i) => (
+        <li key={`${e.fecha}-${i}`}>
+          <div>
+            <p className="datos-sesiones__fecha"><i style={{ background: COLOR_DEP[e.deporte] }} />{fechaCorta(e.fecha)} · {NOMBRE_DEPORTE[e.deporte].toUpperCase()}</p>
+            <p className="datos-sesiones__nombre">{e.nombre ?? 'Sesión'}</p>
+          </div>
+          <p className="datos-sesiones__datos">
+            {horas(e.min)}{e.km ? ` · ${e.km} km` : ''}{e.deporte === 'running' && e.ritmo ? ` · ${mmss(e.ritmo)}/km` : ''}{e.pot ? ` · ${e.pot} W` : ''}{e.fc ? ` · ${e.fc} ppm` : ''}{e.tss ? ` · carga ${e.tss}` : ''}
+          </p>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/** Pestaña «Datos»: rendimiento de entrenamiento, general y por deporte. */
+export default function DatosCliente({ codigo, onAjustes }: {
   codigo: string
-  ultimoPeso: number | null
-  cambioPeso: number | null
-  onVerProgreso: () => void
+  ultimoPeso?: number | null
+  cambioPeso?: number | null
+  onVerProgreso?: () => void
   onAjustes: () => void
 }) {
+  const [dias, setDias] = useState(90)
+  const [vista, setVista] = useState<Vista>('general')
   const [datos, setDatos] = useState<Datos | null>(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
     let vivo = true
-    fetch(`/api/cliente/${encodeURIComponent(codigo)}/datos`)
+    setError(false)
+    fetch(`/api/cliente/${encodeURIComponent(codigo)}/rendimiento?dias=${dias}`, { cache: 'no-store' })
       .then(r => (r.ok ? r.json() : Promise.reject()))
       .then(d => { if (vivo) setDatos(d) })
       .catch(() => { if (vivo) setError(true) })
     return () => { vivo = false }
-  }, [codigo])
+  }, [codigo, dias])
 
-  const semanas = useMemo<Fila[]>(() => (datos?.carga?.semanas ?? []).map(s => ({ fecha: s.semana, tss: s.tss })), [datos])
-  const sueno = useMemo<Fila[]>(() => (datos?.sueno?.noches ?? []).map(n => ({ fecha: n.fecha, h: n.horas })), [datos])
-  const forma = useMemo<Fila[]>(() => (datos?.forma?.serie ?? []).map(p => ({ fecha: p.fecha, ctl: p.ctl, atl: p.atl })), [datos])
-  const bateria = useMemo<Fila[]>(() => (datos?.bienestar.bateria ?? []).map(p => ({ fecha: p.fecha, v: p.valor })), [datos])
-  const estres = useMemo<Fila[]>(() => (datos?.bienestar.estres ?? []).map(p => ({ fecha: p.fecha, v: p.valor })), [datos])
-  const vo2 = useMemo<Fila[]>(() => (datos?.vo2max?.puntos ?? []).map(p => ({ fecha: p.fecha, v: p.valor })), [datos])
+  const s = datos?.sesiones
+  const desde = useMemo(() => (datos ? new Date(dia(datos.hoy) * 86_400_000 - dias * 86_400_000).toISOString().slice(0, 10) : ''), [datos, dias])
+  const enRango = useMemo(() => (s ?? []).filter(x => x.fecha >= desde), [s, desde])
+  const pmc = useMemo<Fila[]>(() => (datos?.serie ?? []).map(p => ({ fecha: p.fecha, ctl: p.ctl, atl: p.atl, tss: p.tss, tsb: p.tsb })), [datos])
+  const semanas = useMemo<Fila[]>(() => (datos?.semanas ?? []).map(x => ({ fecha: x.semana, tss: x.tss, min: x.minutos })), [datos])
+  const parciales = useMemo<Fila[]>(() => (datos?.parciales ?? []).map(p => ({ fecha: p.fecha, s1000: p.s1000, s5000: p.s5000 })), [datos])
+  const ef = useMemo<Fila[]>(() => (datos?.eficiencia ?? []).map(p => ({ fecha: p.fecha, ef: p.valor })), [datos])
+  const vo2 = useMemo<Fila[]>(() => (datos?.vo2max ?? []).map(p => ({ fecha: p.fecha, vo2: p.valor })), [datos])
 
   if (error) return <p className="px-1 text-sm" style={{ color: 'var(--text-muted)' }}>No se pudieron cargar tus datos. Inténtalo de nuevo en un momento.</p>
-  if (!datos) return <div className="h-40 animate-pulse" style={{ background: 'var(--editorial-panel)' }} />
+  if (!datos) return <div className="h-48 animate-pulse" style={{ background: 'var(--editorial-panel)' }} />
+  if (!datos.resumen || !datos.entrenos.length) {
+    return (
+      <div className="datos-aviso">
+        <p className="editorial-kicker">Sin entrenos todavía</p>
+        <p>Cuando tu reloj (Garmin o Strava) registre entrenos verás aquí tu rendimiento, tu carga y la evolución por deporte.</p>
+        <button className="editorial-action" onClick={onAjustes}><span>Conectar mi reloj</span></button>
+      </div>
+    )
+  }
 
-  const r = datos.recuperacion
-  const b = datos.baseAerobica
-  const colorNivel = r ? { baja: COLOR.ambar, moderada: COLOR.metal, alta: COLOR.verde }[r.nivel] : COLOR.metal
-  const maxMin = Math.max(60, ...datos.semanaDias.map(d => d.minutos))
-  const totalSemana = datos.semanaDias.reduce((a, d) => a + d.minutos, 0)
-  const sesionesSemana = datos.semanaDias.reduce((a, d) => a + d.sesiones, 0)
-  const f = datos.forma?.resumen
-  let n = 0
-  const num = () => String(++n).padStart(2, '0')
+  const r = datos.resumen
+  const conDatos = datos.deportes.filter(d => d.deporte === 'running' || d.sesiones > 0).map(d => d.deporte)
+  const tabs = [{ key: 'general' as Vista, label: 'General' }, ...conDatos.map(d => ({ key: d as Vista, label: NOMBRE_DEPORTE[d] }))]
+  const v: Vista = tabs.some(t => t.key === vista) ? vista : 'general'
+
+  const colorTsb = r.tsb < -30 ? COLOR.fatiga : r.tsb < -10 ? COLOR.ambar : COLOR.fresc
+  const ult28 = (s ?? []).filter(x => dia(datos.hoy) - dia(x.fecha) < 28)
+  const minPorDeporte = (['running', 'fuerza', 'ciclismo', 'natacion', 'otros'] as Deporte[])
+    .map(d => ({ d, min: suma(ult28.filter(x => x.deporte === d).map(x => x.min)) })).filter(x => x.min > 0)
+  const min28 = suma(minPorDeporte.map(x => x.min))
+  const semanaActual = datos.semanas[datos.semanas.length - 1]
+  const deporteSel = v === 'general' ? null : datos.deportes.find(d => d.deporte === v)
+  const sesDep = v === 'general' ? enRango : enRango.filter(x => x.deporte === v)
+  const filasSes = (f: (x: Sesion) => number | null, key: string): Fila[] => sesDep.map(x => ({ fecha: x.fecha, [key]: f(x) }))
+
+  const mejor = (k: 's1000' | 's5000') => { const vals = datos.parciales.map(p => p[k]).filter((x): x is number => !!x); return vals.length ? Math.min(...vals) : null }
+  const sesRun = enRango.filter(x => x.deporte === 'running')
+  const tiradaMax = sesRun.reduce((m, x) => Math.max(m, x.km ?? 0), 0)
 
   return (
-    <div className="datos-cliente">
-      {!datos.tieneReloj && (
-        <div className="datos-aviso">
-          <p className="editorial-kicker">Sin reloj conectado</p>
-          <p>Con tu reloj verás aquí tu recuperación, tu pulso en reposo y cómo mejora tu entrenamiento.</p>
-          <button className="editorial-action" onClick={onAjustes}><span>Conectar en Ajustes</span></button>
+    <div className="datos-cliente datos-rend coach-performance-panel">
+      <div className="datos-controles">
+        <IndustrialTabs items={tabs} activeKey={v} onChange={setVista} ariaLabel="Deporte" />
+        <div className="datos-rango" role="group" aria-label="Periodo">
+          {RANGOS.map(x => (
+            <button key={x.d} type="button" className={dias === x.d ? 'is-active' : ''} onClick={() => setDias(x.d)}>{x.t}</button>
+          ))}
         </div>
+      </div>
+
+      {v === 'general' && (
+        <>
+          <Bloque n="01" titulo="Estado de forma" nota={r.textoEstado}>
+            <MetricRail>
+              <TechnicalReadout label="Forma" value={Math.round(r.ctl)} detail="carga de 6 semanas" />
+              <TechnicalReadout label="Fatiga" value={Math.round(r.atl)} detail="carga de 7 días" />
+              <TechnicalReadout label="Frescura" value={`${r.tsb > 0 ? '+' : ''}${Math.round(r.tsb)}`} detail={r.tsb > 5 ? 'descansado' : r.tsb < -30 ? 'muy cargado' : r.tsb < -10 ? 'construyendo' : 'equilibrado'} />
+              <TechnicalReadout label="Subida" value={`${r.rampa7 > 0 ? '+' : ''}${r.rampa7}`} detail={r.rampa7 > 8 ? 'sube deprisa' : 'forma en 7 días'} />
+            </MetricRail>
+            <Grafica datos={pmc} alto={190}
+              series={[{ key: 'tss', label: 'Carga del día', color: COLOR.carga, tipo: 'barras' }, { key: 'ctl', label: 'Forma', color: COLOR.forma }, { key: 'atl', label: 'Fatiga', color: COLOR.fatiga }]}
+              formato={x => String(Math.round(x))} />
+            <p className="datos-nota" style={{ color: colorTsb }}>Frescura (forma − fatiga): entre −10 y −30 se construye forma; por debajo de −30 hay riesgo.</p>
+            <Grafica datos={pmc} alto={110} referencia={0}
+              zonas={[{ desde: -200, hasta: -30, color: COLOR.fatiga }, { desde: -30, hasta: -10, color: COLOR.ambar }, { desde: 5, hasta: 25, color: COLOR.fresc }]}
+              series={[{ key: 'tsb', label: 'Frescura', color: COLOR.fresc }]} formato={x => String(Math.round(x))} />
+          </Bloque>
+
+          <Bloque n="02" titulo="Mapa de actividad" nota="Una celda por día; más claro = más carga de entrenamiento.">
+            <MapaActividad sesiones={s ?? []} hoy={datos.hoy} />
+          </Bloque>
+
+          <Bloque n="03" titulo="Reparto por deporte" nota="Tiempo entrenado en los últimos 28 días.">
+            <div className="datos-zonas" role="img" aria-label="Reparto del tiempo por deporte">
+              {minPorDeporte.map(x => <span key={x.d} style={{ width: `${(x.min / min28) * 100}%`, background: COLOR_DEP[x.d] }} />)}
+            </div>
+            <MetricRail>
+              {minPorDeporte.map(x => <TechnicalReadout key={x.d} label={NOMBRE_DEPORTE[x.d]} value={Math.round((x.min / min28) * 100)} unit="%" detail={horas(x.min)} />)}
+            </MetricRail>
+          </Bloque>
+
+          <Bloque n="04" titulo="Carga semanal" nota={semanaActual ? `Esta semana: ${semanaActual.tss} de carga · ${horas(semanaActual.minutos)} · ${semanaActual.sesiones} sesiones` : undefined}>
+            <Grafica datos={semanas} alto={140} series={[{ key: 'tss', label: 'Carga semanal', color: COLOR.forma, tipo: 'barras' }]} formato={x => String(Math.round(x))} />
+            <MetricRail>
+              <TechnicalReadout label="Carga 7 días" value={Math.round(r.carga7d)} />
+              <TechnicalReadout label="Carga 28 días" value={Math.round(r.carga28d)} />
+              <TechnicalReadout label="Monotonía" value={r.monotonia === null ? '—' : r.monotonia} detail={r.monotonia !== null && r.monotonia > 2 ? 'poca variación' : 'variación de carga'} />
+            </MetricRail>
+          </Bloque>
+
+          <Bloque n="05" titulo="Zonas de pulso" nota="Tiempo acumulado en cada zona en el periodo elegido (de suave a máximo).">
+            <ZonasAcumuladas sesiones={enRango} />
+          </Bloque>
+
+          <Bloque n="06" titulo="Intensidad" nota="Reparto suave / medio / duro de tu carrera. Lo habitual en resistencia es ~80 % suave.">
+            <DistribucionIntensidad intensidad={datos.intensidad} />
+          </Bloque>
+
+          <Bloque n="07" titulo="Últimas sesiones">
+            <Sesiones sesiones={[...(s ?? [])].reverse().slice(0, 8)} />
+          </Bloque>
+        </>
       )}
 
-      {r && (
-        <Bloque n={num()} titulo="Recuperación" ayuda="Es la puntuación de «preparación para entrenar» de tu Garmin (0 a 100). Combina cómo has dormido, cuánto has entrenado, tu variabilidad cardiaca (HRV) y tu estrés. Alta: puedes apretar. Baja: mejor suave o descansar. Es una guía del reloj, no un diagnóstico.">
-          <div className="datos-hero">
-            <div className="datos-hero__gauge">
-              <Arco valor={r.puntuacion} color={colorNivel} />
-              <data style={{ color: colorNivel }}>{r.puntuacion}</data>
-            </div>
-            <div>
-              <p className="datos-hero__nivel">{{ baja: 'Recuperación baja', moderada: 'Recuperación moderada', alta: 'Recuperación alta' }[r.nivel]}</p>
-              {r.motivo && <p className="datos-hero__motivo">{r.motivo}</p>}
-            </div>
-          </div>
-          <MetricRail>
-            {r.pulsoReposo != null && <TechnicalReadout label="Pulso reposo" value={r.pulsoReposo} unit="ppm" />}
-            {r.hrvSemanal != null && <TechnicalReadout label="HRV semanal" value={r.hrvSemanal} unit="ms" />}
-            {r.bateriaMax != null && <TechnicalReadout label="Batería" value={r.bateriaMax} unit="máx" />}
-            {r.estres != null && <TechnicalReadout label="Estrés" value={r.estres} unit="medio" />}
-          </MetricRail>
-          <div className="datos-tendencias">
-            {datos.tendencias.preparacion && <MiniTendencia titulo="Preparación" t={datos.tendencias.preparacion} unidad="" color={COLOR.metal} />}
-            {datos.tendencias.pulsoReposo && <MiniTendencia titulo="Pulso en reposo" t={datos.tendencias.pulsoReposo} unidad="ppm" color={COLOR.rojo} />}
-          </div>
-          {bateria.length >= 3 && (
-            <div className="datos-mini">
-              <p><b>Batería corporal</b> · máximo de cada día</p>
-              <Grafica datos={bateria} alto={90} series={[{ key: 'v', label: 'Batería', color: COLOR.verde, tipo: 'area' }]} formato={v => `${Math.round(v)}`} />
-            </div>
+      {v === 'running' && deporteSel && (
+        <>
+          <Bloque n="01" titulo="Resumen de carrera">
+            <ResumenDeporte resumen={deporteSel} nombre="Running" conKm />
+          </Bloque>
+
+          <Bloque n="02" titulo="Marcas" nota="Tus mejores datos en el periodo.">
+            <MetricRail>
+              <TechnicalReadout label="Mejor 1 km" value={mejor('s1000') ? mmss(mejor('s1000')!) : '—'} unit="/km" />
+              <TechnicalReadout label="Mejor 5 km" value={mejor('s5000') ? mmss(mejor('s5000')!) : '—'} />
+              <TechnicalReadout label="Salida más larga" value={tiradaMax || '—'} unit={tiradaMax ? 'km' : undefined} />
+              <TechnicalReadout label="VO₂ máx" value={datos.vo2max.length ? Math.round(datos.vo2max[datos.vo2max.length - 1].valor) : '—'} />
+            </MetricRail>
+          </Bloque>
+
+          <Bloque n="03" titulo="Ritmo, distancia y pulso por salida" nota="Cada punto es una salida. Más bajo en ritmo = más rápido.">
+            <Grafica datos={filasSes(x => x.ritmo, 'ritmo')} alto={140} series={[{ key: 'ritmo', label: 'Ritmo medio', color: COLOR.forma }]} formato={x => `${mmss(x)}/km`} />
+            <div className="datos-sep" />
+            <Grafica datos={filasSes(x => x.km, 'km')} alto={110} series={[{ key: 'km', label: 'Distancia', color: COLOR.fresc, tipo: 'barras' }]} formato={x => `${x.toFixed(1)} km`} />
+            <div className="datos-sep" />
+            <Grafica datos={filasSes(x => x.fc, 'fc')} alto={110} series={[{ key: 'fc', label: 'Pulso medio', color: COLOR.fatiga }]} formato={x => `${Math.round(x)} ppm`} />
+          </Bloque>
+
+          <Bloque n="04" titulo="Forma aeróbica">
+            <BaseAerobica base={datos.baseAerobica} />
+            <div className="datos-sep" />
+            <p className="datos-nota">Eficiencia: metros por minuto por cada latido en carreras continuas. Si sube, corres más rápido con el mismo pulso.</p>
+            <Grafica datos={ef} alto={130} series={[{ key: 'ef', label: 'm/min por ppm', color: COLOR.forma }]} formato={x => x.toFixed(2)} />
+            <div className="datos-sep" />
+            <p className="datos-nota">VO₂ máx según tu reloj.</p>
+            <Grafica datos={vo2} alto={110} series={[{ key: 'vo2', label: 'VO₂ máx', color: COLOR.fresc }]} formato={x => String(Math.round(x))} />
+          </Bloque>
+
+          <Bloque n="05" titulo="Mejores parciales" nota="El kilómetro y los 5 km más rápidos de cada salida.">
+            <Grafica datos={parciales} alto={130} series={[{ key: 's1000', label: '1 km', color: COLOR.fatiga }]} formato={x => mmss(x)} />
+            <div className="datos-sep" />
+            <Grafica datos={parciales} alto={110} series={[{ key: 's5000', label: '5 km', color: COLOR.ambar }]} formato={x => mmss(x)} />
+          </Bloque>
+
+          <Bloque n="06" titulo="Deriva cardiaca y técnica">
+            <DerivaCardiaca deriva={datos.deriva} />
+            <div className="datos-sep" />
+            <TecnicaCarrera tecnica={datos.tecnica} />
+          </Bloque>
+
+          <Bloque n="07" titulo="Zonas de pulso">
+            <ZonasAcumuladas sesiones={sesDep} />
+          </Bloque>
+
+          <Bloque n="08" titulo="Entrenos de carrera">
+            <EntrenosTabla entrenos={deporteSel.entrenos} titulo="Últimos entrenos" />
+          </Bloque>
+        </>
+      )}
+
+      {v !== 'general' && v !== 'running' && deporteSel && (
+        <>
+          <Bloque n="01" titulo={`Resumen de ${NOMBRE_DEPORTE[v].toLowerCase()}`}>
+            <ResumenDeporte resumen={deporteSel} nombre={NOMBRE_DEPORTE[v]} conKm={v !== 'fuerza'} />
+          </Bloque>
+
+          <Bloque n="02" titulo="Cada sesión" nota="Evolución sesión a sesión en el periodo elegido.">
+            <Grafica datos={filasSes(x => x.min, 'min')} alto={120} series={[{ key: 'min', label: 'Duración', color: COLOR_DEP[v], tipo: 'barras' }]} formato={x => `${Math.round(x)} min`} />
+            <div className="datos-sep" />
+            <Grafica datos={filasSes(x => x.tss, 'tss')} alto={110} series={[{ key: 'tss', label: 'Carga', color: COLOR.forma, tipo: 'barras' }]} formato={x => String(Math.round(x))} />
+            <div className="datos-sep" />
+            <Grafica datos={filasSes(x => x.fc, 'fc')} alto={110} series={[{ key: 'fc', label: 'Pulso medio', color: COLOR.fatiga }]} formato={x => `${Math.round(x)} ppm`} />
+          </Bloque>
+
+          {v === 'ciclismo' && sesDep.some(x => x.pot) && (
+            <Bloque n="03" titulo="Potencia" nota="Potencia media y normalizada de cada salida.">
+              <Grafica datos={sesDep.map(x => ({ fecha: x.fecha, pot: x.pot, norm: x.potNorm }))} alto={150}
+                series={[{ key: 'pot', label: 'Media', color: COLOR.forma }, { key: 'norm', label: 'Normalizada', color: COLOR.ambar }]} formato={x => `${Math.round(x)} W`} />
+            </Bloque>
           )}
-          {estres.length >= 3 && (
-            <div className="datos-mini">
-              <p><b>Estrés</b> · media de cada día (más bajo, mejor)</p>
-              <Grafica datos={estres} alto={90} series={[{ key: 'v', label: 'Estrés', color: COLOR.ambar }]} formato={v => `${Math.round(v)}`} />
-            </div>
+
+          {(v === 'ciclismo' || v === 'natacion') && sesDep.some(x => x.km) && (
+            <Bloque n="04" titulo="Distancia" nota="Kilómetros de cada sesión.">
+              <Grafica datos={filasSes(x => x.km, 'km')} alto={120} series={[{ key: 'km', label: 'Distancia', color: COLOR.fresc, tipo: 'barras' }]} formato={x => `${x.toFixed(1)} km`} />
+            </Bloque>
           )}
-        </Bloque>
-      )}
 
-      <Bloque n={num()} titulo="Esta semana" ayuda="Minutos de entrenamiento de cada día, de lunes a domingo, con todo lo que ha registrado tu reloj o la app.">
-        <div className="datos-semana" role="img" aria-label={`Esta semana: ${horas(totalSemana)} en ${sesionesSemana} sesiones`}>
-          {datos.semanaDias.map((d, i) => {
-            const esHoy = d.fecha === datos.hoy
-            return (
-              <div key={d.fecha} className={`datos-semana__dia${esHoy ? ' is-hoy' : ''}`}>
-                <span className="datos-semana__min">{d.minutos > 0 ? d.minutos : ''}</span>
-                <div className="datos-semana__barra"><span style={{ height: `${(d.minutos / maxMin) * 100}%` }} /></div>
-                <span className="datos-semana__letra">{DIAS[i]}</span>
-              </div>
-            )
-          })}
-        </div>
-        <MetricRail>
-          <TechnicalReadout label="Tiempo" value={horas(totalSemana)} />
-          <TechnicalReadout label="Sesiones" value={sesionesSemana} />
-          {datos.carga?.semanaActual && datos.carga.semanaActual.km > 0 && <TechnicalReadout label="Carrera" value={datos.carga.semanaActual.km} unit="km" />}
-        </MetricRail>
-      </Bloque>
+          {v === 'natacion' && sesDep.some(x => x.km && x.min) && (
+            <Bloque n="05" titulo="Ritmo por 100 m" nota="Tiempo medio cada 100 m. Más bajo = más rápido.">
+              <Grafica datos={sesDep.filter(x => x.km && x.min).map(x => ({ fecha: x.fecha, r100: (x.min * 60) / ((x.km as number) * 10) }))} alto={120}
+                series={[{ key: 'r100', label: 'Ritmo /100 m', color: COLOR.forma }]} formato={x => mmss(x)} />
+            </Bloque>
+          )}
 
-      {f && forma.length > 1 && (
-        <Bloque n={num()} titulo="Forma y fatiga" ayuda="Forma es lo que tu cuerpo ha acumulado de entrenar durante semanas (sube despacio). Fatiga es el cansancio de los últimos días (sube y baja rápido). Frescura = forma menos fatiga: positiva, vas descansado; muy negativa, vas cargado. Lo habitual en plena preparación es estar ligeramente negativo.">
-          <p className="datos-estado">{datos.carga?.estado ?? ''}</p>
-          <MetricRail>
-            <TechnicalReadout label="Forma" value={Math.round(f.ctl)} detail="últimas semanas" />
-            <TechnicalReadout label="Fatiga" value={Math.round(f.atl)} detail="últimos días" />
-            <TechnicalReadout label="Frescura" value={`${f.tsb > 0 ? '+' : ''}${Math.round(f.tsb)}`} detail={f.tsb > 5 ? 'descansado' : f.tsb < -15 ? 'cargado' : 'equilibrado'} />
-          </MetricRail>
-          <Grafica datos={forma} alto={150} series={[
-            { key: 'ctl', label: 'Forma', color: COLOR.metal, tipo: 'area' },
-            { key: 'atl', label: 'Fatiga', color: COLOR.rojo },
-          ]} formato={v => `${Math.round(v)}`} />
-          <p className="datos-leyenda"><i style={{ background: COLOR.metal }} /> Forma <i style={{ background: COLOR.rojo }} /> Fatiga · 60 días</p>
-        </Bloque>
-      )}
+          <Bloque n="06" titulo="Zonas de pulso">
+            <ZonasAcumuladas sesiones={sesDep} />
+          </Bloque>
 
-      {datos.carga && semanas.length > 1 && (
-        <Bloque n={num()} titulo="Carga semanal" ayuda="Cada sesión suma un «estrés de entrenamiento» según su duración e intensidad. La barra es el total de cada semana. Lo sano es subir poco a poco y bajar una semana de cada tres o cuatro.">
-          <Grafica datos={semanas} alto={110} series={[{ key: 'tss', label: 'Estrés de entrenamiento', color: COLOR.verde, tipo: 'barras' }]} formato={v => `${Math.round(v)}`} />
-        </Bloque>
-      )}
-
-      {datos.sueno && (
-        <Bloque n={num()} titulo="Sueño" ayuda="Horas dormidas según tu reloj en las últimas noches. Para que se registre, llévalo puesto al dormir. Lo recomendable para quien entrena es dormir entre 7 y 9 horas.">
-          <MetricRail>
-            <TechnicalReadout label="Media" value={datos.sueno.mediaHoras} unit="h" detail={`últimas ${datos.sueno.noches.length} noches`} />
-          </MetricRail>
-          <Grafica datos={sueno} alto={100} referencia={7} series={[{ key: 'h', label: 'Horas', color: COLOR.metal, tipo: 'barras' }]} formato={v => `${v.toFixed(1)} h`} />
-        </Bloque>
-      )}
-
-      {datos.intensidad && (
-        <Bloque n={num()} titulo="Intensidad" ayuda="Cómo se reparte tu tiempo de carrera de los últimos 28 días. Lo que usan los corredores de resistencia es alrededor de un 80 % suave y el resto duro: así se recupera bien y se mejora.">
-          <div className="datos-intensidad" role="img" aria-label={`Suave ${datos.intensidad.pctSuave} %, media ${datos.intensidad.pctMedia} %, dura ${datos.intensidad.pctDura} %`}>
-            <span style={{ width: `${datos.intensidad.pctSuave}%`, background: COLOR.verde }} />
-            <span style={{ width: `${datos.intensidad.pctMedia}%`, background: COLOR.ambar }} />
-            <span style={{ width: `${datos.intensidad.pctDura}%`, background: COLOR.rojo }} />
-          </div>
-          <MetricRail>
-            <TechnicalReadout label="Suave" value={datos.intensidad.pctSuave} unit="%" />
-            <TechnicalReadout label="Media" value={datos.intensidad.pctMedia} unit="%" />
-            <TechnicalReadout label="Dura" value={datos.intensidad.pctDura} unit="%" />
-          </MetricRail>
-        </Bloque>
-      )}
-
-      {b.valoracion !== 'sin_datos' && b.reciente && b.previa && b.fcRef && b.cambioSeg !== null && (
-        <Bloque n={num()} titulo="Tu base aeróbica" ayuda="Compara tus rodajes suaves de las últimas 4 semanas con los de las 4 anteriores. Si a igual pulso corres más rápido, tu cuerpo es más eficiente: es la mejor señal de que el entrenamiento funciona. Un cambio pequeño es normal por el calor, el sueño o el terreno; fíjate en la tendencia de varias semanas.">
-          <MetricRail>
-            <TechnicalReadout label="Pulso de referencia" value={b.fcRef} unit="ppm" />
-            <TechnicalReadout label="Ritmo a ese pulso" value={mmss(b.reciente.ritmoRef)} unit="/km" />
-          </MetricRail>
-          <p className="datos-estado" style={{ color: b.valoracion === 'mejora' ? COLOR.verde : b.valoracion === 'retrocede' ? COLOR.ambar : undefined }}>
-            {b.valoracion === 'mejora' ? `Mejoras: ${Math.abs(Math.round(b.cambioSeg))} s/km más rápido que hace un mes con el mismo pulso.`
-              : b.valoracion === 'retrocede' ? `Ahora mismo vas ${Math.abs(Math.round(b.cambioSeg))} s/km más lento con el mismo pulso. Puede ser cansancio o calor; tu coach lo tiene en cuenta.`
-              : 'Estable respecto al mes pasado.'}
-          </p>
-        </Bloque>
-      )}
-
-      {datos.vo2max && vo2.length >= 2 && (
-        <Bloque n={num()} titulo="VO₂ máx" ayuda="Estimación de tu reloj de cuánto oxígeno puede usar tu cuerpo al máximo esfuerzo. Es una estimación: sube con el entrenamiento constante, pero fluctúa unas décimas de una sesión a otra.">
-          <MetricRail>
-            <TechnicalReadout label="Actual" value={datos.vo2max.actual} unit="ml/kg/min" />
-          </MetricRail>
-          <Grafica datos={vo2} alto={90} series={[{ key: 'v', label: 'VO₂ máx', color: COLOR.verde }]} formato={v => v.toFixed(1)} />
-        </Bloque>
-      )}
-
-      {datos.ultimosEntrenos.length > 0 && (
-        <Bloque n={num()} titulo="Últimas sesiones" ayuda="Tus entrenos más recientes registrados por el reloj o la app. «Carga» es el estrés de entrenamiento de esa sesión.">
-          <ul className="datos-sesiones">
-            {datos.ultimosEntrenos.map((e, i) => (
-              <li key={`${e.fecha}-${i}`}>
-                <div>
-                  <p className="datos-sesiones__fecha">{fechaCorta(e.fecha)} · {DEPORTE[e.deporte] ?? 'Otro'}</p>
-                  <p className="datos-sesiones__nombre">{e.nombre}</p>
-                </div>
-                <p className="datos-sesiones__datos">
-                  {horas(e.minutos)}{e.km ? ` · ${e.km} km` : ''}{e.fcMedia ? ` · ${e.fcMedia} ppm` : ''}{e.carga ? ` · carga ${e.carga}` : ''}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </Bloque>
-      )}
-
-      {ultimoPeso != null && (
-        <Bloque n={num()} titulo="Cuerpo" ayuda="Tu último peso registrado y el cambio desde el inicio. El peso varía varios cientos de gramos de un día a otro; mira la tendencia de semanas, no el dato de hoy.">
-          <MetricRail>
-            <TechnicalReadout label="Peso" value={ultimoPeso} unit="kg" detail={cambioPeso !== null ? `${cambioPeso > 0 ? '+' : ''}${cambioPeso.toFixed(1)} kg desde el inicio` : undefined} />
-          </MetricRail>
-          <button className="editorial-action" onClick={onVerProgreso}><span>Ver mi progreso</span><span aria-hidden="true">↗</span></button>
-        </Bloque>
+          <Bloque n="07" titulo="Últimas sesiones">
+            <EntrenosTabla entrenos={deporteSel.entrenos} titulo="Entrenos recientes" />
+          </Bloque>
+        </>
       )}
     </div>
   )

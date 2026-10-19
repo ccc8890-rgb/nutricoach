@@ -2,10 +2,6 @@
 // Lo que ve el cliente en su pestaña «Datos»: recuperación, sueño, carga y base aeróbica, sin jerga y sin inventar lo que el reloj no mide.
 import type { PanelRendimiento } from './panel'
 import type { BaseAerobica } from './base-aerobica'
-import type { ResumenCarga } from './pmc'
-import type { ResumenIntensidad } from './intensidad'
-import { deporteDe } from './deportes'
-import { lunesDe } from './fechas'
 
 export interface FilaReloj {
   fecha: string
@@ -49,17 +45,6 @@ export interface DatosCliente {
   sueno: { noches: { fecha: string; horas: number; calidad: number | null }[]; mediaHoras: number } | null
   carga: { estado: string; semanas: { semana: string; tss: number; km: number }[]; semanaActual: { tss: number; km: number; sesiones: number } | null } | null
   baseAerobica: BaseAerobica
-  /** Forma, fatiga y frescura (últimos 60 días) para la gráfica de carga. */
-  forma: { serie: { fecha: string; ctl: number; atl: number; tsb: number }[]; resumen: ResumenCarga } | null
-  /** Reparto suave/medio/duro de carrera en los últimos 28 días. */
-  intensidad: ResumenIntensidad | null
-  /** Batería corporal y estrés diarios (últimos 30 días con dato). */
-  bienestar: { bateria: PuntoTendencia[]; estres: PuntoTendencia[] }
-  vo2max: { actual: number; puntos: PuntoTendencia[] } | null
-  /** Lunes a domingo de esta semana: minutos y sesiones por día. */
-  semanaDias: { fecha: string; minutos: number; sesiones: number }[]
-  /** Últimas sesiones, de la más reciente a la más antigua. */
-  ultimosEntrenos: { fecha: string; nombre: string; deporte: string; minutos: number; km: number | null; fcMedia: number | null; carga: number | null }[]
 }
 
 const NIVEL: Record<string, Recuperacion['nivel']> = { LOW: 'baja', MODERATE: 'moderada', HIGH: 'alta' }
@@ -120,18 +105,6 @@ export function construirDatosCliente(panel: PanelRendimiento, filas: FilaReloj[
     ? { estado: panel.resumen.textoEstado, semanas, semanaActual: actual ? { tss: actual.tss, km: actual.km, sesiones: actual.sesiones } : null }
     : null
 
-  const serieVar = (campo: 'body_battery_max' | 'stress_avg'): PuntoTendencia[] =>
-    filas.flatMap(f => (f[campo] != null ? [{ fecha: f.fecha, valor: f[campo] as number }] : [])).slice(-30)
-
-  const lunes = lunesDe(hoy)
-  const semanaDias = Array.from({ length: 7 }, (_, i) => {
-    const fecha = new Date(new Date(`${lunes}T12:00:00Z`).getTime() + i * 86_400_000).toISOString().slice(0, 10)
-    const delDia = panel.entrenos.filter(e => e.fecha === fecha)
-    return { fecha, minutos: Math.round(delDia.reduce((a, e) => a + (e.duracion_s ?? 0), 0) / 60), sesiones: delDia.length }
-  })
-
-  const vo2 = panel.vo2max.slice(-12)
-
   return {
     hoy,
     tieneReloj: filas.length > 0,
@@ -140,21 +113,5 @@ export function construirDatosCliente(panel: PanelRendimiento, filas: FilaReloj[
     sueno,
     carga,
     baseAerobica: panel.baseAerobica,
-    forma: panel.resumen && panel.serie.length >= 7
-      ? { serie: panel.serie.slice(-60).map(p => ({ fecha: p.fecha, ctl: p.ctl, atl: p.atl, tsb: p.tsb })), resumen: panel.resumen }
-      : null,
-    intensidad: panel.intensidad.reciente.valoracion === 'sin_datos' ? null : panel.intensidad.reciente,
-    bienestar: { bateria: serieVar('body_battery_max'), estres: serieVar('stress_avg') },
-    vo2max: vo2.length ? { actual: vo2[vo2.length - 1].valor, puntos: vo2.map(v => ({ fecha: v.fecha, valor: v.valor })) } : null,
-    semanaDias,
-    ultimosEntrenos: panel.entrenos.slice(0, 6).map(e => ({
-      fecha: e.fecha,
-      nombre: e.nombre ?? 'Sesión',
-      deporte: deporteDe(e.tipo),
-      minutos: Math.round((e.duracion_s ?? 0) / 60),
-      km: e.distancia_m ? Math.round(e.distancia_m / 100) / 10 : null,
-      fcMedia: e.fc_media ? Math.round(e.fc_media) : null,
-      carga: e.tss ? Math.round(e.tss) : null,
-    })),
   }
 }
