@@ -76,10 +76,10 @@ export function validarHibridoHyrox(sesiones: SesionPlan[], fase: string): Halla
 
 /** Pliometría del catálogo por nivel de dificultad (1 = muy bajo impacto … 4 = solo avanzados). Es criterio de entrenador: la evidencia no distingue por nivel. */
 export const PLIOMETRIA_POR_DIFICULTAD: Record<1 | 2 | 3 | 4, string[]> = {
-  1: ['Pogo jumps (saltos de tobillo)', 'Saltos en punta de pies', 'Técnica de carrera (skipping)'],
-  2: ['Saltos con contramovimiento (CMJ)', 'Box jumps (cajón bajo)', 'Lateral jumps', 'Lanzamiento de balón medicinal (slam)'],
-  3: ['Sentadilla con salto con carga', 'Saltos a una pierna (hops)', 'Zancadas con salto', 'Saltos de vallas (hurdle hops)', 'Bounding (zancadas largas con salto)', 'Box jumps con peso', 'Broad jumps'],
-  4: ['Salto en profundidad (drop jump)', 'Salto con barra hexagonal'],
+  1: ['Pogo jumps', 'Saltos en punta de pies', 'Técnica de carrera'],
+  2: ['Salto vertical (CMJ)', 'Box jumps', 'Saltos laterales', 'Slam ball'],
+  3: ['Sentadilla con salto lastrada', 'Saltos a una pierna', 'Zancadas con salto', 'Saltos de vallas', 'Bounding', 'Box jumps con peso', 'Broad jumps'],
+  4: ['Drop jump', 'Salto con trap bar'],
 }
 
 export interface PautaPliometria { dificultadMax: 1 | 2 | 3 | 4; contactos: string; conCarga: boolean }

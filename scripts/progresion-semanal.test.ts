@@ -27,8 +27,8 @@ assert.equal(ejercicioDeLaSemana(sled, 3, false).objetivo_open, '152 kg')
 assert.equal(objetivoOpen('Farmer Carry'), '2 × 24 kg')
 // SkiErg +1 serie en S3, pliometría +1 serie y a la mitad en descarga
 assert.equal(ejercicioDeLaSemana({ nombre: 'SkiErg', bloque: 'principal', series: 4, repeticiones: '500m', peso_sugerido: null }, 3, false).series, 5)
-assert.equal(ejercicioDeLaSemana({ nombre: 'Saltos con contramovimiento (CMJ)', bloque: 'pliometria', series: 5, repeticiones: '6', peso_sugerido: null }, 3, false).series, 6)
-assert.equal(ejercicioDeLaSemana({ nombre: 'Saltos con contramovimiento (CMJ)', bloque: 'pliometria', series: 5, repeticiones: '6', peso_sugerido: null }, 4, true).series, 3)
+assert.equal(ejercicioDeLaSemana({ nombre: 'Salto vertical (CMJ)', bloque: 'pliometria', series: 5, repeticiones: '6', peso_sugerido: null }, 3, false).series, 6)
+assert.equal(ejercicioDeLaSemana({ nombre: 'Salto vertical (CMJ)', bloque: 'pliometria', series: 5, repeticiones: '6', peso_sugerido: null }, 4, true).series, 3)
 // Calentamiento y accesorios sin peso de barra no cambian
 assert.equal(ejercicioDeLaSemana({ nombre: 'Sentadilla goblet', bloque: 'calentamiento', series: 2, repeticiones: '8', peso_sugerido: '16kg' }, 3, false).cambio, false)
 assert.equal(ejercicioDeLaSemana({ nombre: 'Curl Bíceps con Barra EZ', bloque: 'accesorios', series: 3, repeticiones: '10-12', peso_sugerido: '25kg' }, 3, false).peso_sugerido, '25kg')

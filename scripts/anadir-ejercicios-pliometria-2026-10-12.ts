@@ -6,16 +6,16 @@ const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPAB
 const APPLY = process.argv.includes('--apply')
 
 const NUEVOS = [
-  { nombre: 'Saltos con contramovimiento (CMJ)', grupo_muscular: 'Piernas', dificultad_nivel: 2, descripcion: 'Salto vertical máximo tras bajar rápido a un cuarto de sentadilla. Aterriza suave y estable; descansa entre saltos.' },
-  { nombre: 'Sentadilla con salto con carga', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Sentadilla con salto con carga ligera (barra o mancuernas) a máxima velocidad. Para trabajar potencia, no fatiga.' },
-  { nombre: 'Saltos a una pierna (hops)', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Saltos continuos y cortos sobre una pierna, con contacto breve y tronco estable.' },
+  { nombre: 'Salto vertical (CMJ)', grupo_muscular: 'Piernas', dificultad_nivel: 2, descripcion: 'Salto vertical máximo tras bajar rápido a un cuarto de sentadilla. Aterriza suave y estable; descansa entre saltos.' },
+  { nombre: 'Sentadilla con salto lastrada', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Sentadilla con salto con carga ligera (barra o mancuernas) a máxima velocidad. Para trabajar potencia, no fatiga.' },
+  { nombre: 'Saltos a una pierna', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Saltos continuos y cortos sobre una pierna, con contacto breve y tronco estable.' },
   { nombre: 'Zancadas con salto', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Desde zancada, salto explosivo cambiando de pierna en el aire y aterrizando de nuevo en zancada.' },
-  { nombre: 'Saltos de vallas (hurdle hops)', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Saltos seguidos sobre vallas bajas con contacto de suelo mínimo.' },
-  { nombre: 'Salto en profundidad (drop jump)', grupo_muscular: 'Piernas', dificultad_nivel: 4, descripcion: 'Bajar de un cajón bajo y saltar de inmediato al tocar el suelo. Solo con buena base de fuerza y técnica de aterrizaje.' },
-  { nombre: 'Pogo jumps (saltos de tobillo)', grupo_muscular: 'Piernas', dificultad_nivel: 1, descripcion: 'Saltos rápidos y rígidos solo con tobillos, rodillas casi extendidas. Base de la pliometría para corredores.' },
-  { nombre: 'Bounding (zancadas largas con salto)', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Zancadas largas y elásticas alternando piernas, buscando distancia y tiempo de vuelo.' },
-  { nombre: 'Lanzamiento de balón medicinal (slam)', grupo_muscular: 'Cuerpo completo', dificultad_nivel: 2, descripcion: 'Elevar el balón sobre la cabeza y lanzarlo al suelo con todo el cuerpo. Potencia de tronco y hombro.' },
-  { nombre: 'Salto con barra hexagonal', grupo_muscular: 'Piernas', dificultad_nivel: 4, descripcion: 'Salto vertical con barra hexagonal ligera. Potencia de cadera y pierna con carga.' },
+  { nombre: 'Saltos de vallas', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Saltos seguidos sobre vallas bajas con contacto de suelo mínimo.' },
+  { nombre: 'Drop jump', grupo_muscular: 'Piernas', dificultad_nivel: 4, descripcion: 'Bajar de un cajón bajo y saltar de inmediato al tocar el suelo. Solo con buena base de fuerza y técnica de aterrizaje.' },
+  { nombre: 'Pogo jumps', grupo_muscular: 'Piernas', dificultad_nivel: 1, descripcion: 'Saltos rápidos y rígidos solo con tobillos, rodillas casi extendidas. Base de la pliometría para corredores.' },
+  { nombre: 'Bounding', grupo_muscular: 'Piernas', dificultad_nivel: 3, descripcion: 'Zancadas largas y elásticas alternando piernas, buscando distancia y tiempo de vuelo.' },
+  { nombre: 'Slam ball', grupo_muscular: 'Cuerpo completo', dificultad_nivel: 2, descripcion: 'Elevar el balón sobre la cabeza y lanzarlo al suelo con todo el cuerpo. Potencia de tronco y hombro.' },
+  { nombre: 'Salto con trap bar', grupo_muscular: 'Piernas', dificultad_nivel: 4, descripcion: 'Salto vertical con barra hexagonal ligera. Potencia de cadera y pierna con carga.' },
 ]
 
 ;(async () => {
