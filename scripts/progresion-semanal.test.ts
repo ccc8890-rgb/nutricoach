@@ -31,7 +31,7 @@ assert.equal(ejercicioDeLaSemana({ nombre: 'Salto vertical (CMJ)', bloque: 'plio
 assert.equal(ejercicioDeLaSemana({ nombre: 'Salto vertical (CMJ)', bloque: 'pliometria', series: 5, repeticiones: '6', peso_sugerido: null }, 4, true).series, 3)
 // Calentamiento y accesorios sin peso de barra no cambian
 assert.equal(ejercicioDeLaSemana({ nombre: 'Sentadilla goblet', bloque: 'calentamiento', series: 2, repeticiones: '8', peso_sugerido: '16kg' }, 3, false).cambio, false)
-assert.equal(ejercicioDeLaSemana({ nombre: 'Curl Bíceps con Barra EZ', bloque: 'accesorios', series: 3, repeticiones: '10-12', peso_sugerido: '25kg' }, 3, false).peso_sugerido, '25kg')
+assert.equal(ejercicioDeLaSemana({ nombre: 'Curl bíceps con barra EZ', bloque: 'accesorios', series: 3, repeticiones: '10-12', peso_sugerido: '25kg' }, 3, false).peso_sugerido, '25kg')
 // Descarga nunca deja menos de 2 series en trabajo real
 assert.equal(ejercicioDeLaSemana({ nombre: 'Press banca plano', bloque: 'accesorios', series: 3, repeticiones: '6', peso_sugerido: '60kg' }, 4, true).series, 2)
 

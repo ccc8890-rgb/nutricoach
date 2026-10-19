@@ -10,7 +10,7 @@ const STOP_WORDS = new Set(['con', 'de', 'en', 'el', 'la', 'los', 'las', 'y', 'a
 // Ejercicios de otra disciplina que NO deben colarse en una sesión de
 // carrera pura solo porque comparten una palabra genérica del nombre IA
 // (ej. "continuo", "series", "intervalos"). Bug real detectado por Carlos:
-// "Tirada Larga Z2" (rodaje de 90min) se vinculó a "SkiErg Continuo" y
+// "Tirada Larga Z2" (rodaje de 90min) se vinculó a "SkiErg continuo" y
 // "Carrera Series Cortas" (8x400m) se vinculó a "Series de crol 50m" —
 // ambos con `tipo` inconsistente o de otra disciplina, y el nivel 3
 // devolvía el primer resultado de Postgres sin ninguna preferencia.

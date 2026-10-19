@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { estacionesEnNombres, esPliometria, validarHibridoHyrox } from '../lib/entrenos/hyrox-estaciones'
 
-assert.deepEqual([...estacionesEnNombres(['Sled push', 'Remo ergómetro', "Farmer's carry", 'Wall balls hyrox', 'SkiErg Intervalos', 'Burpee broad jumps ritmo', 'Sandbag lunges', 'Sled pull pesado'])].sort(), ['burpee_broad_jump', 'farmers_carry', 'remo', 'sandbag_lunges', 'skierg', 'sled_pull', 'sled_push', 'wall_balls'])
+assert.deepEqual([...estacionesEnNombres(['Sled push', 'Remo ergómetro', "Farmer's carry", 'Wall balls hyrox', 'SkiErg intervalos', 'Burpee broad jumps ritmo', 'Sandbag lunges', 'Sled pull pesado'])].sort(), ['burpee_broad_jump', 'farmers_carry', 'remo', 'sandbag_lunges', 'skierg', 'sled_pull', 'sled_push', 'wall_balls'])
 assert.equal(esPliometria({ nombre: 'Box jumps' }), true)
 assert.equal(esPliometria({ nombre: 'Burpee broad jumps' }), false)
 assert.equal(esPliometria({ nombre: 'Sentadilla con barra' }), false)
