@@ -408,7 +408,7 @@ function PortalClientePageContent() {
       <IndustrialAtmosphere />
 
       {/* ── Header ── */}
-      <header className={`cliente-portal-header sticky top-0 z-20 px-4 pt-safe ${headerVisible ? 'cliente-header-visible' : 'cliente-header-hidden'}`}
+      <header className={`cliente-portal-header cliente-cabecera-fija sticky top-0 z-20 px-4 pt-safe ${headerVisible ? 'cliente-header-visible' : 'cliente-header-hidden'}`}
         style={{ background: 'color-mix(in srgb, var(--bg) 88%, transparent)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-2xl mx-auto flex items-center justify-between h-16">
           {/* Avatar + name */}

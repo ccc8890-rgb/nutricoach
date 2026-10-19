@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import CachePortal from '@/components/PortalCliente/CachePortal'
+import './cliente.css'
 
 export const metadata: Metadata = {
   title: 'Casanova Cliente',
