@@ -11,6 +11,7 @@ import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
 import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
 import { StepByStep } from '@/components/premium/StepByStep'
 import type { Racion } from '@/lib/nutricion/racion'
+import { parsePasos, ordenarPorFases } from '@/lib/recetas/pasos'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import { formatoCantidad } from '@/lib/recetas/equivalencia'
 import CompartirSesion from '@/components/training/CompartirSesion'
@@ -46,30 +47,6 @@ interface IngredienteConAlimento {
 
 /** Copia local de app/recetas/[id]/page.tsx — mismo parseo, sin las
  * dependencias de coach de esa página (quality gate, edición, precios). */
-function parsePasos(text: string | null | undefined): { number: number; content: string; title?: string; grupo?: string }[] {
-  if (!text) return []
-  // Una línea «## Bizcocho» abre una fase de la receta; los pasos que vienen detrás pertenecen a ella
-  let grupo: string | undefined
-  const lines: { l: string; grupo?: string }[] = []
-  for (const raw of text.split('\n')) {
-    const h = raw.match(/^\s*#{2,3}\s+(.+?)\s*$/)
-    if (h) { grupo = h[1]; continue }
-    if (raw.trim()) lines.push({ l: raw, grupo })
-  }
-  const numbered = lines.filter(x => /^\s*(?:Paso\s*)?\d+[.)\-:]/.test(x.l))
-  if (numbered.length >= 2) {
-    return numbered.map((x, i) => {
-      const clean = x.l.replace(/^\s*(?:Paso\s*)?\d+[.)\-:]\s*/, '').trim()
-      const colonIdx = clean.indexOf(':')
-      if (colonIdx > 0 && colonIdx < 40) {
-        return { number: i + 1, title: clean.slice(0, colonIdx).trim(), content: clean.slice(colonIdx + 1).trim(), grupo: x.grupo }
-      }
-      return { number: i + 1, content: clean, grupo: x.grupo }
-    })
-  }
-  return lines.map((x, i) => ({ number: i + 1, content: x.l.trim(), grupo: x.grupo }))
-}
-
 // Las cantidades de los pasos son las de la receta ENTERA (p. ej. «1 kg de carne» para 5 raciones) y no
 // coinciden con la ración del cliente: se quitan y se remite a su lista de ingredientes.
 export default function RecetaClientePage() {
@@ -109,7 +86,7 @@ export default function RecetaClientePage() {
     if (!ing.grupo) continue
     for (const n of [ing.alimento?.nombre, ing.nombre_libre]) if (n) grupoPorNombre.set(normalizar(n), ing.grupo)
   }
-  const ingredientesFormato = racion
+  const ingredientesBase = racion
     ? racion.plato.ingredientes.map((ing, i) => ({ id: `r${i}`, nombre: ing.nombre, cantidad: `${Math.round(ing.gramos * k)}g`, grupo: grupoPorNombre.get(normalizar(ing.nombre)) ?? null }))
     : ingredientes.map(ing => ({
         id: ing.id,
@@ -117,12 +94,7 @@ export default function RecetaClientePage() {
         cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
         grupo: ing.grupo ?? null,
       }))
-  // Las fases de los ingredientes salen en el orden en que se cocinan (el de los pasos)
-  const ordenFases = [...new Set(parsePasos(receta?.instrucciones).map(p => p.grupo).filter(Boolean))]
-  if (ordenFases.length > 1) {
-    const pos = (g?: string | null) => { const i = g ? ordenFases.indexOf(g) : -1; return i < 0 ? ordenFases.length : i }
-    ingredientesFormato.sort((a, b) => pos(a.grupo) - pos(b.grupo))
-  }
+  const ingredientesFormato = ordenarPorFases(ingredientesBase, parsePasos(receta?.instrucciones))
   const cantidadesDistintas = racion
     ? porciones > 1 || (receta?.kcal ? Math.abs(racion.plato.kcal / receta.kcal - 1) > 0.1 : false)
     : nVista !== porciones

@@ -10,6 +10,7 @@ import { normalizarReceta, clasificarIntolerancia, normalizarIntolerancias } fro
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { IngredientChecklist, StepByStep } from '@/components/premium'
+import { parsePasos, ordenarPorFases } from '@/lib/recetas/pasos'
 import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
 import { listaRecordada } from '@/lib/useEstadoUrl'
 import BarraRevision from '@/components/recetas/BarraRevision'
@@ -63,6 +64,7 @@ interface IngredienteConAlimento {
   cantidad_original?: number | null
   unidad_display?: string | null
   orden?: number
+  grupo?: string | null
   alimento?: Alimento | null
 }
 
@@ -89,27 +91,6 @@ interface RecetaQuality {
 }
 
 /** Divide instrucciones en pasos numerados */
-function parsePasos(text: string | null | undefined): { number: number; content: string; title?: string }[] {
-  if (!text) return []
-  const lines = text.split('\n').filter(l => l.trim())
-  // Intenta detectar si ya está numerado (1. / Paso 1: / 1-)
-  const numbered = lines.filter(l => /^\s*(?:Paso\s*)?\d+[.)\-:]/.test(l))
-  if (numbered.length >= 2) {
-    // Ya tiene numeración — usar las numbered lines
-    return numbered.map((l, i) => {
-      const clean = l.replace(/^\s*(?:Paso\s*)?\d+[.)\-:]\s*/, '').trim()
-      // Detectar si hay un título antes de :
-      const colonIdx = clean.indexOf(':')
-      if (colonIdx > 0 && colonIdx < 40) {
-        return { number: i + 1, title: clean.slice(0, colonIdx).trim(), content: clean.slice(colonIdx + 1).trim() }
-      }
-      return { number: i + 1, content: clean }
-    })
-  }
-  // No numerado — split por saltos de línea, cada línea es un paso
-  return lines.map((l, i) => ({ number: i + 1, content: l.trim() }))
-}
-
 export default function DetalleRecetaPage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
@@ -132,6 +113,7 @@ export default function DetalleRecetaPage() {
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
+  const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
   const [copiedToLista, setCopiedToLista] = useState(false)
   const [quality, setQuality] = useState<RecetaQuality | null>(null)
 
@@ -307,14 +289,15 @@ export default function DetalleRecetaPage() {
   const factorVista = nVista / porcionesReceta
 
   // Ingredientes para el checklist
-  const checklistItems = ingredientes.map(ing => ({
+  const checklistItems = ordenarPorFases(ingredientes.map(ing => ({
     id: ing.id,
+    grupo: ing.grupo ?? null,
     nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
     cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
     kcal: ing.alimento ? Math.round(calcularMacrosPorCantidad(
       ing.alimento.calorias, ing.alimento.proteinas, ing.alimento.carbohidratos, ing.alimento.grasas, ing.alimento.fibra ?? 0, ing.cantidad_gramos
     ).calorias * factorVista) : undefined,
-  }))
+  })), parsePasos(r.instrucciones ?? receta.instrucciones))
 
   // Pasos para StepByStep: si se cambian las raciones, las cantidades escritas en los pasos ya no valen
   const pasos = parsePasos(r.instrucciones ?? receta.instrucciones).map(p =>
@@ -723,9 +706,22 @@ export default function DetalleRecetaPage() {
           </FadeIn>
         )}
 
+        {/* Una sola lista a la vez: la receta no se hace larguísima con scroll */}
+        {ingredientes.length > 0 && pasos.length > 0 && (
+          <div className="mb-4 flex overflow-hidden" role="tablist" aria-label="Ingredientes o preparación" style={{ border: '1px solid var(--border)' }}>
+            {([['ingredientes', `Ingredientes · ${checklistItems.length}`], ['preparacion', `Preparación · ${pasos.length}`]] as const).map(([clave, etiqueta]) => (
+              <button key={clave} role="tab" aria-selected={seccion === clave} onClick={() => setSeccion(clave)}
+                className="flex-1 px-3 py-2.5 text-sm font-semibold"
+                style={{ background: seccion === clave ? 'var(--primary)' : 'transparent', color: seccion === clave ? 'var(--bg)' : 'var(--text-muted)' }}>
+                {etiqueta}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* ═══════ INGREDIENTES (Checklist estilo Crouton) ═══════ */}
         <FadeIn delay={0.25}>
-          {ingredientes.length > 0 && (
+          {ingredientes.length > 0 && (seccion === 'ingredientes' || pasos.length === 0) && (
             <>
               <div className="mb-3">
                 <SelectorRaciones original={porcionesReceta} valor={nVista} onChange={setRacionesVista} kcalRacion={macrosPorPorcion?.kcal} />
@@ -737,7 +733,7 @@ export default function DetalleRecetaPage() {
                   border: '1px solid var(--border)',
                 }}
               >
-                <IngredientChecklist ingredientes={checklistItems} />
+                <IngredientChecklist ingredientes={checklistItems} sinCabecera={pasos.length > 0} />
                 {nVista !== porcionesReceta && (
                   <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
                     Cantidades recalculadas para {nVista} {nVista === 1 ? 'ración' : 'raciones'}; los pasos van sin cantidades.
@@ -832,7 +828,7 @@ export default function DetalleRecetaPage() {
 
         {/* ═══════ PASOS (StepByStep estilo Crouton) ═══════ */}
         <FadeIn delay={0.35}>
-          {pasos.length > 0 && (
+          {pasos.length > 0 && (seccion === 'preparacion' || ingredientes.length === 0) && (
             <div
               className="coach-recipe-detail__section p-5 mb-6"
               style={{
@@ -840,7 +836,7 @@ export default function DetalleRecetaPage() {
                 border: '1px solid var(--border)',
               }}
             >
-              <StepByStep pasos={pasos} />
+              <StepByStep pasos={pasos} sinCabecera={ingredientes.length > 0} />
             </div>
           )}
         </FadeIn>

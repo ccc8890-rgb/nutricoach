@@ -14,6 +14,7 @@ const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_
 const arg = (n, d) => (process.argv.find(a => a.startsWith('--' + n + '='))?.split('=')[1]) ?? d
 const LIMITE = Number(arg('limite', 10)), APLICA = process.argv.includes('--aplica'), SOLO_VALIDAS = process.argv.includes('--solo-validas')
 const AUTO = process.argv.includes('--auto')
+const TODAS = true // sin exigir palabras clave en los pasos: la IA decide si hay varias piezas (las de una sola se anotan y no se repiten)
 const FICHERO = 'salidas/propuestas-fases.json'
 // Lo ya decidido (una sola pieza / aplicada / intentos fallidos) para no gastar IA otra vez con la misma receta
 const DECIDIDAS = 'salidas/fases-decididas.json'
@@ -62,10 +63,10 @@ for (const i of ings) { if (!porReceta.has(i.receta_id)) porReceta.set(i.receta_
 // Candidatas: sin fases ya puestas, con bastantes ingredientes y señales de varias piezas en el texto
 const candidatas = recetas.filter(r => {
   const li = porReceta.get(r.id) ?? []
-  if (li.length < 6 || li.some(i => i.grupo)) return false
+  if (li.length < 5 || li.some(i => i.grupo)) return false
   if (decididas[r.id] === 'una_pieza' || decididas[r.id] === 'aplicada' || (decididas[r.id] ?? 0) >= 2) return false
   const txt = norm(r.instrucciones)
-  return SENAL.test(txt) && !/^\s*#{2,3}\s/m.test(r.instrucciones || '')
+  return (TODAS || SENAL.test(txt)) && !/^\s*#{2,3}\s/m.test(r.instrucciones || '')
 }).sort((a, b) => (porReceta.get(b.id).length - porReceta.get(a.id).length))
 console.log(`${candidatas.length} candidatas de ${recetas.length}; se procesan ${Math.min(LIMITE, candidatas.length)}`)
 
