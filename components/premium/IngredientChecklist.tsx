@@ -57,12 +57,6 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
                         <div
                             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 hover:bg-[var(--surface-hover)]"
                         >
-                            {/* Bullet decorativo */}
-                            <span
-                                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                                style={{ background: 'var(--accent)' }}
-                            />
-
                             {/* Nombre + cantidad */}
                             <div className="flex-1 min-w-0 flex items-baseline gap-2">
                                 <span

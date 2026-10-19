@@ -9,7 +9,7 @@ export function FaseTitulo({ nombre, className = '' }: { nombre: string; classNa
             />
             <span
                 className="shrink-0 text-xs font-bold uppercase"
-                style={{ color: 'var(--text)', letterSpacing: '0.14em', fontFamily: 'var(--font-geist-mono), ui-monospace, monospace' }}
+                style={{ color: 'var(--text)', letterSpacing: '0.14em', textShadow: '0 0 12px color-mix(in srgb, var(--accent) 40%, transparent), 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent)', fontFamily: 'var(--font-geist-mono), ui-monospace, monospace' }}
             >
                 {nombre}
             </span>
