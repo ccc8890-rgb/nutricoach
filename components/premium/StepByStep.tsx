@@ -1,5 +1,7 @@
 'use client'
 
+import { FaseTitulo } from './FaseTitulo'
+
 interface StepProps {
     number: number
     title?: string
@@ -40,9 +42,7 @@ export function StepByStep({ pasos, className = '', sinCabecera = false }: StepB
                     {pasos.map((paso, i) => (
                         <div key={paso.number}>
                             {paso.grupo && paso.grupo !== pasos[i - 1]?.grupo && (
-                                <p className="pb-2 pl-10 pt-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                                    {paso.grupo}
-                                </p>
+                                <FaseTitulo nombre={paso.grupo} className="pb-3 pl-1 pt-2" />
                             )}
                         <div className="relative pl-10">
                             {/* Dot numerado en timeline */}

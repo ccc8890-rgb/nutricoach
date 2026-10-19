@@ -262,7 +262,7 @@ export default function RecetaClientePage() {
               </div>
             )}
 
-            {receta.consejos && (
+            {receta.consejos && (seccion === 'preparacion' || ingredientesFormato.length === 0) && (
               <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <p className="text-sm font-bold mb-1" style={{ color: 'var(--text)' }}>Consejos</p>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{receta.consejos}</p>

@@ -842,7 +842,7 @@ export default function DetalleRecetaPage() {
         </FadeIn>
 
         {/* ═══════ CONSEJOS ═══════ */}
-        {receta.consejos && (
+        {receta.consejos && (seccion === 'preparacion' || ingredientes.length === 0 || pasos.length === 0) && (
           <FadeIn delay={0.4}>
             <div
               className="rounded-2xl p-5 mb-6"

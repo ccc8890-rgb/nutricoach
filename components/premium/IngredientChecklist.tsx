@@ -1,6 +1,7 @@
 'use client'
 
 import { Scale } from 'lucide-react'
+import { FaseTitulo } from './FaseTitulo'
 
 interface IngredientItem {
     id: string
@@ -49,11 +50,7 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
             {/* Lista de ingredientes */}
             {fases.map((fase, i) => (
             <div key={fase.nombre ?? `f${i}`} className={i > 0 ? 'mt-4' : ''}>
-            {conFases && (
-                <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                    {fase.nombre ?? 'Otros'}
-                </p>
-            )}
+            {conFases && <FaseTitulo nombre={fase.nombre ?? 'Otros'} className="px-3 pb-2" />}
             <ul className="space-y-1">
                 {fase.items.map((ing) => (
                     <li key={ing.id}>
