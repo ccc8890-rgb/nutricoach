@@ -103,9 +103,11 @@ export default function RecetaClientePage() {
   return (
     <div className="client-recipe-editorial min-h-screen pb-8" style={{ background: 'var(--bg)' }}>
       <div
-        className="sticky top-0 z-10 px-4 pt-safe pb-3"
+        className="sticky top-0 z-10 px-4 pb-3"
         style={{
-          background: 'var(--glass-bg)',
+          // Más aire arriba (barra de estado del iPhone) y fondo casi opaco: así el borde superior de los botones no se ve difuminado
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 32px), 44px)',
+          background: 'color-mix(in srgb, var(--bg) 94%, transparent)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderBottom: '1px solid var(--border)',
