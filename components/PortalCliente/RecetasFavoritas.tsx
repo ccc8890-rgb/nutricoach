@@ -58,7 +58,7 @@ export default function RecetasFavoritas({ codigo, recetaHref }: { codigo: strin
               ) : (
                 <div className="w-full h-full flex items-center justify-center"><ForkKnife size={20} style={{ color: 'var(--text-muted)' }} /></div>
               )}
-              <BotonFavorita receta={r} codigo={codigo} className="absolute right-1 top-1 rounded-full" />
+              <BotonFavorita receta={r} codigo={codigo} className="absolute right-1 top-1" />
             </div>
             <p className="text-[11px] font-semibold leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
             {r.kcal ? <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{r.kcal} kcal</p> : null}

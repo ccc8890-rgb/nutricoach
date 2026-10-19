@@ -247,7 +247,7 @@ export default function RecetarioExplorador({
                         <ForkKnife size={20} style={{ color: 'var(--text-muted)' }} />
                       </div>
                     )}
-                    <BotonFavorita receta={r} codigo={codigo} className="absolute right-1 top-1 rounded-full" />
+                    <BotonFavorita receta={r} codigo={codigo} className="absolute right-1 top-1" />
                   </div>
                   <p className="text-[11px] font-semibold leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
                   {r.kcal ? (
@@ -275,7 +275,7 @@ export default function RecetarioExplorador({
                       <ForkKnife size={24} style={{ color: 'var(--text-muted)' }} />
                     </div>
                   )}
-                  <BotonFavorita receta={r} codigo={codigo} className="absolute right-2 top-2 rounded-full" />
+                  <BotonFavorita receta={r} codigo={codigo} className="absolute right-2 top-2" />
                 </div>
                 <div className="p-2.5">
                   <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>

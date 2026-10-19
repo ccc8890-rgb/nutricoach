@@ -55,7 +55,7 @@ export function BotonFavorita({ receta, codigo, className = '' }: { receta: Rece
       aria-label={fav ? 'Quitar de favoritas' : 'Añadir a favoritas'}
       aria-pressed={fav}
       className={`flex h-8 w-8 items-center justify-center ${className}`}
-      style={{ background: 'var(--glass-bg)', border: '1px solid var(--border)', color: fav ? 'var(--semantic-alert)' : 'var(--text-muted)', backdropFilter: 'blur(8px)' }}
+      style={{ borderRadius: 'var(--editorial-radius-sm, 3px)', background: 'var(--glass-bg)', border: '1px solid var(--border)', color: fav ? 'var(--semantic-alert)' : 'var(--text-muted)', backdropFilter: 'blur(8px)' }}
     >
       <Heart size={16} weight={fav ? 'fill' : 'regular'} />
     </button>

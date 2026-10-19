@@ -125,7 +125,7 @@ export default function RecetaClientePage() {
             <BotonFavorita
               codigo={codigo}
               receta={{ id: receta.id, nombre: receta.nombre, imagen_url: receta.imagen_url ?? null, kcal: receta.kcal ?? null, proteinas: receta.proteinas ?? null, categoria: receta.categoria ?? null }}
-              className="shrink-0 !h-10 !w-10 rounded-2xl"
+              className="shrink-0 !h-10 !w-10"
             />
           )}
         </div>
