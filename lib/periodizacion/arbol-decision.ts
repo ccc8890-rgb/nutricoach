@@ -33,8 +33,8 @@ export const ACCION_DESCRIPTIONS: Record<AccionPeriodizacion, string> = {
 }
 
 export interface InputCheckin {
-    energia: number           // 1-5 del check-in (1=muy baja energía, 5=muy alta)
-    horas_sueno: number       // horas de sueño reportadas
+    energia: number           // 1-10 del check-in (1=muy baja energía, 10=muy alta)
+    calidad_sueno: number     // 1-10 del check-in (1=muy mala, 10=excelente); NO son horas
     adherencia: number        // 0-100 porcentaje de cumplimiento
     tls_semanal: number       // TLS acumulado de la semana actual
     semanas_en_deficit: number
@@ -61,7 +61,7 @@ export function evaluarCheckin(
 ): ResultadoEvaluacion {
     const {
         energia,
-        horas_sueno,
+        calidad_sueno,
         adherencia: adherenciaRaw,
         tls_semanal,
         semanas_en_deficit,
@@ -82,7 +82,7 @@ export function evaluarCheckin(
         accion = 'refeed_sugerir'
 
     // Prioridad 2: sueño — fatiga + pocas horas de sueño
-    } else if (fatiga_alta && horas_sueno < umbrales.sueno_minimo) {
+    } else if (fatiga_alta && calidad_sueno < umbrales.sueno_minimo) {
         accion = 'higiene_sueno'
 
     // Prioridad 3: ajuste calórico — fatiga + entrenamiento por encima del umbral
@@ -92,7 +92,7 @@ export function evaluarCheckin(
     // Prioridad 4: mensaje de apoyo — fatiga pero buena adherencia y sueño
     } else if (
         fatiga_alta &&
-        horas_sueno >= umbrales.sueno_optimo &&
+        calidad_sueno >= umbrales.sueno_optimo &&
         adherencia >= umbrales.adherencia_buena + 5
     ) {
         accion = 'mensaje_apoyo'

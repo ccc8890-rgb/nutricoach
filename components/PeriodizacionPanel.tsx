@@ -21,7 +21,8 @@ interface AccionItem {
     coach_nota: string | null
     input_snapshot: {
         energia: number
-        horas_sueno: number
+        calidad_sueno?: number
+        horas_sueno?: number // snapshots antiguos
         adherencia: number
         tls_semanal: number
         semanas_en_deficit: number
@@ -195,7 +196,7 @@ export default function PeriodizacionPanel({ clienteId }: PeriodizacionPanelProp
                                         </p>
                                         {accion.input_snapshot && (
                                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                                Energía {accion.input_snapshot.energia}/5 · Adherencia {accion.input_snapshot.adherencia}% · TLS {accion.input_snapshot.tls_semanal} pts
+                                                Energía {accion.input_snapshot.energia}/10 · Adherencia {accion.input_snapshot.adherencia}% · TLS {accion.input_snapshot.tls_semanal} pts
                                             </p>
                                         )}
                                     </div>

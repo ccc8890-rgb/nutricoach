@@ -89,8 +89,8 @@ async function main() {
       })
 
       const input = {
-        energia: e.energia,
-        horas_sueno: e.sueno,
+        energia: e.energia * 2, // escenarios escritos en escala 1-5; el check-in real es 1-10
+        calidad_sueno: Math.max(1, Math.min(10, Math.round((e.sueno - 4) * 2))), // horas → calidad 1-10 (supuesto)
         adherencia: e.adherencia,
         tls_semanal: e.tls,
         semanas_en_deficit: idx + 1,

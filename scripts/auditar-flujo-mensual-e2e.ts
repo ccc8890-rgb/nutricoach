@@ -118,9 +118,9 @@ async function main() {
 
   if (planNutri) {
     const decision = evaluarCheckin({
-      energia: 2,
-      horas_sueno: 5,
-      adherencia: 60,
+      energia: 3,
+      calidad_sueno: 3,
+      adherencia: 6,
       tls_semanal: 120,
       semanas_en_deficit: 4,
       umbral_carga_alta: 80,

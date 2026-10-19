@@ -5,6 +5,7 @@ import { calcularAjusteCaloricoSemanal } from '@/lib/periodizacion/motor-macros'
 import { generarFeedbackCheckinIA } from '@/lib/feedback-checkin-ia'
 import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import type { AjusteMacros } from '@/lib/periodizacion/motor-macros'
+import { revertirAjusteVigente } from '@/lib/periodizacion/revertir-ajuste'
 
 export async function POST(
     request: NextRequest,
@@ -90,9 +91,10 @@ export async function POST(
         // Disparar evaluación de periodización en background (no bloquea la respuesta)
         if (data?.id && plan.cliente_id) {
             dispararEvaluacionPeriodizacion(plan.cliente_id, data.id, {
-                energia: energia ?? 3,
+                // Sin respuesta = valor neutro que no dispara reglas (escalas 1-10 del formulario)
+                energia: energia ?? 7,
                 sueno: sueno ?? 7,
-                adherencia: adherencia ?? 80,
+                adherencia: adherencia ?? 8,
             }).catch(err => console.error('Error en evaluación periodización:', err))
         }
 
@@ -144,6 +146,9 @@ async function dispararEvaluacionPeriodizacion(
 ) {
     const serviceSupabase = createServiceSupabase()
 
+    // El ajuste anterior era «de esta semana»: devolver el plan a su base antes de evaluar (si no, los ajustes se acumulan)
+    await revertirAjusteVigente(serviceSupabase, cliente_id)
+
     // TLS semanal
     const { data: tlsData } = await serviceSupabase
         .rpc('get_tls_dashboard', { p_cliente_id: cliente_id })
@@ -176,7 +181,7 @@ async function dispararEvaluacionPeriodizacion(
 
     const input = {
         energia: checkinData.energia,
-        horas_sueno: checkinData.sueno,
+        calidad_sueno: checkinData.sueno,
         adherencia: checkinData.adherencia,
         tls_semanal,
         semanas_en_deficit,

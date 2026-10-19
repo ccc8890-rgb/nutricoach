@@ -20,7 +20,7 @@ interface CheckInFormProps {
 
 interface SliderGroupProps {
     label: string
-    value: number
+    value: number | null
     onChange: (v: number) => void
     leftLabel: string
     rightLabel: string
@@ -31,14 +31,15 @@ function SliderGroup({ label, value, onChange, leftLabel, rightLabel }: SliderGr
         <div className="space-y-1.5">
             <div className="flex items-center justify-between">
                 <label className="!mb-0 text-sm">{label}</label>
-                <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{value}/10</span>
+                <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{value ?? '—'}/10</span>
             </div>
             <input
                 type="range"
                 min="1"
                 max="10"
-                value={value}
+                value={value ?? 5}
                 onChange={e => onChange(Number(e.target.value))}
+                onPointerDown={e => { if (value === null) onChange(Number((e.target as HTMLInputElement).value)) }}
                 className="w-full accent-teal-500"
                 style={{ accentColor: '#0D9488' }}
             />
@@ -52,9 +53,10 @@ function SliderGroup({ label, value, onChange, leftLabel, rightLabel }: SliderGr
 
 export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: CheckInFormProps) {
     const [peso, setPeso] = useState('')
-    const [adherencia, setAdherencia] = useState(5)
-    const [energia, setEnergia] = useState(5)
-    const [sueno, setSueno] = useState(5)
+    // null = sin responder: el sistema no debe leer el 5 por defecto como una respuesta
+    const [adherencia, setAdherencia] = useState<number | null>(null)
+    const [energia, setEnergia] = useState<number | null>(null)
+    const [sueno, setSueno] = useState<number | null>(null)
     const [notas, setNotas] = useState('')
     const [foto, setFoto] = useState<File | null>(null)
     const [fotoPreview, setFotoPreview] = useState<string | null>(null)
