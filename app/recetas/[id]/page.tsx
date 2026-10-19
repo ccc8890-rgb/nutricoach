@@ -709,7 +709,7 @@ export default function DetalleRecetaPage() {
         {/* Una sola lista a la vez: la receta no se hace larguísima con scroll */}
         {ingredientes.length > 0 && pasos.length > 0 && (
           <div className="mb-4 flex overflow-hidden" role="tablist" aria-label="Ingredientes o preparación" style={{ border: '1px solid var(--border)' }}>
-            {([['ingredientes', `Ingredientes · ${checklistItems.length}`], ['preparacion', `Preparación · ${pasos.length}`]] as const).map(([clave, etiqueta]) => (
+            {([['ingredientes', 'Ingredientes'], ['preparacion', 'Preparación']] as const).map(([clave, etiqueta]) => (
               <button key={clave} role="tab" aria-selected={seccion === clave} onClick={() => setSeccion(clave)}
                 className="flex-1 px-3 py-2.5 text-sm font-semibold"
                 style={{ background: seccion === clave ? 'var(--primary)' : 'transparent', color: seccion === clave ? 'var(--bg)' : 'var(--text-muted)' }}>

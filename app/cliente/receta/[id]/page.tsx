@@ -229,8 +229,8 @@ export default function RecetaClientePage() {
                 {/* Una sola lista a la vez: la receta no se hace larguísima con scroll */}
                 <div className="flex overflow-hidden" role="tablist" aria-label="Ingredientes o preparación" style={{ border: '1px solid var(--border)' }}>
                   {([
-                    ['ingredientes', `Ingredientes · ${ingredientesFormato.length}`, ingredientesFormato.length],
-                    ['preparacion', `Preparación · ${pasos.length}`, pasos.length],
+                    ['ingredientes', 'Ingredientes', ingredientesFormato.length],
+                    ['preparacion', 'Preparación', pasos.length],
                   ] as const).filter(([, , n]) => n > 0).map(([clave, etiqueta]) => (
                     <button key={clave} role="tab" aria-selected={seccion === clave} onClick={() => setSeccion(clave)}
                       className="flex-1 px-3 py-2.5 text-xs font-semibold"
