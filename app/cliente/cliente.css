@@ -501,7 +501,7 @@
 /* Cabeceras fijas del portal (principal, sesión, receta): más aire bajo la barra de estado del iPhone y fondo casi opaco,
    para que el borde superior de los botones no se vea difuminado por el cristal. */
 .cliente-cabecera-fija {
-  padding-top: max(calc(env(safe-area-inset-top, 0px) + 22px), 34px) !important;
+  padding-top: max(calc(env(safe-area-inset-top, 0px) + 25px), 37px) !important;
   background: color-mix(in srgb, var(--bg) 94%, transparent) !important;
 }
 
