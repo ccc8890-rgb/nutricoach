@@ -78,7 +78,7 @@ export interface GarminWorkoutPayload {
 export type Superficie = 'pista' | 'cinta'
 
 /** Sobre cinta el reloj estima los metros con el acelerómetro y falla: los tramos por distancia pasan a tiempo (ritmo × distancia) y se indica la velocidad de la cinta. */
-function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: ZonasFc | null, cinta = false): GarminStep {
+function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: ZonasFc | null, cinta = false, conSeries = false): GarminStep {
   let d = p.duracion
   // Recuperaciones sin ritmo propio: trote a ritmo suave.
   const ritmoCinta = cinta ? (ritmoDelPaso(p, ritmos) ?? (p.tipo === 'recuperacion' ? ritmos?.E ?? null : null)) : null
@@ -115,8 +115,8 @@ function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: 
     paso.targetType = { ...TARGET.ritmo }
     paso.targetValueOne = 1000 / o.max_seg_km // más lento = menor velocidad
     paso.targetValueTwo = 1000 / o.min_seg_km
-  } else if (p.tipo === 'recuperacion' && o?.tipo === 'zona' && o.zona === 'E') {
-    // Entre series el pulso sigue alto 1-2 min tras el esfuerzo: un techo de pulso solo daría avisos falsos.
+  } else if (o?.tipo === 'zona' && o.zona === 'E' && (p.tipo === 'recuperacion' || (conSeries && fc?.E && (p.tipo === 'calentamiento' || p.tipo === 'enfriamiento')))) {
+    // En sesiones de series el pulso sigue alto 1-2 min tras el esfuerzo (y aún no ha subido en el calentamiento): un techo de pulso solo daría avisos falsos.
   } else if (o?.tipo === 'zona' && o.zona === 'E' && fc?.E) {
     // Suave: manda el pulso (techo), no el ritmo; con calor, fatiga o cuestas el ritmo engaña.
     paso.targetType = { ...TARGET.fc }
@@ -142,11 +142,14 @@ export function pasosAGarmin(
   superficie: Superficie = 'pista',
 ): GarminWorkoutPayload {
   const cinta = superficie === 'cinta'
+  // Sesión de intensidad (bloques repetidos o trabajo por encima de la zona suave): su calentamiento y vuelta a la calma no llevan techo de pulso.
+  const intenso = (x: Paso) => x.tipo === 'trabajo' && (x.objetivo?.tipo === 'ritmo' || (x.objetivo?.tipo === 'zona' && x.objetivo.zona !== 'E'))
+  const conSeries = pasos.some(x => x.tipo === 'repetir' || intenso(x))
   let orden = 0
   const workoutSteps: Array<GarminStep | GarminRepeat> = pasos.map(p => {
     if (p.tipo === 'repetir') {
       const grupoOrden = ++orden
-      const hijos = p.pasos.map(q => convertirPaso(q, ++orden, ritmos, fc, cinta))
+      const hijos = p.pasos.map(q => convertirPaso(q, ++orden, ritmos, fc, cinta, conSeries))
       return {
         type: 'RepeatGroupDTO',
         stepOrder: grupoOrden,
@@ -158,7 +161,7 @@ export function pasosAGarmin(
         workoutSteps: hijos,
       } satisfies GarminRepeat
     }
-    return convertirPaso(p, ++orden, ritmos, fc, cinta)
+    return convertirPaso(p, ++orden, ritmos, fc, cinta, conSeries)
   })
 
   return {

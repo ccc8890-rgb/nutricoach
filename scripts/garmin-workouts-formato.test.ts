@@ -79,8 +79,12 @@ assert.equal(fc.E!.max, Math.round(Math.min(177 * 0.9, 195 * 0.79))) // 154 (Dan
 assert.ok(fc.E!.min < fc.E!.max && fc.T!.min < fc.T!.max)
 assert.equal(fc.R, undefined)
 const conFc = pasosAGarmin('x', pasos, ritmos, undefined, fc).workoutSegments[0].workoutSteps as any[]
-assert.equal(conFc[0].targetType.workoutTargetTypeKey, 'heart.rate.zone')
-assert.equal(conFc[0].targetValueTwo, fc.E!.max)
+// En una sesión de series el calentamiento no lleva techo de pulso (aún no ha subido)
+assert.equal(conFc[0].targetType.workoutTargetTypeKey, 'no.target')
+// Un rodaje suave (sin series) sí va por techo de pulso
+const rodaje = pasosAGarmin('r', [{ tipo: 'trabajo', duracion: { unidad: 'segundos', valor: 3000 }, objetivo: { tipo: 'zona', zona: 'E' } }], ritmos, undefined, fc).workoutSegments[0].workoutSteps as any[]
+assert.equal(rodaje[0].targetType.workoutTargetTypeKey, 'heart.rate.zone')
+assert.equal(rodaje[0].targetValueTwo, fc.E!.max)
 assert.equal(conFc[1].workoutSteps[0].targetType.workoutTargetTypeKey, 'pace.zone') // I sigue por ritmo
 assert.equal(zonasFcDesde({ fcUmbral: null, fcMax: null }), null)
 console.log('garmin-workouts-formato fc OK')
@@ -114,6 +118,10 @@ const pasosRec: Paso[] = [{ tipo: 'repetir', veces: 3, pasos: [
 const wRec = pasosAGarmin('x', pasosRec, ritmos, undefined, { E: { min: 114, max: 153 } } as any).workoutSegments[0].workoutSteps[0] as any
 assert.equal(wRec.workoutSteps[1].stepType.stepTypeKey, 'recovery')
 assert.equal(wRec.workoutSteps[1].targetType.workoutTargetTypeKey, 'no.target')
-// El calentamiento sigue con techo de pulso
+// En series, calentamiento y vuelta a la calma tampoco llevan techo de pulso
+const wS = pasosAGarmin('x', [{ tipo: 'calentamiento', duracion: { unidad: 'segundos', valor: 600 }, objetivo: { tipo: 'zona', zona: 'E' } }, ...pasosRec, { tipo: 'enfriamiento', duracion: { unidad: 'segundos', valor: 300 }, objetivo: { tipo: 'zona', zona: 'E' } }], ritmos, undefined, { E: { min: 114, max: 153 } } as any).workoutSegments[0].workoutSteps
+assert.equal(wS[0].targetType.workoutTargetTypeKey, 'no.target')
+assert.equal(wS[2].targetType.workoutTargetTypeKey, 'no.target')
+// Un rodaje sin series conserva el techo de pulso
 assert.equal(pasosAGarmin('x', [{ tipo: 'calentamiento', duracion: { unidad: 'segundos', valor: 600 }, objetivo: { tipo: 'zona', zona: 'E' } }], ritmos, undefined, { E: { min: 114, max: 153 } } as any).workoutSegments[0].workoutSteps[0].targetType.workoutTargetTypeKey, 'heart.rate.zone')
 console.log('garmin-workouts-formato (recuperación) OK')
