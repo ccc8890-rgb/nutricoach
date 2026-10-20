@@ -4,6 +4,16 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 20-10-2026 (noche, Claude) — Selector Pista / Cinta en sesiones de carrera (Garmin)
+
+Carlos hizo series en cinta con el perfil «Cinta» del reloj y las series acababan antes y el reloj decía que iba demasiado rápido: sin GPS el reloj estima los metros con el acelerómetro (sin calibrar sobreestima), y el fin por distancia y el ritmo dependían de esa medida.
+- **Qué hay:** columna `sesiones_entrenamiento.superficie` (`pista`|`cinta`, NULL = pista; migración `20261020230000`, aplicada en producción con `supabase db query --linked`). Selector «Pista / calle · Cinta» en `PasosSesion.tsx` (pantalla de sesión): guarda y reenvía el entreno al instante (`POST /api/entrenos/sesiones/[id]/garmin` con `superficie`; borra el anterior, sin duplicados).
+- **En cinta** (`pasosAGarmin(..., 'cinta')` en `garmin-workouts-formato.ts`): todo tramo por metros con ritmo conocido pasa a **tiempo** (ritmo × distancia, múltiplo de 5 s), sin alerta de ritmo (el pulso se mantiene) y con «Cinta a X,X km/h» en la descripción. Recuperaciones por metros sin ritmo propio: trote a ritmo E. Sin VDOT no se inventa: se quedan en metros. Rodajes/tirada por tiempo: solo reciben la nota de km/h.
+- **Huella:** `huellaPasos` incluye `superficie` solo si es `cinta`; el cron `enviar-garmin` la lee, así que lo ya enviado (pista) no se reenvía.
+- **Garmin no distingue cinta/pista en el workout** (solo `running`): lo decide el perfil de actividad del reloj; hay que elegir «Cinta» al empezar. La calibración de distancia la hace el reloj al guardar una actividad de cinta de >1,5 km (Carlos la probará con 2 km continuos).
+- Tests: `garmin-workouts-formato.test.ts` (cinta) y `garmin-auto.test.ts`; `tsc`, ESLint y `verificar:motor` 63/63. **No probado en el reloj.**
+- **Pendiente:** que Carlos haga las series en cinta y confirme que el reloj las lleva bien; el selector no se ve en el calendario del coach (solo en la pantalla de sesión del atleta); la sesión de series ya enviada sigue en pista hasta pulsar «Cinta».
+
 ## ✅ 19-10-2026 (Claude) — Favoritas, pestañas Ingredientes/Preparación, fases de receta y recarga automática de la PWA
 
 Commits `74315b9a`→`9058fe02` en nutricoach (migración `20261019100000` aplicada con `supabase db query --linked`). `tsc`, ESLint y `cliente-visual-system` OK; favoritas devuelve 401 sin sesión. Comprobado en producción con la sesión de Carlos (coach y cliente, 390 px y escritorio, oscuro y claro simulado); **no visto en iPhone**.
