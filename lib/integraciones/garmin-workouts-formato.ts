@@ -75,8 +75,16 @@ export interface GarminWorkoutPayload {
   }>
 }
 
-function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: ZonasFc | null): GarminStep {
-  const d = p.duracion
+export type Superficie = 'pista' | 'cinta'
+
+/** Sobre cinta el reloj estima los metros con el acelerómetro y falla: los tramos por distancia pasan a tiempo (ritmo × distancia) y se indica la velocidad de la cinta. */
+function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: ZonasFc | null, cinta = false): GarminStep {
+  let d = p.duracion
+  // Recuperaciones sin ritmo propio: trote a ritmo suave.
+  const ritmoCinta = cinta ? (ritmoDelPaso(p, ritmos) ?? (p.tipo === 'recuperacion' ? ritmos?.E ?? null : null)) : null
+  if (ritmoCinta !== null && d.unidad === 'metros') {
+    d = { unidad: 'segundos', valor: Math.max(5, Math.round(((ritmoCinta * d.valor) / 1000) / 5) * 5) }
+  }
   const paso: GarminStep = {
     type: 'ExecutableStepDTO',
     stepOrder: orden,
@@ -85,11 +93,13 @@ function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: 
     endConditionValue: d.unidad === 'lap' ? null : d.valor,
     targetType: { ...TARGET.ninguno },
   }
-  if (p.nota) paso.description = p.nota.slice(0, 512)
+  const notaCinta = ritmoCinta !== null ? `Cinta a ${(3600 / ritmoCinta).toFixed(1).replace('.', ',')} km/h` : null
+  const descripcion = [p.nota, notaCinta].filter(Boolean).join(' · ')
+  if (descripcion) paso.description = descripcion.slice(0, 512)
 
   const o = p.objetivo
   // La zona suave (E) se rige por pulso, no por ritmo: no entra aquí.
-  if (esSerieCorta(p) && (o?.tipo === 'ritmo' || (o?.tipo === 'zona' && o.zona !== 'E'))) {
+  if (!cinta && esSerieCorta(p) && (o?.tipo === 'ritmo' || (o?.tipo === 'zona' && o.zona !== 'E'))) {
     const ritmo = ritmoDelPaso(p, ritmos)
     if (ritmo !== null) {
       const parcial = p.duracion.unidad === 'metros' ? ` (${formatearRitmo((ritmo * p.duracion.valor) / 1000)} los ${p.duracion.valor} m)` : ''
@@ -101,7 +111,7 @@ function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: 
     paso.targetType = { ...TARGET.fc }
     paso.targetValueOne = o.min
     paso.targetValueTwo = o.max
-  } else if (o?.tipo === 'ritmo') {
+  } else if (o?.tipo === 'ritmo' && !cinta) {
     paso.targetType = { ...TARGET.ritmo }
     paso.targetValueOne = 1000 / o.max_seg_km // más lento = menor velocidad
     paso.targetValueTwo = 1000 / o.min_seg_km
@@ -110,7 +120,7 @@ function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: 
     paso.targetType = { ...TARGET.fc }
     paso.targetValueOne = fc.E.min
     paso.targetValueTwo = fc.E.max
-  } else if (o?.tipo === 'zona') {
+  } else if (o?.tipo === 'zona' && !cinta) {
     const ritmo = ritmoDelPaso(p, ritmos)
     if (ritmo !== null) {
       paso.targetType = { ...TARGET.ritmo }
@@ -127,12 +137,14 @@ export function pasosAGarmin(
   ritmos: Ritmos | null,
   descripcion?: string,
   fc: ZonasFc | null = null,
+  superficie: Superficie = 'pista',
 ): GarminWorkoutPayload {
+  const cinta = superficie === 'cinta'
   let orden = 0
   const workoutSteps: Array<GarminStep | GarminRepeat> = pasos.map(p => {
     if (p.tipo === 'repetir') {
       const grupoOrden = ++orden
-      const hijos = p.pasos.map(q => convertirPaso(q, ++orden, ritmos, fc))
+      const hijos = p.pasos.map(q => convertirPaso(q, ++orden, ritmos, fc, cinta))
       return {
         type: 'RepeatGroupDTO',
         stepOrder: grupoOrden,
@@ -144,7 +156,7 @@ export function pasosAGarmin(
         workoutSteps: hijos,
       } satisfies GarminRepeat
     }
-    return convertirPaso(p, ++orden, ritmos, fc)
+    return convertirPaso(p, ++orden, ritmos, fc, cinta)
   })
 
   return {

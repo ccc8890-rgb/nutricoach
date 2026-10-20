@@ -84,3 +84,24 @@ assert.equal(conFc[0].targetValueTwo, fc.E!.max)
 assert.equal(conFc[1].workoutSteps[0].targetType.workoutTargetTypeKey, 'pace.zone') // I sigue por ritmo
 assert.equal(zonasFcDesde({ fcUmbral: null, fcMax: null }), null)
 console.log('garmin-workouts-formato fc OK')
+
+// Cinta: tramos por distancia pasan a tiempo, sin alerta de ritmo, con velocidad de la cinta
+const cinta = pasosAGarmin('Series 5x1000', pasos, ritmos, undefined, null, 'cinta').workoutSegments[0].workoutSteps
+const repC = cinta[1] as any
+const trabajoC = repC.workoutSteps[0]
+assert.equal(trabajoC.endCondition.conditionTypeKey, 'time')
+assert.equal(trabajoC.endConditionValue, Math.round(ritmos.I / 5) * 5) // 1000 m al ritmo I, a múltiplo de 5 s
+assert.equal(trabajoC.targetType.workoutTargetTypeKey, 'no.target')
+assert.match(trabajoC.description, /Cinta a \d+,\d km\/h/)
+// Recuperación en metros sin ritmo propio: trote a ritmo E
+assert.equal(repC.workoutSteps[1].endCondition.conditionTypeKey, 'time')
+assert.equal(repC.workoutSteps[1].endConditionValue, Math.round((ritmos.E * 0.4) / 5) * 5)
+// El calentamiento por tiempo sigue por tiempo, sin alerta de ritmo
+assert.equal(cinta[0].endCondition.conditionTypeKey, 'time')
+assert.equal(cinta[0].targetType.workoutTargetTypeKey, 'no.target')
+// Sin VDOT no se inventa: se queda en metros
+const cintaSin = pasosAGarmin('x', pasos, null, undefined, null, 'cinta').workoutSegments[0].workoutSteps[1] as any
+assert.equal(cintaSin.workoutSteps[0].endCondition.conditionTypeKey, 'distance')
+// Pista (por defecto) no cambia
+assert.equal(pasosAGarmin('x', pasos, ritmos, undefined, null, 'pista').workoutSegments[0].workoutSteps.length, 3)
+console.log('garmin-workouts-formato (cinta) OK')

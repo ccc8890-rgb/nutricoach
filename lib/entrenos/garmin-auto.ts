@@ -3,10 +3,10 @@ import { proximaFechaDia } from './proxima-fecha'
 import { lunesDe, sumarDias } from './calendario-ajustes'
 
 /** Huella de lo que se envía a Garmin: los pasos, el VDOT (cambian los ritmos), el techo de pulso suave y el nombre (que debe coincidir con el de la app). */
-export function huellaPasos(pasos: unknown, vdot: number | null, techoFcE: number | null = null, nombre: string | null = null): string {
+export function huellaPasos(pasos: unknown, vdot: number | null, techoFcE: number | null = null, nombre: string | null = null, superficie: string | null = null): string {
   const base = { pasos, vdot }
   // Sin pulso ni nombre conocidos la huella es la de siempre: no reenvía lo ya programado.
-  return createHash('sha256').update(JSON.stringify({ ...base, ...(techoFcE ? { techoFcE } : {}), ...(nombre ? { nombre } : {}) })).digest('hex').slice(0, 16)
+  return createHash('sha256').update(JSON.stringify({ ...base, ...(techoFcE ? { techoFcE } : {}), ...(nombre ? { nombre } : {}), ...(superficie === 'cinta' ? { superficie } : {}) })).digest('hex').slice(0, 16)
 }
 
 export interface EstadoGarminSesion {

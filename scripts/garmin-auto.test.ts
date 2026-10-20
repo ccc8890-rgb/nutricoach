@@ -61,3 +61,7 @@ assert2.deepEqual(planearEnvioGarmin(ok, 'h', ['2026-10-20'], '2026-10-14'), { a
 assert2.deepEqual(planearEnvioGarmin(ok, 'h', [], '2026-10-11'), { accion: 'borrar' })
 assert2.deepEqual(planearEnvioGarmin(vacio, 'h', [], '2026-10-11'), { accion: 'nada' })
 console.log('garmin-auto multi OK')
+
+assert.notEqual(h, huellaPasos(pasos, 45, null, null, 'cinta'))
+assert.equal(h, huellaPasos(pasos, 45, null, null, 'pista'))
+assert.equal(h, huellaPasos(pasos, 45, null, null, null))

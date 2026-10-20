@@ -44,7 +44,7 @@ export async function GET(
   // Get session info
   const { data: sesion, error: sesionError } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, notas, contexto_ia, plan_id, pasos, garmin_workout_id, garmin_programado_fecha')
+    .select('id, nombre, dia_semana, notas, contexto_ia, plan_id, pasos, superficie, garmin_workout_id, garmin_programado_fecha')
     .eq('id', id)
     .single()
 
@@ -98,6 +98,7 @@ export async function GET(
       ritmos,
       fc,
       garmin: { workoutId: sesion.garmin_workout_id ?? null, fecha: sesion.garmin_programado_fecha ?? null },
+      superficie: sesion.superficie === 'cinta' ? 'cinta' : 'pista',
     },
   })
 }

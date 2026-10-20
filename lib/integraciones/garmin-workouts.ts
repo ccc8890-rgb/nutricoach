@@ -38,7 +38,7 @@ export async function enviarSesionAGarmin(
 
   const { data: sesion } = await db
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, notas, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, garmin_variantes, plan_id')
+    .select('id, nombre, dia_semana, notas, pasos, superficie, garmin_workout_id, garmin_programado_fecha, garmin_fechas, garmin_variantes, plan_id')
     .eq('id', sesionId)
     .single()
   if (!sesion) throw new ErrorGarmin('Sesión no encontrada', 404)
@@ -89,7 +89,7 @@ export async function enviarSesionAGarmin(
   }
 
   const api = () => (gc as unknown as { url: { GC_API: string } }).url.GC_API // `url` es privado en los tipos de la librería, pero existe en runtime.
-  const huella = huellaPasos(pasosEfectivos, perfil?.vdot ? Number(perfil.vdot) : null, fc?.E?.max ?? null, sesion.nombre)
+  const huella = huellaPasos(pasosEfectivos, perfil?.vdot ? Number(perfil.vdot) : null, fc?.E?.max ?? null, sesion.nombre, sesion.superficie)
   const programar = (workoutId: string, fecha: string) => gc.client.post(`${api()}/workout-service/schedule/${workoutId}`, { date: fecha })
   const variantes = (sesion.garmin_variantes && typeof sesion.garmin_variantes === 'object' ? sesion.garmin_variantes : {}) as Record<string, EstadoVariante>
   const claveVar = multi?.variante ? String(multi.variante.n) : null
@@ -125,7 +125,7 @@ export async function enviarSesionAGarmin(
     } catch { /* no crítico */ }
   }
   const crear = async (): Promise<string> => {
-    const payload = pasosAGarmin(sesion.nombre, validacion.pasos, ritmos, sesion.notas ?? undefined, fc)
+    const payload = pasosAGarmin(sesion.nombre, validacion.pasos, ritmos, sesion.notas ?? undefined, fc, sesion.superficie === 'cinta' ? 'cinta' : 'pista')
     try {
       const creado = await gc.addWorkout(payload as never)
       return String((creado as unknown as { workoutId: number | string }).workoutId)

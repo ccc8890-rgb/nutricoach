@@ -17,11 +17,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (auth instanceof NextResponse) return auth
 
   let fecha: string | undefined
+  let superficie: string | undefined
   try {
     const body = await request.json()
     if (typeof body?.fecha === 'string') fecha = body.fecha
+    if (body?.superficie === 'cinta' || body?.superficie === 'pista') superficie = body.superficie
   } catch {
     /* sin cuerpo: se usa la próxima fecha del día de la sesión */
+  }
+
+  if (superficie) {
+    const { error } = await admin.from('sesiones_entrenamiento').update({ superficie }).eq('id', id)
+    if (error) return NextResponse.json({ error: 'No se pudo guardar la superficie' }, { status: 500 })
   }
 
   try {

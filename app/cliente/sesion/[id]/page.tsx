@@ -46,6 +46,7 @@ interface SesionInfo {
   pasos?: unknown | null
   ritmos?: Ritmos | null
   garmin?: { workoutId: string | null; fecha: string | null }
+  superficie?: 'pista' | 'cinta'
   plan?: {
     nombre: string
     cliente_id: string
@@ -379,6 +380,7 @@ export default function EjecucionSesionPage() {
               pasos={sesion.pasos}
               ritmos={sesion.ritmos ?? null}
               garmin={sesion.garmin ?? { workoutId: null, fecha: null }}
+              superficie={sesion.superficie}
             />
           </div>
         ) : null}

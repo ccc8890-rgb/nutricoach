@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
 
     const { data: sesiones } = await db
       .from('sesiones_entrenamiento')
-      .select('id, plan_id, nombre, dia_semana, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, garmin_pasos_hash, garmin_variantes')
+      .select('id, plan_id, nombre, dia_semana, pasos, superficie, garmin_workout_id, garmin_programado_fecha, garmin_fechas, garmin_pasos_hash, garmin_variantes')
       .in('plan_id', planIds)
       .not('pasos', 'is', null)
 
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
       const prog = plan ? semanaDeFecha(plan, hoy).prog : null
       // Con progresión semanal cada semana del bloque tiene sus pasos: un entreno de Garmin por (sesión, semana). Sin progresión, un solo entreno como siempre.
       if (!prog) {
-        const decision = planearEnvioGarmin({ ...s, garmin_pasos_hash: forzar ? null : s.garmin_pasos_hash, garmin_fechas: Array.isArray(s.garmin_fechas) ? s.garmin_fechas : [] }, huellaPasos(s.pasos, vdot, techoFcE, s.nombre), deseadas, hoy)
+        const decision = planearEnvioGarmin({ ...s, garmin_pasos_hash: forzar ? null : s.garmin_pasos_hash, garmin_fechas: Array.isArray(s.garmin_fechas) ? s.garmin_fechas : [] }, huellaPasos(s.pasos, vdot, techoFcE, s.nombre, s.superficie), deseadas, hoy)
         if (decision.accion === 'nada') { resumen.al_dia++; continue }
         try {
           await enviarSesionAGarmin(db, s.id, undefined, { modo: decision.accion, fechas: decision.accion === 'borrar' ? [] : decision.fechas })
@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
         const pasosN = pasosDeLaSemana(s.pasos, s.nombre, prog, n)
         if (!pasosN) continue
         const v = variantes[String(n)]
-        const d = planearEnvioGarmin({ garmin_workout_id: v?.workout_id ?? null, garmin_programado_fecha: null, garmin_fechas: v?.fechas ?? [], garmin_pasos_hash: forzar ? null : v?.hash ?? null }, huellaPasos(pasosN, vdot, techoFcE, s.nombre), fechas, hoy)
+        const d = planearEnvioGarmin({ garmin_workout_id: v?.workout_id ?? null, garmin_programado_fecha: null, garmin_fechas: v?.fechas ?? [], garmin_pasos_hash: forzar ? null : v?.hash ?? null }, huellaPasos(pasosN, vdot, techoFcE, s.nombre, s.superficie), fechas, hoy)
         if (d.accion === 'recrear' || d.accion === 'anadir') trabajos.push({ modo: d.accion, fechas: d.fechas, variante: { n, pasos: pasosN } })
       }
       // Semanas que ya no tienen fechas por delante: se quitan de Garmin.
