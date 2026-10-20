@@ -105,3 +105,15 @@ assert.equal(cintaSin.workoutSteps[0].endCondition.conditionTypeKey, 'distance')
 // Pista (por defecto) no cambia
 assert.equal(pasosAGarmin('x', pasos, ritmos, undefined, null, 'pista').workoutSegments[0].workoutSteps.length, 3)
 console.log('garmin-workouts-formato (cinta) OK')
+
+// Recuperación entre series: sin techo de pulso ni ritmo (el pulso tarda en bajar)
+const pasosRec: Paso[] = [{ tipo: 'repetir', veces: 3, pasos: [
+  { tipo: 'trabajo', duracion: { unidad: 'metros', valor: 500 }, objetivo: { tipo: 'zona', zona: 'I' } },
+  { tipo: 'recuperacion', duracion: { unidad: 'segundos', valor: 120 }, objetivo: { tipo: 'zona', zona: 'E' } },
+] }]
+const wRec = pasosAGarmin('x', pasosRec, ritmos, undefined, { E: { min: 114, max: 153 } } as any).workoutSegments[0].workoutSteps[0] as any
+assert.equal(wRec.workoutSteps[1].stepType.stepTypeKey, 'recovery')
+assert.equal(wRec.workoutSteps[1].targetType.workoutTargetTypeKey, 'no.target')
+// El calentamiento sigue con techo de pulso
+assert.equal(pasosAGarmin('x', [{ tipo: 'calentamiento', duracion: { unidad: 'segundos', valor: 600 }, objetivo: { tipo: 'zona', zona: 'E' } }], ritmos, undefined, { E: { min: 114, max: 153 } } as any).workoutSegments[0].workoutSteps[0].targetType.workoutTargetTypeKey, 'heart.rate.zone')
+console.log('garmin-workouts-formato (recuperación) OK')

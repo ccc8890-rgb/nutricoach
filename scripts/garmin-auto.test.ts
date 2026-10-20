@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import assert from 'node:assert/strict'
 import { huellaPasos, decidirEnvio } from '../lib/entrenos/garmin-auto'
 import type { Paso } from '../lib/entrenos/pasos'
@@ -65,3 +66,7 @@ console.log('garmin-auto multi OK')
 assert.notEqual(h, huellaPasos(pasos, 45, null, null, 'cinta'))
 assert.equal(h, huellaPasos(pasos, 45, null, null, 'pista'))
 assert.equal(h, huellaPasos(pasos, 45, null, null, null))
+
+// La huella cambia solo en sesiones con recuperaciones (reenvío tras quitar el techo de pulso)
+const conRec = [{ tipo: 'recuperacion', duracion: { unidad: 'segundos', valor: 60 } }] as Paso[]
+assert.notEqual(huellaPasos(conRec, 45), createHash('sha256').update(JSON.stringify({ pasos: conRec, vdot: 45 })).digest('hex').slice(0, 16))

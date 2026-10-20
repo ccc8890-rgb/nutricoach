@@ -115,6 +115,8 @@ function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: 
     paso.targetType = { ...TARGET.ritmo }
     paso.targetValueOne = 1000 / o.max_seg_km // más lento = menor velocidad
     paso.targetValueTwo = 1000 / o.min_seg_km
+  } else if (p.tipo === 'recuperacion' && o?.tipo === 'zona' && o.zona === 'E') {
+    // Entre series el pulso sigue alto 1-2 min tras el esfuerzo: un techo de pulso solo daría avisos falsos.
   } else if (o?.tipo === 'zona' && o.zona === 'E' && fc?.E) {
     // Suave: manda el pulso (techo), no el ritmo; con calor, fatiga o cuestas el ritmo engaña.
     paso.targetType = { ...TARGET.fc }
