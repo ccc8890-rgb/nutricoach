@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Zap, CheckCircle, AlertCircle, Moon, MessageCircle, TrendingUp, Minus, Loader2 } from 'lucide-react'
-import { AccionPeriodizacion, ACCION_LABELS, ACCION_DESCRIPTIONS } from '@/lib/periodizacion/arbol-decision'
+import { AccionPeriodizacion, ACCION_LABELS, ACCION_DESCRIPTIONS, normalizarAdherenciaPct } from '@/lib/periodizacion/arbol-decision'
 
 interface AccionItem {
     id: string
@@ -20,12 +20,16 @@ interface AccionItem {
     } | null
     coach_nota: string | null
     input_snapshot: {
-        energia: number
+        energia?: number
+        meta?: string
+        estado?: string
+        ritmo_pct_semana?: number
+        dias?: number
         calidad_sueno?: number
         horas_sueno?: number // snapshots antiguos
-        adherencia: number
-        tls_semanal: number
-        semanas_en_deficit: number
+        adherencia?: number
+        tls_semanal?: number
+        semanas_en_deficit?: number
     }
 }
 
@@ -35,6 +39,7 @@ const ACCION_ICONS: Record<AccionPeriodizacion, React.ElementType> = {
     mensaje_apoyo: MessageCircle,
     ajuste_calorico_10pct: TrendingUp,
     alerta_coach_solo: AlertCircle,
+    revision_tendencia_peso: TrendingUp,
     sin_accion: Minus,
 }
 
@@ -44,6 +49,7 @@ const ACCION_COLORS: Record<AccionPeriodizacion, { bg: string; color: string; bo
     mensaje_apoyo: { bg: '#F0FDF4', color: '#15803D', border: '#BBF7D0' },
     ajuste_calorico_10pct: { bg: '#FFFBEB', color: '#B45309', border: '#FDE68A' },
     alerta_coach_solo: { bg: '#FEF2F2', color: '#DC2626', border: '#FECACA' },
+    revision_tendencia_peso: { bg: '#F5F3FF', color: '#6D28D9', border: '#DDD6FE' },
     sin_accion: { bg: 'var(--bg)', color: 'var(--text-muted)', border: 'var(--border)' },
 }
 
@@ -194,9 +200,14 @@ export default function PeriodizacionPanel({ clienteId }: PeriodizacionPanelProp
                                         <p className="text-xs font-medium" style={{ color: 'var(--text)' }}>
                                             {ACCION_LABELS[accion.accion]}
                                         </p>
-                                        {accion.input_snapshot && (
+                                        {accion.input_snapshot && accion.accion === 'revision_tendencia_peso' && (
                                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                                Energía {accion.input_snapshot.energia}/10 · Adherencia {accion.input_snapshot.adherencia}% · TLS {accion.input_snapshot.tls_semanal} pts
+                                                Ritmo {accion.input_snapshot.ritmo_pct_semana} %/semana · {accion.input_snapshot.dias} días
+                                            </p>
+                                        )}
+                                        {accion.input_snapshot && accion.accion !== 'revision_tendencia_peso' && (
+                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                                Energía {accion.input_snapshot.energia}/10 · Adherencia {normalizarAdherenciaPct(accion.input_snapshot.adherencia)}% · TLS {accion.input_snapshot.tls_semanal} pts
                                             </p>
                                         )}
                                     </div>

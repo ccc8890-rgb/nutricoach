@@ -6,6 +6,7 @@ import { generarFeedbackCheckinIA } from '@/lib/feedback-checkin-ia'
 import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import type { AjusteMacros } from '@/lib/periodizacion/motor-macros'
 import { revertirAjusteVigente } from '@/lib/periodizacion/revertir-ajuste'
+import { proponerAjustePorTendencia } from '@/lib/periodizacion/proponer-tendencia'
 
 export async function POST(
     request: NextRequest,
@@ -148,6 +149,10 @@ async function dispararEvaluacionPeriodizacion(
 
     // El ajuste anterior era «de esta semana»: devolver el plan a su base antes de evaluar (si no, los ajustes se acumulan)
     await revertirAjusteVigente(serviceSupabase, cliente_id)
+
+    // Tendencia de peso frente a la meta: propone (no aplica) ±5 % de kcal. Va aquí, con el plan ya en su base, para que aprobarla
+    // no convierta en permanente el ajuste temporal de esta semana.
+    await proponerAjustePorTendencia(serviceSupabase, cliente_id, checkin_id).catch(err => console.error('Error en tendencia de peso:', err))
 
     // TLS semanal
     const { data: tlsData } = await serviceSupabase

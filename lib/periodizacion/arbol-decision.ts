@@ -6,6 +6,7 @@ export type AccionPeriodizacion =
     | 'mensaje_apoyo'
     | 'ajuste_calorico_10pct'
     | 'alerta_coach_solo'
+    | 'revision_tendencia_peso'
     | 'sin_accion'
 
 export const ACCION_LABELS: Record<AccionPeriodizacion, string> = {
@@ -14,6 +15,7 @@ export const ACCION_LABELS: Record<AccionPeriodizacion, string> = {
     mensaje_apoyo: 'Mensaje de apoyo',
     ajuste_calorico_10pct: 'Ajuste calórico +10%',
     alerta_coach_solo: 'Alerta al coach',
+    revision_tendencia_peso: 'Revisar tendencia de peso',
     sin_accion: 'Sin acción',
 }
 
@@ -28,6 +30,8 @@ export const ACCION_DESCRIPTIONS: Record<AccionPeriodizacion, string> = {
         'La carga de entrenamiento supera el umbral con fatiga reportada. Se incrementan las calorías un 10% esta semana.',
     alerta_coach_solo:
         'Adherencia baja detectada. El coach debe intervenir de forma personalizada.',
+    revision_tendencia_peso:
+        'El peso no evoluciona al ritmo de la meta (ver detalle). Se propone un ajuste del 5 % de las calorías que solo se aplica si lo apruebas.',
     sin_accion:
         'Todos los indicadores en rango. Mantener el plan actual.',
 }

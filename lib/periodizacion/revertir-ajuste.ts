@@ -19,7 +19,7 @@ export function macrosARestaurar(ajuste: AjusteGuardado | null | undefined, plan
 export async function revertirAjusteVigente(db: any, clienteId: string): Promise<boolean> {
   const { data: accion } = await db.from('periodizacion_acciones')
     .select('id, ajuste_macros')
-    .eq('cliente_id', clienteId).eq('aplicado', true).not('ajuste_macros', 'is', null)
+    .eq('cliente_id', clienteId).eq('accion', 'ajuste_calorico_10pct').eq('aplicado', true).not('ajuste_macros', 'is', null)
     .order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (!accion) return false
   const { data: plan } = await db.from('planes_nutricion')

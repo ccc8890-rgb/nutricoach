@@ -13,6 +13,7 @@ import { createClient } from '@supabase/supabase-js'
 import { evaluarCheckin } from '../lib/periodizacion/arbol-decision'
 import { calcularAjusteCaloricoSemanal, type AjusteMacros, type MacrosBase } from '../lib/periodizacion/motor-macros'
 import { macrosARestaurar } from '../lib/periodizacion/revertir-ajuste'
+import { evaluarTendenciaPeso, type PuntoPeso, type ResultadoTendencia } from '../lib/periodizacion/tendencia-peso'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/)
@@ -54,7 +55,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10)
 // Misma fórmula que app/api/cliente/[codigo]/checkin/route.ts → dispararEvaluacionPeriodizacion (semanas con check-in).
 const claveSemana = (f: string) => { const d = new Date(f); const y0 = new Date(d.getFullYear(), 0, 1); return `${d.getFullYear()}-W${Math.ceil(((d.getTime() - y0.getTime()) / 86400000 + y0.getDay() + 1) / 7)}` }
 
-interface Fila { sem: number; fecha: string; peso: number; kcalPlan: number; ingesta: number; tdee: number; energia: number; sueno: number; adh: number; tls: number; accion: string; aplicado: boolean; fatigaReal: boolean; horasReales: number }
+interface Fila { sem: number; fecha: string; peso: number; kcalPlan: number; ingesta: number; tdee: number; energia: number; sueno: number; adh: number; tls: number; accion: string; tendencia: string; aplicado: boolean; fatigaReal: boolean; horasReales: number }
 interface Resultado { nombre: string; p: Perfil; filas: Fila[]; kcalInicial: number; hallazgos: string[] }
 
 async function simular(p: Perfil): Promise<Resultado> {
@@ -74,6 +75,9 @@ async function simular(p: Perfil): Promise<Resultado> {
   }
 
   const filas: Fila[] = []
+  const pesos: PuntoPeso[] = []
+  const adhs: number[] = []
+  let ultimaTendencia = -99
   let ajusteVigente: AjusteMacros | null = null
   let accionVigenteId: string | null = null
   const fechasCheckin: string[] = []
@@ -103,6 +107,16 @@ async function simular(p: Perfil): Promise<Resultado> {
     const sueno = clip(Math.round((horasReales - 4) * 2), 1, 10) // 4 h → 1 … 9 h → 10 (supuesto)
     const adh = clip(Math.round((p.adherenciaReportada + 8 * gauss()) / 10), 1, 10)
     const tls = Math.round(p.tls * (0.75 + 0.5 * rnd()))
+    pesos.push({ fecha, peso })
+    adhs.push(adh)
+    // Regla de tendencia de peso: propone ±5 % de kcal sobre el plan BASE (antes del ajuste temporal). Se asume que el coach la aprueba.
+    let tend: ResultadoTendencia | null = null
+    let ajT: AjusteMacros | null = null
+    if (s - ultimaTendencia >= 2) {
+      const rec = adhs.slice(-4)
+      const t = evaluarTendenciaPeso(pesos, p.meta, rec.reduce((a, b) => a + b, 0) / rec.length)
+      if (t.kcal_pct !== 0) { tend = t; ultimaTendencia = s; ajT = calcularAjusteCaloricoSemanal(macros, t.kcal_pct); macros = { kcal: ajT.kcal_ajustado, proteinas: ajT.proteinas_ajustadas, carbohidratos: ajT.carbohidratos_ajustados, grasas: ajT.grasas_ajustadas } }
+    }
     fechasCheckin.push(fecha)
     const semanas_en_deficit = new Set(fechasCheckin.map(claveSemana)).size
     const res = evaluarCheckin({ energia, calidad_sueno: sueno, adherencia: adh, tls_semanal: tls, semanas_en_deficit, umbral_carga_alta: umbral })
@@ -118,6 +132,11 @@ async function simular(p: Perfil): Promise<Resultado> {
       if (e1 || !ck) throw new Error(`checkin: ${e1?.message}`)
       const { error: e2 } = await db.from('seguimiento_peso').insert({ cliente_id: cli.id, fecha, peso, notas: `${MARCA} semana ${s}` })
       if (e2) throw new Error(`peso: ${e2.message}`)
+      if (tend && ajT) {
+        const { error: eT } = await db.from('periodizacion_acciones').insert({ cliente_id: cli.id, checkin_id: ck.id, accion: 'revision_tendencia_peso', input_snapshot: { meta: p.meta, estado: tend.estado, ritmo_pct_semana: tend.ritmo_pct_semana, dias: tend.dias }, ajuste_macros: { ...ajT, descripcion: tend.descripcion }, requiere_aprobacion: true, aprobado_por_coach: true, aplicado: true })
+        if (eT) throw new Error(`tendencia: ${eT.message}`)
+        await db.from('planes_nutricion').update({ kcal_objetivo: ajT.kcal_ajustado, proteinas_objetivo: ajT.proteinas_ajustadas, carbohidratos_objetivo: ajT.carbohidratos_ajustados, grasas_objetivo: ajT.grasas_ajustadas }).eq('id', plan.id)
+      }
       const { data: ac, error: e3 } = await db.from('periodizacion_acciones').insert({ cliente_id: cli.id, checkin_id: ck.id, accion: res.accion, input_snapshot: res.input_snapshot, ajuste_macros: aj, requiere_aprobacion: res.requiere_aprobacion_coach, aprobado_por_coach: res.requiere_aprobacion_coach ? null : true, aplicado: false }).select('id').single()
       if (e3 || !ac) throw new Error(`accion: ${e3?.message}`)
       accionVigenteId = ac.id
@@ -126,14 +145,16 @@ async function simular(p: Perfil): Promise<Resultado> {
         await db.from('periodizacion_acciones').update({ aplicado: true }).eq('id', ac.id)
       }
     }
-    filas.push({ sem: s, fecha, peso, kcalPlan: Math.round(macros.kcal), ingesta: Math.round(ingesta), tdee: Math.round(gasto), energia, sueno, adh, tls, accion: res.accion, aplicado, fatigaReal: energiaReal <= 2, horasReales })
+    filas.push({ sem: s, fecha, peso, kcalPlan: Math.round(macros.kcal), ingesta: Math.round(ingesta), tdee: Math.round(gasto), energia, sueno, adh, tls, accion: res.accion, tendencia: tend?.estado ?? '', aplicado, fatigaReal: energiaReal <= 2, horasReales })
   }
 
   const h: string[] = []
   const kcal0 = plan.kcal_objetivo
   const kcalN = filas[filas.length - 1].kcalPlan
   const deriva = (kcalN / kcal0 - 1) * 100
-  if (Math.abs(deriva) >= 10) h.push(`**Deriva de calorías ${deriva > 0 ? '+' : ''}${deriva.toFixed(0)} %** (${kcal0} → ${kcalN} kcal) por ajustes «de esta semana» que se acumulan (${filas.filter(f => f.aplicado).length} ajustes aplicados).`)
+  const ajustesT = filas.filter(f => f.tendencia).length
+  if (ajustesT) h.push(`La regla de tendencia de peso propuso ${ajustesT} ajuste(s) de ±5 % (se asume aprobado): ${[...new Set(filas.filter(f => f.tendencia).map(f => f.tendencia))].join(', ')}.`)
+  if (Math.abs(deriva) >= 10) h.push(`**Deriva de calorías ${deriva > 0 ? '+' : ''}${deriva.toFixed(0)} %** (${kcal0} → ${kcalN} kcal) (incluye los ajustes de tendencia aprobados) (${filas.filter(f => f.aplicado).length} ajustes aplicados).`)
   const dPeso = filas[filas.length - 1].peso - p.peso
   const esperado = p.metaKgSem * SEMANAS
   const sentidoOk = p.meta === 'mantener' ? Math.abs(dPeso) <= 2 : p.meta === 'perder' ? dPeso <= esperado * 0.5 : dPeso >= esperado * 0.5
@@ -180,9 +201,9 @@ async function main() {
   for (const p of lista) {
     const r = await simular(p)
     console.log(`\n== ${r.nombre} (${p.meta}) ==`)
-    md.push(`## ${r.nombre} — meta: ${p.meta}`, '', '| Sem | Peso | Plan kcal | Come | Gasto | Energía | Sueño | Adh. | TLS | Acción |', '|---|---|---|---|---|---|---|---|---|---|')
+    md.push(`## ${r.nombre} — meta: ${p.meta}`, '', '| Sem | Peso | Plan kcal | Come | Gasto | Energía | Sueño | Adh. | TLS | Acción | Tendencia |', '|---|---|---|---|---|---|---|---|---|---|---|')
     for (const f of r.filas) {
-      md.push(`| ${f.sem} | ${f.peso} | ${f.kcalPlan} | ${f.ingesta} | ${f.tdee} | ${f.energia} | ${f.sueno} | ${f.adh} | ${f.tls} | ${f.accion}${f.aplicado ? ' ✔aplicado' : ''} |`)
+      md.push(`| ${f.sem} | ${f.peso} | ${f.kcalPlan} | ${f.ingesta} | ${f.tdee} | ${f.energia} | ${f.sueno} | ${f.adh} | ${f.tls} | ${f.accion}${f.aplicado ? ' ✔aplicado' : ''} | ${f.tendencia} |`)
     }
     md.push('', r.hallazgos.length ? r.hallazgos.map(x => `- ${x}`).join('\n') : '- Sin hallazgos.', '')
     console.log(`peso ${p.peso} → ${r.filas[r.filas.length - 1].peso} | kcal ${r.kcalInicial} → ${r.filas[r.filas.length - 1].kcalPlan} | acciones: ${[...new Set(r.filas.map(f => f.accion))].join(', ')}`)
