@@ -57,8 +57,9 @@ export default function PasosSesion({ sesionId, pasos, ritmos, fc, garmin, super
         setAviso(data?.error ?? 'No se pudo actualizar tu Garmin')
         return
       }
+      const data = await res.json().catch(() => ({}))
       setSuperficie(nueva)
-      setAviso('Enviado al Garmin. Sincroniza el reloj antes de salir.')
+      setAviso(data?.sinGarmin ? 'Guardado. Conecta tu Garmin para recibir el entreno en el reloj.' : data?.enviados ? 'Enviado al Garmin. Sincroniza el reloj antes de salir.' : 'Guardado. Se enviará al Garmin en el próximo envío automático.')
     } catch {
       setAviso('No se pudo actualizar tu Garmin')
     } finally {
