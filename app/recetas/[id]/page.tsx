@@ -307,35 +307,8 @@ export default function DetalleRecetaPage() {
     <PageTransition className="coach-recipe-detail">
       {/* ═══════ HERO FULL-BLEED ═══════ */}
       <div className="coach-recipe-detail__hero relative w-full">
-        {receta.imagen_url ? (
-          <div className="coach-recipe-detail__image relative w-full h-[45vh] min-h-[320px] max-h-[500px] overflow-hidden">
-            <img
-              src={receta.imagen_url}
-              alt={receta.nombre}
-              className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${imgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
-              onLoad={() => setImgLoaded(true)}
-            />
-            {/* Skeleton */}
-            {!imgLoaded && <div className="absolute inset-0 skeleton" />}
-            {/* Overlay gradiente */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(to top, var(--bg) 0%, rgba(10,10,11,0.6) 40%, rgba(10,10,11,0.2) 70%, transparent 100%)',
-              }}
-            />
-            {/* Overlay radial para dar profundidad */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: 'radial-gradient(ellipse at center bottom, transparent 40%, var(--bg) 100%)',
-              }}
-            />
-          </div>
-        ) : (
-          // Sin foto no hay cabecera grande: solo el hueco de la barra flotante
-          <div className="h-16 w-full" aria-hidden />
-        )}
+        {/* La foto va entera junto al título (la cabecera ya no la recorta en banner) */}
+        <div className="h-16 w-full" aria-hidden />
 
         {/* Navegación flotante sobre la imagen */}
         <div
@@ -377,7 +350,7 @@ export default function DetalleRecetaPage() {
       </div>
 
       {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
-      <div className={`coach-recipe-detail__content mx-auto px-6 relative z-20 pb-safe${receta.imagen_url ? ' -mt-16' : ''}${enBandeja ? ' pb-28' : ''}`}>
+      <div className={`coach-recipe-detail__content mx-auto px-6 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
         {/* Banner de revisión */}
         {!isClientView && (receta.estado === 'en_revision' || receta.estado === 'borrador') && (
           <ScaleIn delay={0.05}>
@@ -419,7 +392,19 @@ export default function DetalleRecetaPage() {
           <div className="min-w-0 lg:col-span-2">
         {/* ═══════ TÍTULO + META ═══════ */}
         <FadeIn delay={0.1}>
-          <div className="coach-recipe-detail__intro mb-6">
+          <div className={`coach-recipe-detail__intro mb-6${receta.imagen_url ? ' grid gap-6 sm:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)] sm:items-center' : ''}`}>
+            {receta.imagen_url && (
+              <div className="relative aspect-square w-full max-w-[20rem] overflow-hidden rounded-2xl" style={{ border: '1px solid var(--border)' }}>
+                <img
+                  src={receta.imagen_url}
+                  alt={receta.nombre}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  onLoad={() => setImgLoaded(true)}
+                />
+                {!imgLoaded && <div className="absolute inset-0 skeleton" />}
+              </div>
+            )}
+            <div className="min-w-0">
             <div className="flex items-start gap-3 flex-wrap mb-2">
               <h1 className="coach-recipe-detail__title flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
             </div>
@@ -456,6 +441,15 @@ export default function DetalleRecetaPage() {
               )}
             </div>
 
+            {/* De un vistazo: tiempo, raciones y energía */}
+            {(tiempoTotal > 0 || receta.porciones || macrosPorPorcion) && (
+              <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-base tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                {tiempoTotal > 0 && <span><strong style={{ color: 'var(--text)' }}>{tiempoTotal}</strong> min</span>}
+                {receta.porciones && <span><strong style={{ color: 'var(--text)' }}>{receta.porciones}</strong> {receta.porciones === 1 ? 'ración' : 'raciones'}</span>}
+                {macrosPorPorcion && <span><strong style={{ color: 'var(--text)' }}>{Math.round(macrosPorPorcion.kcal)}</strong> kcal/ración</span>}
+              </div>
+            )}
+            </div>
           </div>
         </FadeIn>
 
