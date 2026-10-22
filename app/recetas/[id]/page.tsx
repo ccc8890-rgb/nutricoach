@@ -369,7 +369,7 @@ export default function DetalleRecetaPage() {
   const rotuloEt = 'font-data text-[10px] font-medium uppercase tracking-[0.14em]'
   const punto = (color: string) => <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: color }} aria-hidden />
   const bloqueEtiquetas = (tipos.length > 0 || aptaPara.length > 0 || contiene.length > 0) ? (
-    <dl className="mt-5 grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2.5 text-[0.95rem]" style={{ color: 'var(--text-secondary)' }}>
+    <dl className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2.5 text-[0.95rem]" style={{ color: 'var(--text-secondary)' }}>
       {tipos.length > 0 && (<>
         <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Tipo</dt>
         <dd className="flex flex-wrap items-center gap-y-1">
@@ -390,11 +390,11 @@ export default function DetalleRecetaPage() {
   ) : null
 
   const fotoReceta = receta.imagen_url ? (
-    <div className="relative aspect-square w-full max-w-[22rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
+    <div className="group relative aspect-square w-full max-w-[26rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
       <img
         src={receta.imagen_url}
         alt={receta.nombre}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.06] ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
         onLoad={() => setImgLoaded(true)}
       />
       {!imgLoaded && <div className="absolute inset-0 skeleton" />}
@@ -488,18 +488,19 @@ export default function DetalleRecetaPage() {
           <div className="min-w-0 lg:col-span-2">
         {/* ═══════ TÍTULO + META ═══════ */}
         <FadeIn delay={0.1}>
-          <div className={`coach-recipe-detail__intro mb-4 grid gap-5 ${receta.imagen_url ? 'sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)_26rem] xl:grid-cols-[20rem_minmax(0,1fr)_31rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_26rem] xl:grid-cols-[minmax(0,1fr)_31rem]'}`} style={{ padding: '1.1rem' }}>
-            {fotoReceta}
-            <div className="min-w-0">
-            <div className="flex items-start gap-3 flex-wrap mb-2">
-              <h1 className="coach-recipe-detail__title flex-1 !text-[clamp(1.7rem,2.8vw,2.6rem)] !font-light !leading-[1.12] !tracking-[-0.02em]" style={{ color: 'var(--text)', fontFamily: 'var(--font-sora), var(--font-instrument), sans-serif' }}>{receta.nombre}</h1>
+          <div className="coach-recipe-detail__intro mb-4" style={{ padding: '1.25rem' }}>
+            {/* Título arriba, a todo el ancho */}
+            <div className="mb-6 max-w-4xl">
+              <h1 className="coach-recipe-detail__title !text-[clamp(1.9rem,3.2vw,3rem)] !font-light !leading-[1.1] !tracking-[-0.02em]" style={{ color: 'var(--text)', fontFamily: 'var(--font-sora), var(--font-instrument), sans-serif' }}>{receta.nombre}</h1>
+              {receta.descripcion && (
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
+              )}
             </div>
-            {receta.descripcion && (
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
-            )}
-            {bloqueEtiquetas}
+            <div className={`grid gap-6 ${receta.imagen_url ? 'sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)_26rem] xl:grid-cols-[22rem_minmax(0,1fr)_31rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_26rem] xl:grid-cols-[minmax(0,1fr)_31rem]'}`}>
+              {fotoReceta}
+              <div className="min-w-0">{bloqueEtiquetas}</div>
+              <div className="min-w-0 sm:col-span-2 lg:col-span-1 lg:border-l lg:pl-8" style={{ borderColor: 'var(--recipe-rule)' }}>{bloqueMacros}</div>
             </div>
-            <div className="min-w-0 sm:col-span-2 lg:col-span-1 lg:border-l lg:pl-8" style={{ borderColor: 'var(--recipe-rule)' }}>{bloqueMacros}</div>
           </div>
         </FadeIn>
 
