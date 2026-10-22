@@ -368,24 +368,27 @@ export default function DetalleRecetaPage() {
   const tipos = [receta.categoria, receta.tipo_coccion, receta.dificultad].filter(Boolean) as string[]
   const rotuloEt = 'font-data text-[10px] font-medium uppercase tracking-[0.14em]'
   const punto = (color: string) => <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: color }} aria-hidden />
+  const filaEt = 'grid flex-1 grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-x-4 py-3'
   const bloqueEtiquetas = (tipos.length > 0 || aptaPara.length > 0 || contiene.length > 0) ? (
-    <dl className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2.5 text-[0.95rem]" style={{ color: 'var(--text-secondary)' }}>
-      {tipos.length > 0 && (<>
-        <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Tipo</dt>
-        <dd className="flex flex-wrap items-center gap-y-1">
-          {tipos.map((t, i) => (
-            <span key={t} className={i > 0 ? 'ml-4 border-l pl-4' : ''} style={{ borderColor: 'var(--recipe-rule, var(--border))' }}>{t}</span>
-          ))}
-        </dd>
-      </>)}
-      {aptaPara.length > 0 && (<>
-        <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Apta para</dt>
-        <dd className="flex flex-wrap gap-x-4">{aptaPara.map(t => <span key={t}>{punto('rgb(34,197,94)')}{t}</span>)}</dd>
-      </>)}
-      {contiene.length > 0 && (<>
-        <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Contiene</dt>
-        <dd className="flex flex-wrap gap-x-4">{contiene.map(t => <span key={t}>{punto('rgb(239,68,68)')}{t}</span>)}</dd>
-      </>)}
+    <dl className="flex h-full min-h-[10rem] flex-col divide-y text-[0.95rem]" style={{ color: 'var(--text-secondary)', borderColor: 'var(--recipe-rule, var(--border))' }}>
+      {tipos.length > 0 && (
+        <div className={filaEt} style={{ borderColor: 'var(--recipe-rule, var(--border))' }}>
+          <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Tipo</dt>
+          <dd className="flex flex-wrap gap-x-5 gap-y-1">{tipos.map(t => <span key={t}>{t}</span>)}</dd>
+        </div>
+      )}
+      {aptaPara.length > 0 && (
+        <div className={filaEt} style={{ borderColor: 'var(--recipe-rule, var(--border))' }}>
+          <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Apta para</dt>
+          <dd className="flex flex-wrap gap-x-5 gap-y-1">{aptaPara.map(t => <span key={t}>{punto('rgb(34,197,94)')}{t}</span>)}</dd>
+        </div>
+      )}
+      {contiene.length > 0 && (
+        <div className={filaEt} style={{ borderColor: 'var(--recipe-rule, var(--border))' }}>
+          <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Contiene</dt>
+          <dd className="flex flex-wrap gap-x-5 gap-y-1">{contiene.map(t => <span key={t}>{punto('rgb(239,68,68)')}{t}</span>)}</dd>
+        </div>
+      )}
     </dl>
   ) : null
 
@@ -493,9 +496,9 @@ export default function DetalleRecetaPage() {
             <div className="mb-6 max-w-5xl">
               <h1 className="coach-recipe-detail__title !text-[clamp(1.9rem,3.2vw,3rem)] !font-light !leading-[1.1] !tracking-[-0.02em]" style={{ color: 'var(--text)', fontFamily: 'var(--font-sora), var(--font-instrument), sans-serif' }}>{receta.nombre}</h1>
             </div>
-            <div className={`grid gap-6 ${receta.imagen_url ? 'sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)_26rem] xl:grid-cols-[22rem_minmax(0,1fr)_31rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_26rem] xl:grid-cols-[minmax(0,1fr)_31rem]'}`}>
+            <div className={`grid gap-6 ${receta.imagen_url ? 'sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)_26rem] xl:grid-cols-[22rem_minmax(0,1fr)_31rem] lg:items-stretch' : 'lg:grid-cols-[minmax(0,1fr)_26rem] xl:grid-cols-[minmax(0,1fr)_31rem]'}`}>
               {fotoReceta}
-              <div className="min-w-0">{bloqueEtiquetas}</div>
+              <div className="min-w-0 lg:py-2">{bloqueEtiquetas}</div>
               <div className="min-w-0 sm:col-span-2 lg:col-span-1 lg:border-l lg:pl-8" style={{ borderColor: 'var(--recipe-rule)' }}>{bloqueMacros}</div>
             </div>
           </div>
