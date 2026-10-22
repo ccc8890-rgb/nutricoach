@@ -11,6 +11,7 @@ import { CATEGORIAS, TIPOS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/rec
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
+import ReportarProblema from '@/components/recetas/ReportarProblema'
 import TaxonomiaRecetaPanel, { type TaxonomiaReceta } from '@/components/recetas/TaxonomiaRecetaPanel'
 
 interface Ingrediente {
@@ -78,6 +79,8 @@ export default function EditarRecetaPage() {
     const [buscando, setBuscando] = useState(false)
 
     const [guardando, setGuardando] = useState(false)
+    const [estadoReceta, setEstadoReceta] = useState('')
+    const [reportando, setReportando] = useState(false)
 
     // Cargar datos existentes
     useEffect(() => {
@@ -89,6 +92,7 @@ export default function EditarRecetaPage() {
 
             const receta = recetaRes.data
             if (!receta) return
+            setEstadoReceta(receta.estado ?? '')
 
             setForm({
                 nombre: receta.nombre ?? '',
@@ -330,6 +334,13 @@ export default function EditarRecetaPage() {
                 <div className="flex items-center gap-3 mb-8">
                     <Link href={volverReceta} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
                     <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Editar receta</h1>
+                    {estadoReceta === 'aprobada' && (
+                        <button type="button" onClick={() => setReportando(true)}
+                            className="ml-auto rounded-lg border px-3 py-1.5 text-sm font-medium"
+                            style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>
+                            Pasar a revisión
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-6">
@@ -663,6 +674,7 @@ export default function EditarRecetaPage() {
                     </FadeIn>
                 </div>
             </div>
+            <ReportarProblema ids={[id]} abierto={reportando} onCerrar={() => setReportando(false)} onHecho={() => { window.location.href = returnToParam && returnToParam.startsWith('/') ? returnToParam : '/recetas' }} />
         </PageTransition>
     )
 }

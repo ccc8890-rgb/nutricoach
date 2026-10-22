@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, Warning, Clock, Users, CaretLeft, CurrencyEur, PlayCircle, Lightbulb } from '@phosphor-icons/react'
+import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, Clock, Users, CaretLeft, CurrencyEur, PlayCircle, Lightbulb } from '@phosphor-icons/react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta, resumenAptitud, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -14,8 +14,6 @@ import { parsePasos, ordenarPorFases } from '@/lib/recetas/pasos'
 import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
 import { listaRecordada } from '@/lib/useEstadoUrl'
 import BarraRevision from '@/components/recetas/BarraRevision'
-import ReportarProblema from '@/components/recetas/ReportarProblema'
-import EdicionRapida from '@/components/recetas/EdicionRapida'
 import { formatoCantidad } from '@/lib/recetas/equivalencia'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
@@ -106,13 +104,11 @@ export default function DetalleRecetaPage() {
   const enBandeja = !isClientView && returnPath.startsWith('/recetas/revisar')
   const clienteCodigo = isClientView ? returnPath.split('/').filter(Boolean)[1] : null
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
-  const [reportando, setReportando] = useState(false)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
   const [loading, setLoading] = useState(true)
   const [borrando, setBorrando] = useState(false)
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
-  const [editandoRapido, setEditandoRapido] = useState(false)
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
   const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
   const [quality, setQuality] = useState<RecetaQuality | null>(null)
@@ -296,11 +292,7 @@ export default function DetalleRecetaPage() {
         {/* ═══════ MACRO RING + STATS ROW ═══════ */}
         <FadeIn delay={0.15}>
           <div
-            className="coach-recipe-detail__nutrition mb-6 flex flex-col sm:flex-row lg:flex-col items-center lg:items-stretch gap-6"
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-            }}
+            className="mb-0 flex flex-col sm:flex-row lg:flex-col items-center lg:items-stretch gap-4"
           >
             {/* Reparto de macros */}
             <div className="w-full flex-shrink-0 sm:w-[330px] lg:w-full">
@@ -393,26 +385,26 @@ export default function DetalleRecetaPage() {
   const bloqueAptitudes = intolerancias.length > 0 ? (() => {
           const { aptaPara, contiene } = resumenAptitud(intolerancias)
           if (aptaPara.length === 0 && contiene.length === 0) return null
-          const rotulo = 'text-xs font-bold uppercase tracking-widest shrink-0'
+          const rotulo = 'text-xs font-semibold uppercase tracking-widest shrink-0'
           return (
             <FadeIn delay={0.3}>
               <div
-                className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2"
+                className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-2"
               >
                 {aptaPara.length > 0 && (
                   <>
                     <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Apta para</span>
                     {aptaPara.map(t => (
-                      <span key={t} className="text-sm font-semibold px-2.5 py-0.5 rounded" style={{ background: 'rgba(34,197,94,0.07)', color: 'rgb(21,128,61)', border: '1px solid rgba(34,197,94,0.18)' }}>{t}</span>
+                      <span key={t} className="text-sm font-medium px-3 py-1 rounded-md" style={{ background: 'rgba(34,197,94,0.07)', color: 'rgb(21,128,61)', border: '1px solid rgba(34,197,94,0.18)' }}>{t}</span>
                     ))}
                   </>
                 )}
                 {contiene.length > 0 && (
                   <>
-                    {aptaPara.length > 0 && <span style={{ color: 'var(--border)' }}>·</span>}
+                    {aptaPara.length > 0 && <span className="mx-1" style={{ color: 'var(--border)' }}>·</span>}
                     <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Contiene</span>
                     {contiene.map(t => (
-                      <span key={t} className="text-sm font-semibold px-2.5 py-0.5 rounded" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
+                      <span key={t} className="text-sm font-medium px-3 py-1 rounded-md" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
                     ))}
                   </>
                 )}
@@ -435,22 +427,14 @@ export default function DetalleRecetaPage() {
 
   return (
     <PageTransition className="coach-recipe-detail">
-      {/* ═══════ HERO FULL-BLEED ═══════ */}
-      <div className="coach-recipe-detail__hero relative w-full">
-        {/* La foto va entera junto al título (la cabecera ya no la recorta en banner) */}
-        <div className="h-16 w-full" aria-hidden />
-
-        {/* Navegación flotante sobre la imagen */}
-        <div
-          className="absolute left-4 right-4 flex items-center gap-2 z-10"
-          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
-        >
+      {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
+      <div className={`coach-recipe-detail__content mx-auto px-6 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
+        {/* Navegación mínima: volver, editar y borrar */}
+        <div className="flex items-center gap-2 pb-5 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)]">
           <Link
             href={returnTo}
-            className={`flex items-center justify-center rounded-full transition-all duration-200 ${isClientView ? 'h-11 px-3 gap-1.5 text-sm font-semibold' : 'w-9 h-9'}`}
-            style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
+            className={`flex items-center justify-center rounded-lg border transition-colors duration-200 hover:bg-[var(--surface-hover)] ${isClientView ? 'h-11 px-3 gap-1.5 text-sm font-semibold' : 'h-9 w-9'}`}
+            style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
             aria-label={isClientView ? 'Volver al plan' : 'Volver al recetario'}
           >
             <ArrowLeft size={18} />
@@ -459,40 +443,23 @@ export default function DetalleRecetaPage() {
           <div className="flex-1" />
           {!isClientView && (
             <>
-              <button onClick={() => setEditandoRapido(v => !v)}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
-                style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}>
-                <PencilSimple size={12} /> Editar rápido
-              </button>
-              {receta.estado === 'aprobada' && (
-                <button onClick={() => setReportando(true)}
-                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
-                  style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: 'var(--warning)' }}>
-                  <Warning size={12} /> Reportar
-                </button>
-              )}
               <Link
                 href={`/recetas/${id}/editar?returnTo=${encodeURIComponent(returnTo)}`}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
-                style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
+                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors duration-200 hover:bg-[var(--surface-hover)]"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
               >
-                <PencilSimple size={12} /> Editar
+                <PencilSimple size={14} /> Editar
               </Link>
               <button onClick={borrar} disabled={borrando}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
-                style={{ background: 'rgba(255,69,58,0.3)', backdropFilter: 'blur(12px)', color: '#FF453A' }}
+                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors duration-200 hover:bg-[var(--surface-hover)]"
+                style={{ borderColor: 'var(--border)', color: 'var(--error)' }}
               >
-                <Trash size={12} /> {borrando ? '…' : 'Borrar'}
+                <Trash size={14} /> {borrando ? '…' : 'Borrar'}
               </button>
             </>
           )}
         </div>
-      </div>
 
-      {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
-      <div className={`coach-recipe-detail__content mx-auto px-6 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
         {/* Banner de revisión */}
         {!isClientView && (receta.estado === 'en_revision' || receta.estado === 'borrador') && (
           <ScaleIn delay={0.05}>
@@ -530,47 +497,28 @@ export default function DetalleRecetaPage() {
           </FadeIn>
         )}
 
-        <div className="grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_25rem]">
+        <div className="grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_23rem]">
           <div className="min-w-0 lg:col-span-2">
         {/* ═══════ TÍTULO + META ═══════ */}
         <FadeIn delay={0.1}>
-          <div className={`coach-recipe-detail__intro mb-6 grid gap-6 ${receta.imagen_url ? 'sm:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[17rem_minmax(0,1fr)_25rem] lg:items-start' : 'lg:grid-cols-[minmax(0,1fr)_25rem]'}`}>
+          <div className={`coach-recipe-detail__intro mb-4 grid gap-5 ${receta.imagen_url ? 'sm:grid-cols-[12rem_minmax(0,1fr)] lg:grid-cols-[13rem_minmax(0,1fr)_23rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_23rem]'}`} style={{ padding: '1.1rem' }}>
             {fotoReceta}
             <div className="min-w-0">
             <div className="flex items-start gap-3 flex-wrap mb-2">
-              <h1 className="coach-recipe-detail__title flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
+              <h1 className="coach-recipe-detail__title flex-1 !text-[clamp(1.7rem,2.8vw,2.6rem)] !font-light !leading-[1.12] !tracking-[-0.02em]" style={{ color: 'var(--text)', fontFamily: 'var(--font-sora), var(--font-instrument), sans-serif' }}>{receta.nombre}</h1>
             </div>
             {receta.descripcion && (
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
             )}
-            {!isClientView && (
-              <div className="mt-3">
-                <EdicionRapida receta={{ id, nombre: receta.nombre, descripcion: receta.descripcion, tiempo_prep_min: receta.tiempo_prep_min, categoria: receta.categoria, tags: receta.tags }} control={{ abierto: editandoRapido, set: setEditandoRapido }} onGuardado={() => window.location.reload()} />
-              </div>
-            )}
-
-            {/* Badges + tags */}
-            <div className="flex flex-wrap gap-2 mt-3">
-              {receta.categoria && (
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-                  {receta.categoria}
-                </span>
-              )}
-              {receta.tipo_coccion && (
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
-                  {receta.tipo_coccion}
-                </span>
-              )}
-              {receta.dificultad && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>
-                  {receta.dificultad}
-                </span>
-              )}
+            {/* Etiquetas: misma forma para tipo, cocción, dificultad y aptitudes */}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {[receta.categoria, receta.tipo_coccion, receta.dificultad].filter(Boolean).map(t => (
+                <span key={t} className="inline-flex items-center rounded-md border px-3 py-1 text-sm font-medium" style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>{t}</span>
+              ))}
             </div>
-
             {bloqueAptitudes}
             </div>
-            <div className="min-w-0 sm:col-span-2 lg:col-span-1">{bloqueMacros}</div>
+            <div className="min-w-0 sm:col-span-2 lg:col-span-1 lg:border-l lg:pl-6" style={{ borderColor: 'var(--recipe-rule)' }}>{bloqueMacros}</div>
           </div>
         </FadeIn>
 
@@ -775,7 +723,6 @@ export default function DetalleRecetaPage() {
           </div>
         </FadeIn>
       </div>
-      <ReportarProblema ids={[id]} abierto={reportando} onCerrar={() => setReportando(false)} onHecho={() => { window.location.href = returnTo.startsWith('/') ? returnTo : '/recetas' }} />
       {enBandeja && (
         <BarraRevision id={id} pendiente={receta.estado === 'en_revision' || receta.estado === 'borrador'} returnTo={returnTo} accion={handleEstado} />
       )}
