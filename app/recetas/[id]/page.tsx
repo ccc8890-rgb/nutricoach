@@ -363,36 +363,27 @@ export default function DetalleRecetaPage() {
     </>
   )
 
-  const bloqueAptitudes = intolerancias.length > 0 ? (() => {
-          const { aptaPara, contiene } = resumenAptitud(intolerancias)
-          if (aptaPara.length === 0 && contiene.length === 0) return null
-          const rotulo = 'text-[10px] font-semibold uppercase tracking-widest shrink-0'
-          return (
-            <FadeIn delay={0.3}>
-              <div
-                className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1.5"
-              >
-                {aptaPara.length > 0 && (
-                  <>
-                    <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Apta para</span>
-                    {aptaPara.map(t => (
-                      <span key={t} className="text-xs font-medium px-2 py-0.5 rounded" style={{ background: 'rgba(34,197,94,0.07)', color: 'rgb(21,128,61)', border: '1px solid rgba(34,197,94,0.18)' }}>{t}</span>
-                    ))}
-                  </>
-                )}
-                {contiene.length > 0 && (
-                  <>
-                    {aptaPara.length > 0 && <span className="mx-1" style={{ color: 'var(--border)' }}>·</span>}
-                    <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Contiene</span>
-                    {contiene.map(t => (
-                      <span key={t} className="text-xs font-medium px-2 py-0.5 rounded" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
-                    ))}
-                  </>
-                )}
-              </div>
-            </FadeIn>
-          )
-        })() : null
+  // Etiquetas en el mismo lenguaje que la tarjeta de macros: rótulo mono + valor en texto, sin cajas
+  const { aptaPara, contiene } = intolerancias.length > 0 ? resumenAptitud(intolerancias) : { aptaPara: [] as string[], contiene: [] as string[] }
+  const tipos = [receta.categoria, receta.tipo_coccion, receta.dificultad].filter(Boolean) as string[]
+  const rotuloEt = 'font-data text-[10px] font-medium uppercase tracking-[0.14em]'
+  const punto = (color: string) => <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: color }} aria-hidden />
+  const bloqueEtiquetas = (tipos.length > 0 || aptaPara.length > 0 || contiene.length > 0) ? (
+    <dl className="mt-5 grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2.5 text-[0.95rem]" style={{ color: 'var(--text-secondary)' }}>
+      {tipos.length > 0 && (<>
+        <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Tipo</dt>
+        <dd>{tipos.join('  ·  ')}</dd>
+      </>)}
+      {aptaPara.length > 0 && (<>
+        <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Apta para</dt>
+        <dd className="flex flex-wrap gap-x-4">{aptaPara.map(t => <span key={t}>{punto('rgb(34,197,94)')}{t}</span>)}</dd>
+      </>)}
+      {contiene.length > 0 && (<>
+        <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Contiene</dt>
+        <dd className="flex flex-wrap gap-x-4">{contiene.map(t => <span key={t}>{punto('rgb(239,68,68)')}{t}</span>)}</dd>
+      </>)}
+    </dl>
+  ) : null
 
   const fotoReceta = receta.imagen_url ? (
     <div className="relative aspect-square w-full max-w-[22rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
@@ -502,13 +493,7 @@ export default function DetalleRecetaPage() {
             {receta.descripcion && (
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
             )}
-            {/* Etiquetas: misma forma para tipo, cocción, dificultad y aptitudes */}
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              {[receta.categoria, receta.tipo_coccion, receta.dificultad].filter(Boolean).map(t => (
-                <span key={t} className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium" style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>{t}</span>
-              ))}
-            </div>
-            {bloqueAptitudes}
+            {bloqueEtiquetas}
             </div>
             <div className="min-w-0 sm:col-span-2 lg:col-span-1 lg:border-l lg:pl-6" style={{ borderColor: 'var(--recipe-rule)' }}>{bloqueMacros}</div>
           </div>
