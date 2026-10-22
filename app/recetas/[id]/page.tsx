@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, CaretLeft, CurrencyEur, PlayCircle, Lightbulb } from '@phosphor-icons/react'
+import { ArrowLeft, MagnifyingGlassPlus, X, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, CaretLeft, CurrencyEur, PlayCircle, Lightbulb } from '@phosphor-icons/react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta, resumenAptitud, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -113,6 +113,13 @@ export default function DetalleRecetaPage() {
   const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
   const [quality, setQuality] = useState<RecetaQuality | null>(null)
   const [calidadAbierta, setCalidadAbierta] = useState(false)
+  const [fotoAmpliada, setFotoAmpliada] = useState(false)
+  useEffect(() => {
+    if (!fotoAmpliada) return
+    const cerrar = (e: KeyboardEvent) => { if (e.key === 'Escape') setFotoAmpliada(false) }
+    window.addEventListener('keydown', cerrar)
+    return () => window.removeEventListener('keydown', cerrar)
+  }, [fotoAmpliada])
 
   async function handleEstado(nuevoEstado: 'aprobada' | 'descartada'): Promise<boolean> {
     if (nuevoEstado === 'aprobada' && quality) {
@@ -393,15 +400,20 @@ export default function DetalleRecetaPage() {
   ) : null
 
   const fotoReceta = receta.imagen_url ? (
-    <div className="group relative aspect-square w-full max-w-[26rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
+    <button type="button" onClick={() => setFotoAmpliada(true)} aria-label="Ampliar foto"
+      className="group relative block aspect-square w-full max-w-[26rem] cursor-zoom-in overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
       <img
         src={receta.imagen_url}
         alt={receta.nombre}
-        className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.06] ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
         onLoad={() => setImgLoaded(true)}
       />
       {!imgLoaded && <div className="absolute inset-0 skeleton" />}
-    </div>
+      <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
+        style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', color: '#fff' }} aria-hidden>
+        <MagnifyingGlassPlus size={18} />
+      </span>
+    </button>
   ) : null
 
   return (
@@ -712,6 +724,17 @@ export default function DetalleRecetaPage() {
           </div>
         </FadeIn>
       </div>
+      {fotoAmpliada && receta.imagen_url && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10" style={{ background: 'rgba(0,0,0,0.88)' }}
+          onClick={() => setFotoAmpliada(false)} role="dialog" aria-modal="true" aria-label={receta.nombre}>
+          <img src={receta.imagen_url} alt={receta.nombre} className="max-h-full max-w-full rounded-xl object-contain shadow-2xl" onClick={e => e.stopPropagation()} />
+          <button type="button" onClick={() => setFotoAmpliada(false)} aria-label="Cerrar"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full"
+            style={{ background: 'rgba(255,255,255,0.12)', color: '#fff' }}>
+            <X size={20} />
+          </button>
+        </div>
+      )}
       {enBandeja && (
         <BarraRevision id={id} pendiente={receta.estado === 'en_revision' || receta.estado === 'borrador'} returnTo={returnTo} accion={handleEstado} />
       )}
