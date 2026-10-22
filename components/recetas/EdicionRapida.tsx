@@ -10,8 +10,10 @@ import { TAG_REPORTE_CLIENTE } from '@/lib/recetas/reportes'
 type Datos = { id: string; nombre: string; descripcion?: string | null; tiempo_prep_min?: number | null; categoria?: string | null; tags?: string[] }
 
 /** Edición en el sitio de campos sin efecto en macros. Ingredientes y gramos siguen en el editor completo. */
-export default function EdicionRapida({ receta, onGuardado }: { receta: Datos; onGuardado: () => void }) {
-  const [abierto, setAbierto] = useState(false)
+export default function EdicionRapida({ receta, onGuardado, control }: { receta: Datos; onGuardado: () => void; control?: { abierto: boolean; set: (v: boolean) => void } }) {
+  const [abiertoInterno, setAbiertoInterno] = useState(false)
+  const abierto = control ? control.abierto : abiertoInterno
+  const setAbierto = control ? control.set : setAbiertoInterno
   const [nombre, setNombre] = useState(receta.nombre)
   const [descripcion, setDescripcion] = useState(receta.descripcion ?? '')
   const [tiempo, setTiempo] = useState(String(receta.tiempo_prep_min ?? ''))
@@ -42,6 +44,7 @@ export default function EdicionRapida({ receta, onGuardado }: { receta: Datos; o
 
   const campo = { background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }
   if (!abierto) {
+    if (control) return null
     return (
       <button onClick={() => setAbierto(true)} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
         <Pencil size={13} /> Editar rápido
