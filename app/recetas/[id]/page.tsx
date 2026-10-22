@@ -386,17 +386,17 @@ export default function DetalleRecetaPage() {
   const bloqueAptitudes = intolerancias.length > 0 ? (() => {
           const { aptaPara, contiene } = resumenAptitud(intolerancias)
           if (aptaPara.length === 0 && contiene.length === 0) return null
-          const rotulo = 'text-xs font-semibold uppercase tracking-widest shrink-0'
+          const rotulo = 'text-[10px] font-semibold uppercase tracking-widest shrink-0'
           return (
             <FadeIn delay={0.3}>
               <div
-                className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-2"
+                className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1.5"
               >
                 {aptaPara.length > 0 && (
                   <>
                     <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Apta para</span>
                     {aptaPara.map(t => (
-                      <span key={t} className="text-sm font-medium px-3 py-1 rounded-md" style={{ background: 'rgba(34,197,94,0.07)', color: 'rgb(21,128,61)', border: '1px solid rgba(34,197,94,0.18)' }}>{t}</span>
+                      <span key={t} className="text-xs font-medium px-2 py-0.5 rounded" style={{ background: 'rgba(34,197,94,0.07)', color: 'rgb(21,128,61)', border: '1px solid rgba(34,197,94,0.18)' }}>{t}</span>
                     ))}
                   </>
                 )}
@@ -405,7 +405,7 @@ export default function DetalleRecetaPage() {
                     {aptaPara.length > 0 && <span className="mx-1" style={{ color: 'var(--border)' }}>·</span>}
                     <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Contiene</span>
                     {contiene.map(t => (
-                      <span key={t} className="text-sm font-medium px-3 py-1 rounded-md" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
+                      <span key={t} className="text-xs font-medium px-2 py-0.5 rounded" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
                     ))}
                   </>
                 )}
@@ -415,7 +415,7 @@ export default function DetalleRecetaPage() {
         })() : null
 
   const fotoReceta = receta.imagen_url ? (
-    <div className="relative aspect-square w-full max-w-[20rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
+    <div className="relative aspect-square w-full max-w-[22rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
       <img
         src={receta.imagen_url}
         alt={receta.nombre}
@@ -513,7 +513,7 @@ export default function DetalleRecetaPage() {
           <div className="min-w-0 lg:col-span-2">
         {/* ═══════ TÍTULO + META ═══════ */}
         <FadeIn delay={0.1}>
-          <div className={`coach-recipe-detail__intro mb-4 grid gap-5 ${receta.imagen_url ? 'sm:grid-cols-[12rem_minmax(0,1fr)] lg:grid-cols-[13rem_minmax(0,1fr)_23rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_23rem]'}`} style={{ padding: '1.1rem' }}>
+          <div className={`coach-recipe-detail__intro mb-4 grid gap-5 ${receta.imagen_url ? 'sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)_23rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_23rem]'}`} style={{ padding: '1.1rem' }}>
             {fotoReceta}
             <div className="min-w-0">
             <div className="flex items-start gap-3 flex-wrap mb-2">
@@ -523,9 +523,9 @@ export default function DetalleRecetaPage() {
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
             )}
             {/* Etiquetas: misma forma para tipo, cocción, dificultad y aptitudes */}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
               {[receta.categoria, receta.tipo_coccion, receta.dificultad].filter(Boolean).map(t => (
-                <span key={t} className="inline-flex items-center rounded-md border px-3 py-1 text-sm font-medium" style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>{t}</span>
+                <span key={t} className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium" style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>{t}</span>
               ))}
             </div>
             {bloqueAptitudes}
