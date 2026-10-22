@@ -5,7 +5,7 @@ import { fetchJson, claveReceta } from '@/lib/cliente/cache-swr'
 import FotoReceta from '@/components/PortalCliente/FotoReceta'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Loader2, AlertTriangle, UtensilsCrossed, PlayCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, AlertTriangle, UtensilsCrossed, PlayCircle } from 'lucide-react'
 import { BotonFavorita } from '@/components/PortalCliente/BotonFavorita'
 import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
 import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
@@ -17,6 +17,7 @@ import { formatoCantidad } from '@/lib/recetas/equivalencia'
 import CompartirSesion from '@/components/training/CompartirSesion'
 import { dibujarPlatoTernario } from '@/lib/entrenos/tarjeta-story'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
+import { resumenAptitud } from '@/lib/recetas-constants'
 
 interface RecetaDetalle {
   id: string
@@ -33,6 +34,9 @@ interface RecetaDetalle {
   grasas?: number | null
   tiempo_prep_min?: number | null
   categoria?: string | null
+  tipo_coccion?: string | null
+  dificultad?: string | null
+  intolerancias?: string[] | null
 }
 
 interface IngredienteConAlimento {
@@ -100,6 +104,39 @@ export default function RecetaClientePage() {
     : nVista !== porciones
   const pasos = parsePasos(receta?.instrucciones).map(p => cantidadesDistintas ? { ...p, content: quitarCifras(p.content), title: p.title ? quitarCifras(p.title) : p.title } : p)
 
+  // Datos de la receta en el mismo lenguaje editorial que el coach, en versión corta para móvil
+  const { aptaPara, contiene } = resumenAptitud(receta?.intolerancias)
+  const datosReceta = ([['Tiempo', receta?.tiempo_prep_min ? `${receta.tiempo_prep_min} min` : null], ['Plato', receta?.categoria], ['Cocción', receta?.tipo_coccion], ['Dificultad', receta?.dificultad]] as const).filter(([, v]) => Boolean(v)) as unknown as [string, string][]
+  const rotulo = 'font-data text-[10px] font-medium uppercase tracking-[0.14em]'
+  const linea = { borderColor: 'var(--editorial-rule, var(--border))' }
+  const punto = (color: string) => <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: color }} aria-hidden />
+  const datosFicha = (datosReceta.length > 0 || aptaPara.length > 0 || contiene.length > 0) ? (
+    <dl className="mt-3 flex flex-col divide-y border-y text-sm" style={{ ...linea, color: 'var(--text-secondary)' }}>
+      {datosReceta.length > 0 && (
+        <div className="flex gap-x-6 py-2.5" style={linea}>
+          {datosReceta.map(([etiqueta, valor]) => (
+            <div key={etiqueta} className="flex flex-col">
+              <dt className={rotulo} style={{ color: 'var(--text-muted)', fontSize: '9px' }}>{etiqueta}</dt>
+              <dd className="mt-0.5">{valor}</dd>
+            </div>
+          ))}
+        </div>
+      )}
+      {aptaPara.length > 0 && (
+        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-3 py-2.5" style={linea}>
+          <dt className={rotulo} style={{ color: 'var(--text-muted)' }}>Apta para</dt>
+          <dd className="flex flex-wrap gap-x-4 gap-y-1">{aptaPara.map(t => <span key={t}>{punto('rgb(34,197,94)')}{t}</span>)}</dd>
+        </div>
+      )}
+      {contiene.length > 0 && (
+        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-3 py-2.5" style={linea}>
+          <dt className={rotulo} style={{ color: 'var(--text-muted)' }}>Contiene</dt>
+          <dd className="flex flex-wrap gap-x-4 gap-y-1">{contiene.map(t => <span key={t}>{punto('rgb(239,68,68)')}{t}</span>)}</dd>
+        </div>
+      )}
+    </dl>
+  ) : null
+
   return (
     <div className="client-recipe-editorial min-h-screen pb-8" style={{ background: 'var(--bg)' }}>
       <div
@@ -155,15 +192,7 @@ export default function RecetaClientePage() {
 
             <div>
               <h1 className="text-xl font-bold leading-tight" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
-              {receta.descripcion && (
-                <p className="text-sm mt-1.5" style={{ color: 'var(--text-muted)' }}>{receta.descripcion}</p>
-              )}
-              <div className="flex items-center gap-3 mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                {receta.tiempo_prep_min ? (
-                  <span className="inline-flex items-center gap-1"><Clock size={12} /> {receta.tiempo_prep_min} min</span>
-                ) : null}
-                {receta.porciones ? <span>{receta.porciones} {receta.porciones === 1 ? 'porción' : 'porciones'}</span> : null}
-              </div>
+              {datosFicha}
               <CompartirSesion generar={(tema) => dibujarPlatoTernario({
                 nombre: receta.nombre,
                 kcal: racion?.total.kcal ?? receta.kcal ?? 0,
@@ -175,9 +204,9 @@ export default function RecetaClientePage() {
               {/* Solo llega si el coach ha activado el vídeo para este cliente */}
               {receta.url_origen && /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(receta.url_origen) && (
                 <a href={receta.url_origen} target="_blank" rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}>
-                  <PlayCircle size={15} /> Ver vídeo original
+                  className="font-data mt-3 inline-flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.14em]"
+                  style={{ color: 'var(--text-muted)' }}>
+                  <PlayCircle size={14} /> Vídeo original
                 </a>
               )}
             </div>
@@ -193,13 +222,8 @@ export default function RecetaClientePage() {
                   </p>
                 )}
                 {porciones > 1 && (
-                  <p className="text-sm mt-3" style={{ color: 'var(--text)' }}>
-                    Esta receta está pensada para <strong>{porciones} raciones</strong>. Tú comes <strong>1 ración</strong>: la lista de ingredientes de abajo ya es la tuya.
-                  </p>
-                )}
-                {porciones > 1 && (
                   <div className="mt-3">
-                    <p className="text-[11px] mb-1.5" style={{ color: 'var(--text-muted)' }}>¿Cuánto vas a cocinar?</p>
+                    <p className="font-data mb-1.5 text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>Cocinar para</p>
                     <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
                       {[1, porciones].map(n => (
                         <button key={n} onClick={() => setCocinarPara(n)} className="flex-1 px-3 py-2 text-xs font-semibold"
@@ -219,7 +243,6 @@ export default function RecetaClientePage() {
             ) : (
               <>
                 <MacroTriangulo kcal={receta.kcal ?? 0} p={receta.proteinas ?? 0} c={receta.carbohidratos ?? 0} g={receta.grasas ?? 0} />
-                <p className="text-center text-[11px] -mt-1" style={{ color: 'var(--text-muted)' }}>Valores por ración</p>
                 <SelectorRaciones original={porciones} valor={nVista} onChange={setRacionesVista} kcalRacion={receta.kcal} />
               </>
             )}
@@ -242,9 +265,6 @@ export default function RecetaClientePage() {
 
                 {seccion === 'ingredientes' && ingredientesFormato.length > 0 && (
                   <div>
-                    <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                      {racion ? `Cantidades para ${k === 1 ? 'tu ración' : `${k} raciones`}.` : `Cantidades para ${nVista} ${nVista === 1 ? 'ración' : 'raciones'}.`}
-                    </p>
                     <IngredientChecklist ingredientes={ingredientesFormato} sinCabecera />
                   </div>
                 )}
@@ -255,6 +275,9 @@ export default function RecetaClientePage() {
                       <p className="text-xs rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                         Los pasos no llevan cantidades: usa siempre las de la lista de ingredientes, que están ajustadas {racion ? 'a tu ración' : `a ${nVista} ${nVista === 1 ? 'ración' : 'raciones'}`}.
                       </p>
+                    )}
+                    {receta.descripcion && (
+                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
                     )}
                     <StepByStep pasos={pasos} sinCabecera />
                   </>
