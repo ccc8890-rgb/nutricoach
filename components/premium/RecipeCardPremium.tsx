@@ -125,13 +125,13 @@ export function RecipeCardPremium({
                         {aptaPara.length > 0 && (
                             <div>
                                 <dt>Apta</dt>
-                                <dd><i style={{ background: 'rgb(34,197,94)' }} aria-hidden />{aptaPara.join(' · ')}</dd>
+                                <dd><i style={{ background: 'rgb(34,197,94)' }} aria-hidden />{aptaPara.map(t => <span key={t}>{t}</span>)}</dd>
                             </div>
                         )}
                         {contiene.length > 0 && (
                             <div>
                                 <dt>Contiene</dt>
-                                <dd><i style={{ background: 'rgb(239,68,68)' }} aria-hidden />{contiene.join(' · ')}</dd>
+                                <dd><i style={{ background: 'rgb(239,68,68)' }} aria-hidden />{contiene.map(t => <span key={t}>{t}</span>)}</dd>
                             </div>
                         )}
                     </dl>
