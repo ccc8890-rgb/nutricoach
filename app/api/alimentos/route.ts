@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { esProductoNoComestible } from '@/lib/scraping/guard-no-comestible'
+import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 /**
  * UNIFICADO: La lógica de "qué es no comestible" está únicamente en
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
             .eq('es_comestible', true)  // ocultar no-comestibles
 
         if (q) {
-            query = query.ilike('nombre', `%${q}%`)
+            query = aplicarBusquedaNombre(query, q)
         }
 
         if (categoria) query = query.eq('categoria', categoria)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 async function isCoach(db: ReturnType<typeof createServiceSupabase>, userId: string) {
   const { data } = await db
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     .order('nombre')
     .limit(500)
 
-  if (query) q = q.ilike('nombre', `%${query}%`)
+  if (query) q = aplicarBusquedaNombre(q, query)
   if (grupo) q = q.eq('grupo_muscular', grupo)
 
   const { data, error } = await q

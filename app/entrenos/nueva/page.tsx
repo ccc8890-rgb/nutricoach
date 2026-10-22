@@ -10,6 +10,7 @@ import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio,
 import { DIAS_SEMANA } from '@/lib/utils'
 import { crearBuilderLoadSummary, duplicarSesionBuilder, moverSesionBuilder, type BuilderSessionDraft } from '@/lib/training/builder'
 import { descansoRelevante } from '@/lib/entrenos/descanso-visible'
+import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 type SesionLocal = BuilderSessionDraft
 
@@ -61,7 +62,7 @@ function NuevoEntrenoForm() {
   useEffect(() => {
     if (!queryEjercicio || queryEjercicio.length < 2) { setResultados([]); return }
     const timer = setTimeout(async () => {
-      const { data } = await supabase.from('ejercicios').select('*').ilike('nombre', `%${queryEjercicio}%`).limit(10)
+      const { data } = await aplicarBusquedaNombre(supabase.from('ejercicios').select('*'), queryEjercicio).limit(10)
       setResultados(data ?? [])
     }, 300)
     return () => clearTimeout(timer)

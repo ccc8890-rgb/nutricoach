@@ -256,7 +256,7 @@ export default function EditarDietaPage() {
     setBuscando(true)
     const timer = setTimeout(async () => {
       if (fuente === 'local') {
-        const { data } = await supabase.from('alimentos').select('*').eq('es_comestible', true).ilike('nombre', `%${queryAlimento}%`).limit(12)
+        const { data } = await aplicarBusquedaNombre(supabase.from('alimentos').select('*').eq('es_comestible', true), queryAlimento).limit(12)
         setResultados(data ?? [])
       } else {
         const res = await fetch(`/api/off?q=${encodeURIComponent(queryAlimento)}`)
