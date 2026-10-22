@@ -5,6 +5,7 @@ import { objetivosPorDia } from '@/lib/nutricion/objetivo-dia'
 import { materializarComidasRecurrentes } from '@/lib/nutricion/materializar-comidas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { tipoPlatoCompatibleConSlot, type SlotComida } from '@/lib/tipos-comida'
+import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 type ComidaFila = {
   id: string; nombre: string; dia_semana: string | null; orden: number; receta_id: string | null
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tipo_receta, tiempo_prep_min, verificacion, contenido_estado')
       .eq('estado', 'aprobada').gt('kcal', 0).limit(200)
     const texto = url.searchParams.get('q')?.trim()
-    if (texto) q = q.ilike('nombre', `%${texto}%`)
+    if (texto) q = aplicarBusquedaNombre(q, texto)
     // Modo postres: recetas dulces o de picoteo para añadir como complemento de una comida
     const soloPostres = url.searchParams.get('postres') === '1'
     // Modo platos: cualquier receta aprobada (guarniciones primero) para sumar varios platos a una misma comida

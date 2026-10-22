@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
+import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
 
 // Mismo mapeo restricción → alérgenos EU que ya usan lib/plan-recetas.ts
 // y app/api/recetas/sugeridas/route.ts para generar planes. Se duplica
@@ -75,17 +76,10 @@ export async function GET(
 
 
   // Búsqueda por palabras sueltas y sin tildes: «tarta chocolate» encuentra «Tarta de chocolate con…» y «limon» encuentra «limón».
-  const sinTildes = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  const palabras = sinTildes(q).split(/\s+/).filter(w => w.length > 0)
-  // Las palabras de relleno («de», «con», «y») no cuentan salvo que sean lo único escrito
-  const clave = palabras.filter(w => w.length > 2)
-  const buscadas = clave.length > 0 ? clave : palabras
+  const buscadas = palabrasDeBusqueda(q)
 
   const filtradas = recetas.filter(r => {
-    if (buscadas.length > 0) {
-      const nombre = sinTildes(r.nombre ?? '')
-      if (!buscadas.every(w => nombre.includes(w))) return false
-    }
+    if (!coincidePalabras(r.nombre, buscadas)) return false
     const intol: string[] = r.intolerancias ?? []
     if (alergenosExcluir.length && alergenosExcluir.some(a => intol.includes(a))) return false
     if (tagsPositivosRequeridos.length && !tagsPositivosRequeridos.every(t => intol.includes(t))) return false

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { inferirMomentoDesdeTipo, requiereMomentoExacto, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
+import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 // Mapeo: restricción del onboarding → alérgenos EU que la receta NO debe contener
 // Modelo positivo: excluimos recetas donde intolerancias SOLAPA con los alérgenos del cliente
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
                 .gte('proteinas', Math.round(proteinas * (1 - tolerancia)))
         }
         if (qText) {
-            q = q.ilike('nombre', `%${qText}%`)
+            q = aplicarBusquedaNombre(q, qText)
         }
         if (extraFilters?.tipos?.length) {
             q = q.in('tipo_plato', extraFilters.tipos)

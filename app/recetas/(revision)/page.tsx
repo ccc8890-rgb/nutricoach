@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
 import ReportarProblema from '@/components/recetas/ReportarProblema'
 import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
+import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
 
 const METODOS_COCCION = [
   { value: 'Todos', label: 'Todos' },
@@ -130,17 +131,20 @@ export default function RecetasPage() {
   }, [])
 
 
+  const palabrasBusqueda = useMemo(() => palabrasDeBusqueda(busqueda), [busqueda])
+
   const filtradas = useMemo(() => {
     return recetas.map(r => ({ ...r, ...normalizarReceta(r) })).filter(r => {
-      const q = busqueda.toLowerCase()
-      const matchBusqueda = !q || r.nombre.toLowerCase().includes(q)
-        || (Array.isArray(r.tags) && r.tags.some((t: string) => t.toLowerCase().includes(q)))
-        || (r.descripcion?.toLowerCase().includes(q) ?? false)
-        || (Array.isArray(r.receta_ingredientes) && r.receta_ingredientes.some(ing => {
+      // Palabras sueltas y sin tildes sobre nombre, etiquetas, descripción e ingredientes juntos
+      const matchBusqueda = palabrasBusqueda.length === 0 || coincidePalabras([
+        r.nombre,
+        Array.isArray(r.tags) ? r.tags.join(' ') : '',
+        r.descripcion ?? '',
+        Array.isArray(r.receta_ingredientes) ? r.receta_ingredientes.map(ing => {
           const alimento = Array.isArray(ing.alimento) ? ing.alimento[0] : ing.alimento
-          return (ing.nombre_libre?.toLowerCase().includes(q) ?? false)
-            || (alimento?.nombre?.toLowerCase().includes(q) ?? false)
-        }))
+          return `${ing.nombre_libre ?? ''} ${alimento?.nombre ?? ''}`
+        }).join(' ') : '',
+      ].join(' '), palabrasBusqueda)
       const tagLower = tagFilter?.toLowerCase() ?? ''
       const matchTag = !tagFilter || (
         (Array.isArray(r.tags) && r.tags.some(t => t.toLowerCase() === tagLower)) ||
@@ -204,7 +208,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter])
+  }, [recetas, palabrasBusqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter])
 
   // Sugerencias de tags que coinciden con la búsqueda actual
   const tagSugeridos = useMemo(() => {

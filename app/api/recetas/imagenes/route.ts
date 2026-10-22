@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 type FiltroImagen = 'pendientes' | 'sin_imagen' | 'sospechosas' | 'ai' | 'scraped' | 'aprobadas' | 'rechazadas' | 'todas'
 
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
     .limit(limit)
 
   if (q) {
-    query = query.ilike('nombre', `%${q}%`)
+    query = aplicarBusquedaNombre(query, q)
   }
 
   // Pendiente = receta aún por revisar con su foto sin aprobar, o foto que el coach marcó «revisar»/«rechazada».

@@ -4,6 +4,7 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 import { marcarFotoRevisada } from '@/lib/recetas/imagen-revision'
 import { inicioFinDiaMadridUtc, normalizarTareaRevision, type TareaRevision } from '@/lib/recetas/revision'
+import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 export const dynamic = 'force-dynamic'
 
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
       eq: (column: string, value: string) => T
     }>(query: T): T => {
       let result = query
-      if (filtros.q) result = result.ilike('nombre', `%${filtros.q}%`)
+      if (filtros.q) result = aplicarBusquedaNombre(result, filtros.q)
       if (filtros.nivel) result = result.eq('nivel_fit', filtros.nivel)
       if (filtros.uso) result = result.eq('tipo_uso', filtros.uso)
       if (filtros.apta) result = result.eq('apta_cliente', filtros.apta)

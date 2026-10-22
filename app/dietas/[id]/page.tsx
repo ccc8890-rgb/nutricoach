@@ -16,6 +16,7 @@ import dynamic from 'next/dynamic'
 const ListaCompra = dynamic(() => import('@/components/ListaCompra'), { ssr: false })
 
 import { ResultadoBusqueda, RecetaConIngredientes, AlimentoEnComida, ComidaLocal, RecetaEquivalente, Fuente, DIAS_SEMANA, DIA_DEFAULT, DIA_ABR, diaComida, macroStatus, AuditIssue, auditTone, scoreAuditoria, rangoMacro, MacroDial, macroPctFromPlan, gramsFromPct, MacroDistributionBar, CollapsibleModule } from '@/components/diet/dieta-editor-utils'
+import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 export default function EditarDietaPage() {
   const { id } = useParams<{ id: string }>()
@@ -278,7 +279,7 @@ export default function EditarDietaPage() {
       let q = supabase.from('recetas').select('id, nombre, categoria, imagen_url, porciones')
         .eq('estado', 'aprobada')
       if (tagReceta) q = q.contains('tags', [tagReceta])
-      if (queryReceta.length >= 2) q = q.ilike('nombre', `%${queryReceta}%`)
+      if (queryReceta.length >= 2) q = aplicarBusquedaNombre(q, queryReceta)
       const { data } = await q.order('nombre').limit(20)
       setResultadosRecetas(data ?? [])
       setBuscandoRecetas(false)
