@@ -334,13 +334,22 @@ export default function EditarRecetaPage() {
                 <div className="flex items-center gap-3 mb-8">
                     <Link href={volverReceta} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
                     <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Editar receta</h1>
-                    {estadoReceta === 'aprobada' && (
-                        <button type="button" onClick={() => setReportando(true)}
-                            className="ml-auto rounded-lg border px-3 py-1.5 text-sm font-medium"
-                            style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>
-                            Pasar a revisión
+                    <div className="ml-auto flex items-center gap-2">
+                        {estadoReceta === 'aprobada' && (
+                            <button type="button" onClick={() => setReportando(true)}
+                                className="rounded-lg border px-3 py-1.5 text-sm font-medium"
+                                style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>
+                                Pasar a revisión
+                            </button>
+                        )}
+                        <button
+                            onClick={guardar}
+                            disabled={!form.nombre.trim() || guardando}
+                            className="btn-primary"
+                        >
+                            {guardando ? 'Guardando…' : 'Guardar cambios'}
                         </button>
-                    )}
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-6">
