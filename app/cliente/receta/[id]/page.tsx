@@ -198,7 +198,7 @@ export default function RecetaClientePage() {
                 p: racion?.total.p ?? receta.proteinas ?? 0,
                 c: racion?.total.c ?? receta.carbohidratos ?? 0,
                 g: racion?.total.g ?? receta.grasas ?? 0,
-                detalle: receta.tiempo_prep_min ? `${receta.tiempo_prep_min} min` : null,
+                detalle: null,
               }, tema)} />
               {/* Solo llega si el coach ha activado el vídeo para este cliente */}
               {receta.url_origen && /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(receta.url_origen) && (
