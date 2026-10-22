@@ -49,6 +49,7 @@ interface IngredienteDb {
   alimento_id: string | null
   nombre_libre: string | null
   cantidad_gramos: number | null
+  es_opcional?: boolean | null
   alimentos?:
     | { nombre: string | null; calorias: number | null }
     | { nombre: string | null; calorias: number | null }[]
@@ -108,7 +109,7 @@ export async function auditarRecetaProfesional(
       .single(),
     srv
       .from('receta_ingredientes')
-      .select('id, alimento_id, nombre_libre, cantidad_gramos, alimentos!left(nombre, calorias)')
+      .select('id, alimento_id, nombre_libre, cantidad_gramos, es_opcional, alimentos!left(nombre, calorias)')
       .eq('receta_id', recetaId),
   ])
 
@@ -116,7 +117,8 @@ export async function auditarRecetaProfesional(
   if (ingredientesError) throw new Error(ingredientesError.message)
 
   const typedReceta = receta as RecetaDb
-  const typedIngredientes = (ingredientes || []) as IngredienteDb[]
+  // Los ingredientes opcionales («endulzante al gusto») no cuentan para la calidad: no llevan cantidad ni entran en macros
+  const typedIngredientes = ((ingredientes || []) as IngredienteDb[]).filter(i => !i.es_opcional)
   const alimentoIds = typedIngredientes.map(i => i.alimento_id).filter((id): id is string => Boolean(id))
   const { data: precios, error: preciosError } = alimentoIds.length
     ? await srv.from('mejores_precios_por_alimento').select('alimento_id').in('alimento_id', alimentoIds)

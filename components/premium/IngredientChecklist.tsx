@@ -8,6 +8,8 @@ interface IngredientItem {
     cantidad: string
     /** Fase de la receta (bizcocho, salsa…); sin ella, lista única */
     grupo?: string | null
+    /** «Al gusto»: sin cantidad ni kcal, en gris */
+    opcional?: boolean
     kcal?: number
     proteinas?: number
     carbohidratos?: number
@@ -54,14 +56,14 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
                 {fase.items.map((ing) => (
                     <li key={ing.id} className="grid grid-cols-[4.5rem_minmax(0,1fr)_4.5rem] items-baseline gap-x-4 px-1 py-2.5">
                         {/* Cantidad a la izquierda, alineada como en un libro de recetas */}
-                        <span className="text-right text-base font-semibold tabular-nums" style={{ color: 'var(--text)' }}>
-                            {ing.cantidad}
+                        <span className={`text-right tabular-nums ${ing.opcional ? 'text-sm' : 'text-base font-semibold'}`} style={{ color: ing.opcional ? 'var(--text-muted)' : 'var(--text)' }}>
+                            {ing.opcional ? 'al gusto' : ing.cantidad}
                         </span>
-                        <span className="text-lg font-medium leading-snug" style={{ color: 'var(--text)' }}>
-                            {ing.nombre}
+                        <span className="text-lg font-medium leading-snug" style={{ color: ing.opcional ? 'var(--text-muted)' : 'var(--text)' }}>
+                            {ing.nombre}{ing.opcional && <span className="ml-2 text-sm font-normal">(opcional)</span>}
                         </span>
-                        {ing.kcal !== undefined && (
-                            <span className="text-right text-sm tabular-nums whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                        {!ing.opcional && ing.kcal !== undefined && (
+                            <span className="text-sm tabular-nums whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
                                 {Math.round(ing.kcal)} kcal
                             </span>
                         )}

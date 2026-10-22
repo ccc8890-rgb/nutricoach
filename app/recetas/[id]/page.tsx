@@ -63,6 +63,7 @@ interface IngredienteConAlimento {
   unidad_display?: string | null
   orden?: number
   grupo?: string | null
+  es_opcional?: boolean | null
   alimento?: Alimento | null
 }
 
@@ -284,7 +285,8 @@ export default function DetalleRecetaPage() {
   const checklistItems = ordenarPorFases(ingredientes.map(ing => ({
     id: ing.id,
     grupo: ing.grupo ?? null,
-    nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
+    opcional: Boolean(ing.es_opcional),
+    nombre: ing.es_opcional ? (ing.nombre_libre ?? ing.alimento?.nombre ?? 'Ingrediente') : (ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente'),
     cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
     kcal: ing.alimento ? Math.round(calcularMacrosPorCantidad(
       ing.alimento.calorias, ing.alimento.proteinas, ing.alimento.carbohidratos, ing.alimento.grasas, ing.alimento.fibra ?? 0, ing.cantidad_gramos

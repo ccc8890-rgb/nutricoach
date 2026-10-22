@@ -46,6 +46,7 @@ interface IngredienteConAlimento {
   cantidad_original?: number | null
   unidad_display?: string | null
   grupo?: string | null
+  es_opcional?: boolean | null
   alimento?: { nombre: string } | null
 }
 
@@ -94,7 +95,8 @@ export default function RecetaClientePage() {
     ? racion.plato.ingredientes.map((ing, i) => ({ id: `r${i}`, nombre: ing.nombre, cantidad: `${Math.round(ing.gramos * k)}g`, grupo: grupoPorNombre.get(normalizar(ing.nombre)) ?? null }))
     : ingredientes.map(ing => ({
         id: ing.id,
-        nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
+        nombre: ing.es_opcional ? (ing.nombre_libre ?? ing.alimento?.nombre ?? 'Ingrediente') : (ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente'),
+        opcional: Boolean(ing.es_opcional),
         cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
         grupo: ing.grupo ?? null,
       }))
