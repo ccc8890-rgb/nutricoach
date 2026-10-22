@@ -21,6 +21,8 @@ cloudinary.config({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: proc
 const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
 
 const APLICA = process.argv.includes('--aplica')
+const FORZAR = process.argv.includes('--forzar')
+const ID = process.argv.find(a => a.startsWith('--id='))?.split('=')[1]
 const LIMITE = Number(process.argv.find(a => a.startsWith('--limite='))?.split('=')[1] ?? 10)
 const SALIDA = 'salidas/fotos-corregidas'
 const ANCHOS = [96, 384, 640, 1080]   // igual que lib/cloudinary-loader.ts
@@ -36,12 +38,20 @@ function pendientes(notas) {
   return { aspectos, hechos }
 }
 
+// Prompt realista (22-10-2026): solo los ingredientes de la receta con sus proporciones, sin atrezo inventado y con aspecto de foto casera
+// (las fotos «falsas» de IA se delatan por guarniciones/props que no están en la receta y por el acabado de estudio)
 const prompt = (r) => {
-  const ings = (r.receta_ingredientes || []).filter(i => Number(i.cantidad_gramos) > 0).map(i => i.nombre_libre).filter(Boolean).slice(0, 6).join(', ')
-  return `Photorealistic food photo of "${r.nombre}" as plated by a Spanish nutrition coach for Instagram.
-Key ingredients clearly visible: ${ings}.
-Simple ceramic plate or bowl on a wooden table or white countertop, home kitchen. Natural window light, soft and diffused, not dramatic. Overhead or 45 degree angle, slightly imperfect home plating, warm Mediterranean tones. Square 1:1 format.
-No text, no watermarks, no people, no hands, no logos.`
+  const ings = (r.receta_ingredientes || []).filter(i => Number(i.cantidad_gramos) > 0 && i.nombre_libre)
+    .sort((a, b) => b.cantidad_gramos - a.cantidad_gramos).slice(0, 8)
+  const total = ings.reduce((t, i) => t + Number(i.cantidad_gramos), 0) || 1
+  const lista = ings.map(i => `${i.nombre_libre} (~${Math.round(100 * i.cantidad_gramos / total)}% of the dish)`).join(', ')
+  return `Candid, slightly imperfect smartphone photo of a home-cooked dish: "${r.nombre}".
+Visible food, and nothing else: ${lista}. Show them in roughly those proportions.
+One everyday serving on a plain plate or bowl (white or stoneware), like a person plating their own lunch, not a restaurant.
+STRICTLY no garnish, herbs, sauces, side dishes, bread, drinks, spice bowls or any food/prop that is not in the list above.
+Real food texture: uneven cuts, slight oil sheen, a little browning where cooked, a few crumbs or sauce smears on the plate rim.
+Light: ordinary window light, a bit uneven, natural soft shadows. 45 degree angle, slightly off-centre, simple kitchen table or counter, maybe a plain cloth. Not a stock photo: no studio look, no glossy styling, no over-saturated colours, no perfect symmetry.
+No text, no watermarks, no people, no hands, no logos. Square 1:1.`
 }
 
 async function generar(p, reintentos = 0) {
@@ -72,8 +82,11 @@ const { data: marcadas, error } = await db.from('recetas')
   .contains('tags', ['Corregir']).in('estado', ['en_revision', 'borrador'])
 if (error) { console.error(error.message); process.exit(1) }
 
-const lista = (marcadas ?? []).map(r => ({ r, ...pendientes(r.notas_coach) }))
-  .filter(x => x.aspectos.includes('foto') && !x.hechos.includes('foto regenerada'))
+let { data: forzadas } = FORZAR && ID ? await db.from('recetas')
+  .select('id, nombre, estado, tags, notas_coach, imagen_url, imagen_tipo, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos)').in('id', ID.split(',')) : { data: null }
+const lista = FORZAR && ID ? (forzadas ?? []).map(r => ({ r, aspectos: ['foto', 'otro'], hechos: '' }))
+  : (marcadas ?? []).map(r => ({ r, ...pendientes(r.notas_coach) }))
+    .filter(x => x.aspectos.includes('foto') && !x.hechos.includes('foto regenerada'))
 console.log(`Marcadas «Corregir» con foto pendiente: ${lista.length} · a procesar: ${Math.min(lista.length, LIMITE)} · coste ~${(Math.min(lista.length, LIMITE) * 0.034).toFixed(2)} $`)
 if (!APLICA) { lista.forEach(({ r }, i) => console.log(`  ${i + 1}. ${r.nombre}`)); console.log('\nSimulación. Añade --aplica.'); process.exit(0) }
 
