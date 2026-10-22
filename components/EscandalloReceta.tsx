@@ -184,6 +184,7 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
                 )}
             </div>
 
+            <div className="grid items-start gap-x-8 gap-y-5 lg:grid-cols-2">
             {/* Comparativa por supermercado */}
             {data.comparativa_supermercados.length > 0 && (
                 <div>
@@ -317,6 +318,7 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
                         )
                     })}
                 </div>
+            </div>
             </div>
 
             {sinPrecio.length > 0 && (

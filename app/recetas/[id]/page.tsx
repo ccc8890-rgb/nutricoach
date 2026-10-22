@@ -779,7 +779,10 @@ export default function DetalleRecetaPage() {
           </FadeIn>
         )}
 
-        {/* ═══════ ESCANDALLO DE COSTES ═══════ */}
+          </div>
+        </div>
+
+        {/* ═══════ ESCANDALLO DE COSTES (a todo el ancho, debajo de la ficha) ═══════ */}
         {!isClientView && (
         <FadeIn delay={0.42}>
           <div
@@ -794,9 +797,6 @@ export default function DetalleRecetaPage() {
           </div>
         </FadeIn>
         )}
-
-          </div>
-        </div>
 
         {/* ═══════ FOOTER ═══════ */}
         <FadeIn delay={0.45}>

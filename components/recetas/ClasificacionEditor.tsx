@@ -52,11 +52,11 @@ export default function ClasificacionEditor({ recetaId, clasificacion, manual, o
   return (
     <div>
       <div className="flex items-start gap-4">
-        <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+        <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-4">
           {CAMPOS.map(c => (
             <div key={c.clave} className="min-w-0">
               <dt className="coach-recipe-kicker">{c.etiqueta}</dt>
-              <dd className="mt-1.5 truncate text-sm font-medium capitalize" style={{ color: 'var(--text)' }}>{bonito(clasificacion[c.clave])}</dd>
+              <dd className="mt-1.5 text-sm font-medium capitalize" style={{ color: 'var(--text)' }}>{bonito(clasificacion[c.clave])}</dd>
             </div>
           ))}
         </dl>
