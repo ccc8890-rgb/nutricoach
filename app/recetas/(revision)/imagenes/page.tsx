@@ -388,72 +388,29 @@ export default function RecetasImagenesPage() {
   return (
     <main className="coach-recipe-images min-h-screen layout-main p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
-        <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-              <Images size={16} />
-              Recetario inteligente
-            </div>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl" style={{ color: 'var(--text)' }}>
-              Control visual de recetas
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed md:text-base" style={{ color: 'var(--text-muted)' }}>
-              Revisa qué imágenes parecen reales, cuáles son sospechosas y cuáles necesitan sustitución antes de llegar a la app del cliente.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => load(filtro)}
-              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
-            >
-              <RefreshCw size={15} />
-              Actualizar
-            </button>
-          </div>
-        </header>
 
-        {stats && (
-          <section className="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
-            {[
-              ['Pendientes', stats.pendientes],
-              ['Sospechosas', stats.sospechosas],
-              ['Sin imagen', stats.sin_imagen],
-              ['IA', stats.ai],
-              ['Reales', stats.scraped],
-              ['Aprobadas', stats.aprobadas],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{label}</p>
-                <p className="mt-1 text-xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>{value}</p>
-              </div>
-            ))}
-          </section>
-        )}
 
         <section className="rounded-2xl border p-3 md:p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+            <div className="flex flex-wrap gap-2">
               {filtros.map(item => {
-                const Icon = item.icon
                 const active = filtro === item.id
+                const n = stats ? (stats as Record<string, number | undefined>)[item.id] : undefined
                 return (
                   <button
                     key={item.id}
                     onClick={() => setFiltro(item.id)}
-                    className="flex min-h-[74px] items-start gap-2 rounded-xl border p-2 text-left transition-transform active:scale-[0.98]"
+                    title={item.detail}
+                    className="rounded-full border px-3 py-1.5 text-sm font-medium"
                     style={active
-                      ? { borderColor: 'rgba(163,230,53,0.42)', background: 'rgba(163,230,53,0.10)', color: '#A3E635' }
-                      : { borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                      ? { borderColor: 'var(--primary)', background: 'var(--primary-bg)', color: 'var(--primary)' }
+                      : { borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)' }}
                   >
-                    <Icon size={15} className="mt-0.5 shrink-0" />
-                    <span>
-                      <span className="block text-xs font-semibold leading-tight">{item.label}</span>
-                      <span className="mt-1 block text-[11px] leading-tight" style={{ color: active ? '#A3E635' : 'var(--text-muted)' }}>{item.detail}</span>
-                    </span>
+                    {item.label}{n !== undefined ? ` (${n})` : ''}
                   </button>
                 )
               })}
+              <button onClick={() => load(filtro)} aria-label="Actualizar" className="ml-auto rounded-xl border p-2" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}><RefreshCw size={15} /></button>
             </div>
           </div>
           <div className="mt-3 flex gap-2">

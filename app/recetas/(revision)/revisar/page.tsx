@@ -51,7 +51,6 @@ const ACOTAR: Array<{ id: TareaRevision; label: string }> = [
   { id: 'pendientes', label: 'Todas' },
   { id: 'nuevas_hoy', label: 'Nuevas hoy' },
   { id: 'bloqueos', label: 'Con bloqueos' },
-  { id: 'sin_foto', label: 'Sin foto' },
 ]
 
 function fechaAlta(value: string | null) {

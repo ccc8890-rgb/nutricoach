@@ -9,7 +9,6 @@ import {
   ChefHat,
   Loader2,
   RefreshCw,
-  Search,
   Sparkles,
   Target,
   Trophy,
@@ -697,38 +696,9 @@ export default function CoberturaRecetarioPage() {
   return (
     <main className="coach-recipe-coverage min-h-screen layout-main p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-              <ChefHat size={16} />
-              Recetario inteligente
-            </div>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl" style={{ color: 'var(--text)' }}>
-              Cobertura estratégica
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed md:text-base" style={{ color: 'var(--text-muted)' }}>
-              Mapa de huecos para que el motor IA pueda construir dietas semanales con variedad real, adherencia y recetas healthy atractivas.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={load}
-              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
-            >
-              <RefreshCw size={15} />
-              Actualizar
-            </button>
-            <Link
-              href="/recetas"
-              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
-            >
-              <Search size={15} />
-              Ver biblioteca
-            </Link>
-          </div>
-        </header>
+        <div className="flex justify-end">
+          <button onClick={load} aria-label="Actualizar" className="rounded-xl border p-2" style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}><RefreshCw size={15} /></button>
+        </div>
 
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard icon={BarChart3} label="Recetas aprobadas" value={data.total} detail="Base disponible para planes, swaps y agentes." />

@@ -127,7 +127,6 @@ export default function AuditoriaIngredientesPage() {
     <div className="coach-recipe-audit p-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <div className="flex-1">
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Auditoría de ingredientes</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
             {totalSospechosos > 0
               ? `${totalSospechosos} ingredientes con cantidades sospechosas`
