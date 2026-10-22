@@ -31,6 +31,8 @@ const fas = run('node', ['scripts/organizar-fases-recetas.mjs', '--auto', '--lim
 console.log(lineas(fas, /^\d+ candidatas|^aplicada/))
 const pas = run('node', ['scripts/auditar-pasos-ingredientes.mjs'])
 console.log(pas.split('\n')[0])
+// Nombres de alimentos en uso: minúsculas, duplicados y posibles erratas (solo informa; detalle con node scripts/auditar-nombres-alimentos.mjs)
+console.log(run('node', ['scripts/auditar-nombres-alimentos.mjs']).split('\n')[0])
 const urg = (mat.match(/URGENTES[^:]*: (\d+)/) || [])[1]
 console.log(`Enlaces urgentes pendientes de revisión manual: ${urg ?? '?'}`)
 
