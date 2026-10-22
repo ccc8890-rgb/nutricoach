@@ -6,6 +6,17 @@ import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 // entradas al historial: al abrir algo y volver atrás, la pantalla reaparece tal cual.
 const EVENTO = 'nc:estado-url'
 
+// Las navegaciones de next/link (p. ej. «Por aprobar» ↔ «Reportadas» en la barra de revisión) cambian la URL con pushState,
+// que no dispara ni popstate ni nuestro evento: sin este aviso la pantalla se quedaba con la pestaña anterior.
+if (typeof window !== 'undefined' && !(window as unknown as { __ncPushAviso?: boolean }).__ncPushAviso) {
+  (window as unknown as { __ncPushAviso?: boolean }).__ncPushAviso = true
+  const original = window.history.pushState.bind(window.history)
+  window.history.pushState = (...args: Parameters<History['pushState']>) => {
+    original(...args)
+    queueMicrotask(() => window.dispatchEvent(new Event(EVENTO)))
+  }
+}
+
 function suscribir(avisar: () => void) {
   window.addEventListener('popstate', avisar)
   window.addEventListener(EVENTO, avisar)
