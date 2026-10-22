@@ -372,33 +372,27 @@ export default function DetalleRecetaPage() {
 
   // Etiquetas en el mismo lenguaje que la tarjeta de macros: rótulo mono + valor en texto, sin cajas
   const { aptaPara, contiene } = intolerancias.length > 0 ? resumenAptitud(intolerancias) : { aptaPara: [] as string[], contiene: [] as string[] }
-  const tipos = ([['Plato', receta.categoria], ['Cocción', receta.tipo_coccion], ['Dificultad', receta.dificultad]] as const).filter(([, v]) => Boolean(v)) as unknown as [string, string][]
+  const datosReceta = ([['Plato', receta.categoria], ['Cocción', receta.tipo_coccion], ['Dificultad', receta.dificultad]] as const).filter(([, v]) => Boolean(v)) as unknown as [string, string][]
   const rotuloEt = 'font-data text-[10px] font-medium uppercase tracking-[0.14em]'
   const punto = (color: string) => <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: color }} aria-hidden />
-  const filaEt = 'grid flex-1 grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-x-4 py-3'
-  const bloqueEtiquetas = (tipos.length > 0 || aptaPara.length > 0 || contiene.length > 0) ? (
-    <dl className="flex h-full min-h-[10rem] flex-col divide-y text-[0.95rem]" style={{ color: 'var(--text-secondary)', borderColor: 'var(--recipe-rule, var(--border))' }}>
-      {tipos.length > 0 && (
-        <div className={filaEt} style={{ borderColor: 'var(--recipe-rule, var(--border))' }}>
-          <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Receta</dt>
-          <dd className="flex flex-wrap gap-x-7 gap-y-2">
-            {tipos.map(([etiqueta, valor]) => (
-              <span key={etiqueta} className="flex flex-col">
-                <span className={rotuloEt} style={{ color: 'var(--text-muted)', fontSize: '9px' }}>{etiqueta}</span>
-                <span className="mt-0.5">{valor}</span>
-              </span>
-            ))}
-          </dd>
+  const filaEt = 'grid flex-1 grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-x-4 py-2.5'
+  const lineaEt = { borderColor: 'var(--recipe-rule, var(--border))' }
+  const bloqueEtiquetas = (datosReceta.length > 0 || aptaPara.length > 0 || contiene.length > 0) ? (
+    <dl className="flex h-full min-h-[10rem] flex-col divide-y text-[0.95rem]" style={{ color: 'var(--text-secondary)', ...lineaEt }}>
+      {datosReceta.map(([etiqueta, valor]) => (
+        <div key={etiqueta} className={filaEt} style={lineaEt}>
+          <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>{etiqueta}</dt>
+          <dd>{valor}</dd>
         </div>
-      )}
+      ))}
       {aptaPara.length > 0 && (
-        <div className={filaEt} style={{ borderColor: 'var(--recipe-rule, var(--border))' }}>
+        <div className={filaEt} style={lineaEt}>
           <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Apta para</dt>
           <dd className="flex flex-wrap gap-x-5 gap-y-1">{aptaPara.map(t => <span key={t}>{punto('rgb(34,197,94)')}{t}</span>)}</dd>
         </div>
       )}
       {contiene.length > 0 && (
-        <div className={filaEt} style={{ borderColor: 'var(--recipe-rule, var(--border))' }}>
+        <div className={filaEt} style={lineaEt}>
           <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Contiene</dt>
           <dd className="flex flex-wrap gap-x-5 gap-y-1">{contiene.map(t => <span key={t}>{punto('rgb(239,68,68)')}{t}</span>)}</dd>
         </div>
