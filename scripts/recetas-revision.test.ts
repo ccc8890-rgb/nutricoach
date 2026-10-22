@@ -8,6 +8,7 @@ import {
 
 assert.equal(normalizarTareaRevision(null), 'pendientes')
 assert.equal(normalizarTareaRevision('sin_foto'), 'sin_foto')
+assert.equal(normalizarTareaRevision("cola"), "cola")
 assert.equal(normalizarTareaRevision('desconocida'), 'pendientes')
 
 const vacio: QualityIssues = { bloqueantes: [], avisos: [] }

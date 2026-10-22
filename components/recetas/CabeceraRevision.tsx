@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 
-type Cuentas = { porAprobar: number | null; reportadas: number | null; imagenes: number | null }
+type Cuentas = { porRevisar: number | null }
 
 type Vista = { href: string; label: string; clave?: keyof Cuentas; activa: (pathname: string, tarea: string | null) => boolean }
 
@@ -16,21 +16,16 @@ const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
   },
   {
     titulo: 'Revisar',
-    vistas: [
-      { href: '/recetas/revisar', label: 'Por aprobar', clave: 'porAprobar', activa: (p, t) => p === '/recetas/revisar' && t !== 'corregir' },
-      { href: '/recetas/revisar?tarea=corregir', label: 'Reportadas', clave: 'reportadas', activa: (p, t) => p === '/recetas/revisar' && t === 'corregir' },
-    ],
+    // Una sola cola: reportadas, fotos y calidad son filtros dentro de ella, no listas aparte
+    vistas: [{ href: '/recetas/revisar', label: 'Por revisar', clave: 'porRevisar', activa: p => p === '/recetas/revisar' }],
   },
   {
-    titulo: 'Calidad',
+    titulo: 'Herramientas',
     vistas: [
-      { href: '/recetas/imagenes', label: 'Fotos', clave: 'imagenes', activa: p => p === '/recetas/imagenes' },
+      { href: '/recetas/imagenes', label: 'Fotos', activa: p => p === '/recetas/imagenes' },
       { href: '/recetas/auditoria', label: 'Ingredientes', activa: p => p === '/recetas/auditoria' },
+      { href: '/recetas/cobertura', label: 'Cobertura', activa: p => p === '/recetas/cobertura' },
     ],
-  },
-  {
-    titulo: 'Ampliar',
-    vistas: [{ href: '/recetas/cobertura', label: 'Cobertura', activa: p => p === '/recetas/cobertura' }],
   },
 ]
 
@@ -41,15 +36,13 @@ const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
 export default function CabeceraRevision() {
   const pathname = usePathname()
   const tarea = useSearchParams().get('tarea')
-  const [cuentas, setCuentas] = useState<Cuentas>({ porAprobar: null, reportadas: null, imagenes: null })
+  const [cuentas, setCuentas] = useState<Cuentas>({ porRevisar: null })
 
   useEffect(() => {
     let vivo = true
     const cargar = () => {
-      fetch('/api/recetas/revisar?tarea=pendientes&page=1&pageSize=1', { cache: 'no-store' })
-        .then(r => r.json()).then(j => { if (vivo && j.counts) setCuentas(c => ({ ...c, porAprobar: j.counts.pendientes ?? 0, reportadas: j.counts.corregir ?? 0 })) }).catch(() => null)
-      fetch('/api/recetas/imagenes?filtro=pendientes&limit=200', { cache: 'no-store' })
-        .then(r => r.json()).then(j => { if (vivo && j.stats) setCuentas(c => ({ ...c, imagenes: j.stats.pendientes ?? 0 })) }).catch(() => null)
+      fetch('/api/recetas/revisar?tarea=cola&page=1&pageSize=1', { cache: 'no-store' })
+        .then(r => r.json()).then(j => { if (vivo && j.counts) setCuentas({ porRevisar: j.counts.cola ?? 0 }) }).catch(() => null)
     }
     cargar()
     const alVolver = () => { if (document.visibilityState === 'visible') cargar() }

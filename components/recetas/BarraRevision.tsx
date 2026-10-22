@@ -26,7 +26,7 @@ export default function BarraRevision({ id, pendiente, returnTo, accion }: {
 
   useEffect(() => {
     let vivo = true
-    fetch('/api/recetas/revisar?tarea=pendientes&page=1&pageSize=100', { cache: 'no-store' })
+    fetch('/api/recetas/revisar?tarea=cola&page=1&pageSize=100', { cache: 'no-store' })
       .then(r => r.json())
       .then(j => {
         if (!vivo) return

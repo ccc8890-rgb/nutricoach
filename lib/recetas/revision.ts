@@ -1,4 +1,4 @@
-export const TAREAS_REVISION = ['pendientes', 'corregir', 'nuevas_hoy', 'bloqueos', 'sin_foto', 'todas'] as const
+export const TAREAS_REVISION = ['pendientes', 'corregir', 'nuevas_hoy', 'bloqueos', 'sin_foto', 'todas', 'cola', 'listas', 'foto'] as const
 
 export type TareaRevision = (typeof TAREAS_REVISION)[number]
 

@@ -23,6 +23,7 @@ type RecetaRevision = {
   carbohidratos: number | null
   grasas: number | null
   imagen_url: string | null
+  imagen_estado?: string | null
   estado: string | null
   score_calidad: number | null
   nivel_fit: string | null
@@ -45,13 +46,25 @@ type RespuestaRevision = {
   aprobablesIds: string[]
 }
 
-// «Por aprobar» y «Reportadas» son las pestañas de la cabecera (CabeceraRevision); aquí solo se acota «Por aprobar».
+// Una sola cola: cada receta aparece una vez y los problemas (foto, ingredientes, reporte) son filtros sobre ella.
 // El recetario completo vive en /recetas.
 const ACOTAR: Array<{ id: TareaRevision; label: string }> = [
-  { id: 'pendientes', label: 'Todas' },
+  { id: 'cola', label: 'Todas' },
+  { id: 'listas', label: 'Listas para aprobar' },
+  { id: 'bloqueos', label: 'Ingredientes o calidad' },
+  { id: 'foto', label: 'Foto' },
+  { id: 'corregir', label: 'Reportadas' },
   { id: 'nuevas_hoy', label: 'Nuevas hoy' },
-  { id: 'bloqueos', label: 'Con bloqueos' },
 ]
+
+function ProblemasReceta({ receta }: { receta: RecetaRevision }) {
+  const items: { texto: string; color: string }[] = []
+  if (receta.tags?.includes('Corregir')) items.push({ texto: receta.tags.includes('Reporte cliente') ? 'Reportada por cliente' : 'Reportada', color: 'var(--warning)' })
+  if (!receta.imagen_url) items.push({ texto: 'Sin foto', color: 'var(--error)' })
+  else if (receta.imagen_estado === 'revisar' || receta.imagen_estado === 'rechazada') items.push({ texto: 'Foto por revisar', color: 'var(--warning)' })
+  if (items.length === 0) return null
+  return <div className="mt-2 flex flex-wrap gap-1">{items.map(i => <span key={i.texto} className="rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: i.color, background: `color-mix(in srgb, ${i.color} 12%, transparent)` }}>{i.texto}</span>)}</div>
+}
 
 function fechaAlta(value: string | null) {
   if (!value) return 'Sin fecha'
@@ -100,7 +113,7 @@ export default function RevisarRecetasPage() {
   const [error, setError] = useState<string | null>(null)
   // Tarea, página y filtros en la URL: al abrir una receta y volver, la bandeja reaparece igual
   useRecordarLista('revisar')
-  const [tarea, setTarea] = useEstadoUrl<TareaRevision>('tarea', 'pendientes')
+  const [tarea, setTarea] = useEstadoUrl<TareaRevision>('tarea', 'cola')
   const [paginaRaw, setPaginaRaw] = useEstadoUrl<string>('pagina', '1')
   const pagina = Math.max(1, Number(paginaRaw) || 1)
   const setPagina = (n: number) => setPaginaRaw(String(n))
@@ -164,10 +177,11 @@ export default function RevisarRecetasPage() {
   }, [cargar, quitarResueltas])
 
   // En Pendientes: primero las que se aprueban ya (sin bloqueos), después las que necesitan arreglo
-  const listas = useMemo(() => (respuesta?.data ?? []).filter(r => esRecetaAprobable(r.estado, r.quality_issues)), [respuesta])
-  const necesitanArreglo = useMemo(() => (respuesta?.data ?? []).filter(r => !esRecetaAprobable(r.estado, r.quality_issues)), [respuesta])
+  const esLista = (r: RecetaRevision) => esRecetaAprobable(r.estado, r.quality_issues) && !r.tags?.includes('Corregir')
+  const listas = useMemo(() => (respuesta?.data ?? []).filter(esLista), [respuesta])
+  const necesitanArreglo = useMemo(() => (respuesta?.data ?? []).filter(r => !esLista(r)), [respuesta])
   const deCliente = (r: RecetaRevision) => (r.tags ?? []).includes('Reporte cliente')
-  const ordenadas = tarea === 'pendientes' ? [...listas, ...necesitanArreglo]
+  const ordenadas = tarea === 'cola' || tarea === 'pendientes' ? [...listas, ...necesitanArreglo]
     : tarea === 'corregir' ? [...(respuesta?.data ?? [])].sort((a, b) => Number(deCliente(b)) - Number(deCliente(a)))
     : (respuesta?.data ?? [])
 
@@ -193,6 +207,7 @@ export default function RevisarRecetasPage() {
       counts: {
         ...actual.counts,
         pendientes: receta.estado === 'en_revision' || receta.estado === 'borrador' ? Math.max(0, actual.counts.pendientes - 1) : actual.counts.pendientes,
+        cola: receta.estado === 'en_revision' || receta.estado === 'borrador' ? Math.max(0, (actual.counts.cola ?? 0) - 1) : actual.counts.cola,
       },
       aprobablesIds: actual.aprobablesIds.filter(id => id !== receta.id),
     } : actual)
@@ -243,8 +258,8 @@ export default function RevisarRecetasPage() {
     <main className="coach-recipe-review min-h-screen" style={{ background: 'var(--bg)' }}>
       <div className="mx-auto max-w-7xl space-y-4 px-4 py-5">
         <div className="flex flex-wrap items-center gap-2">
-          {tarea !== 'corregir' && (
-            <nav className="flex min-w-0 flex-1 gap-2 overflow-x-auto" aria-label="Acotar por aprobar">
+          {(
+            <nav className="flex min-w-0 flex-1 gap-2 overflow-x-auto" aria-label="Filtrar la cola de revisión">
               {ACOTAR.map(item => (
                 <button key={item.id} onClick={() => cambiarTarea(item.id)} className="shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium" style={{ borderColor: tarea === item.id ? 'var(--primary)' : 'var(--border)', color: tarea === item.id ? 'var(--primary)' : 'var(--text-secondary)', background: tarea === item.id ? 'var(--primary-bg)' : 'var(--surface)' }}>
                   {item.label} ({respuesta?.counts[item.id] ?? '…'})
@@ -254,7 +269,7 @@ export default function RevisarRecetasPage() {
           )}
           <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>{respuesta ? `${respuesta.total} resultados` : 'Cargando…'}</span>
           <button onClick={() => cargar()} aria-label="Actualizar" className="rounded-xl border p-2" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}><RefreshCw size={16} /></button>
-          {tarea !== 'corregir' && (
+          {tarea !== 'corregir' && tarea !== 'foto' && (
             <button onClick={aprobarAprobables} disabled={aprobandoLote || !respuesta?.aprobablesIds.length} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-40" style={{ color: 'var(--bg)', background: 'var(--primary)' }}>
               {aprobandoLote ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
               Aprobar aprobables ({respuesta ? respuesta.aprobablesIds.length : '…'})
@@ -296,8 +311,8 @@ export default function RevisarRecetasPage() {
           <div className="space-y-2">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-28 animate-pulse rounded-2xl" style={{ background: 'var(--surface)' }} />)}</div>
         ) : respuesta?.data.length ? (
           <>
-            {tarea === 'pendientes' && listas.length > 0 && necesitanArreglo.length > 0 && (
-              <p className="px-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Listas para aprobar ({listas.length}) · después, las que necesitan arreglo ({necesitanArreglo.length})</p>
+            {(tarea === 'cola' || tarea === 'pendientes') && listas.length > 0 && necesitanArreglo.length > 0 && (
+              <p className="px-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Listas para aprobar ({listas.length}) · después, las que necesitan arreglo o ya están reportadas ({necesitanArreglo.length})</p>
             )}
             <div className="grid gap-3 2xl:hidden">
               {ordenadas.map(receta => <RecetaCard key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} />)}
@@ -359,6 +374,7 @@ function NotaCorreccion({ receta }: { receta: RecetaRevision }) {
 function RecetaCard({ receta, busy, onEstado }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void }) {
   return <article className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
     <div className="flex gap-3"><FotoReceta receta={receta} /><div className="min-w-0 flex-1"><EnlaceReceta id={receta.id} className="block font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{receta.tipo_plato ?? receta.categoria ?? 'Sin tipo'} · alta {fechaAlta(receta.created_at)}</p><p className="mt-2 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>{Math.round(receta.kcal ?? 0)} kcal · P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</p></div><span className="text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}</span></div>
+    <ProblemasReceta receta={receta} />
     <NotaCorreccion receta={receta} />
     <div className="mt-3"><ChipsCalidad issues={receta.quality_issues} /></div>
     <div className="mt-3 flex items-center justify-between gap-2"><span className="rounded-full px-2 py-1 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><Acciones receta={receta} busy={busy} onEstado={onEstado} /></div>
@@ -368,7 +384,7 @@ function RecetaCard({ receta, busy, onEstado }: { receta: RecetaRevision; busy: 
 function RecetaFila({ receta, busy, onEstado }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void }) {
   return <tr className="border-b last:border-b-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
     <td className="px-3 py-3"><FotoReceta receta={receta} /></td>
-    <td className="min-w-[220px] px-3 py-3"><EnlaceReceta id={receta.id} className="block font-semibold hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{receta.tipo_plato ?? receta.categoria ?? 'Sin tipo'} · {receta.num_ingredientes} ingredientes</p></td>
+    <td className="min-w-[220px] px-3 py-3"><EnlaceReceta id={receta.id} className="block font-semibold hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{receta.tipo_plato ?? receta.categoria ?? 'Sin tipo'} · {receta.num_ingredientes} ingredientes</p><ProblemasReceta receta={receta} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}><b style={{ color: 'var(--text)' }}>{Math.round(receta.kcal ?? 0)} kcal</b><br />P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</td>
     <td className="max-w-[310px] px-3 py-3"><div className="mb-1 text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}/100</div><ChipsCalidad issues={receta.quality_issues} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}><span className="rounded-full px-2 py-1" style={{ background: 'var(--surface)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><br /><span className="mt-2 inline-block" style={{ color: 'var(--text-muted)' }}>{fechaAlta(receta.created_at)}</span></td>

@@ -53,6 +53,10 @@ export async function GET(request: NextRequest) {
       if (value === 'corregir') return query.in('estado', ['en_revision', 'borrador']).filter('tags', 'cs', '{Corregir}')
       if (value === 'nuevas_hoy') return query.gte('created_at', inicio).lt('created_at', fin)
       if (value === 'bloqueos') return query.in('estado', ['en_revision', 'borrador']).not('quality_issues->bloqueantes', 'eq', '[]')
+      // «Cola»: todo lo que está por revisar, cada receta una sola vez (pendientes + reportadas)
+      if (value === 'cola') return query.in('estado', ['en_revision', 'borrador'])
+      if (value === 'listas') return query.in('estado', ['en_revision', 'borrador']).not('tags', 'cs', '{Corregir}').or('quality_issues->bloqueantes.eq.[],quality_issues.is.null')
+      if (value === 'foto') return query.in('estado', ['en_revision', 'borrador']).or('imagen_url.is.null,imagen_url.eq.,imagen_estado.in.(revisar,rechazada)')
       if (value === 'sin_foto') return query.in('estado', ['en_revision', 'borrador']).or('imagen_url.is.null,imagen_url.eq.')
       return query
     }
@@ -73,7 +77,7 @@ export async function GET(request: NextRequest) {
     let query = supabase.from('recetas').select(`
       id, nombre, categoria, tipo_plato, porciones,
       kcal, proteinas, carbohidratos, grasas,
-      imagen_url, estado, score_calidad, nivel_fit, tipo_uso, apta_cliente, tags, notas_coach,
+      imagen_url, imagen_estado, estado, score_calidad, nivel_fit, tipo_uso, apta_cliente, tags, notas_coach,
       quality_estado_sugerido, quality_issues, quality_actualizado_at, created_at
     `, { count: 'exact' })
     query = aplicarAvanzados(aplicarTarea(query, tarea))
@@ -90,8 +94,9 @@ export async function GET(request: NextRequest) {
       return total ?? 0
     }
 
-    const [pendientes, corregir, nuevasHoy, bloqueos, sinFoto, todas] = await Promise.all([
+    const [pendientes, corregir, nuevasHoy, bloqueos, sinFoto, todas, cola, listas, foto] = await Promise.all([
       contar('pendientes'), contar('corregir'), contar('nuevas_hoy'), contar('bloqueos'), contar('sin_foto'), contar('todas'),
+      contar('cola'), contar('listas'), contar('foto'),
     ])
 
     let aprobablesQuery = supabase
@@ -120,7 +125,7 @@ export async function GET(request: NextRequest) {
       page,
       pageSize,
       totalPages: count ? Math.ceil(count / pageSize) : 0,
-      counts: { pendientes, corregir, nuevas_hoy: nuevasHoy, bloqueos, sin_foto: sinFoto, todas },
+      counts: { pendientes, corregir, nuevas_hoy: nuevasHoy, bloqueos, sin_foto: sinFoto, todas, cola, listas, foto },
       aprobablesIds: (aprobables ?? []).map(r => r.id),
     })
   } catch (err) {
