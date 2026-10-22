@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, MagnifyingGlass, BookOpen, Tray, CheckSquare, Square, Sparkle, SlidersHorizontal, ChefHat, Package, Trophy, Lightning } from '@phosphor-icons/react'
+import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, SlidersHorizontal, ChefHat, Package, Trophy, Lightning } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, SUBCATEGORIAS, ALERGENOS_POSITIVOS, ALERGENOS_NEGATIVOS, DIETETICOS, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
@@ -15,34 +15,6 @@ const METODOS_COCCION = [
   { value: 'Todos', label: 'Todos' },
   ...TIPOS_COCCION.map(k => ({ value: k, label: k })),
 ]
-
-function BotonCola() {
-  const [count, setCount] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { setLoading(false); return }
-      supabase.from('recetas').select('id', { count: 'exact', head: true })
-        .or(`coach_id.eq.${user.id},coach_id.is.null`).in('estado', ['borrador', 'en_revision'])
-        .then(({ count: c }) => { setCount(c ?? 0); setLoading(false) })
-    })
-  }, [])
-  if (loading) return <div className="coach-recipe-utility"><Tray size={14} /> Cola</div>
-  if (count === null || count === 0) return null
-  return (
-    <Link href='/recetas/cola'
-      className="relative flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border transition-all duration-200"
-      style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-    >
-      <Tray size={14} />
-      Cola
-      <span className='absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold'
-        style={{ background: 'var(--accent)' }}>{count}</span>
-    </Link>
-  )
-}
 
 type RecetaRow = {
   id: string
@@ -322,14 +294,6 @@ export default function RecetasPage() {
           <FadeIn delay={0}>
             <div className="flex items-start justify-between mb-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className="coach-recipe-kicker"
-                  >
-                    <BookOpen size={13} />
-                    Biblioteca culinaria
-                  </span>
-                </div>
                 <h1 className="coach-recipe-title" style={{ color: 'var(--text)' }}>
                   Recetas
                 </h1>
@@ -338,20 +302,11 @@ export default function RecetasPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <BotonCola />
                 <button type="button" onClick={() => { setSeleccionando(v => !v); setSeleccion(new Set()) }}
                   className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200"
                   style={{ borderColor: seleccionando ? 'var(--accent)' : 'var(--border)', color: seleccionando ? 'var(--accent)' : 'var(--text-muted)' }}>
                   <CheckSquare size={13} /> {seleccionando ? 'Cancelar selección' : 'Seleccionar'}
                 </button>
-                <Link href="/recetas/nueva"
-                  className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200"
-                  style={{ background: 'var(--accent)', color: '#ffffff' }}
-                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px var(--accent-glow)' }}
-                  onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
-                >
-                  <Plus size={15} /> Nueva
-                </Link>
               </div>
             </div>
           </FadeIn>

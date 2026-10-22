@@ -72,9 +72,8 @@ const PLANES_ITEMS: NavItem[] = [
 ]
 
 const RECETARIO_ITEMS: NavItem[] = [
-  { href: '/recetas', label: 'Recetas', icon: BookOpenText, exact: true },
+  { href: '/recetas', label: 'Recetas y revisión', icon: BookOpenText },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
-  { href: '/recetas/revisar', label: 'Revisión', icon: ClipboardText },
 ]
 
 const COMPRA_ITEMS: NavItem[] = [
@@ -408,7 +407,7 @@ export default function Sidebar() {
     { key: 'planes', label: 'Planes', href: '/dietas/plantillas', icon: ClipboardText, items: PLANES_ITEMS },
     {
       key: 'recetario', label: 'Recetario', href: '/recetas', icon: BookOpenText, badge: recetasPendientes,
-      items: RECETARIO_ITEMS.map(item => item.href === '/recetas/revisar' ? { ...item, badge: recetasPendientes } : item),
+      items: RECETARIO_ITEMS.map(item => item.href === '/recetas' ? { ...item, badge: recetasPendientes } : item),
     },
     { key: 'compra', label: 'Compra y costes', href: '/compra', icon: ShoppingCart, items: COMPRA_ITEMS },
   ]

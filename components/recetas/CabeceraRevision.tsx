@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 type Cuentas = { porAprobar: number | null; reportadas: number | null; imagenes: number | null }
 
@@ -11,23 +11,32 @@ type Vista = { href: string; label: string; clave?: keyof Cuentas; activa: (path
 
 const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
   {
-    titulo: 'Mejorar lo que hay',
+    titulo: 'Recetario',
+    vistas: [{ href: '/recetas', label: 'Biblioteca', activa: p => p === '/recetas' }],
+  },
+  {
+    titulo: 'Revisar',
     vistas: [
       { href: '/recetas/revisar', label: 'Por aprobar', clave: 'porAprobar', activa: (p, t) => p === '/recetas/revisar' && t !== 'corregir' },
       { href: '/recetas/revisar?tarea=corregir', label: 'Reportadas', clave: 'reportadas', activa: (p, t) => p === '/recetas/revisar' && t === 'corregir' },
-      { href: '/recetas/imagenes', label: 'Imágenes', clave: 'imagenes', activa: p => p === '/recetas/imagenes' },
-      { href: '/recetas/auditoria', label: 'Auditoría', activa: p => p === '/recetas/auditoria' },
     ],
   },
   {
-    titulo: 'Completar lo que falta',
+    titulo: 'Calidad',
+    vistas: [
+      { href: '/recetas/imagenes', label: 'Fotos', clave: 'imagenes', activa: p => p === '/recetas/imagenes' },
+      { href: '/recetas/auditoria', label: 'Ingredientes', activa: p => p === '/recetas/auditoria' },
+    ],
+  },
+  {
+    titulo: 'Ampliar',
     vistas: [{ href: '/recetas/cobertura', label: 'Cobertura', activa: p => p === '/recetas/cobertura' }],
   },
 ]
 
 /**
- * Cabecera única del espacio «Revisión»: todo el análisis del recetario en un solo sitio.
- * «Mejorar lo que hay» (aprobar, reportadas, fotos, ingredientes) y «Completar lo que falta» (cobertura).
+ * Cabecera única del espacio «Recetario»: biblioteca y todo el trabajo de revisión en un solo sitio,
+ * ordenado como se trabaja: consultar → revisar → calidad → ampliar.
  */
 export default function CabeceraRevision() {
   const pathname = usePathname()
@@ -50,11 +59,7 @@ export default function CabeceraRevision() {
 
   return (
     <div className="coach-review-header border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 pt-3">
-        <Link href="/recetas" aria-label="Volver al recetario" className="rounded-lg p-1.5" style={{ color: 'var(--text-secondary)' }}><ArrowLeft size={18} /></Link>
-        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Revisión de recetas</h1>
-      </div>
-      <nav className="mx-auto flex max-w-7xl gap-x-6 gap-y-1 overflow-x-auto px-4" aria-label="Vistas de revisión">
+      <nav className="mx-auto flex max-w-7xl items-end gap-x-6 gap-y-1 overflow-x-auto px-4" aria-label="Espacio del recetario">
         {GRUPOS.map(g => (
           <div key={g.titulo} className="flex shrink-0 flex-col">
             <span className="px-3 pt-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{g.titulo}</span>
@@ -71,6 +76,7 @@ export default function CabeceraRevision() {
             </div>
           </div>
         ))}
+        <Link href="/recetas/nueva" className="mb-1.5 ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-semibold" style={{ background: 'var(--primary)', color: 'var(--bg)' }}><Plus size={15} />Nueva receta</Link>
       </nav>
     </div>
   )
