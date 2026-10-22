@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ImageSquare, InstagramLogo, X } from '@phosphor-icons/react'
+import { Export, ImageSquare, InstagramLogo, X } from '@phosphor-icons/react'
 import type { TemaTarjeta } from '@/lib/entrenos/tarjeta-story'
 
 const W_STORY = 1080
@@ -12,7 +12,7 @@ function cargarImagen(src: string): Promise<HTMLImageElement> {
 }
 
 /** Botón de Instagram + vista previa de la tarjeta. Permite colocarla sobre una foto del carrete y exportar 1080×1920. */
-export default function CompartirSesion({ generar }: { generar: (tema: TemaTarjeta) => Promise<Blob> }) {
+export default function CompartirSesion({ generar, icono = false }: { generar: (tema: TemaTarjeta) => Promise<Blob>; icono?: boolean }) {
   const [abierto, setAbierto] = useState(false)
   const [blob, setBlob] = useState<Blob | null>(null)
   const [url, setUrl] = useState<string | null>(null)
@@ -94,9 +94,17 @@ export default function CompartirSesion({ generar }: { generar: (tema: TemaTarje
 
   return (
     <>
-      <button type="button" onClick={() => setAbierto(true)} className="share-story__open" aria-label="Compartir en una story">
-        <InstagramLogo size={16} />
-      </button>
+      {icono ? (
+        <button type="button" onClick={() => setAbierto(true)} aria-label="Compartir"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          <Export size={18} />
+        </button>
+      ) : (
+        <button type="button" onClick={() => setAbierto(true)} className="share-story__open" aria-label="Compartir en una story">
+          <InstagramLogo size={16} />
+        </button>
+      )}
       {abierto && createPortal(
         <div className="share-story" role="dialog" aria-modal="true" aria-label="Tarjeta para story">
           <button type="button" className="share-story__close" onClick={cerrar} aria-label="Cerrar"><X size={20} /></button>

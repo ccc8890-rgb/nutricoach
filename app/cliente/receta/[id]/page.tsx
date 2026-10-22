@@ -158,6 +158,16 @@ export default function RecetaClientePage() {
             <ArrowLeft size={18} />
           </Link>
           <p className="min-w-0 flex-1 truncate text-sm font-bold" style={{ color: 'var(--text)' }}>{receta?.nombre ?? 'Receta'}</p>
+          {receta && (
+              <CompartirSesion icono generar={(tema) => dibujarPlatoTernario({
+                nombre: receta.nombre,
+                kcal: racion?.total.kcal ?? receta.kcal ?? 0,
+                p: racion?.total.p ?? receta.proteinas ?? 0,
+                c: racion?.total.c ?? receta.carbohidratos ?? 0,
+                g: racion?.total.g ?? receta.grasas ?? 0,
+                detalle: null,
+              }, tema)} />
+          )}
           {receta && codigo && (
             <BotonFavorita
               codigo={codigo}
@@ -192,14 +202,6 @@ export default function RecetaClientePage() {
 
             <div>
               <h1 className="text-xl font-bold leading-tight" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
-              <CompartirSesion generar={(tema) => dibujarPlatoTernario({
-                nombre: receta.nombre,
-                kcal: racion?.total.kcal ?? receta.kcal ?? 0,
-                p: racion?.total.p ?? receta.proteinas ?? 0,
-                c: racion?.total.c ?? receta.carbohidratos ?? 0,
-                g: racion?.total.g ?? receta.grasas ?? 0,
-                detalle: null,
-              }, tema)} />
               {/* Solo llega si el coach ha activado el vídeo para este cliente */}
               {receta.url_origen && /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(receta.url_origen) && (
                 <a href={receta.url_origen} target="_blank" rel="noopener noreferrer"
