@@ -546,6 +546,12 @@ export default function DetalleRecetaPage() {
           </FadeIn>
         )}
 
+        {ingredientes.length > 0 && (
+          <div className="mb-4">
+            <SelectorRaciones original={porcionesReceta} valor={nVista} onChange={setRacionesVista} kcalRacion={macrosPorPorcion?.kcal} />
+          </div>
+        )}
+
         {/* Una sola lista a la vez: la receta no se hace larguísima con scroll */}
         {ingredientes.length > 0 && pasos.length > 0 && (
           <div className="mb-4 flex overflow-hidden" role="tablist" aria-label="Ingredientes o preparación" style={{ border: '1px solid var(--border)' }}>
@@ -570,7 +576,6 @@ export default function DetalleRecetaPage() {
                   border: '1px solid var(--border)',
                 }}
               >
-                <SelectorRaciones original={porcionesReceta} valor={nVista} onChange={setRacionesVista} kcalRacion={macrosPorPorcion?.kcal} />
                 <IngredientChecklist ingredientes={checklistItems} sinCabecera={pasos.length > 0} />
                 {nVista !== porcionesReceta && (
                   <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
