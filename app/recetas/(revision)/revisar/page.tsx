@@ -45,13 +45,13 @@ type RespuestaRevision = {
   aprobablesIds: string[]
 }
 
-const TAREAS: Array<{ id: TareaRevision; label: string }> = [
-  { id: 'pendientes', label: 'Pendientes' },
-  { id: 'corregir', label: 'Reportadas' },
+// «Por aprobar» y «Reportadas» son las pestañas de la cabecera (CabeceraRevision); aquí solo se acota «Por aprobar».
+// El recetario completo vive en /recetas.
+const ACOTAR: Array<{ id: TareaRevision; label: string }> = [
+  { id: 'pendientes', label: 'Todas' },
   { id: 'nuevas_hoy', label: 'Nuevas hoy' },
   { id: 'bloqueos', label: 'Con bloqueos' },
   { id: 'sin_foto', label: 'Sin foto' },
-  { id: 'todas', label: 'Todas' },
 ]
 
 function fechaAlta(value: string | null) {
@@ -242,28 +242,26 @@ export default function RevisarRecetasPage() {
 
   return (
     <main className="coach-recipe-review min-h-screen" style={{ background: 'var(--bg)' }}>
-      <header className="sticky top-0 z-20 border-b" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--bg) 94%, transparent)', backdropFilter: 'blur(12px)' }}>
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 pb-4">
-          <div className="min-w-[180px] flex-1">
-            <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Recetas por aprobar</h2>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{respuesta ? `${respuesta.total} resultados en este filtro` : 'Cargando…'}</p>
-          </div>
-          <button onClick={() => cargar()} aria-label="Actualizar" className="rounded-xl border p-2.5" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}><RefreshCw size={16} /></button>
-          <button onClick={aprobarAprobables} disabled={aprobandoLote || !respuesta?.aprobablesIds.length} className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold disabled:opacity-40" style={{ color: 'var(--bg)', background: 'var(--primary)' }}>
-            {aprobandoLote ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
-            Aprobar aprobables ({respuesta ? respuesta.aprobablesIds.length : '…'})
-          </button>
-        </div>
-      </header>
-
       <div className="mx-auto max-w-7xl space-y-4 px-4 py-5">
-        <nav className="flex gap-2 overflow-x-auto pb-1" aria-label="Tareas de revisión">
-          {TAREAS.map(item => (
-            <button key={item.id} onClick={() => cambiarTarea(item.id)} className="shrink-0 rounded-full border px-3 py-2 text-sm font-medium" style={{ borderColor: tarea === item.id ? 'var(--primary)' : 'var(--border)', color: tarea === item.id ? 'var(--primary)' : 'var(--text-secondary)', background: tarea === item.id ? 'var(--primary-bg)' : 'var(--surface)' }}>
-              {item.label} ({respuesta?.counts[item.id] ?? '…'})
+        <div className="flex flex-wrap items-center gap-2">
+          {tarea !== 'corregir' && (
+            <nav className="flex min-w-0 flex-1 gap-2 overflow-x-auto" aria-label="Acotar por aprobar">
+              {ACOTAR.map(item => (
+                <button key={item.id} onClick={() => cambiarTarea(item.id)} className="shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium" style={{ borderColor: tarea === item.id ? 'var(--primary)' : 'var(--border)', color: tarea === item.id ? 'var(--primary)' : 'var(--text-secondary)', background: tarea === item.id ? 'var(--primary-bg)' : 'var(--surface)' }}>
+                  {item.label} ({respuesta?.counts[item.id] ?? '…'})
+                </button>
+              ))}
+            </nav>
+          )}
+          <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>{respuesta ? `${respuesta.total} resultados` : 'Cargando…'}</span>
+          <button onClick={() => cargar()} aria-label="Actualizar" className="rounded-xl border p-2" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}><RefreshCw size={16} /></button>
+          {tarea !== 'corregir' && (
+            <button onClick={aprobarAprobables} disabled={aprobandoLote || !respuesta?.aprobablesIds.length} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-40" style={{ color: 'var(--bg)', background: 'var(--primary)' }}>
+              {aprobandoLote ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+              Aprobar aprobables ({respuesta ? respuesta.aprobablesIds.length : '…'})
             </button>
-          ))}
-        </nav>
+          )}
+        </div>
 
         <section className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="relative">
