@@ -559,9 +559,6 @@ export default function DetalleRecetaPage() {
         <FadeIn delay={0.25}>
           {ingredientes.length > 0 && (seccion === 'ingredientes' || pasos.length === 0) && (
             <>
-              <div className="mb-3">
-                <SelectorRaciones original={porcionesReceta} valor={nVista} onChange={setRacionesVista} kcalRacion={macrosPorPorcion?.kcal} />
-              </div>
               <div
                 className="coach-recipe-detail__section p-5 mb-6"
                 style={{
@@ -569,6 +566,7 @@ export default function DetalleRecetaPage() {
                   border: '1px solid var(--border)',
                 }}
               >
+                <SelectorRaciones original={porcionesReceta} valor={nVista} onChange={setRacionesVista} kcalRacion={macrosPorPorcion?.kcal} />
                 <IngredientChecklist ingredientes={checklistItems} sinCabecera={pasos.length > 0} />
                 {nVista !== porcionesReceta && (
                   <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
