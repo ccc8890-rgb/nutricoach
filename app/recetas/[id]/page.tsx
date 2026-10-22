@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, Clock, Users, CaretLeft, CurrencyEur, PlayCircle, Lightbulb } from '@phosphor-icons/react'
+import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, CaretLeft, CurrencyEur, PlayCircle, Lightbulb } from '@phosphor-icons/react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta, resumenAptitud, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -288,6 +288,7 @@ export default function DetalleRecetaPage() {
   const pasos = parsePasos(r.instrucciones ?? receta.instrucciones).map(p =>
     nVista !== porcionesReceta ? { ...p, content: quitarCifras(p.content), title: p.title ? quitarCifras(p.title) : p.title } : p)
 
+  const SORA_TITULO = 'var(--font-sora), var(--font-instrument), sans-serif'
   const bloqueMacros = (
     <>
         {/* ═══════ MACRO RING + STATS ROW ═══════ */}
@@ -313,68 +314,47 @@ export default function DetalleRecetaPage() {
               )}
             </div>
 
-            {/* Stats detalle */}
-            <div className="flex-1 flex flex-col gap-3 w-full">
-
-              {/* Fila 1 — Tiempo y porciones */}
-              <div className="flex flex-wrap gap-4">
+            {/* Datos de la ración: mismo lenguaje que el triángulo (rótulos mono, cifras Sora ligera) */}
+            <div className="w-full">
+              <dl className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-3 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
                 {tiempoTotal > 0 && (
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5 text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>
-                      <Clock size={12} /> Tiempo
-                    </div>
-                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{tiempoTotal} min</span>
-                  </div>
+                  <>
+                    <dt className="font-data text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>Tiempo</dt>
+                    <dd className="text-lg tabular-nums" style={{ color: 'var(--text)', fontFamily: SORA_TITULO, fontWeight: 300 }}>{tiempoTotal} min</dd>
+                  </>
                 )}
                 {receta.porciones && (
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5 text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>
-                      <Users size={12} /> Porciones
-                    </div>
-                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>
+                  <>
+                    <dt className="font-data text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>Raciones</dt>
+                    <dd className="text-lg" style={{ color: 'var(--text)', fontFamily: SORA_TITULO, fontWeight: 300 }}>
                       {receta.descripcion_porcion
                         ? (receta.porciones > 1 ? `${receta.porciones} · ${receta.descripcion_porcion}` : receta.descripcion_porcion)
                         : `${receta.porciones} ${receta.porciones === 1 ? 'ración' : 'raciones'}`}
-                    </span>
-                    {pesoPorPorcion && !receta.descripcion_porcion && (
-                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>~{pesoPorPorcion}g / porción</span>
-                    )}
-                  </div>
+                      {pesoPorPorcion && !receta.descripcion_porcion && (
+                        <span className="ml-2 text-sm" style={{ color: 'var(--text-muted)' }}>≈ {pesoPorPorcion} g</span>
+                      )}
+                    </dd>
+                  </>
                 )}
-              </div>
-
-              {/* Por 100 g (los macros por ración ya salen en el triángulo) */}
-              {macrosPor100g && (
-                <div className="flex gap-3 flex-wrap">
-                  <span className="text-xs self-center" style={{ color: 'var(--text-muted)' }}>/ 100g</span>
-                  <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--macro-calories)' }}>{macrosPor100g.kcal}</span> kcal
-                  </span>
-                  <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--macro-protein)' }}>{macrosPor100g.proteinas}g</span> P
-                  </span>
-                  <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--macro-carbs)' }}>{macrosPor100g.carbohidratos}g</span> C
-                  </span>
-                  <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--macro-fat)' }}>{macrosPor100g.grasas}g</span> G
-                  </span>
-                </div>
-              )}
+                {macrosPor100g && (
+                  <>
+                    <dt className="font-data text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>Por 100 g</dt>
+                    <dd className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-base tabular-nums" style={{ color: 'var(--text)', fontFamily: SORA_TITULO, fontWeight: 300 }}>
+                      <span>{macrosPor100g.kcal}<span className="font-data ml-1 text-[10px] tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>KCAL</span></span>
+                      <span>{macrosPor100g.proteinas}<span className="font-data ml-1 text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>P</span></span>
+                      <span>{macrosPor100g.carbohidratos}<span className="font-data ml-1 text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>C</span></span>
+                      <span>{macrosPor100g.grasas}<span className="font-data ml-1 text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>G</span></span>
+                    </dd>
+                  </>
+                )}
+              </dl>
 
               {/* Fuente */}
               {r.url_origen && /^https?:/.test(r.url_origen) && (
-                /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(r.url_origen) ? (
-                  <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 w-fit" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}>
-                    <PlayCircle size={14} /> Ver vídeo original
-                  </a>
-                ) : (
-                  <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs hover:underline w-fit" style={{ color: 'var(--info)' }}>
-                    <ArrowSquareOut size={12} /> Fuente original
-                  </a>
-                )
+                <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
+                  className="font-data mt-4 inline-flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.14em] hover:underline" style={{ color: 'var(--text-muted)' }}>
+                  {/instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(r.url_origen) ? <><PlayCircle size={13} /> Vídeo original</> : <><ArrowSquareOut size={12} /> Fuente original</>}
+                </a>
               )}
             </div>
           </div>
