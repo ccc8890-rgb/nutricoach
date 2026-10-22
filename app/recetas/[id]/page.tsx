@@ -490,11 +490,8 @@ export default function DetalleRecetaPage() {
         <FadeIn delay={0.1}>
           <div className="coach-recipe-detail__intro mb-4" style={{ padding: '1.25rem' }}>
             {/* Título arriba, a todo el ancho */}
-            <div className="mb-6 max-w-4xl">
+            <div className="mb-6 max-w-5xl">
               <h1 className="coach-recipe-detail__title !text-[clamp(1.9rem,3.2vw,3rem)] !font-light !leading-[1.1] !tracking-[-0.02em]" style={{ color: 'var(--text)', fontFamily: 'var(--font-sora), var(--font-instrument), sans-serif' }}>{receta.nombre}</h1>
-              {receta.descripcion && (
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
-              )}
             </div>
             <div className={`grid gap-6 ${receta.imagen_url ? 'sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)_26rem] xl:grid-cols-[22rem_minmax(0,1fr)_31rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_26rem] xl:grid-cols-[minmax(0,1fr)_31rem]'}`}>
               {fotoReceta}
@@ -598,6 +595,9 @@ export default function DetalleRecetaPage() {
                 border: '1px solid var(--border)',
               }}
             >
+              {receta.descripcion && (
+                <p className="mx-auto mb-5 max-w-xl text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
+              )}
               <StepByStep pasos={pasos} sinCabecera={ingredientes.length > 0} />
             </div>
           )}
