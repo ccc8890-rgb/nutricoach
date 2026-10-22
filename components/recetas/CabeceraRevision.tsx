@@ -22,7 +22,6 @@ const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
   {
     titulo: 'Herramientas',
     vistas: [
-      { href: '/recetas/imagenes', label: 'Fotos', activa: p => p === '/recetas/imagenes' },
       { href: '/recetas/auditoria', label: 'Ingredientes', activa: p => p === '/recetas/auditoria' },
       { href: '/recetas/cobertura', label: 'Cobertura', activa: p => p === '/recetas/cobertura' },
     ],
