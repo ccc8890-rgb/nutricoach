@@ -12,7 +12,7 @@ import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { IngredientChecklist, StepByStep } from '@/components/premium'
 import { parsePasos, ordenarPorFases } from '@/lib/recetas/pasos'
 import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
-import { listaRecordada } from '@/lib/useEstadoUrl'
+import { listaRecordada, useEstadoUrl } from '@/lib/useEstadoUrl'
 import BarraRevision from '@/components/recetas/BarraRevision'
 import ReportarProblema from '@/components/recetas/ReportarProblema'
 import EdicionRapida from '@/components/recetas/EdicionRapida'
@@ -112,6 +112,8 @@ export default function DetalleRecetaPage() {
   const [borrando, setBorrando] = useState(false)
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
+  // Comparativa temporal de cabeceras: A = foto junto al título, B = foto en la columna derecha
+  const [cab, setCab] = useEstadoUrl<'a' | 'b'>('cab', 'a', ['a', 'b'])
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
   const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
   const [copiedToLista, setCopiedToLista] = useState(false)
@@ -303,6 +305,18 @@ export default function DetalleRecetaPage() {
   const pasos = parsePasos(r.instrucciones ?? receta.instrucciones).map(p =>
     nVista !== porcionesReceta ? { ...p, content: quitarCifras(p.content), title: p.title ? quitarCifras(p.title) : p.title } : p)
 
+  const fotoReceta = receta.imagen_url ? (
+    <div className="relative aspect-square w-full max-w-[20rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
+      <img
+        src={receta.imagen_url}
+        alt={receta.nombre}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setImgLoaded(true)}
+      />
+      {!imgLoaded && <div className="absolute inset-0 skeleton" />}
+    </div>
+  ) : null
+
   return (
     <PageTransition className="coach-recipe-detail">
       {/* ═══════ HERO FULL-BLEED ═══════ */}
@@ -392,18 +406,8 @@ export default function DetalleRecetaPage() {
           <div className="min-w-0 lg:col-span-2">
         {/* ═══════ TÍTULO + META ═══════ */}
         <FadeIn delay={0.1}>
-          <div className={`coach-recipe-detail__intro mb-6${receta.imagen_url ? ' grid gap-6 sm:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)] sm:items-center' : ''}`}>
-            {receta.imagen_url && (
-              <div className="relative aspect-square w-full max-w-[20rem] overflow-hidden rounded-2xl" style={{ border: '1px solid var(--border)' }}>
-                <img
-                  src={receta.imagen_url}
-                  alt={receta.nombre}
-                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
-                  onLoad={() => setImgLoaded(true)}
-                />
-                {!imgLoaded && <div className="absolute inset-0 skeleton" />}
-              </div>
-            )}
+          <div className={`coach-recipe-detail__intro mb-6${receta.imagen_url && cab === 'a' ? ' grid gap-6 sm:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)] sm:items-center' : ''}`}>
+            {cab === 'a' && fotoReceta}
             <div className="min-w-0">
             <div className="flex items-start gap-3 flex-wrap mb-2">
               <h1 className="coach-recipe-detail__title flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
@@ -457,6 +461,7 @@ export default function DetalleRecetaPage() {
 
           {/* Columna lateral: de un vistazo (macros, aptitudes) */}
           <div className="min-w-0 lg:col-start-2 lg:row-start-2">
+            {cab === 'b' && fotoReceta && <div className="mb-6">{fotoReceta}</div>}
         {/* ═══════ MACRO RING + STATS ROW ═══════ */}
         <FadeIn delay={0.15}>
           <div
@@ -818,6 +823,14 @@ export default function DetalleRecetaPage() {
             )}
           </div>
         </FadeIn>
+      </div>
+      {/* TEMPORAL: comparar cabeceras A/B */}
+      <div className="fixed bottom-4 right-4 z-50 flex overflow-hidden rounded-lg text-sm font-semibold shadow-lg" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <span className="px-3 py-2" style={{ color: 'var(--text-muted)' }}>Cabecera</span>
+        {(['a', 'b'] as const).map(v => (
+          <button key={v} onClick={() => setCab(v)} className="px-4 py-2 uppercase"
+            style={{ background: cab === v ? 'var(--primary)' : 'transparent', color: cab === v ? 'var(--bg)' : 'var(--text)' }}>{v}</button>
+        ))}
       </div>
       <ReportarProblema ids={[id]} abierto={reportando} onCerrar={() => setReportando(false)} onHecho={() => { window.location.href = returnTo.startsWith('/') ? returnTo : '/recetas' }} />
       {enBandeja && (
