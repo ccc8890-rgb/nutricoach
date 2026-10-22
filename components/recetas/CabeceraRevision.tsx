@@ -20,9 +20,8 @@ const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
     vistas: [{ href: '/recetas/revisar', label: 'Por revisar', clave: 'porRevisar', activa: p => p === '/recetas/revisar' }],
   },
   {
-    titulo: 'Herramientas',
+    titulo: 'Ampliar',
     vistas: [
-      { href: '/recetas/auditoria', label: 'Ingredientes', activa: p => p === '/recetas/auditoria' },
       { href: '/recetas/cobertura', label: 'Cobertura', activa: p => p === '/recetas/cobertura' },
     ],
   },
