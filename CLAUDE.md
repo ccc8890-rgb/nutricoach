@@ -4,6 +4,17 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 23-10-2026 (01:00, Claude) — Fotos e Ingredientes dentro de la cola única «Por revisar»
+
+Carlos seguía viendo la misma receta en «Por revisar» y en «Fotos» y quería una sola pestaña de trabajo. Commits nutricoach `a5abc5a3` y `9cd2f88f`; `tsc` limpio. **Sin ver en pantalla.**
+- **Barra** (`CabeceraRevision`): Biblioteca · Por revisar · Ampliar (Cobertura). Fuera Fotos e Ingredientes.
+- **Foto en la tarjeta:** `Acciones` de `revisar/page.tsx` añade «Foto OK» cuando hay foto con `imagen_estado` revisar/rechazada (`fotoOk` → `PATCH /api/recetas/[id]/imagen` con `imagen_estado:'aprobada'`) y la receta sale del filtro Foto sin salir de la cola.
+- **Redirecciones:** `/recetas/imagenes` → `/recetas/revisar?tarea=foto`; `/recetas/auditoria` → `/recetas/revisar?tarea=bloqueos`. Los ficheros de página quedan como redirect; el código anterior está en git (`git show a5abc5a3~1:'nutricoach/app/recetas/(revision)/imagenes/page.tsx'`).
+- **Se pierde a propósito:** score de foto, generador de prompt, fotos sospechosas de recetas ya aprobadas (la cola solo cubre las que están en revisión) y la edición de cantidades en bloque de Ingredientes.
+- **Test:** `scripts/test-coach-recipe-depth.ts` ya no comprueba las pantallas retiradas; sus rutas sin `(revision)` ya estaban desfasadas.
+- **Pendiente:** verla en Mac y 390 px; si se echa de menos la edición de cantidades en bloque, recuperarla como acción dentro de la ficha o de la cola.
+- **Regla:** una receta = una sola lista; los problemas son filtros sobre ella, no pantallas aparte.
+
 ## ✅ 23-10-2026 (madrugada, Claude) — Una sola cola de revisión de recetas
 
 Carlos vio la barra «Por aprobar 30 · Reportadas 1 · Fotos 59» y que las mismas recetas salían en varias pestañas. Commit nutricoach `f8f75805`; `tsc`, ESLint y `scripts/recetas-revision.test.ts` OK. **Sin ver en pantalla** (comprobado solo con consultas reales a la BD).
