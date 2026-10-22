@@ -112,6 +112,7 @@ export default function DetalleRecetaPage() {
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
   const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
   const [quality, setQuality] = useState<RecetaQuality | null>(null)
+  const [calidadAbierta, setCalidadAbierta] = useState(false)
 
   async function handleEstado(nuevoEstado: 'aprobada' | 'descartada'): Promise<boolean> {
     if (nuevoEstado === 'aprobada' && quality) {
@@ -460,6 +461,17 @@ export default function DetalleRecetaPage() {
           )}
         </div>
 
+        {/* Aviso discreto solo si hay bloqueos reales de calidad */}
+        {!isClientView && quality && quality.issues.some(i => i.severity === 'bloqueante') && (
+          <button type="button"
+            onClick={() => { setCalidadAbierta(true); setTimeout(() => document.getElementById('control-calidad')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
+            className="mb-4 flex w-full items-center gap-2 rounded-lg border px-4 py-2 text-left text-sm"
+            style={{ borderColor: 'var(--warning)', color: 'var(--warning)', background: 'var(--warning-bg)' }}>
+            {quality.issues.filter(i => i.severity === 'bloqueante').length} problema(s) de calidad por revisar
+            <span className="ml-auto underline">Ver</span>
+          </button>
+        )}
+
         {/* Banner de revisión */}
         {!isClientView && (receta.estado === 'en_revision' || receta.estado === 'borrador') && (
           <ScaleIn delay={0.05}>
@@ -525,7 +537,7 @@ export default function DetalleRecetaPage() {
           </div>
 
           {/* Columna principal: la receta en sí */}
-          <div className="min-w-0 lg:col-start-1 lg:row-start-2">
+          <div className="min-w-0 lg:col-span-2">
         {/* ═══════ VIDEO (si existe) ═══════ */}
         {receta.video_url && (
           <FadeIn delay={0.2}>
@@ -637,47 +649,6 @@ export default function DetalleRecetaPage() {
         )}
 
           </div>
-
-          {/* Columna lateral: control del coach */}
-          <div className="min-w-0 lg:col-start-2 lg:row-start-2">
-        {!isClientView && quality && (
-          <FadeIn delay={0.06}>
-            <section className="coach-recipe-detail__section mb-6 p-4 sm:p-5" aria-label="Calidad de la receta">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                <span className="coach-recipe-kicker">Calidad</span>
-                <span className="inline-flex items-center gap-2 text-sm font-semibold capitalize" style={{ color: 'var(--text)' }}>
-                  <span className="h-2 w-2 rounded-full" style={{ background: quality.ok ? 'var(--success)' : 'var(--warning)' }} aria-hidden />
-                  {quality.banda_calidad}
-                  <span className="font-normal tabular-nums" style={{ color: 'var(--text-secondary)' }}>{quality.score_calidad}/100</span>
-                </span>
-                <span className="text-xs tabular-nums sm:ml-auto" style={{ color: 'var(--text-muted)' }}>{quality.cobertura_pct}% de ingredientes con precio</span>
-              </div>
-              <div className="mt-4 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
-                <ClasificacionEditor
-                  recetaId={id}
-                  clasificacion={quality.clasificacion}
-                  manual={Boolean(quality.clasificacion_manual)}
-                  onGuardado={(c, manual) => setQuality(q => (q ? { ...q, clasificacion: c, clasificacion_manual: manual } : q))}
-                />
-              </div>
-              {quality.issues.length === 0 ? (
-                <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-                  Sin bloqueos de ingredientes, cantidades o coste.
-                </p>
-              ) : (
-                <ul className="mt-4 space-y-1 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
-                  {quality.issues.map(item => (
-                    <li key={`${item.codigo}-${item.mensaje}`} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      <span className="font-semibold" style={{ color: item.severity === 'bloqueante' ? 'var(--error)' : 'var(--warning)' }}>{item.severity}:</span> {item.mensaje}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </FadeIn>
-        )}
-
-          </div>
         </div>
 
         {/* ═══════ ESCANDALLO DE COSTES (a todo el ancho, debajo de la ficha) ═══════ */}
@@ -694,6 +665,48 @@ export default function DetalleRecetaPage() {
             <EscandalloReceta recetaId={id as string} />
           </div>
         </FadeIn>
+        )}
+
+        {/* ═══════ CONTROL DE CALIDAD (plegado: es para revisar, no para el día a día) ═══════ */}
+        {!isClientView && quality && (
+          <FadeIn delay={0.45}>
+            <section id="control-calidad" className="coach-recipe-detail__section mb-6 scroll-mt-24" aria-label="Control de calidad">
+              <button type="button" onClick={() => setCalidadAbierta(v => !v)} aria-expanded={calidadAbierta}
+                className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 p-4 text-left sm:p-5">
+                <span className="coach-recipe-kicker">Control de calidad</span>
+                <span className="inline-flex items-center gap-2 text-sm font-semibold capitalize" style={{ color: 'var(--text)' }}>
+                  <span className="h-2 w-2 rounded-full" style={{ background: quality.ok ? 'var(--success)' : 'var(--warning)' }} aria-hidden />
+                  {quality.banda_calidad}
+                  <span className="font-normal tabular-nums" style={{ color: 'var(--text-secondary)' }}>{quality.score_calidad}/100</span>
+                </span>
+                <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>{calidadAbierta ? 'Ocultar' : 'Ver detalle'}</span>
+              </button>
+              {calidadAbierta && (
+                <div className="border-t p-4 sm:p-5" style={{ borderColor: 'var(--recipe-rule)' }}>
+                  <p className="mb-4 text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>{quality.cobertura_pct}% de ingredientes con precio</p>
+                  <ClasificacionEditor
+                    recetaId={id}
+                    clasificacion={quality.clasificacion}
+                    manual={Boolean(quality.clasificacion_manual)}
+                    onGuardado={(c, manual) => setQuality(q => (q ? { ...q, clasificacion: c, clasificacion_manual: manual } : q))}
+                  />
+                  {quality.issues.length === 0 ? (
+                    <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+                      Sin bloqueos de ingredientes, cantidades o coste.
+                    </p>
+                  ) : (
+                    <ul className="mt-4 space-y-1 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
+                      {quality.issues.map(item => (
+                        <li key={`${item.codigo}-${item.mensaje}`} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                          <span className="font-semibold" style={{ color: item.severity === 'bloqueante' ? 'var(--error)' : 'var(--warning)' }}>{item.severity}:</span> {item.mensaje}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </section>
+          </FadeIn>
         )}
 
         {/* ═══════ FOOTER ═══════ */}
