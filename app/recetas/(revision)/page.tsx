@@ -752,6 +752,7 @@ export default function RecetasPage() {
                   adherencia_score={r.adherencia_score}
                   recipe_intelligence_score={r.recipe_intelligence_score}
                   recipe_intelligence_tier={r.recipe_intelligence_tier}
+                  intolerancias={r.intolerancias}
                   macro_flex_score={r.macro_flex_score}
                   planning_roles={r.planning_roles}
                   digestibilidad={r.digestibilidad}
