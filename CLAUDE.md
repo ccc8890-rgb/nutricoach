@@ -4,6 +4,15 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 23-10-2026 (madrugada, Claude) — Una sola cola de revisión de recetas
+
+Carlos vio la barra «Por aprobar 30 · Reportadas 1 · Fotos 59» y que las mismas recetas salían en varias pestañas. Commit nutricoach `f8f75805`; `tsc`, ESLint y `scripts/recetas-revision.test.ts` OK. **Sin ver en pantalla** (comprobado solo con consultas reales a la BD).
+- **Causa:** listas por tipo de problema, no una cola de recetas. «Fotos» contaba toda receta en revisión con foto no aprobada, o sea las mismas 31 de Por aprobar/Reportadas, más otras.
+- **Ahora:** `CabeceraRevision` tiene una sola pestaña **Por revisar** (contador = `counts.cola`, 31 hoy: 30 + 1, sin repetidas) y un grupo **Herramientas** sin contador (Fotos, Ingredientes, Cobertura: son pantallas de trabajo en bloque, no listas). `/recetas/revisar` filtra la misma cola con chips: Todas (`cola`) · Listas para aprobar (`listas`) · Ingredientes o calidad (`bloqueos`) · Foto (`foto`: sin imagen o `imagen_estado` revisar/rechazada) · Reportadas (`corregir`) · Nuevas hoy. Cada receta muestra «Reportada», «Sin foto» o «Foto por revisar» (`ProblemasReceta`). «Listas» excluye las reportadas y «Aprobar aprobables» no aparece en Reportadas ni en Foto.
+- **API:** `lib/recetas/revision.ts` y `app/api/recetas/revisar/route.ts` añaden las tareas `cola`, `listas` y `foto` (y `counts.cola/listas/foto`, `imagen_estado` en el select). Las tareas viejas (`pendientes`, `sin_foto`, `todas`…) siguen; `BarraRevision` («aprobar y siguiente») recorre ahora `cola`; `?tarea=corregir` sigue valiendo.
+- **Pendiente:** verla en pantalla (Mac y 390 px); decidir si Fotos e Ingredientes se quitan del todo (se perdería el trabajo en lote); `Link` sin usar en `revisar/page.tsx` (ya estaba).
+- **Lección:** cuando haya contadores que «no cuadran», mirar si dos listas filtran sobre la misma población; para contar recetas únicas, un solo filtro de cola y los problemas como subconjuntos. Un script suelto con `import` de `node_modules` no resuelve desde el scratchpad: copiarlo un momento a `scripts/` y borrarlo.
+
 ## ✅ 22→23-10-2026 (noche, Claude) — Motor de correcciones de recetas marcadas, fotos desde el reel y casos parecidos
 
 Carlos marca recetas («Reportar problema») y quiere que el motor las corrija solo para él hacer la revisión final. Commits `028b6c9c`, `7fa6f3b3`, `359c923d`, `d3fa5751` y los de nombres/foto-desde-reel; `tsc` y ESLint limpios. **Sin ver en pantalla** las recetas corregidas.
