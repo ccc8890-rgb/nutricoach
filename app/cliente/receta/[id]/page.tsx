@@ -106,7 +106,7 @@ export default function RecetaClientePage() {
 
   // Datos de la receta en el mismo lenguaje editorial que el coach, en versión corta para móvil
   const { aptaPara, contiene } = resumenAptitud(receta?.intolerancias)
-  const datosReceta = ([['Tiempo', receta?.tiempo_prep_min ? `${receta.tiempo_prep_min} min` : null], ['Plato', receta?.categoria], ['Cocción', receta?.tipo_coccion], ['Dificultad', receta?.dificultad]] as const).filter(([, v]) => Boolean(v)) as unknown as [string, string][]
+  const datosReceta = ([['Plato', receta?.categoria], ['Cocción', receta?.tipo_coccion], ['Dificultad', receta?.dificultad]] as const).filter(([, v]) => Boolean(v)) as unknown as [string, string][]
   const rotulo = 'font-data text-[10px] font-medium uppercase tracking-[0.14em]'
   const linea = { borderColor: 'var(--editorial-rule, var(--border))' }
   const punto = (color: string) => <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: color }} aria-hidden />
