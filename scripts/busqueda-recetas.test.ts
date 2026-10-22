@@ -12,7 +12,14 @@ assert.deepEqual(palabrasDeBusqueda(''), [])
 
 // Consulta Supabase: un ilike por palabra
 const llamadas: string[] = []
-const falsa = { ilike(c: string, v: string) { llamadas.push(`${c}:${v}`); return falsa } }
+const falsa = { ilike(c: string, v: string) { llamadas.push(`${c}:${v}`); return falsa }, or(f: string) { llamadas.push(`or:${f}`); return falsa } }
 aplicarBusquedaNombre(falsa, 'tarta de chocolate')
-assert.deepEqual(llamadas, ['nombre:%tarta%', 'nombre:%chocolate%'])
+assert.deepEqual(llamadas, ['or:nombre.ilike.%tarta%,nombre.ilike.%pastel%,nombre.ilike.%cheesecake%', 'nombre:%chocolate%'])
+assert.ok(coincidePalabras('Cheesecake vegano de chocolate', palabrasDeBusqueda('tarta chocolate')), 'sinónimo: tarta → cheesecake')
+assert.ok(coincidePalabras('Tosta de aguacate', palabrasDeBusqueda('tostadas')), 'sinónimo y plural: tostadas → tosta')
+assert.ok(coincidePalabras('Pancakes de avena', palabrasDeBusqueda('tortitas')), 'sinónimo: tortitas → pancakes')
+assert.ok(!coincidePalabras('Pollo al horno', palabrasDeBusqueda('tarta')), 'sin falsos positivos')
 console.log('busqueda-recetas: OK')
+assert.ok(!coincidePalabras('Pancakes de avena', palabrasDeBusqueda('bizcocho')), 'bizcocho no trae pancakes')
+assert.ok(!coincidePalabras('Pasta a la boloñesa', palabrasDeBusqueda('bowl')), 'bowl no trae boloñesa')
+console.log('busqueda-recetas (sinónimos): OK')

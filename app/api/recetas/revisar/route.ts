@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
 
     const aplicarAvanzados = <T extends {
       ilike: (column: string, value: string) => T
+      or: (filters: string) => T
       eq: (column: string, value: string) => T
     }>(query: T): T => {
       let result = query
