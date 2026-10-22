@@ -11,7 +11,9 @@ for (const href of ['/compra', '/precios', '/precios/escandallo', '/precios/rent
   assert.ok(compra.includes(`'${href}'`), `COMPRA_ITEMS debe incluir ${href}`)
 }
 const recetario = sidebar.slice(sidebar.indexOf('const RECETARIO_ITEMS'), sidebar.indexOf('\n]', sidebar.indexOf('const RECETARIO_ITEMS')))
-assert.ok(recetario.includes("'/recetas/revisar'"), 'RECETARIO_ITEMS debe seguir incluyendo Revisión')
+// Biblioteca y revisión son un solo espacio (pestañas en CabeceraRevision): una sola entrada en el menú.
+assert.ok(recetario.includes("'/recetas'"), 'RECETARIO_ITEMS debe incluir el espacio del recetario')
+assert.ok(!recetario.includes("'/recetas/revisar'"), 'La revisión ya no es una entrada aparte del menú')
 
 const shell = readFileSync('components/CoachShell.tsx', 'utf8')
 assert.ok(!shell.includes("area: 'Control'"), 'CoachShell no debe usar el área Control')

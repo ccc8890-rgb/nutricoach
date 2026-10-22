@@ -4,6 +4,15 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 22-10-2026 (Claude) — Espacio único del recetario y ficha de receta a dos columnas
+
+Resumen y pendientes en la fila de `NUTRICION/CLAUDE.md`. Todo UI, sin migraciones ni rutas nuevas (las APIs de revisión no se tocaron). Commits `3b9bffb9`, `4fea122a`, `d6446a89`, `9fd9bc56`, `06a05e3b`.
+- **Estructura:** `app/recetas/(revision)/` agrupa Biblioteca (`page.tsx`, movida desde `app/recetas/`), `revisar`, `imagenes`, `auditoria` y `cobertura` bajo `CabeceraRevision`. `/recetas/cola` sigue redirigiendo a `/recetas/revisar`; `/recetas/nueva` y `/recetas/[id]` quedan fuera de la barra.
+- **Bandeja `revisar`:** «Por aprobar» y «Reportadas» son las pestañas de la cabecera; la fila de la página solo acota Por aprobar (`ACOTAR`: Todas, Nuevas hoy, Con bloqueos). `tarea=sin_foto` y `tarea=todas` siguen existiendo en la API, sin botón.
+- **Aptitudes:** usar siempre `resumenAptitud` / `recetaTieneEtiqueta` / `APTA_PARA` / `SIN_ALERGENO` (no pintar `intolerancias` a pelo). El filtro de la Biblioteca (`?apta=`) usa `recetaTieneEtiqueta`; el parámetro `rapido` ya no existe.
+- **Ficha:** rejilla `lg:grid-cols-[minmax(0,1fr)_25rem]` (título a todo el ancho, columna lateral con macros y aptitudes, columna principal con la receta, columna lateral con Calidad y Coste); en móvil el orden es título → macros → receta → control. Sin foto no se pinta cabecera (`h-16`) ni el contenido sube sobre ella.
+- **Test:** `scripts/menu-recetario.test.ts` ahora espera una sola entrada `/recetas` y ninguna `/recetas/revisar` en `RECETARIO_ITEMS`.
+
 ## ✅ 20-10-2026 (noche, Claude) — Selector Pista / Cinta en sesiones de carrera (Garmin)
 
 Carlos hizo series en cinta con el perfil «Cinta» del reloj y las series acababan antes y el reloj decía que iba demasiado rápido: sin GPS el reloj estima los metros con el acelerómetro (sin calibrar sobreestima), y el fin por distancia y el ritmo dependían de esa medida.
