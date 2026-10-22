@@ -488,7 +488,7 @@ export default function DetalleRecetaPage() {
           <div className="min-w-0 lg:col-span-2">
         {/* ═══════ TÍTULO + META ═══════ */}
         <FadeIn delay={0.1}>
-          <div className={`coach-recipe-detail__intro mb-4 grid gap-5 ${receta.imagen_url ? 'sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)_23rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_23rem]'}`} style={{ padding: '1.1rem' }}>
+          <div className={`coach-recipe-detail__intro mb-4 grid gap-5 ${receta.imagen_url ? 'sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)_26rem] xl:grid-cols-[20rem_minmax(0,1fr)_31rem] lg:items-center' : 'lg:grid-cols-[minmax(0,1fr)_26rem] xl:grid-cols-[minmax(0,1fr)_31rem]'}`} style={{ padding: '1.1rem' }}>
             {fotoReceta}
             <div className="min-w-0">
             <div className="flex items-start gap-3 flex-wrap mb-2">
@@ -499,7 +499,7 @@ export default function DetalleRecetaPage() {
             )}
             {bloqueEtiquetas}
             </div>
-            <div className="min-w-0 sm:col-span-2 lg:col-span-1 lg:border-l lg:pl-6" style={{ borderColor: 'var(--recipe-rule)' }}>{bloqueMacros}</div>
+            <div className="min-w-0 sm:col-span-2 lg:col-span-1 lg:border-l lg:pl-8" style={{ borderColor: 'var(--recipe-rule)' }}>{bloqueMacros}</div>
           </div>
         </FadeIn>
 
