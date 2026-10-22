@@ -14,7 +14,7 @@ assert.deepEqual(palabrasDeBusqueda(''), [])
 const llamadas: string[] = []
 const falsa = { ilike(c: string, v: string) { llamadas.push(`${c}:${v}`); return falsa }, or(f: string) { llamadas.push(`or:${f}`); return falsa } }
 aplicarBusquedaNombre(falsa, 'tarta de chocolate')
-assert.deepEqual(llamadas, ['or:nombre.ilike.%tarta%,nombre.ilike.%pastel%,nombre.ilike.%cheesecake%', 'nombre:%chocolate%'])
+assert.deepEqual(llamadas, ['or:nombre_busqueda.ilike.%tarta%,nombre_busqueda.ilike.%pastel%,nombre_busqueda.ilike.%cheesecake%', 'nombre_busqueda:%chocolate%'])
 assert.ok(coincidePalabras('Cheesecake vegano de chocolate', palabrasDeBusqueda('tarta chocolate')), 'sinónimo: tarta → cheesecake')
 assert.ok(coincidePalabras('Tosta de aguacate', palabrasDeBusqueda('tostadas')), 'sinónimo y plural: tostadas → tosta')
 assert.ok(coincidePalabras('Pancakes de avena', palabrasDeBusqueda('tortitas')), 'sinónimo: tortitas → pancakes')
@@ -23,3 +23,8 @@ console.log('busqueda-recetas: OK')
 assert.ok(!coincidePalabras('Pancakes de avena', palabrasDeBusqueda('bizcocho')), 'bizcocho no trae pancakes')
 assert.ok(!coincidePalabras('Pasta a la boloñesa', palabrasDeBusqueda('bowl')), 'bowl no trae boloñesa')
 console.log('busqueda-recetas (sinónimos): OK')
+const l2: string[] = []
+const f2 = { ilike(c: string, v: string) { l2.push(`${c}:${v}`); return f2 }, or() { return f2 } }
+aplicarBusquedaNombre(f2, 'LIMÓN')
+assert.deepEqual(l2, ['nombre_busqueda:%limon%'], 'la palabra se normaliza sin tildes para la columna sin tildes')
+console.log('busqueda-recetas (tildes en servidor): OK')

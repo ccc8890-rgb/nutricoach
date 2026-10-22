@@ -116,7 +116,7 @@ async function procesar(prop: any): Promise<Resultado> {
   const revertir = async () => {
     await db.from('receta_ingredientes').delete().eq('receta_id', id)
     await db.from('receta_ingredientes').insert((previos ?? []).map(({ id: _i, ...x }: any) => x))
-    const { id: _r, ...campos } = r as any
+    const { id: _r, nombre_busqueda: _nb, ...campos } = r as any // nombre_busqueda es columna generada
     await db.from('recetas').update(campos).eq('id', id)
   }
   try {

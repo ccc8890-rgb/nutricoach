@@ -18,7 +18,8 @@ async function main() {
   const { receta, ingredientes } = JSON.parse(readFileSync(ruta, 'utf8')) as { receta: Record<string, unknown>; ingredientes: Record<string, unknown>[] }
   console.log(`${receta.nombre}: se restauran ${ingredientes.length} ingredientes y ${Math.round(Number(receta.kcal))} kcal/ración`)
   if (!APPLY) { console.log('Simulación: nada escrito. Usa --apply.'); return }
-  const { id: _rid, ...campos } = receta
+  // `nombre_busqueda` es una columna generada (no admite escritura): las copias hechas con select('*') la traen
+  const { id: _rid, nombre_busqueda: _nb, ...campos } = receta
   const { error: e1 } = await db.from('receta_ingredientes').delete().eq('receta_id', id)
   if (e1) throw e1
   const { error: e2 } = await db.from('receta_ingredientes').insert(ingredientes.map(({ id: _i, ...x }) => x))

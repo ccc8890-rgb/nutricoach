@@ -38,11 +38,15 @@ export function coincidePalabras(texto: string | null | undefined, palabras: str
   return palabras.every(w => variantesDe(w).some(v => t.includes(sinTildes(v))))
 }
 
-/** Filtro en una consulta Supabase: por palabra, ella o un sinónimo (`or` de `ilike`); todas las palabras deben aparecer. No ignora tildes (límite de `ilike`). */
-export function aplicarBusquedaNombre<T extends { ilike: (columna: string, valor: string) => T; or: (filtros: string) => T }>(consulta: T, q: string | null | undefined, columna = 'nombre'): T {
+/**
+ * Filtro en una consulta Supabase sobre `recetas`: por palabra, ella o un sinónimo (`or` de `ilike`); todas deben aparecer.
+ * Busca en `nombre_busqueda` (nombre en minúsculas y sin tildes, columna generada) con la palabra también sin tildes:
+ * «limon» encuentra «Limón». Migración `20261022170000_recetas_nombre_busqueda.sql`.
+ */
+export function aplicarBusquedaNombre<T extends { ilike: (columna: string, valor: string) => T; or: (filtros: string) => T }>(consulta: T, q: string | null | undefined, columna = 'nombre_busqueda'): T {
   let resultado = consulta
   for (const w of palabrasDeBusqueda(q)) {
-    const variantes = variantesDe(w.replace(/[%_,()]/g, ' ').trim()).filter(Boolean)
+    const variantes = variantesDe(w.replace(/[%_,()]/g, ' ').trim()).map(sinTildes).filter(Boolean)
     resultado = variantes.length > 1
       ? resultado.or(variantes.map(v => `${columna}.ilike.%${v}%`).join(','))
       : resultado.ilike(columna, `%${variantes[0] ?? ''}%`)
