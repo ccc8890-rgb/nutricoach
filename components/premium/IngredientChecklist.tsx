@@ -52,7 +52,7 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
             {conFases && <FaseTitulo nombre={fase.nombre ?? 'Otros'} className="px-3 pb-2" />}
             <ul>
                 {fase.items.map((ing) => (
-                    <li key={ing.id} className="flex items-baseline gap-4 px-1 py-3 border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
+                    <li key={ing.id} className="flex items-baseline gap-4 px-1 py-2.5">
                         {/* Cantidad a la izquierda, alineada como en un libro de recetas */}
                         <span className="w-20 shrink-0 text-right text-base font-semibold tabular-nums" style={{ color: 'var(--text)' }}>
                             {ing.cantidad}
@@ -60,10 +60,8 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
                         <span className="text-lg font-medium leading-snug" style={{ color: 'var(--text)' }}>
                             {ing.nombre}
                         </span>
-                        {/* Guía punteada hacia las kcal para que no queden perdidas a lo lejos */}
-                        <span className="flex-1 min-w-4 translate-y-[-4px] border-b border-dotted" style={{ borderColor: 'var(--border)' }} aria-hidden />
                         {ing.kcal !== undefined && (
-                            <span className="text-sm font-medium tabular-nums whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>
+                            <span className="text-sm tabular-nums whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
                                 {Math.round(ing.kcal)} kcal
                             </span>
                         )}
