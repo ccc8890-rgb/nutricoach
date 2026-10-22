@@ -58,10 +58,19 @@ export async function GET(
     const comidaPlan = elegirComida((plan.comidas ?? []) as { id: string; nombre: string; dia_semana: string | null; receta_id: string | null }[], recetaId, new URL(request.url).searchParams.get('comida'))
     const racion = comidaPlan ? await racionDeComida(supabase, comidaPlan) : null
 
+    // Salsas que combinan («Va bien con…»): solo las aprobadas
+    const { data: enlaces } = await supabase.from('receta_salsas').select('salsa_id, orden').eq('receta_id', recetaId).order('orden')
+    const salsaIds = (enlaces ?? []).map(e => e.salsa_id)
+    const { data: salsasRows } = salsaIds.length
+      ? await supabase.from('recetas').select('id, nombre, kcal').in('id', salsaIds).eq('estado', 'aprobada')
+      : { data: [] as { id: string; nombre: string; kcal: number | null }[] }
+    const salsas = salsaIds.map(id => (salsasRows ?? []).find(s => s.id === id)).filter(Boolean)
+
     return NextResponse.json({
       racion,
       receta,
       ingredientes: ingredientesRes.data ?? [],
+      salsas,
     })
   } catch (err) {
     console.error('[cliente receta] Error:', err)

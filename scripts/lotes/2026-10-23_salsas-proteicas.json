@@ -1,0 +1,445 @@
+{
+ "lote": "salsas-saludables-2026-10-23",
+ "tipo_plato": "Snack",
+ "tipo_receta": "salsa_base",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 15,
+  "kcal_max": 140,
+  "proteina_pct_min": 0.1
+ },
+ "alimentos": {
+  "aceite": {
+   "nombre": "Aceite de oliva",
+   "prefijo": "bf392211",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aguacate": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajopolvo": {
+   "nombre": "Ajo en polvo",
+   "prefijo": "bbece24a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "anchoa": {
+   "nombre": "Anchoas en Aceite de Oliva",
+   "prefijo": "715a14ac",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "cebmorada": {
+   "nombre": "Cebolla morada",
+   "prefijo": "849140d6",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cebollino": {
+   "nombre": "Cebollino",
+   "prefijo": "03f57b8d",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cebpolvo": {
+   "nombre": "Cebolla en polvo",
+   "prefijo": "c17ad017",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cilantro": {
+   "nombre": "Cilantro fresco",
+   "prefijo": "d61c2a0f",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "eneldo": {
+   "nombre": "Eneldo fresco",
+   "prefijo": "2fedb06b",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "leche": {
+   "nombre": "Leche semidesnatada",
+   "prefijo": "8469bf72",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "lima": {
+   "nombre": "Lima",
+   "prefijo": "65756599",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Zumo de limón",
+   "prefijo": "12a8ab46",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "mayoligera": {
+   "nombre": "Mayonesa ligera",
+   "prefijo": "810d496b",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "miel": {
+   "nombre": "Miel",
+   "prefijo": "8619b09f",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "miel"
+  },
+  "mostaza": {
+   "nombre": "Mostaza",
+   "prefijo": "6284b407",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "parmesano": {
+   "nombre": "Queso parmesano",
+   "prefijo": "b983723d",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "perejil": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "picante": {
+   "nombre": "Salsa picante",
+   "prefijo": "95aa4443",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimahum": {
+   "nombre": "Pimentón ahumado",
+   "prefijo": "e2dd1c2b",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimienta": {
+   "nombre": "Pimienta negra molida",
+   "prefijo": "3350c934",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "quesofresco": {
+   "nombre": "Queso fresco batido 0%",
+   "prefijo": "4ffad411",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "sal": {
+   "nombre": "Sal",
+   "prefijo": "0adc820b",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "skyr": {
+   "nombre": "Skyr natural",
+   "prefijo": "edc8a060",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "tomate": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tomatriturado": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "vinagre": {
+   "nombre": "Vinagre de manzana",
+   "prefijo": "f0671f02",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "yogur": {
+   "nombre": "Yogur griego natural",
+   "prefijo": "585bd18b",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Salsa búfalo ligera de skyr",
+   "descripcion": "Salsa picante y cremosa estilo búfalo con base de skyr: mucha proteína y muy pocas calorías.",
+   "tiempo_prep_min": 5,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "skyr",
+     200
+    ],
+    [
+     "picante",
+     60
+    ],
+    [
+     "vinagre",
+     10
+    ],
+    [
+     "ajopolvo",
+     3
+    ],
+    [
+     "pimahum",
+     3
+    ],
+    [
+     "aceite",
+     5
+    ]
+   ],
+   "instrucciones": "1. Pon el skyr en un bol y añade la salsa picante, el vinagre, el ajo en polvo y el pimentón ahumado.\n2. Mezcla con unas varillas hasta que quede lisa y sin grumos.\n3. Incorpora el aceite en hilo sin dejar de remover.\n4. Prueba y ajusta el picante. Guarda en la nevera al menos 30 minutos antes de servir.",
+   "consejos": "Aguanta 4 días en la nevera. Va bien con pollo, huevo cocido, alitas al horno y crudités. Si la quieres más líquida, añade una cucharada de agua."
+  },
+  {
+   "nombre": "Salsa César ligera de yogur",
+   "descripcion": "Aliño tipo César con yogur griego, parmesano y anchoa: el sabor de siempre con mucha menos grasa.",
+   "tiempo_prep_min": 8,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "yogur",
+     150
+    ],
+    [
+     "parmesano",
+     20
+    ],
+    [
+     "anchoa",
+     10
+    ],
+    [
+     "ajo",
+     4
+    ],
+    [
+     "limon",
+     15
+    ],
+    [
+     "mostaza",
+     10
+    ],
+    [
+     "aceite",
+     10
+    ],
+    [
+     "pimienta",
+     1
+    ]
+   ],
+   "instrucciones": "1. Pica muy fino el ajo y las anchoas hasta hacer una pasta.\n2. Ralla el parmesano y mézclalo en un bol con el yogur, la mostaza y el zumo de limón.\n3. Añade la pasta de ajo y anchoa y la pimienta.\n4. Termina con el aceite en hilo, removiendo. Prueba antes de añadir sal: el parmesano y la anchoa ya salan.",
+   "consejos": "Sirve para ensaladas, pollo a la plancha, wraps y huevo cocido. Aguanta 4 días en la nevera."
+  },
+  {
+   "nombre": "Salsa ranch proteica de skyr y hierbas",
+   "descripcion": "Ranch fresca de skyr con eneldo, cebollino y perejil, sin mayonesa ni nata.",
+   "tiempo_prep_min": 5,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "skyr",
+     150
+    ],
+    [
+     "leche",
+     40
+    ],
+    [
+     "eneldo",
+     5
+    ],
+    [
+     "cebollino",
+     5
+    ],
+    [
+     "perejil",
+     5
+    ],
+    [
+     "ajopolvo",
+     2
+    ],
+    [
+     "cebpolvo",
+     2
+    ],
+    [
+     "limon",
+     10
+    ],
+    [
+     "pimienta",
+     1
+    ]
+   ],
+   "instrucciones": "1. Pica muy finas las hierbas.\n2. Mezcla el skyr con la leche hasta que quede cremoso.\n3. Añade las hierbas, el ajo y la cebolla en polvo, el zumo de limón y la pimienta.\n4. Remueve y deja reposar 15 minutos en la nevera para que se asienten los sabores.",
+   "consejos": "Para dip espesa usa menos leche; para aliño de ensalada, un poco más. Aguanta 4 días en la nevera."
+  },
+  {
+   "nombre": "Salsa de mostaza y miel ligera",
+   "descripcion": "Salsa agridulce de yogur con mostaza y un toque de miel, para pollo, huevo y bocadillos.",
+   "tiempo_prep_min": 5,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "yogur",
+     120
+    ],
+    [
+     "mostaza",
+     30
+    ],
+    [
+     "miel",
+     20
+    ],
+    [
+     "limon",
+     10
+    ]
+   ],
+   "instrucciones": "1. Mezcla el yogur con la mostaza en un bol.\n2. Añade la miel y el zumo de limón.\n3. Remueve hasta obtener una crema homogénea y prueba el punto de dulce.",
+   "consejos": "Combina con tiras de pollo al horno, huevo cocido y bocadillos. Aguanta 4 días en la nevera."
+  },
+  {
+   "nombre": "Guacamole proteico con queso fresco",
+   "descripcion": "Guacamole cremoso en el que parte del aguacate se sustituye por queso fresco batido: menos grasa y más proteína.",
+   "tiempo_prep_min": 10,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "aguacate",
+     150
+    ],
+    [
+     "quesofresco",
+     100
+    ],
+    [
+     "tomate",
+     60
+    ],
+    [
+     "cebmorada",
+     30
+    ],
+    [
+     "lima",
+     20
+    ],
+    [
+     "cilantro",
+     10
+    ],
+    [
+     "sal",
+     1
+    ]
+   ],
+   "instrucciones": "1. Machaca el aguacate con un tenedor junto con el zumo de lima.\n2. Pica el tomate y la cebolla morada en dados pequeños y el cilantro fino.\n3. Mezcla todo con el queso fresco batido y la sal.\n4. Sirve enseguida o cubre con film en contacto para que no se oxide.",
+   "consejos": "Se oscurece rápido: prepáralo el mismo día. Va bien con crudités, huevo cocido, tacos y tostadas."
+  },
+  {
+   "nombre": "Salsa rosa ligera de skyr",
+   "descripcion": "Salsa rosa casera con skyr y un poco de mayonesa ligera: cremosa, con mucha menos grasa que la clásica.",
+   "tiempo_prep_min": 5,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "skyr",
+     100
+    ],
+    [
+     "mayoligera",
+     30
+    ],
+    [
+     "tomatriturado",
+     40
+    ],
+    [
+     "pimahum",
+     2
+    ],
+    [
+     "limon",
+     5
+    ],
+    [
+     "picante",
+     5
+    ]
+   ],
+   "instrucciones": "1. Mezcla el skyr con la mayonesa ligera.\n2. Añade el tomate triturado bien escurrido, el pimentón, el zumo de limón y la salsa picante.\n3. Remueve hasta que quede de color uniforme y deja reposar 10 minutos.",
+   "consejos": "Ideal con gambas, huevo cocido, ensaladas y bocadillos. Aguanta 3 días en la nevera."
+  }
+ ]
+}

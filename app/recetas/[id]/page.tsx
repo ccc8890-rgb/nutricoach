@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowLeft, MagnifyingGlassPlus, X, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, CaretLeft, CurrencyEur, PlayCircle, Lightbulb } from '@phosphor-icons/react'
 import EscandalloReceta from '@/components/EscandalloReceta'
+import SalsasQueCombinan from '@/components/recetas/SalsasQueCombinan'
 import { normalizarReceta, resumenAptitud, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
@@ -48,6 +49,7 @@ interface RecetaDetalle {
   tiempo_coccion_min?: number | null
   tags?: string[]
   estado?: string
+  tipo_receta?: string | null
   intolerancias?: string[]
   coach_id?: string
   created_at: string
@@ -641,6 +643,8 @@ export default function DetalleRecetaPage() {
 
           </div>
         </div>
+
+        {!isClientView && receta.estado === 'aprobada' && receta.tipo_receta !== 'salsa_base' && <SalsasQueCombinan recetaId={id as string} />}
 
         {/* ═══════ ESCANDALLO DE COSTES (a todo el ancho, debajo de la ficha) ═══════ */}
         {!isClientView && (

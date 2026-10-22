@@ -71,10 +71,12 @@ export default function RecetaClientePage() {
     receta: RecetaDetalle
     ingredientes?: IngredienteConAlimento[]
     racion?: Racion | null
+    salsas?: { id: string; nombre: string; kcal: number | null }[]
   }>(codigo ? claveReceta(codigo, id, searchParams.get('comida')) : null, fetchJson)
   const receta = data?.receta ?? null
   const ingredientes = data?.ingredientes ?? []
   const racion = data?.racion ?? null
+  const salsas = data?.salsas ?? []
   const loading = !montado || (Boolean(codigo) && isLoading && !data)
   const error = !codigo ? 'Falta el código del plan.' : errorSwr ? 'No se pudo cargar la receta.' : ''
 
@@ -287,6 +289,19 @@ export default function RecetaClientePage() {
                     <StepByStep pasos={pasos} sinCabecera />
                   </>
                 )}
+              </div>
+            )}
+
+            {salsas.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono, monospace)' }}>Va bien con</p>
+                {salsas.map(s => (
+                  <Link key={s.id} href={`/cliente/receta/${s.id}?codigo=${codigo}&returnTo=${encodeURIComponent(`/cliente/receta/${id}?codigo=${codigo}`)}`} prefetch={false}
+                    className="flex items-center justify-between px-4 py-3 text-sm" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+                    <span>{s.nombre}</span>
+                    {s.kcal ? <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{Math.round(s.kcal)} kcal/ración</span> : null}
+                  </Link>
+                ))}
               </div>
             )}
 

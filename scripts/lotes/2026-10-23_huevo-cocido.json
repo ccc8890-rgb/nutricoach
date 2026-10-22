@@ -1,0 +1,462 @@
+{
+ "lote": "huevo-cocido-2026-10-23",
+ "tipo_plato": "Snack",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 150,
+  "kcal_max": 650,
+  "proteina_pct_min": 0.18
+ },
+ "alimentos": {
+  "aceite": {
+   "nombre": "Aceite de oliva",
+   "prefijo": "bf392211",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aguacate": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "atun": {
+   "nombre": "Atún en lata al natural",
+   "prefijo": "83505726",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "cebollino": {
+   "nombre": "Cebollino",
+   "prefijo": "03f57b8d",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "centeno": {
+   "nombre": "Pan de centeno",
+   "prefijo": "80dffe34",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "cherry": {
+   "nombre": "Tomate cherry",
+   "prefijo": "a92874a5",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "eneldo": {
+   "nombre": "Eneldo fresco",
+   "prefijo": "2fedb06b",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "espinacas": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "feta": {
+   "nombre": "Queso feta",
+   "prefijo": "6187036a",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "garbanzo": {
+   "nombre": "Garbanzos cocidos",
+   "prefijo": "1f1a4cd3",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "huevo": {
+   "nombre": "Huevo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "lechuga": {
+   "nombre": "Lechuga romana",
+   "prefijo": "219fa68f",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Zumo de limón",
+   "prefijo": "12a8ab46",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "mostaza": {
+   "nombre": "Mostaza",
+   "prefijo": "6284b407",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "oregano": {
+   "nombre": "Orégano seco",
+   "prefijo": "c14d168a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pepino": {
+   "nombre": "Pepino",
+   "prefijo": "2e8d5d64",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "perejil": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimahum": {
+   "nombre": "Pimentón ahumado",
+   "prefijo": "e2dd1c2b",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pollo": {
+   "nombre": "Pollo, carne de pechuga, cocida",
+   "prefijo": "84d5dcf3",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "salmon": {
+   "nombre": "Salmón ahumado",
+   "prefijo": "de0eb774",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "skyr": {
+   "nombre": "Skyr natural",
+   "prefijo": "edc8a060",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "tomate": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tortilla": {
+   "nombre": "Tortilla de Trigo",
+   "prefijo": "bd6dc3a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "yogur": {
+   "nombre": "Yogur griego natural",
+   "prefijo": "585bd18b",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Huevos rellenos de yogur y mostaza",
+   "descripcion": "Huevos cocidos rellenos con una crema ligera de yogur, mostaza y pimentón ahumado, sin mayonesa.",
+   "tiempo_prep_min": 20,
+   "porciones": 2,
+   "ingredientes": [
+    [
+     "huevo",
+     220
+    ],
+    [
+     "yogur",
+     60
+    ],
+    [
+     "mostaza",
+     15
+    ],
+    [
+     "pimahum",
+     2
+    ],
+    [
+     "cebollino",
+     5
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece los huevos 10 minutos en agua hirviendo y enfríalos en agua con hielo. Pélalos.\n2. Córtalos por la mitad y saca las yemas.\n3. Machaca las yemas con el yogur, la mostaza y el zumo de limón hasta obtener una crema.\n4. Rellena las claras con la crema y espolvorea pimentón ahumado y cebollino picado.",
+   "consejos": "Se pueden preparar el día anterior. Para más proteína, sustituye el yogur por skyr.",
+   "tipo_plato": "Snack",
+   "tipo_receta": "snack_postre"
+  },
+  {
+   "nombre": "Tosta de ensalada de huevo y aguacate",
+   "descripcion": "Ensalada de huevo cocido con aguacate y skyr en lugar de mayonesa, sobre pan de centeno.",
+   "tiempo_prep_min": 15,
+   "porciones": 2,
+   "ingredientes": [
+    [
+     "huevo",
+     220
+    ],
+    [
+     "aguacate",
+     80
+    ],
+    [
+     "skyr",
+     40
+    ],
+    [
+     "mostaza",
+     10
+    ],
+    [
+     "cebollino",
+     5
+    ],
+    [
+     "centeno",
+     80
+    ]
+   ],
+   "instrucciones": "1. Cuece los huevos 10 minutos, enfríalos y pélalos.\n2. Pícalos con un tenedor y mézclalos con el aguacate machacado, el skyr y la mostaza.\n3. Añade el cebollino picado y pimienta al gusto.\n4. Reparte sobre el pan de centeno tostado.",
+   "consejos": "La mezcla aguanta 2 días en la nevera. Con unas gotas de limón se oxida menos.",
+   "tipo_plato": "Merienda",
+   "tipo_receta": "completa"
+  },
+  {
+   "nombre": "Bowl de huevo cocido, garbanzos y espinacas",
+   "descripcion": "Bowl completo con huevo cocido, garbanzos, espinacas, tomate cherry y pepino, aliñado con limón.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "huevo",
+     110
+    ],
+    [
+     "garbanzo",
+     150
+    ],
+    [
+     "espinacas",
+     60
+    ],
+    [
+     "cherry",
+     80
+    ],
+    [
+     "pepino",
+     60
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "limon",
+     15
+    ]
+   ],
+   "instrucciones": "1. Cuece el huevo 10 minutos, enfríalo y pélalo.\n2. Pon las espinacas en un bol con los garbanzos escurridos, el tomate cherry partido y el pepino en dados.\n3. Aliña con el aceite, el zumo de limón y sal.\n4. Corona con el huevo cortado por la mitad.",
+   "consejos": "Se puede llevar en tupper: pon el aliño aparte hasta el momento de comer.",
+   "tipo_plato": "Comida",
+   "tipo_receta": "completa"
+  },
+  {
+   "nombre": "Palitos de huevo cocido y atún con tomate cherry",
+   "descripcion": "Snack frío y rápido de huevo cocido, atún al natural y tomate cherry con un toque de aceite.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "huevo",
+     110
+    ],
+    [
+     "atun",
+     80
+    ],
+    [
+     "cherry",
+     100
+    ],
+    [
+     "aceite",
+     5
+    ],
+    [
+     "perejil",
+     3
+    ]
+   ],
+   "instrucciones": "1. Cuece el huevo 10 minutos, enfríalo y pélalo.\n2. Córtalo en cuartos y parte los tomates cherry por la mitad.\n3. Mézclalos con el atún escurrido, el aceite, el perejil picado, sal y pimienta.",
+   "consejos": "Aguanta 24 horas en la nevera. Con un poco de salsa de mostaza y miel ligera queda más cremoso.",
+   "tipo_plato": "Snack",
+   "tipo_receta": "snack_postre"
+  },
+  {
+   "nombre": "Wrap de huevo cocido, pollo y salsa de skyr",
+   "descripcion": "Wrap con huevo cocido, pechuga de pollo, lechuga y una salsa de skyr y mostaza.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "tortilla",
+     60
+    ],
+    [
+     "huevo",
+     110
+    ],
+    [
+     "pollo",
+     80
+    ],
+    [
+     "lechuga",
+     30
+    ],
+    [
+     "skyr",
+     40
+    ],
+    [
+     "mostaza",
+     8
+    ],
+    [
+     "tomate",
+     40
+    ]
+   ],
+   "instrucciones": "1. Cuece el huevo 10 minutos, enfríalo y pélalo; córtalo en láminas.\n2. Mezcla el skyr con la mostaza.\n3. Calienta la tortilla 20 segundos en la sartén y úntala con la salsa.\n4. Añade la lechuga, el tomate, el pollo desmenuzado y el huevo. Enrolla apretando.",
+   "consejos": "Para llevar, envuélvelo en papel de horno. Con la salsa ranch proteica de skyr queda aún mejor.",
+   "tipo_plato": "Comida",
+   "tipo_receta": "completa"
+  },
+  {
+   "nombre": "Tosta de huevo cocido, salmón ahumado y eneldo",
+   "descripcion": "Tosta de centeno con crema de skyr, huevo cocido, salmón ahumado y eneldo.",
+   "tiempo_prep_min": 12,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "centeno",
+     70
+    ],
+    [
+     "huevo",
+     110
+    ],
+    [
+     "salmon",
+     40
+    ],
+    [
+     "skyr",
+     40
+    ],
+    [
+     "eneldo",
+     3
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece el huevo 10 minutos, enfríalo y pélalo.\n2. Mezcla el skyr con el zumo de limón y el eneldo picado.\n3. Tuesta el pan, úntalo con la crema y reparte el salmón.\n4. Corona con el huevo en rodajas y pimienta.",
+   "consejos": "Si no tienes eneldo, usa cebollino. Aguanta mal, mejor montarla al momento.",
+   "tipo_plato": "Desayuno",
+   "tipo_receta": "desayuno"
+  },
+  {
+   "nombre": "Cuenco de huevo duro, pepino y feta con yogur",
+   "descripcion": "Cuenco fresco con huevo duro, pepino, tomate cherry y feta con salsa de yogur y eneldo.",
+   "tiempo_prep_min": 12,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "huevo",
+     110
+    ],
+    [
+     "feta",
+     30
+    ],
+    [
+     "pepino",
+     120
+    ],
+    [
+     "cherry",
+     60
+    ],
+    [
+     "yogur",
+     50
+    ],
+    [
+     "eneldo",
+     3
+    ],
+    [
+     "aceite",
+     5
+    ],
+    [
+     "oregano",
+     1
+    ]
+   ],
+   "instrucciones": "1. Cuece el huevo 10 minutos, enfríalo y pélalo.\n2. Corta el pepino en medias lunas y los cherry por la mitad.\n3. Mezcla el yogur con el eneldo y una pizca de sal.\n4. Monta el cuenco con las verduras, el feta desmenuzado y el huevo; añade la salsa de yogur, el aceite y el orégano.",
+   "consejos": "Muy buena opción de cena ligera. El feta ya sala: prueba antes de añadir sal.",
+   "tipo_plato": "Comida",
+   "tipo_receta": "completa"
+  }
+ ]
+}

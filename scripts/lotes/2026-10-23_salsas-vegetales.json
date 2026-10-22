@@ -1,0 +1,90 @@
+{
+ "lote": "salsas-vegetales-2026-10-23",
+ "tipo_plato": "Snack",
+ "tipo_receta": "salsa_base",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 15,
+  "kcal_max": 140
+ },
+ "alimentos": {
+  "aceite": {
+   "nombre": "Aceite de oliva",
+   "prefijo": "bf392211",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "oregano": {
+   "nombre": "Orégano seco",
+   "prefijo": "c14d168a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "perejil": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimahum": {
+   "nombre": "Pimentón ahumado",
+   "prefijo": "e2dd1c2b",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "vinvino": {
+   "nombre": "Vinagre de vino blanco",
+   "prefijo": "e601abd9",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Chimichurri fresco",
+   "descripcion": "Chimichurri de perejil, ajo y orégano con un chorrito de vinagre: sin proteína, pero muy sabroso con poco aceite.",
+   "tiempo_prep_min": 10,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "perejil",
+     40
+    ],
+    [
+     "ajo",
+     8
+    ],
+    [
+     "oregano",
+     2
+    ],
+    [
+     "vinvino",
+     20
+    ],
+    [
+     "aceite",
+     25
+    ],
+    [
+     "pimahum",
+     2
+    ]
+   ],
+   "instrucciones": "1. Pica muy fino el perejil y el ajo.\n2. Mézclalos con el orégano, el pimentón y el vinagre.\n3. Añade el aceite y remueve. Déjalo reposar al menos 30 minutos.",
+   "consejos": "Para carnes, pescados a la plancha y huevo cocido. Aguanta 5 días en la nevera."
+  }
+ ]
+}
