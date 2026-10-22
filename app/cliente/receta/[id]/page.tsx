@@ -111,7 +111,7 @@ export default function RecetaClientePage() {
   const linea = { borderColor: 'var(--editorial-rule, var(--border))' }
   const punto = (color: string) => <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: color }} aria-hidden />
   const datosFicha = (datosReceta.length > 0 || aptaPara.length > 0 || contiene.length > 0) ? (
-    <dl className="mt-3 flex flex-col divide-y border-y text-sm" style={{ ...linea, color: 'var(--text-secondary)' }}>
+    <dl className="flex flex-col divide-y border-y text-sm" style={{ ...linea, color: 'var(--text-secondary)' }}>
       {datosReceta.length > 0 && (
         <div className="flex gap-x-6 py-2.5" style={linea}>
           {datosReceta.map(([etiqueta, valor]) => (
@@ -192,7 +192,6 @@ export default function RecetaClientePage() {
 
             <div>
               <h1 className="text-xl font-bold leading-tight" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
-              {datosFicha}
               <CompartirSesion generar={(tema) => dibujarPlatoTernario({
                 nombre: receta.nombre,
                 kcal: racion?.total.kcal ?? receta.kcal ?? 0,
@@ -243,9 +242,11 @@ export default function RecetaClientePage() {
             ) : (
               <>
                 <MacroTriangulo kcal={receta.kcal ?? 0} p={receta.proteinas ?? 0} c={receta.carbohidratos ?? 0} g={receta.grasas ?? 0} />
+                {datosFicha}
                 <SelectorRaciones original={porciones} valor={nVista} onChange={setRacionesVista} kcalRacion={receta.kcal} />
               </>
             )}
+            {racion && datosFicha}
 
             {(ingredientesFormato.length > 0 || pasos.length > 0) && (
               <div className="flex flex-col gap-3">
