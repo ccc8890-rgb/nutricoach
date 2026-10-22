@@ -3600,7 +3600,8 @@ html {
   border: 1px solid var(--recipe-rule);
   border-radius: 0.35rem;
 }
-.coach-recipe-detail__content { max-width: 68rem; }
+.coach-recipe-detail__content { max-width: 88rem; }
+@media (min-width: 1024px) { .coach-recipe-detail__content { padding-inline: 2rem; } }
 .coach-recipe-detail__intro {
   padding: 1.4rem;
   border: 1px solid var(--recipe-rule);

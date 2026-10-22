@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, Warning, Clock, Users, CaretLeft, CurrencyEur, Copy, Check, ForkKnife, PlayCircle, Lightbulb } from '@phosphor-icons/react'
+import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, Warning, Clock, Users, CaretLeft, CurrencyEur, Copy, Check, PlayCircle, Lightbulb } from '@phosphor-icons/react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta, resumenAptitud, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -333,12 +333,8 @@ export default function DetalleRecetaPage() {
             />
           </div>
         ) : (
-          <div
-            className="w-full h-[30vh] min-h-[240px] flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, var(--accent-bg), var(--bg-subtle))' }}
-          >
-            <ForkKnife size={56} style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
-          </div>
+          // Sin foto no hay cabecera grande: solo el hueco de la barra flotante
+          <div className="h-16 w-full" aria-hidden />
         )}
 
         {/* Navegación flotante sobre la imagen */}
@@ -381,7 +377,7 @@ export default function DetalleRecetaPage() {
       </div>
 
       {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
-      <div className={`coach-recipe-detail__content max-w-5xl mx-auto px-6 -mt-16 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
+      <div className={`coach-recipe-detail__content mx-auto px-6 relative z-20 pb-safe${receta.imagen_url ? ' -mt-16' : ''}${enBandeja ? ' pb-28' : ''}`}>
         {/* Banner de revisión */}
         {!isClientView && (receta.estado === 'en_revision' || receta.estado === 'borrador') && (
           <ScaleIn delay={0.05}>
@@ -419,43 +415,8 @@ export default function DetalleRecetaPage() {
           </FadeIn>
         )}
 
-        {!isClientView && quality && (
-          <FadeIn delay={0.06}>
-            <section className="coach-recipe-detail__section mb-6 p-4 sm:p-5" aria-label="Calidad de la receta">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                <span className="coach-recipe-kicker">Calidad</span>
-                <span className="inline-flex items-center gap-2 text-sm font-semibold capitalize" style={{ color: 'var(--text)' }}>
-                  <span className="h-2 w-2 rounded-full" style={{ background: quality.ok ? 'var(--success)' : 'var(--warning)' }} aria-hidden />
-                  {quality.banda_calidad}
-                  <span className="font-normal tabular-nums" style={{ color: 'var(--text-secondary)' }}>{quality.score_calidad}/100</span>
-                </span>
-                <span className="text-xs tabular-nums sm:ml-auto" style={{ color: 'var(--text-muted)' }}>{quality.cobertura_pct}% de ingredientes con precio</span>
-              </div>
-              <div className="mt-4 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
-                <ClasificacionEditor
-                  recetaId={id}
-                  clasificacion={quality.clasificacion}
-                  manual={Boolean(quality.clasificacion_manual)}
-                  onGuardado={(c, manual) => setQuality(q => (q ? { ...q, clasificacion: c, clasificacion_manual: manual } : q))}
-                />
-              </div>
-              {quality.issues.length === 0 ? (
-                <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-                  Sin bloqueos de ingredientes, cantidades o coste.
-                </p>
-              ) : (
-                <ul className="mt-4 space-y-1 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
-                  {quality.issues.map(item => (
-                    <li key={`${item.codigo}-${item.mensaje}`} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      <span className="font-semibold" style={{ color: item.severity === 'bloqueante' ? 'var(--error)' : 'var(--warning)' }}>{item.severity}:</span> {item.mensaje}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </FadeIn>
-        )}
-
+        <div className="grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_25rem]">
+          <div className="min-w-0 lg:col-span-2">
         {/* ═══════ TÍTULO + META ═══════ */}
         <FadeIn delay={0.1}>
           <div className="coach-recipe-detail__intro mb-6">
@@ -498,17 +459,21 @@ export default function DetalleRecetaPage() {
           </div>
         </FadeIn>
 
+          </div>
+
+          {/* Columna lateral: de un vistazo (macros, aptitudes) */}
+          <div className="min-w-0 lg:col-start-2 lg:row-start-2">
         {/* ═══════ MACRO RING + STATS ROW ═══════ */}
         <FadeIn delay={0.15}>
           <div
-            className="coach-recipe-detail__nutrition mb-6 flex flex-col sm:flex-row items-center gap-6"
+            className="coach-recipe-detail__nutrition mb-6 flex flex-col sm:flex-row lg:flex-col items-center lg:items-stretch gap-6"
             style={{
               background: 'var(--surface)',
               border: '1px solid var(--border)',
             }}
           >
             {/* Reparto de macros */}
-            <div className="w-full flex-shrink-0 sm:w-[330px]">
+            <div className="w-full flex-shrink-0 sm:w-[330px] lg:w-full">
               {macrosPorPorcion ? (
                 <MacroTriangulo
                   kcal={macrosPorPorcion.kcal}
@@ -626,6 +591,48 @@ export default function DetalleRecetaPage() {
           </div>
         </FadeIn>
 
+        {/* ═══════ ALÉRGENOS Y ETIQUETAS DIETÉTICAS ═══════ */}
+        {intolerancias.length > 0 && (() => {
+          const { aptaPara, sin, contiene } = resumenAptitud(intolerancias)
+          if (aptaPara.length === 0 && sin.length === 0 && contiene.length === 0) return null
+          const rotulo = 'text-[10px] font-bold uppercase tracking-widest shrink-0'
+          return (
+            <FadeIn delay={0.3}>
+              <div
+                className="mb-6 rounded-xl px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+              >
+                {aptaPara.length > 0 && (
+                  <>
+                    <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Apta para</span>
+                    {aptaPara.map(t => (
+                      <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: 'rgba(34,197,94,0.07)', color: 'rgb(21,128,61)', border: '1px solid rgba(34,197,94,0.18)' }}>{t}</span>
+                    ))}
+                  </>
+                )}
+                {contiene.length > 0 && (
+                  <>
+                    {aptaPara.length > 0 && <span style={{ color: 'var(--border)' }}>·</span>}
+                    <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Contiene</span>
+                    {contiene.map(t => (
+                      <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
+                    ))}
+                  </>
+                )}
+                {sin.length > 0 && (
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Sin {sin.join(', ')}
+                  </span>
+                )}
+              </div>
+            </FadeIn>
+          )
+        })()}
+
+          </div>
+
+          {/* Columna principal: la receta en sí */}
+          <div className="min-w-0 lg:col-start-1 lg:row-start-2 lg:row-span-2">
         {/* ═══════ VIDEO (si existe) ═══════ */}
         {receta.video_url && (
           <FadeIn delay={0.2}>
@@ -703,44 +710,6 @@ export default function DetalleRecetaPage() {
           )}
         </FadeIn>
 
-        {/* ═══════ ALÉRGENOS Y ETIQUETAS DIETÉTICAS ═══════ */}
-        {intolerancias.length > 0 && (() => {
-          const { aptaPara, sin, contiene } = resumenAptitud(intolerancias)
-          if (aptaPara.length === 0 && sin.length === 0 && contiene.length === 0) return null
-          const rotulo = 'text-[10px] font-bold uppercase tracking-widest shrink-0'
-          return (
-            <FadeIn delay={0.3}>
-              <div
-                className="mb-6 rounded-xl px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-              >
-                {aptaPara.length > 0 && (
-                  <>
-                    <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Apta para</span>
-                    {aptaPara.map(t => (
-                      <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: 'rgba(34,197,94,0.07)', color: 'rgb(21,128,61)', border: '1px solid rgba(34,197,94,0.18)' }}>{t}</span>
-                    ))}
-                  </>
-                )}
-                {contiene.length > 0 && (
-                  <>
-                    {aptaPara.length > 0 && <span style={{ color: 'var(--border)' }}>·</span>}
-                    <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Contiene</span>
-                    {contiene.map(t => (
-                      <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
-                    ))}
-                  </>
-                )}
-                {sin.length > 0 && (
-                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    Sin {sin.join(', ')}
-                  </span>
-                )}
-              </div>
-            </FadeIn>
-          )
-        })()}
-
         {/* ═══════ PASOS (StepByStep estilo Crouton) ═══════ */}
         <FadeIn delay={0.35}>
           {pasos.length > 0 && (seccion === 'preparacion' || ingredientes.length === 0) && (
@@ -774,6 +743,47 @@ export default function DetalleRecetaPage() {
           </FadeIn>
         )}
 
+          </div>
+
+          {/* Columna lateral: control del coach */}
+          <div className="min-w-0 lg:col-start-2 lg:row-start-3">
+        {!isClientView && quality && (
+          <FadeIn delay={0.06}>
+            <section className="coach-recipe-detail__section mb-6 p-4 sm:p-5" aria-label="Calidad de la receta">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <span className="coach-recipe-kicker">Calidad</span>
+                <span className="inline-flex items-center gap-2 text-sm font-semibold capitalize" style={{ color: 'var(--text)' }}>
+                  <span className="h-2 w-2 rounded-full" style={{ background: quality.ok ? 'var(--success)' : 'var(--warning)' }} aria-hidden />
+                  {quality.banda_calidad}
+                  <span className="font-normal tabular-nums" style={{ color: 'var(--text-secondary)' }}>{quality.score_calidad}/100</span>
+                </span>
+                <span className="text-xs tabular-nums sm:ml-auto" style={{ color: 'var(--text-muted)' }}>{quality.cobertura_pct}% de ingredientes con precio</span>
+              </div>
+              <div className="mt-4 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
+                <ClasificacionEditor
+                  recetaId={id}
+                  clasificacion={quality.clasificacion}
+                  manual={Boolean(quality.clasificacion_manual)}
+                  onGuardado={(c, manual) => setQuality(q => (q ? { ...q, clasificacion: c, clasificacion_manual: manual } : q))}
+                />
+              </div>
+              {quality.issues.length === 0 ? (
+                <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Sin bloqueos de ingredientes, cantidades o coste.
+                </p>
+              ) : (
+                <ul className="mt-4 space-y-1 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
+                  {quality.issues.map(item => (
+                    <li key={`${item.codigo}-${item.mensaje}`} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="font-semibold" style={{ color: item.severity === 'bloqueante' ? 'var(--error)' : 'var(--warning)' }}>{item.severity}:</span> {item.mensaje}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </FadeIn>
+        )}
+
         {/* ═══════ ESCANDALLO DE COSTES ═══════ */}
         {!isClientView && (
         <FadeIn delay={0.42}>
@@ -789,6 +799,9 @@ export default function DetalleRecetaPage() {
           </div>
         </FadeIn>
         )}
+
+          </div>
+        </div>
 
         {/* ═══════ FOOTER ═══════ */}
         <FadeIn delay={0.45}>
