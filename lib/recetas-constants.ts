@@ -154,6 +154,44 @@ export function negativoAPositivo(negativo: string): string | null {
     return null
 }
 
+// ─── Presentación de aptitudes (misma fuente para la ficha y los filtros) ───
+// En la BD siguen las etiquetas «Sin X»; al usuario se le enseña lo útil: para quién es apta la receta.
+export const APTA_PARA: ReadonlyArray<{ valor: string; etiqueta: string }> = [
+    { valor: 'Vegano', etiqueta: 'Vegana' },
+    { valor: 'Vegetariano', etiqueta: 'Vegetariana' },
+    { valor: 'Sin Gluten', etiqueta: 'Celíacos' },
+    { valor: 'Sin Lactosa', etiqueta: 'Intolerantes a la lactosa' },
+]
+
+// Alérgenos que se excluyen uno a uno (sin prefijo «Sin» en pantalla: la sección ya dice «Sin»)
+export const SIN_ALERGENO = ['Sin Huevo', 'Sin Frutos Secos', 'Sin Soja', 'Sin Pescado', 'Sin Mariscos', 'Sin Cerdo'] as const
+
+export function nombreSin(valor: string): string {
+    return valor.replace(/^Sin\s+/i, '').toLowerCase()
+}
+
+/** ¿La receta cumple esta etiqueta? Vegano implica vegetariano, sin lactosa y sin lácteos. */
+export function recetaTieneEtiqueta(tags: string[] | null | undefined, valor: string): boolean {
+    const set = new Set((tags ?? []).map(t => t.toLowerCase()))
+    const v = valor.toLowerCase()
+    if (set.has(v)) return true
+    if (v === 'vegetariano') return set.has('vegano')
+    if (v === 'sin lactosa') return set.has('sin lácteos') || set.has('vegano')
+    return false
+}
+
+export function resumenAptitud(tags: string[] | null | undefined) {
+    const lista = tags ?? []
+    const aptaPara = APTA_PARA
+        .filter(a => recetaTieneEtiqueta(lista, a.valor))
+        .filter(a => !(a.valor === 'Vegetariano' && recetaTieneEtiqueta(lista, 'Vegano')))
+        .map(a => a.etiqueta)
+    const tratadas = new Set(['sin gluten', 'sin lactosa', 'sin lácteos'])
+    const sin = lista.filter(t => clasificarIntolerancia(t) === 'negativo' && !tratadas.has(t.toLowerCase())).map(nombreSin)
+    const contiene = lista.filter(t => clasificarIntolerancia(t) === 'positivo')
+    return { aptaPara, sin, contiene }
+}
+
 // ─── Dificultades ───
 export const DIFICULTADES = ['Fácil', 'Medio', 'Difícil'] as const
 

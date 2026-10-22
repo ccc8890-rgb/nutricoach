@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, Warning, Clock, Users, CaretLeft, CurrencyEur, Copy, Check, ForkKnife, PlayCircle, Lightbulb } from '@phosphor-icons/react'
 import EscandalloReceta from '@/components/EscandalloReceta'
-import { normalizarReceta, clasificarIntolerancia, normalizarIntolerancias } from '@/lib/recetas-constants'
+import { normalizarReceta, resumenAptitud, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { IngredientChecklist, StepByStep } from '@/components/premium'
@@ -557,46 +557,18 @@ export default function DetalleRecetaPage() {
                       <Users size={12} /> Porciones
                     </div>
                     <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>
-                      {receta.porciones}{receta.descripcion_porcion ? ` · ${receta.descripcion_porcion}` : ''}
+                      {receta.descripcion_porcion
+                        ? (receta.porciones > 1 ? `${receta.porciones} · ${receta.descripcion_porcion}` : receta.descripcion_porcion)
+                        : `${receta.porciones} ${receta.porciones === 1 ? 'ración' : 'raciones'}`}
                     </span>
-                    {pesoPorPorcion && (
+                    {pesoPorPorcion && !receta.descripcion_porcion && (
                       <span className="text-xs" style={{ color: 'var(--text-muted)' }}>~{pesoPorPorcion}g / porción</span>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Fila 2 — Macros por porción en una sola fila */}
-              {macrosPorPorcion && (
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
-                    <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>kcal</span>
-                    <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-calories)' }}>
-                      {Math.round(macrosPorPorcion.kcal)}
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
-                    <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>prot</span>
-                    <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-protein)' }}>
-                      {Math.round(macrosPorPorcion.proteinas)}g
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
-                    <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>carbs</span>
-                    <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-carbs)' }}>
-                      {Math.round(macrosPorPorcion.carbohidratos)}g
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
-                    <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>grasas</span>
-                    <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-fat)' }}>
-                      {Math.round(macrosPorPorcion.grasas)}g
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Fila 3 — Por 100g */}
+              {/* Por 100 g (los macros por ración ya salen en el triángulo) */}
               {macrosPor100g && (
                 <div className="flex gap-3 flex-wrap">
                   <span className="text-xs self-center" style={{ color: 'var(--text-muted)' }}>/ 100g</span>
@@ -746,80 +718,36 @@ export default function DetalleRecetaPage() {
 
         {/* ═══════ ALÉRGENOS Y ETIQUETAS DIETÉTICAS ═══════ */}
         {intolerancias.length > 0 && (() => {
-          const positivos = intolerancias.filter(t => clasificarIntolerancia(t) === 'positivo')
-          const negativos = intolerancias.filter(t => clasificarIntolerancia(t) === 'negativo')
-          const dieteticos = intolerancias.filter(t => clasificarIntolerancia(t) === 'dietetico')
-          const hayAlgo = positivos.length > 0 || negativos.length > 0 || dieteticos.length > 0
-          if (!hayAlgo) return null
+          const { aptaPara, sin, contiene } = resumenAptitud(intolerancias)
+          if (aptaPara.length === 0 && sin.length === 0 && contiene.length === 0) return null
+          const rotulo = 'text-[10px] font-bold uppercase tracking-widest shrink-0'
           return (
             <FadeIn delay={0.3}>
               <div
                 className="mb-6 rounded-xl px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2"
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
               >
-                {/* ─── Contiene (rojo) ─── */}
-                {positivos.length > 0 && (
+                {aptaPara.length > 0 && (
                   <>
-                    <span className="text-[10px] font-bold uppercase tracking-widest shrink-0" style={{ color: 'var(--text-muted)' }}>
-                      Contiene
-                    </span>
-                    {positivos.map(t => (
-                      <span
-                        key={t}
-                        className="text-xs font-semibold px-2 py-0.5 rounded"
-                        style={{
-                          background: 'rgba(239,68,68,0.07)',
-                          color: 'rgb(185,28,28)',
-                          border: '1px solid rgba(239,68,68,0.18)',
-                        }}
-                      >
-                        {t}
-                      </span>
+                    <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Apta para</span>
+                    {aptaPara.map(t => (
+                      <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: 'rgba(34,197,94,0.07)', color: 'rgb(21,128,61)', border: '1px solid rgba(34,197,94,0.18)' }}>{t}</span>
                     ))}
                   </>
                 )}
-
-                {/* ─── Libre de (verde) ─── */}
-                {negativos.length > 0 && (
+                {contiene.length > 0 && (
                   <>
-                    {positivos.length > 0 && <span style={{ color: 'var(--border)' }}>·</span>}
-                    <span className="text-[10px] font-bold uppercase tracking-widest shrink-0" style={{ color: 'var(--text-muted)' }}>
-                      Libre de
-                    </span>
-                    {negativos.map(t => (
-                      <span
-                        key={t}
-                        className="text-xs font-semibold px-2 py-0.5 rounded"
-                        style={{
-                          background: 'rgba(34,197,94,0.07)',
-                          color: 'rgb(21,128,61)',
-                          border: '1px solid rgba(34,197,94,0.18)',
-                        }}
-                      >
-                        {t}
-                      </span>
+                    {aptaPara.length > 0 && <span style={{ color: 'var(--border)' }}>·</span>}
+                    <span className={rotulo} style={{ color: 'var(--text-muted)' }}>Contiene</span>
+                    {contiene.map(t => (
+                      <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
                     ))}
                   </>
                 )}
-
-                {/* ─── Clasificación dietética (verde) ─── */}
-                {dieteticos.length > 0 && (
-                  <>
-                    {(positivos.length > 0 || negativos.length > 0) && <span style={{ color: 'var(--border)' }}>·</span>}
-                    {dieteticos.map(t => (
-                      <span
-                        key={t}
-                        className="text-xs font-semibold px-2 py-0.5 rounded"
-                        style={{
-                          background: 'rgba(34,197,94,0.07)',
-                          color: 'rgb(21,128,61)',
-                          border: '1px solid rgba(34,197,94,0.18)',
-                        }}
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </>
+                {sin.length > 0 && (
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Sin {sin.join(', ')}
+                  </span>
                 )}
               </div>
             </FadeIn>
