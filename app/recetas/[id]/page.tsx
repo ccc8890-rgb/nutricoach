@@ -372,7 +372,11 @@ export default function DetalleRecetaPage() {
     <dl className="mt-5 grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2.5 text-[0.95rem]" style={{ color: 'var(--text-secondary)' }}>
       {tipos.length > 0 && (<>
         <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Tipo</dt>
-        <dd>{tipos.join('  ·  ')}</dd>
+        <dd className="flex flex-wrap items-center gap-y-1">
+          {tipos.map((t, i) => (
+            <span key={t} className={i > 0 ? 'ml-4 border-l pl-4' : ''} style={{ borderColor: 'var(--recipe-rule, var(--border))' }}>{t}</span>
+          ))}
+        </dd>
       </>)}
       {aptaPara.length > 0 && (<>
         <dt className={rotuloEt} style={{ color: 'var(--text-muted)' }}>Apta para</dt>
