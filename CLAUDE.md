@@ -4,6 +4,18 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 22-10-2026 (tarde, Claude) — Ficha de receta rediseñada: cabecera integrada y datos en lenguaje editorial
+
+Solo UI (sin migraciones ni rutas). Commits nutricoach `c946fb25`→`0be04085`+`e417b8c1`; `tsc` y ESLint limpios; **visto por Carlos en producción durante la sesión** (capturas) salvo lo anotado.
+- **Cabecera** (`app/recetas/[id]/page.tsx`): tarjeta única con **título a todo el ancho arriba** (Sora 300) y debajo tres columnas: **foto cuadrada entera** (clic → pantalla completa, lupa al pasar el ratón; sin zoom, Carlos lo descartó) | **cinco filas** rótulo→valor (Plato, Cocción, Dificultad, Apta para, Contiene; puntos verde/rojo para aptitud, sin cajas) | **macros** (triángulo + Raciones / Por 100 g / Vídeo original) con línea divisoria. Columna de macros 26 rem (31 en xl). Sin banner recortado ni foto de fondo.
+- **Quitado de la ficha:** barra superior enmarcada (queda Volver · Editar · Borrar mínimos), «Editar rápido» (`EdicionRapida.tsx` queda **sin uso**, no borrado), «Reportar» (ahora **«Pasar a revisión»** dentro de `/recetas/[id]/editar`, solo si `estado='aprobada'`), «Copiar lista compra»/«Ver precios», la columna lateral derecha y la **descripción** (pasa a introducción de la pestaña Preparación: 818/820 recetas la tienen y casi siempre repite los ingredientes).
+- **Control de calidad plegado al final** (tras Coste): fila cerrada con puntuación; se abre para ver clasificación/avisos. Franja ámbar arriba **solo si hay bloqueos** (`severity='bloqueante'`).
+- **Coste de la receta** a todo el ancho bajo la ficha (`EscandalloReceta`: comparativa y desglose en 2 columnas ≥1024 px).
+- **Ingredientes** (`components/premium/IngredientChecklist.tsx`): columna centrada de 36 rem, cantidad a la izquierda, nombre grande y kcal en tercera columna, sin líneas. **Selector de raciones** (`SelectorRaciones.tsx`): franja de una línea entre la cabecera y Ingredientes/Preparación (también la usa `/cliente/receta/[id]`).
+- **Triángulo de macros** (`MacroTriangulo.tsx`, compartido con portal cliente y tarjetas de Instagram): rótulos y gramos de 10 → 12 px. Datos de ración con el mismo lenguaje (rótulos mono, cifras Sora ligera).
+- **Reglas de estilo que salieron de Carlos:** minimalismo editorial (rótulo mono pequeño en mayúsculas + texto, sin cajas de colores ni píldoras); nada de acciones de coach «avanzado» a la vista (calidad, clasificación) en la ficha; textos de 10-11 px se ven pequeños → 12-14 px mínimo; Sora solo tiene pesos 200/300; las comparaciones se hicieron con un interruptor temporal A/B/C que se retiró.
+- **Pendiente:** ver la ficha en iPhone y en monitor grande (foto 22 rem + columna de macros 31 rem); `SelectorRaciones` compacto en la ficha del cliente sin revisar; bloque de **Coste** aún con el estilo antiguo; pasada de tipografía mínima en el resto de la ficha; clic de la foto que expanda en sitio (alternativa descartada por ahora).
+
 ## ✅ 22-10-2026 (Claude) — Espacio único del recetario y ficha de receta a dos columnas
 
 Resumen y pendientes en la fila de `NUTRICION/CLAUDE.md`. Todo UI, sin migraciones ni rutas nuevas (las APIs de revisión no se tocaron). Commits `3b9bffb9`, `4fea122a`, `d6446a89`, `9fd9bc56`, `06a05e3b`.
