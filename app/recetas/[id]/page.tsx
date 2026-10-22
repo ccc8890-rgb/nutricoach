@@ -421,51 +421,38 @@ export default function DetalleRecetaPage() {
 
         {!isClientView && quality && (
           <FadeIn delay={0.06}>
-            <div
-              className="mb-6 p-4 rounded-2xl"
-              style={{
-                background: quality.ok ? 'var(--success-bg)' : 'var(--warning-bg)',
-                border: `1px solid ${quality.ok ? 'var(--success)' : 'var(--warning)'}`,
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <Warning size={18} style={{ color: quality.ok ? 'var(--success)' : 'var(--warning)' }} />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <p className="font-semibold text-sm" style={{ color: quality.ok ? 'var(--success)' : 'var(--warning)' }}>
-                      Calidad receta
-                    </p>
-                    <span className="text-xs px-2 py-1 rounded-md" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
-                      Score {quality.score_calidad}/100 · {quality.cobertura_pct}% precios
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
-                      {quality.banda_calidad}
-                    </span>
-                  </div>
-                  <ClasificacionEditor
-                    recetaId={id}
-                    clasificacion={quality.clasificacion}
-                    manual={Boolean(quality.clasificacion_manual)}
-                    onGuardado={(c, manual) => setQuality(q => (q ? { ...q, clasificacion: c, clasificacion_manual: manual } : q))}
-                  />
-                  {quality.issues.length === 0 ? (
-                    <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                      Sin bloqueos de ingredientes, cantidades o coste. Clasificada para uso profesional.
-                    </p>
-                  ) : (
-                    <ul className="mt-2 space-y-1">
-                      {quality.issues.map(item => (
-                        <li key={`${item.codigo}-${item.mensaje}`} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                          <span className="font-semibold">{item.severity}:</span> {item.mensaje}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+            <section className="coach-recipe-detail__section mb-6 p-4 sm:p-5" aria-label="Calidad de la receta">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <span className="coach-recipe-kicker">Calidad</span>
+                <span className="inline-flex items-center gap-2 text-sm font-semibold capitalize" style={{ color: 'var(--text)' }}>
+                  <span className="h-2 w-2 rounded-full" style={{ background: quality.ok ? 'var(--success)' : 'var(--warning)' }} aria-hidden />
+                  {quality.banda_calidad}
+                  <span className="font-normal tabular-nums" style={{ color: 'var(--text-secondary)' }}>{quality.score_calidad}/100</span>
+                </span>
+                <span className="text-xs tabular-nums sm:ml-auto" style={{ color: 'var(--text-muted)' }}>{quality.cobertura_pct}% de ingredientes con precio</span>
               </div>
-            </div>
+              <div className="mt-4 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
+                <ClasificacionEditor
+                  recetaId={id}
+                  clasificacion={quality.clasificacion}
+                  manual={Boolean(quality.clasificacion_manual)}
+                  onGuardado={(c, manual) => setQuality(q => (q ? { ...q, clasificacion: c, clasificacion_manual: manual } : q))}
+                />
+              </div>
+              {quality.issues.length === 0 ? (
+                <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Sin bloqueos de ingredientes, cantidades o coste.
+                </p>
+              ) : (
+                <ul className="mt-4 space-y-1 border-t pt-4" style={{ borderColor: 'var(--recipe-rule)' }}>
+                  {quality.issues.map(item => (
+                    <li key={`${item.codigo}-${item.mensaje}`} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="font-semibold" style={{ color: item.severity === 'bloqueante' ? 'var(--error)' : 'var(--warning)' }}>{item.severity}:</span> {item.mensaje}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </FadeIn>
         )}
 

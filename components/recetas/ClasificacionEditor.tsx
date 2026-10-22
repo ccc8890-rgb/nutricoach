@@ -50,17 +50,26 @@ export default function ClasificacionEditor({ recetaId, clasificacion, manual, o
   const chip = { background: 'var(--bg)', color: 'var(--text-secondary)' }
 
   return (
-    <div className="mt-2">
-      <div className="flex flex-wrap items-center gap-1.5">
-        {[clasificacion.nivel_fit, clasificacion.tipo_uso, clasificacion.contexto_uso, clasificacion.apta_cliente].map((v, i) => (
-          <span key={i} className="text-[11px] px-2 py-1 rounded-full" style={chip}>{bonito(v)}</span>
-        ))}
-        {clasificacion.alcohol_culinario && <span className="text-[11px] px-2 py-1 rounded-full" style={{ ...chip, color: 'var(--warning)' }}>alcohol culinario</span>}
-        {manual && <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>editada a mano</span>}
-        <button type="button" onClick={() => { setBorrador(clasificacion); setEditando(v => !v) }} className="text-[11px] underline ml-1" style={{ color: 'var(--text-muted)' }}>
-          {editando ? 'cancelar' : 'editar'}
+    <div>
+      <div className="flex items-start gap-4">
+        <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+          {CAMPOS.map(c => (
+            <div key={c.clave} className="min-w-0">
+              <dt className="coach-recipe-kicker">{c.etiqueta}</dt>
+              <dd className="mt-1.5 truncate text-sm font-medium capitalize" style={{ color: 'var(--text)' }}>{bonito(clasificacion[c.clave])}</dd>
+            </div>
+          ))}
+        </dl>
+        <button type="button" onClick={() => { setBorrador(clasificacion); setEditando(v => !v) }} className="shrink-0 rounded border px-2.5 py-1 text-xs font-medium" style={{ borderColor: 'var(--recipe-rule)', color: 'var(--text-secondary)' }}>
+          {editando ? 'Cancelar' : 'Editar'}
         </button>
       </div>
+      {(clasificacion.alcohol_culinario || manual) && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {clasificacion.alcohol_culinario && <span className="rounded-full px-2 py-0.5 text-[11px]" style={{ ...chip, color: 'var(--warning)' }}>alcohol culinario</span>}
+          {manual && <span className="rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>editada a mano</span>}
+        </div>
+      )}
 
       {editando && (
         <div className="mt-3 p-3 rounded-xl space-y-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
