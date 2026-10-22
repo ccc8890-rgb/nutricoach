@@ -87,7 +87,7 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinM
       <div className="min-w-0">
         {mostrarKcal && (
           <p className="text-5xl leading-none" style={{ color: 'var(--text)', fontFamily: SORA, fontWeight: 200, fontVariantNumeric: 'tabular-nums' }}>
-            {Math.round(kcal * cuentas)} <span className="font-data text-[10px] font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>KCAL</span>
+            {Math.round(kcal * cuentas)} <span className="font-data text-xs font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>KCAL</span>
           </p>
         )}
         <div className={mostrarKcal ? 'mt-5 flex flex-col gap-2' : 'flex flex-col gap-2'}>
@@ -95,9 +95,9 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinM
             <p key={r.l} className="flex items-baseline gap-2.5 whitespace-nowrap" style={{ color: 'var(--text)' }}>
               <span className="w-[3.1rem] text-[1.55rem] leading-none" style={{ fontFamily: SORA, fontWeight: 300, fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.pc * cuentas)}%</span>
               {/* La letra enlaza cada fila con su vértice del triángulo; el macro predominante se enciende */}
-              <span className="font-data w-3 shrink-0 text-[10px] font-bold" style={{ color: i === dom ? 'var(--text)' : 'var(--text-muted)' }}>{r.v}</span>
-              <span className="font-data text-[10px] font-medium tracking-[0.14em]" style={{ color: i === dom ? 'var(--text)' : 'var(--text-muted)' }}>{r.l.toUpperCase()}</span>
-              <span className="font-data text-[10px]" style={{ color: 'var(--text-muted)', opacity: 0.7, fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.g * cuentas)} g</span>
+              <span className="font-data w-4 shrink-0 text-xs font-bold" style={{ color: i === dom ? 'var(--text)' : 'var(--text-muted)' }}>{r.v}</span>
+              <span className="font-data text-xs font-medium tracking-[0.14em]" style={{ color: i === dom ? 'var(--text)' : 'var(--text-muted)' }}>{r.l.toUpperCase()}</span>
+              <span className="font-data text-xs" style={{ color: 'var(--text-muted)', opacity: 0.85, fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.g * cuentas)} g</span>
             </p>
           ))}
         </div>
