@@ -6,6 +6,7 @@
  *   npx tsx scripts/auto-etiquetar-recetas.ts --dry-run   # preview sin escribir
  *   npx tsx scripts/auto-etiquetar-recetas.ts              # aplica en BD
  *   npx tsx scripts/auto-etiquetar-recetas.ts --todas      # incluye en_revision/borrador
+ *   npx tsx scripts/auto-etiquetar-recetas.ts --solo-sin-tags   # solo recetas sin ningún tag (no toca las ya etiquetadas)
  */
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
@@ -22,6 +23,7 @@ const supabase = createClient(
 
 const dryRun = process.argv.includes('--dry-run')
 const todas = process.argv.includes('--todas')
+const soloSinTags = process.argv.includes('--solo-sin-tags')
 const PAGE_SIZE = 50
 
   ; (async () => {
@@ -54,6 +56,7 @@ const PAGE_SIZE = 50
         // pasara por este script. Se preservan y solo se reemplaza el
         // subconjunto de tags de ingrediente/tipo de plato (KNOWN_TAGS).
         const tagsPrevios: string[] = (receta.tags as string[] | null) ?? []
+        if (soloSinTags && tagsPrevios.length > 0) continue
         const tagsAjenos = tagsPrevios.filter(t => !KNOWN_TAGS.includes(t))
         const tags = Array.from(new Set([...tagsAjenos, ...tagsIngrediente])).sort()
         const cambia = tags.length !== tagsPrevios.length || tags.some((t, i) => t !== [...tagsPrevios].sort()[i])

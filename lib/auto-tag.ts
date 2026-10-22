@@ -57,6 +57,27 @@ const NAME_TAGS: [string, string][] = [
   ['salsa', 'Salsa'],
   ['chimichurri', 'Salsa'],
   ['vinagreta', 'Salsa'],
+  // Platos de huevo
+  ['tortilla', 'Huevo'], ['revuelto', 'Huevo'], ['frittata', 'Huevo'], ['shakshuka', 'Huevo'],
+  ['scrambled', 'Huevo'], ['huevo', 'Huevo'], ['poche', 'Huevo'],
+  // Avena y desayunos de cuchara
+  ['porridge', 'Avena'], ['gachas', 'Avena'], ['overnight', 'Avena'], ['avena', 'Avena'], ['muesli', 'Avena'],
+  // Cremas y sopas frías
+  ['crema de calabaza', 'Sopa'], ['crema de verdura', 'Sopa'], ['crema de zanahoria', 'Sopa'], ['crema de puerro', 'Sopa'], ['gazpacho', 'Sopa'], ['salmorejo', 'Sopa'], ['puré', 'Sopa'],
+  // Snacks dulces
+  ['barrita', 'Barritas'], ['bolita', 'Barritas'], ['bolas de', 'Barritas'], ['trufa', 'Barritas'],
+  // Otros postres
+  ['muffin', 'Bizcocho'], ['mug cake', 'Bizcocho'], ['pastel', 'Tarta'], ['flan', 'Pudding'], ['natilla', 'Pudding'],
+  ['tiramisu', 'Tarta'], ['sorbete', 'Helado'], ['panecillo', 'Sandwich'], ['bagel', 'Sandwich'],
+  // Producto protagonista en el nombre (solo nombre: como ingrediente aparecería en casi todas las recetas)
+  // Verduras
+  ['brocoli', 'Verdura'], ['calabacin', 'Verdura'], ['berenjena', 'Verdura'], ['coliflor', 'Verdura'], ['esparrago', 'Verdura'],
+  ['espinaca', 'Verdura'], ['calabaza', 'Verdura'], ['champinon', 'Verdura'], ['zanahoria', 'Verdura'], ['boniato', 'Verdura'], ['pisto', 'Verdura'],
+  // Fruta y frutos secos destacados
+  ['platano', 'Fruta'], ['manzana', 'Fruta'], ['fresa', 'Fruta'], ['arandano', 'Fruta'], ['fruta', 'Fruta'], ['mango', 'Fruta'], ['pera', 'Fruta'], ['datil', 'Fruta'],
+  ['frutos secos', 'Frutos secos'], ['nuez', 'Frutos secos'], ['nueces', 'Frutos secos'], ['almendra', 'Frutos secos'], ['cacahuete', 'Frutos secos'],
+  // Café y bebidas
+  ['cafe', 'Bebida'], ['isotonic', 'Bebida'], ['refresco', 'Bebida'], ['tepache', 'Bebida'], ['gel energetico', 'Bebida'],
 ]
 
 // Keywords en INGREDIENTES → tag
@@ -89,7 +110,10 @@ const INGREDIENT_TAGS: [string, string][] = [
   // Postres
   ['chocolate', 'Chocolate'],
   // Lácteos destacados
-  ['yogur', 'Yogur'], ['yogurt', 'Yogur'], ['kefir', 'Yogur'],
+  ['yogur', 'Yogur'], ['yogurt', 'Yogur'], ['kefir', 'Yogur'], ['skyr', 'Yogur'],
+  ['requeson', 'Queso'], ['cottage', 'Queso'], ['queso fresco', 'Queso'], ['feta', 'Queso'], ['mozzarella', 'Queso'], ['queso crema', 'Queso'],
+  // Proteína vegetal
+  ['tofu', 'Vegetal'], ['tempeh', 'Vegetal'], ['seitan', 'Vegetal'],
 ]
 
 function norm(s: string): string {
@@ -111,7 +135,8 @@ function escapeRegex(s: string): string {
 // completa (con límites `\b`) evita ese tipo de falso positivo para
 // cualquier keyword, no solo "pasta".
 function matchPalabra(texto: string, keyword: string): boolean {
-  return new RegExp(`\\b${escapeRegex(keyword)}\\b`).test(texto)
+  // Admite plural (tostada/tostadas, arroz/arroces, gamba/gambas): sin esto las recetas con el plural quedaban sin etiquetar
+  return new RegExp(`\\b${escapeRegex(keyword)}(?:s|es)?\\b`).test(texto)
 }
 
 // "Pasta" en español es ambiguo: fideos/macarrones, pero también una pasta
