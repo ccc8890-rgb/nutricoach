@@ -1,6 +1,5 @@
 'use client'
 
-import { Scale } from 'lucide-react'
 import { FaseTitulo } from './FaseTitulo'
 
 interface IngredientItem {
@@ -51,33 +50,23 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
             {fases.map((fase, i) => (
             <div key={fase.nombre ?? `f${i}`} className={i > 0 ? 'mt-4' : ''}>
             {conFases && <FaseTitulo nombre={fase.nombre ?? 'Otros'} className="px-3 pb-2" />}
-            <ul className="space-y-1">
+            <ul>
                 {fase.items.map((ing) => (
-                    <li key={ing.id}>
-                        <div
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 hover:bg-[var(--surface-hover)]"
-                        >
-                            {/* Nombre + cantidad */}
-                            <div className="flex-1 min-w-0 flex items-baseline gap-2">
-                                <span
-                                    className="text-sm font-medium"
-                                    style={{ color: 'var(--text)' }}
-                                >
-                                    {ing.nombre}
-                                </span>
-                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                    {ing.cantidad}
-                                </span>
-                            </div>
-
-                            {/* Macros mini */}
-                            {ing.kcal !== undefined && (
-                                <span className="text-[11px] font-medium tabular-nums flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                                    <Scale size={10} />
-                                    {Math.round(ing.kcal)} kcal
-                                </span>
-                            )}
-                        </div>
+                    <li key={ing.id} className="flex items-baseline gap-4 px-1 py-3 border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
+                        {/* Cantidad a la izquierda, alineada como en un libro de recetas */}
+                        <span className="w-20 shrink-0 text-right text-base font-semibold tabular-nums" style={{ color: 'var(--text)' }}>
+                            {ing.cantidad}
+                        </span>
+                        <span className="text-lg font-medium leading-snug" style={{ color: 'var(--text)' }}>
+                            {ing.nombre}
+                        </span>
+                        {/* Guía punteada hacia las kcal para que no queden perdidas a lo lejos */}
+                        <span className="flex-1 min-w-4 translate-y-[-4px] border-b border-dotted" style={{ borderColor: 'var(--border)' }} aria-hidden />
+                        {ing.kcal !== undefined && (
+                            <span className="text-sm font-medium tabular-nums whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>
+                                {Math.round(ing.kcal)} kcal
+                            </span>
+                        )}
                     </li>
                 ))}
             </ul>
