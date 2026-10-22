@@ -593,8 +593,8 @@ export default function DetalleRecetaPage() {
 
         {/* ═══════ ALÉRGENOS Y ETIQUETAS DIETÉTICAS ═══════ */}
         {intolerancias.length > 0 && (() => {
-          const { aptaPara, sin, contiene } = resumenAptitud(intolerancias)
-          if (aptaPara.length === 0 && sin.length === 0 && contiene.length === 0) return null
+          const { aptaPara, contiene } = resumenAptitud(intolerancias)
+          if (aptaPara.length === 0 && contiene.length === 0) return null
           const rotulo = 'text-[10px] font-bold uppercase tracking-widest shrink-0'
           return (
             <FadeIn delay={0.3}>
@@ -618,11 +618,6 @@ export default function DetalleRecetaPage() {
                       <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: 'rgba(239,68,68,0.07)', color: 'rgb(185,28,28)', border: '1px solid rgba(239,68,68,0.18)' }}>{t}</span>
                     ))}
                   </>
-                )}
-                {sin.length > 0 && (
-                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    Sin {sin.join(', ')}
-                  </span>
                 )}
               </div>
             </FadeIn>
