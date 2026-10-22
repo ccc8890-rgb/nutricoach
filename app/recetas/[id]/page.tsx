@@ -112,8 +112,8 @@ export default function DetalleRecetaPage() {
   const [borrando, setBorrando] = useState(false)
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
-  // Comparativa temporal de cabeceras: A = foto junto al título, B = foto en la columna derecha
-  const [cab, setCab] = useEstadoUrl<'a' | 'b'>('cab', 'a', ['a', 'b'])
+  // Comparativa temporal de cabeceras: A = foto + título (macros en columna), C = foto + título + macros y aptitudes en un solo bloque
+  const [cab, setCab] = useEstadoUrl<'a' | 'c'>('cab', 'c', ['a', 'c'])
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
   const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
   const [copiedToLista, setCopiedToLista] = useState(false)
@@ -305,163 +305,8 @@ export default function DetalleRecetaPage() {
   const pasos = parsePasos(r.instrucciones ?? receta.instrucciones).map(p =>
     nVista !== porcionesReceta ? { ...p, content: quitarCifras(p.content), title: p.title ? quitarCifras(p.title) : p.title } : p)
 
-  const fotoReceta = receta.imagen_url ? (
-    <div className="relative aspect-square w-full max-w-[20rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
-      <img
-        src={receta.imagen_url}
-        alt={receta.nombre}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
-        onLoad={() => setImgLoaded(true)}
-      />
-      {!imgLoaded && <div className="absolute inset-0 skeleton" />}
-    </div>
-  ) : null
-
-  return (
-    <PageTransition className="coach-recipe-detail">
-      {/* ═══════ HERO FULL-BLEED ═══════ */}
-      <div className="coach-recipe-detail__hero relative w-full">
-        {/* La foto va entera junto al título (la cabecera ya no la recorta en banner) */}
-        <div className="h-16 w-full" aria-hidden />
-
-        {/* Navegación flotante sobre la imagen */}
-        <div
-          className="absolute left-4 right-4 flex items-center gap-2 z-10"
-          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
-        >
-          <Link
-            href={returnTo}
-            className={`flex items-center justify-center rounded-full transition-all duration-200 ${isClientView ? 'h-11 px-3 gap-1.5 text-sm font-semibold' : 'w-9 h-9'}`}
-            style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
-            aria-label={isClientView ? 'Volver al plan' : 'Volver al recetario'}
-          >
-            <ArrowLeft size={18} />
-            {isClientView && <span>Volver</span>}
-          </Link>
-          <div className="flex-1" />
-          {!isClientView && (
-            <>
-              <Link
-                href={`/recetas/${id}/editar?returnTo=${encodeURIComponent(returnTo)}`}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
-                style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
-              >
-                <PencilSimple size={12} /> Editar
-              </Link>
-              <button onClick={borrar} disabled={borrando}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
-                style={{ background: 'rgba(255,69,58,0.3)', backdropFilter: 'blur(12px)', color: '#FF453A' }}
-              >
-                <Trash size={12} /> {borrando ? '…' : 'Borrar'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
-      <div className={`coach-recipe-detail__content mx-auto px-6 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
-        {/* Banner de revisión */}
-        {!isClientView && (receta.estado === 'en_revision' || receta.estado === 'borrador') && (
-          <ScaleIn delay={0.05}>
-            <div
-              className="mb-6 p-4 rounded-2xl flex items-center justify-between gap-4"
-              style={{ background: 'var(--warning-bg)', border: '1px solid var(--warning)' }}
-            >
-              <div>
-                <p className="font-semibold text-sm" style={{ color: 'var(--warning)' }}>Pendiente de revisión</p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Revisa los datos antes de aprobar</p>
-              </div>
-              {!enBandeja && <div className="flex gap-2 flex-shrink-0">
-                <button disabled={accionando} onClick={() => handleEstado('aprobada')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
-                  style={{ background: 'var(--success)' }}>
-                  {accionando ? <SpinnerGap size={13} className="animate-spin" /> : <CheckCircle size={13} />} Aprobar
-                </button>
-                <button disabled={accionando} onClick={() => handleEstado('descartada')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
-                  style={{ background: 'var(--error)' }}>
-                  {accionando ? <SpinnerGap size={13} className="animate-spin" /> : <XCircle size={13} />} Descartar
-                </button>
-              </div>}
-            </div>
-          </ScaleIn>
-        )}
-        {!isClientView && receta.estado === 'descartada' && (
-          <FadeIn delay={0.05}>
-            <div className="mb-6 p-4 rounded-2xl" style={{ background: 'var(--error-bg)', border: '1px solid var(--error)' }}>
-              <p className="font-semibold text-sm" style={{ color: 'var(--error)' }}>Receta descartada</p>
-              <button onClick={() => handleEstado('aprobada')} className="text-xs mt-1 underline" style={{ color: 'var(--error)' }}>
-                Restaurar como aprobada
-              </button>
-            </div>
-          </FadeIn>
-        )}
-
-        <div className="grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_25rem]">
-          <div className="min-w-0 lg:col-span-2">
-        {/* ═══════ TÍTULO + META ═══════ */}
-        <FadeIn delay={0.1}>
-          <div className={`coach-recipe-detail__intro mb-6${receta.imagen_url && cab === 'a' ? ' grid gap-6 sm:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)] sm:items-center' : ''}`}>
-            {cab === 'a' && fotoReceta}
-            <div className="min-w-0">
-            <div className="flex items-start gap-3 flex-wrap mb-2">
-              <h1 className="coach-recipe-detail__title flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
-            </div>
-            {receta.descripcion && (
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
-            )}
-            {!isClientView && (
-              <div className="mt-3 flex flex-wrap items-start gap-2">
-                <EdicionRapida receta={{ id, nombre: receta.nombre, descripcion: receta.descripcion, tiempo_prep_min: receta.tiempo_prep_min, categoria: receta.categoria, tags: receta.tags }} onGuardado={() => window.location.reload()} />
-                {receta.estado === 'aprobada' && (
-                  <button onClick={() => setReportando(true)} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>
-                    <Warning size={13} /> Reportar problema
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Badges + tags */}
-            <div className="flex flex-wrap gap-2 mt-3">
-              {receta.categoria && (
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-                  {receta.categoria}
-                </span>
-              )}
-              {receta.tipo_coccion && (
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
-                  {receta.tipo_coccion}
-                </span>
-              )}
-              {receta.dificultad && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>
-                  {receta.dificultad}
-                </span>
-              )}
-            </div>
-
-            {/* De un vistazo: tiempo, raciones y energía */}
-            {(tiempoTotal > 0 || receta.porciones || macrosPorPorcion) && (
-              <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-base tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                {tiempoTotal > 0 && <span><strong style={{ color: 'var(--text)' }}>{tiempoTotal}</strong> min</span>}
-                {receta.porciones && <span><strong style={{ color: 'var(--text)' }}>{receta.porciones}</strong> {receta.porciones === 1 ? 'ración' : 'raciones'}</span>}
-                {macrosPorPorcion && <span><strong style={{ color: 'var(--text)' }}>{Math.round(macrosPorPorcion.kcal)}</strong> kcal/ración</span>}
-              </div>
-            )}
-            </div>
-          </div>
-        </FadeIn>
-
-          </div>
-
-          {/* Columna lateral: de un vistazo (macros, aptitudes) */}
-          <div className="min-w-0 lg:col-start-2 lg:row-start-2">
-            {cab === 'b' && fotoReceta && <div className="mb-6">{fotoReceta}</div>}
+  const bloqueLateral = (
+    <>
         {/* ═══════ MACRO RING + STATS ROW ═══════ */}
         <FadeIn delay={0.15}>
           <div
@@ -623,10 +468,171 @@ export default function DetalleRecetaPage() {
           )
         })()}
 
+    </>
+  )
+
+  const fotoReceta = receta.imagen_url ? (
+    <div className="relative aspect-square w-full max-w-[20rem] overflow-hidden rounded-2xl lg:max-w-none" style={{ border: '1px solid var(--border)' }}>
+      <img
+        src={receta.imagen_url}
+        alt={receta.nombre}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setImgLoaded(true)}
+      />
+      {!imgLoaded && <div className="absolute inset-0 skeleton" />}
+    </div>
+  ) : null
+
+  return (
+    <PageTransition className="coach-recipe-detail">
+      {/* ═══════ HERO FULL-BLEED ═══════ */}
+      <div className="coach-recipe-detail__hero relative w-full">
+        {/* La foto va entera junto al título (la cabecera ya no la recorta en banner) */}
+        <div className="h-16 w-full" aria-hidden />
+
+        {/* Navegación flotante sobre la imagen */}
+        <div
+          className="absolute left-4 right-4 flex items-center gap-2 z-10"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+        >
+          <Link
+            href={returnTo}
+            className={`flex items-center justify-center rounded-full transition-all duration-200 ${isClientView ? 'h-11 px-3 gap-1.5 text-sm font-semibold' : 'w-9 h-9'}`}
+            style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
+            aria-label={isClientView ? 'Volver al plan' : 'Volver al recetario'}
+          >
+            <ArrowLeft size={18} />
+            {isClientView && <span>Volver</span>}
+          </Link>
+          <div className="flex-1" />
+          {!isClientView && (
+            <>
+              <Link
+                href={`/recetas/${id}/editar?returnTo=${encodeURIComponent(returnTo)}`}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
+                style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
+              >
+                <PencilSimple size={12} /> Editar
+              </Link>
+              <button onClick={borrar} disabled={borrando}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
+                style={{ background: 'rgba(255,69,58,0.3)', backdropFilter: 'blur(12px)', color: '#FF453A' }}
+              >
+                <Trash size={12} /> {borrando ? '…' : 'Borrar'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
+      <div className={`coach-recipe-detail__content mx-auto px-6 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
+        {/* Banner de revisión */}
+        {!isClientView && (receta.estado === 'en_revision' || receta.estado === 'borrador') && (
+          <ScaleIn delay={0.05}>
+            <div
+              className="mb-6 p-4 rounded-2xl flex items-center justify-between gap-4"
+              style={{ background: 'var(--warning-bg)', border: '1px solid var(--warning)' }}
+            >
+              <div>
+                <p className="font-semibold text-sm" style={{ color: 'var(--warning)' }}>Pendiente de revisión</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Revisa los datos antes de aprobar</p>
+              </div>
+              {!enBandeja && <div className="flex gap-2 flex-shrink-0">
+                <button disabled={accionando} onClick={() => handleEstado('aprobada')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
+                  style={{ background: 'var(--success)' }}>
+                  {accionando ? <SpinnerGap size={13} className="animate-spin" /> : <CheckCircle size={13} />} Aprobar
+                </button>
+                <button disabled={accionando} onClick={() => handleEstado('descartada')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
+                  style={{ background: 'var(--error)' }}>
+                  {accionando ? <SpinnerGap size={13} className="animate-spin" /> : <XCircle size={13} />} Descartar
+                </button>
+              </div>}
+            </div>
+          </ScaleIn>
+        )}
+        {!isClientView && receta.estado === 'descartada' && (
+          <FadeIn delay={0.05}>
+            <div className="mb-6 p-4 rounded-2xl" style={{ background: 'var(--error-bg)', border: '1px solid var(--error)' }}>
+              <p className="font-semibold text-sm" style={{ color: 'var(--error)' }}>Receta descartada</p>
+              <button onClick={() => handleEstado('aprobada')} className="text-xs mt-1 underline" style={{ color: 'var(--error)' }}>
+                Restaurar como aprobada
+              </button>
+            </div>
+          </FadeIn>
+        )}
+
+        <div className="grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_25rem]">
+          <div className="min-w-0 lg:col-span-2">
+        {/* ═══════ TÍTULO + META ═══════ */}
+        <FadeIn delay={0.1}>
+          <div className={`coach-recipe-detail__intro mb-6${receta.imagen_url ? ' grid gap-6 sm:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)] sm:items-center' : ''}${cab === 'c' ? ' lg:!grid-cols-[17rem_minmax(0,1fr)_25rem] lg:!items-start' : ''}`}>
+            {fotoReceta}
+            <div className="min-w-0">
+            <div className="flex items-start gap-3 flex-wrap mb-2">
+              <h1 className="coach-recipe-detail__title flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
+            </div>
+            {receta.descripcion && (
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
+            )}
+            {!isClientView && (
+              <div className="mt-3 flex flex-wrap items-start gap-2">
+                <EdicionRapida receta={{ id, nombre: receta.nombre, descripcion: receta.descripcion, tiempo_prep_min: receta.tiempo_prep_min, categoria: receta.categoria, tags: receta.tags }} onGuardado={() => window.location.reload()} />
+                {receta.estado === 'aprobada' && (
+                  <button onClick={() => setReportando(true)} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>
+                    <Warning size={13} /> Reportar problema
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Badges + tags */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {receta.categoria && (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+                  {receta.categoria}
+                </span>
+              )}
+              {receta.tipo_coccion && (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
+                  {receta.tipo_coccion}
+                </span>
+              )}
+              {receta.dificultad && (
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>
+                  {receta.dificultad}
+                </span>
+              )}
+            </div>
+
+            {/* De un vistazo: tiempo, raciones y energía */}
+            {(tiempoTotal > 0 || receta.porciones || macrosPorPorcion) && (
+              <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-base tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                {tiempoTotal > 0 && <span><strong style={{ color: 'var(--text)' }}>{tiempoTotal}</strong> min</span>}
+                {receta.porciones && <span><strong style={{ color: 'var(--text)' }}>{receta.porciones}</strong> {receta.porciones === 1 ? 'ración' : 'raciones'}</span>}
+                {macrosPorPorcion && <span><strong style={{ color: 'var(--text)' }}>{Math.round(macrosPorPorcion.kcal)}</strong> kcal/ración</span>}
+              </div>
+            )}
+            </div>
+            {cab === 'c' && <div className="min-w-0 sm:col-span-2 lg:col-span-1">{bloqueLateral}</div>}
+          </div>
+        </FadeIn>
+
+          </div>
+
+          {/* Columna lateral: de un vistazo (macros, aptitudes) */}
+          <div className="min-w-0 lg:col-start-2 lg:row-start-2">
+            {cab !== 'c' && bloqueLateral}
           </div>
 
           {/* Columna principal: la receta en sí */}
-          <div className="min-w-0 lg:col-start-1 lg:row-start-2 lg:row-span-2">
+          <div className={`min-w-0 lg:col-start-1 lg:row-start-2 ${cab === 'c' ? '' : 'lg:row-span-2'}`}>
         {/* ═══════ VIDEO (si existe) ═══════ */}
         {receta.video_url && (
           <FadeIn delay={0.2}>
@@ -740,7 +746,7 @@ export default function DetalleRecetaPage() {
           </div>
 
           {/* Columna lateral: control del coach */}
-          <div className="min-w-0 lg:col-start-2 lg:row-start-3">
+          <div className={`min-w-0 lg:col-start-2 ${cab === 'c' ? 'lg:row-start-2' : 'lg:row-start-3'}`}>
         {!isClientView && quality && (
           <FadeIn delay={0.06}>
             <section className="coach-recipe-detail__section mb-6 p-4 sm:p-5" aria-label="Calidad de la receta">
@@ -827,7 +833,7 @@ export default function DetalleRecetaPage() {
       {/* TEMPORAL: comparar cabeceras A/B */}
       <div className="fixed bottom-4 right-4 z-50 flex overflow-hidden rounded-lg text-sm font-semibold shadow-lg" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
         <span className="px-3 py-2" style={{ color: 'var(--text-muted)' }}>Cabecera</span>
-        {(['a', 'b'] as const).map(v => (
+        {(['a', 'c'] as const).map(v => (
           <button key={v} onClick={() => setCab(v)} className="px-4 py-2 uppercase"
             style={{ background: cab === v ? 'var(--primary)' : 'transparent', color: cab === v ? 'var(--bg)' : 'var(--text)' }}>{v}</button>
         ))}
