@@ -4,13 +4,15 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, SlidersHorizontal, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
-import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
+import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, recetaLibreDe, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
 import ReportarProblema from '@/components/recetas/ReportarProblema'
 import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
+
+const OPCIONES_SIN = [...ALERGENOS_NEGATIVOS, 'Sin Cacahuetes'] as const
 
 const METODOS_COCCION = [
   { value: 'Todos', label: 'Todos' },
@@ -245,7 +247,7 @@ export default function RecetasPage() {
         matchIntolerancia = recetaTieneEtiqueta(recetaIntolerancias, filtroActivo)
       }
 
-      const matchSin = sinFiltros.every(v => recetaTieneEtiqueta(r.intolerancias ?? [], v))
+      const matchSin = sinFiltros.every(v => recetaLibreDe(r.intolerancias ?? [], v))
       return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchCuracion && matchKcal && matchTiempo && matchIntolerancia && matchSin
     })
       .sort((a, b) => {
@@ -470,7 +472,7 @@ export default function RecetasPage() {
             </FiltroMenu>
 
             <FiltroMenu etiqueta="Sin" valor={sinFiltros.length ? sinFiltros.map(nombreSin).join(', ') : null} onLimpiar={() => setSinParam(null)}>
-              {() => ALERGENOS_NEGATIVOS.map(valor => (
+              {() => OPCIONES_SIN.map(valor => (
                 <OpcionMenu key={valor} activa={sinFiltros.includes(valor)} onClick={() => alternarSin(valor)}>{nombreSin(valor)}</OpcionMenu>
               ))}
             </FiltroMenu>

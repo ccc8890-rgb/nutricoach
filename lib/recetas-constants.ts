@@ -170,6 +170,31 @@ export function nombreSin(valor: string): string {
     return valor.replace(/^Sin\s+/i, '').toLowerCase()
 }
 
+// Qué etiqueta positiva anula cada «Sin X» (para buscar recetas libres de algo aunque no lleven la etiqueta «Sin X»)
+const POSITIVOS_DE_SIN: Record<string, readonly string[]> = {
+    'Sin Gluten': ['Gluten'],
+    'Sin Lactosa': ['Lácteos'],
+    'Sin Huevo': ['Huevos'],
+    'Sin Frutos Secos': ['Frutos Secos'],
+    'Sin Cacahuetes': ['Cacahuetes'],
+    'Sin Soja': ['Soja'],
+    'Sin Pescado': ['Pescado'],
+    'Sin Mariscos': ['Crustáceos', 'Moluscos'],
+}
+
+/**
+ * Para el FILTRO «Sin X»: la receta lleva la etiqueta «Sin X» o la auditoría de ingredientes no detectó X
+ * (las etiquetas positivas se recalculan contra los ingredientes). Es una ayuda de búsqueda: no sustituye revisar
+ * ingredientes ocultos (salsas, caldos, trazas) en alergias o celiaquía reales.
+ */
+export function recetaLibreDe(tags: string[] | null | undefined, sin: string): boolean {
+    if (recetaTieneEtiqueta(tags, sin)) return true
+    const positivos = POSITIVOS_DE_SIN[sin]
+    if (!positivos || !tags?.length) return false
+    const set = new Set(tags.map(t => t.toLowerCase()))
+    return !positivos.some(p => set.has(p.toLowerCase()))
+}
+
 /** ¿La receta cumple esta etiqueta? Vegano implica vegetariano, sin lactosa y sin lácteos. */
 export function recetaTieneEtiqueta(tags: string[] | null | undefined, valor: string): boolean {
     const set = new Set((tags ?? []).map(t => t.toLowerCase()))
