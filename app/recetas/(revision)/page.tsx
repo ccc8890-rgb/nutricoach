@@ -2,9 +2,9 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, SlidersHorizontal, ChefHat, Package, Trophy, Lightning } from '@phosphor-icons/react'
+import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, SlidersHorizontal, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
-import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, SUBCATEGORIAS, ALERGENOS_POSITIVOS, APTA_PARA, SIN_ALERGENO, nombreSin, recetaTieneEtiqueta, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
+import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_POSITIVOS, APTA_PARA, SIN_ALERGENO, nombreSin, recetaTieneEtiqueta, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
@@ -16,6 +16,61 @@ const METODOS_COCCION = [
   { value: 'Todos', label: 'Todos' },
   ...TIPOS_COCCION.map(k => ({ value: k, label: k })),
 ]
+
+/** Botón de filtro por categoría con su propio desplegable (un clic elige y cierra). */
+function FiltroMenu({ etiqueta, valor, onLimpiar, children }: {
+  etiqueta: string
+  valor: string | null
+  onLimpiar: () => void
+  children: (cerrar: () => void) => React.ReactNode
+}) {
+  const [abierto, setAbierto] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!abierto) return
+    const fuera = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setAbierto(false) }
+    document.addEventListener('mousedown', fuera)
+    return () => document.removeEventListener('mousedown', fuera)
+  }, [abierto])
+  const activo = valor !== null
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setAbierto(v => !v)}
+        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-all duration-150"
+        style={activo
+          ? { borderColor: 'var(--accent)', color: 'var(--text)', background: 'var(--accent-bg)' }
+          : { borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'transparent' }}
+      >
+        {etiqueta}{activo && <span className="font-semibold">· {valor}</span>}
+        {activo
+          ? <span role="button" aria-label={`Quitar ${etiqueta}`} onClick={e => { e.stopPropagation(); onLimpiar(); setAbierto(false) }} className="-mr-1 flex items-center opacity-70 hover:opacity-100"><X size={11} weight="bold" /></span>
+          : <CaretDown size={10} />}
+      </button>
+      {abierto && (
+        <div className="absolute left-0 top-full z-40 mt-1.5 min-w-[11rem] max-h-72 overflow-y-auto rounded-lg border p-1" style={{ background: 'var(--surface)', borderColor: 'var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
+          {children(() => setAbierto(false))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function OpcionMenu({ activa, onClick, children }: { activa: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-1.5 text-left text-xs transition-colors"
+      style={{ color: activa ? 'var(--text)' : 'var(--text-secondary)', background: activa ? 'var(--accent-bg)' : 'transparent', fontWeight: activa ? 600 : 400 }}
+      onMouseEnter={e => { if (!activa) e.currentTarget.style.background = 'var(--surface-hover)' }}
+      onMouseLeave={e => { if (!activa) e.currentTarget.style.background = 'transparent' }}
+    >
+      <span>{children}</span>{activa && <Check size={12} weight="bold" />}
+    </button>
+  )
+}
 
 type RecetaRow = {
   id: string
@@ -88,10 +143,7 @@ export default function RecetasPage() {
   const [orden, setOrden] = useEstadoUrl<'reciente' | 'antiguo'>('orden', 'reciente', ['reciente', 'antiguo'])
   const [loading, setLoading] = useState(true)
   useRestaurarScroll(!loading)
-  const [showFilterPanel, setShowFilterPanel] = useState(false)
   const [showSearchDrop, setShowSearchDrop] = useState(false)
-  const filterPanelRef = useRef<HTMLDivElement>(null)
-  const filterBtnRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
 
   // Filtros rápidos: negativo (ej. "Sin Gluten") y dietético (ej. "Vegano")
@@ -232,17 +284,10 @@ export default function RecetasPage() {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowSearchDrop(false)
       }
-      if (
-        showFilterPanel &&
-        filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node) &&
-        filterBtnRef.current && !filterBtnRef.current.contains(e.target as Node)
-      ) {
-        setShowFilterPanel(false)
-      }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [showFilterPanel, showSearchDrop])
+  }, [showSearchDrop])
 
   const coccionEnUso = new Set(recetas.map(r => r.tipo_coccion).filter(Boolean))
 
@@ -364,236 +409,6 @@ export default function RecetasPage() {
                 </div>
               )}
             </div>
-            <div className="relative">
-              <button
-                ref={filterBtnRef}
-                onClick={() => setShowFilterPanel(!showFilterPanel)}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-all duration-150"
-                style={activeFilterCount > 0
-                  ? { borderColor: 'var(--accent)', color: 'var(--text)', background: 'var(--accent-bg)' }
-                  : { borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'transparent' }}
-              >
-                <SlidersHorizontal size={13} />
-                Filtros
-                {activeFilterCount > 0 && (
-                  <span
-                    className="w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center"
-                    style={{ background: 'var(--accent)', color: 'var(--bg)' }}
-                  >
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-
-              {showFilterPanel && (
-                <div
-                  ref={filterPanelRef}
-                  className="absolute top-full left-0 mt-2 rounded-2xl border p-5 z-50"
-                  style={{
-                    background: 'var(--surface)',
-                    borderColor: 'var(--border)',
-                    minWidth: 340,
-                    maxWidth: 'calc(100vw - 2rem)',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
-                  }}
-                >
-                  {/* Enfoque */}
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Enfoque
-                    </p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {filtrosCuracion.map(f => (
-                        <button
-                          key={f.id}
-                          title={f.detail}
-                          onClick={() => setCuracionFilter(curacionFilter === f.id ? null : f.id)}
-                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
-                          style={curacionFilter === f.id ? chipActive : chipInactive}
-                        >
-                          {f.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Apta para */}
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Apta para
-                    </p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {APTA_PARA.map(({ valor, etiqueta }) => (
-                        <button
-                          key={valor}
-                          onClick={() => setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor)}
-                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
-                          style={intoleranciaFilter === valor
-                            ? { background: 'rgba(34,197,94,0.12)', borderColor: 'rgba(34,197,94,0.3)', color: 'rgb(21,128,61)' }
-                            : chipInactive}
-                        >
-                          {etiqueta}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Cocción */}
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Método de cocción
-                    </p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {METODOS_COCCION.filter(m => m.value === 'Todos' || coccionEnUso.has(m.value)).map(m => (
-                        <button
-                          key={m.value}
-                          onClick={() => setMetodoCoccion(m.value)}
-                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150 flex items-center gap-1"
-                          style={metodoCoccion === m.value ? chipActive : chipInactive}
-                        >
-                          {m.value !== 'Todos' && ICONOS_COCCION[m.value]}
-                          {m.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Kcal */}
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Kcal por porción
-                    </p>
-                    <div className="flex gap-1.5">
-                      {[
-                        { value: '<300', label: '< 300' },
-                        { value: '300-600', label: '300–600' },
-                        { value: '>600', label: '> 600' },
-                      ].map(opt => (
-                        <button
-                          key={opt.value}
-                          onClick={() => setRangoKcal(rangoKcal === opt.value ? null : opt.value)}
-                          className="text-xs px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
-                          style={rangoKcal === opt.value ? chipActive : chipInactive}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Tiempo */}
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Tiempo de preparación
-                    </p>
-                    <div className="flex gap-1.5">
-                      {[
-                        { value: '<15', label: '< 15 min' },
-                        { value: '15-30', label: '15–30 min' },
-                        { value: '>30', label: '> 30 min' },
-                      ].map(opt => (
-                        <button
-                          key={opt.value}
-                          onClick={() => setTiempoPrep(tiempoPrep === opt.value ? null : opt.value)}
-                          className="text-xs px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
-                          style={tiempoPrep === opt.value ? chipActive : chipInactive}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Contiene (alérgenos positivos) */}
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Contiene (alérgenos)
-                    </p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {ALERGENOS_POSITIVOS.map(i => (
-                        <button
-                          key={i}
-                          onClick={() => setIntoleranciaFilter(intoleranciaFilter === i ? null : i)}
-                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
-                          style={intoleranciaFilter === i
-                            ? { background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.3)', color: 'rgb(185,28,28)' }
-                            : chipInactive}
-                        >
-                          {i}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Resto de exclusiones («Apta para» y «Enfoque» van arriba del panel) */}
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Sin
-                    </p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {SIN_ALERGENO.map(valor => (
-                        <button
-                          key={valor}
-                          onClick={() => setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor)}
-                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
-                          style={intoleranciaFilter === valor
-                            ? { background: 'rgba(34,197,94,0.12)', borderColor: 'rgba(34,197,94,0.3)', color: 'rgb(21,128,61)' }
-                            : chipInactive}
-                        >
-                          {nombreSin(valor)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Fecha */}
-                  <div className="mb-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Fecha de creación
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="date"
-                        value={fechaDesde}
-                        onChange={e => setFechaDesde(e.target.value)}
-                        className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
-                        style={{ color: 'var(--text)', background: 'var(--bg)', borderColor: 'var(--border)' }}
-                      />
-                      <span style={{ color: 'var(--text-muted)' }}>—</span>
-                      <input
-                        type="date"
-                        value={fechaHasta}
-                        onChange={e => setFechaHasta(e.target.value)}
-                        className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
-                        style={{ color: 'var(--text)', background: 'var(--bg)', borderColor: 'var(--border)' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Limpiar filtros avanzados */}
-                  {activeFilterCount > 0 && (
-                    <button
-                      onClick={() => {
-                        setMetodoCoccion('Todos')
-                        setRangoKcal(null)
-                        setTiempoPrep(null)
-                        setIntoleranciaFilter(null)
-                        setCuracionFilter(null)
-                        setFechaDesde('')
-                        setFechaHasta('')
-                      }}
-                      className="w-full text-xs py-2 rounded-xl border font-medium transition-all duration-150 mt-1"
-                      style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-                    >
-                      Limpiar filtros avanzados
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
             {/* Orden */}
             <select
               value={orden}
@@ -642,6 +457,74 @@ export default function RecetasPage() {
               ))}
             </div>
           )}
+
+          {/* ═══════ FILTROS POR CATEGORÍA (un botón por tipo, un clic) ═══════ */}
+          <div className="flex flex-wrap items-center gap-1.5 mb-5">
+            <FiltroMenu etiqueta="Enfoque" valor={filtrosCuracion.find(f => f.id === curacionFilter)?.label ?? null} onLimpiar={() => setCuracionFilter(null)}>
+              {cerrar => filtrosCuracion.map(f => (
+                <OpcionMenu key={f.id} activa={curacionFilter === f.id} onClick={() => { setCuracionFilter(curacionFilter === f.id ? null : f.id); cerrar() }}>
+                  {f.label} <span style={{ color: 'var(--text-muted)' }}>· {f.detail}</span>
+                </OpcionMenu>
+              ))}
+            </FiltroMenu>
+
+            <FiltroMenu etiqueta="Apta para" valor={APTA_PARA.find(a => a.valor === intoleranciaFilter)?.etiqueta ?? null} onLimpiar={() => setIntoleranciaFilter(null)}>
+              {cerrar => APTA_PARA.map(({ valor, etiqueta }) => (
+                <OpcionMenu key={valor} activa={intoleranciaFilter === valor} onClick={() => { setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor); cerrar() }}>{etiqueta}</OpcionMenu>
+              ))}
+            </FiltroMenu>
+
+            <FiltroMenu etiqueta="Contiene" valor={ALERGENOS_POSITIVOS.includes(intoleranciaFilter as never) ? intoleranciaFilter : null} onLimpiar={() => setIntoleranciaFilter(null)}>
+              {cerrar => ALERGENOS_POSITIVOS.map(i => (
+                <OpcionMenu key={i} activa={intoleranciaFilter === i} onClick={() => { setIntoleranciaFilter(intoleranciaFilter === i ? null : i); cerrar() }}>{i}</OpcionMenu>
+              ))}
+            </FiltroMenu>
+
+            <FiltroMenu etiqueta="Sin" valor={SIN_ALERGENO.includes(intoleranciaFilter as never) ? nombreSin(intoleranciaFilter as string) : null} onLimpiar={() => setIntoleranciaFilter(null)}>
+              {cerrar => SIN_ALERGENO.map(valor => (
+                <OpcionMenu key={valor} activa={intoleranciaFilter === valor} onClick={() => { setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor); cerrar() }}>{nombreSin(valor)}</OpcionMenu>
+              ))}
+            </FiltroMenu>
+
+            <FiltroMenu etiqueta="Cocción" valor={metodoCoccion !== 'Todos' ? metodoCoccion : null} onLimpiar={() => setMetodoCoccion('Todos')}>
+              {cerrar => METODOS_COCCION.filter(m => m.value !== 'Todos' && coccionEnUso.has(m.value)).map(m => (
+                <OpcionMenu key={m.value} activa={metodoCoccion === m.value} onClick={() => { setMetodoCoccion(metodoCoccion === m.value ? 'Todos' : m.value); cerrar() }}>{m.label}</OpcionMenu>
+              ))}
+            </FiltroMenu>
+
+            <FiltroMenu etiqueta="Kcal" valor={rangoKcal ? { '<300': '< 300', '300-600': '300–600', '>600': '> 600' }[rangoKcal] ?? rangoKcal : null} onLimpiar={() => setRangoKcal(null)}>
+              {cerrar => [['<300', '< 300'], ['300-600', '300–600'], ['>600', '> 600']].map(([v, l]) => (
+                <OpcionMenu key={v} activa={rangoKcal === v} onClick={() => { setRangoKcal(rangoKcal === v ? null : v); cerrar() }}>{l} kcal / porción</OpcionMenu>
+              ))}
+            </FiltroMenu>
+
+            <FiltroMenu etiqueta="Tiempo" valor={tiempoPrep ? { '<15': '< 15 min', '15-30': '15–30 min', '>30': '> 30 min' }[tiempoPrep] ?? tiempoPrep : null} onLimpiar={() => setTiempoPrep(null)}>
+              {cerrar => [['<15', '< 15 min'], ['15-30', '15–30 min'], ['>30', '> 30 min']].map(([v, l]) => (
+                <OpcionMenu key={v} activa={tiempoPrep === v} onClick={() => { setTiempoPrep(tiempoPrep === v ? null : v); cerrar() }}>{l}</OpcionMenu>
+              ))}
+            </FiltroMenu>
+
+            <FiltroMenu etiqueta="Fecha" valor={fechaDesde || fechaHasta ? `${fechaDesde || '…'} → ${fechaHasta || '…'}` : null} onLimpiar={() => { setFechaDesde(''); setFechaHasta('') }}>
+              {() => (
+                <div className="flex items-center gap-2 p-1.5">
+                  <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} className="text-xs py-1.5 px-2 rounded-lg border outline-none" style={{ color: 'var(--text)', background: 'var(--bg)', borderColor: 'var(--border)' }} />
+                  <span style={{ color: 'var(--text-muted)' }}>—</span>
+                  <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} className="text-xs py-1.5 px-2 rounded-lg border outline-none" style={{ color: 'var(--text)', background: 'var(--bg)', borderColor: 'var(--border)' }} />
+                </div>
+              )}
+            </FiltroMenu>
+
+            {(activeFilterCount > 0 || tagFilter || categoria !== 'Todos') && (
+              <button
+                type="button"
+                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setIntoleranciaFilter(null); setCuracionFilter(null); setFechaDesde(''); setFechaHasta(''); setCategoria('Todos'); setTagFilter(null) }}
+                className="px-2 py-1.5 text-xs underline-offset-2 hover:underline"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Limpiar todo
+              </button>
+            )}
+          </div>
         </FadeIn>
 
         {/* ═══════ CONTENIDO ═══════ */}
