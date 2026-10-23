@@ -259,14 +259,6 @@ export default function RecetasPage() {
     !!(fechaDesde || fechaHasta),
   ].filter(Boolean).length
 
-  const statsCuracion = useMemo(() => {
-    const chef = recetas.filter(r => r.premium_chef || r.estilos?.includes('chef_healthy') || r.estilos?.includes('comfort_healthy')).length
-    const batch = recetas.filter(r => r.batch_cooking || r.tupper || r.estilos?.includes('batch_cooking') || r.estilos?.includes('tupper')).length
-    const performance = recetas.filter(r => r.objetivos?.includes('rendimiento') || r.deportes?.some(d => ['running', 'hyrox', 'endurance', 'triatlon', 'ciclismo'].includes(d))).length
-    const altaAdherencia = recetas.filter(r => (r.adherencia_score ?? 0) >= 80).length
-    return { chef, batch, performance, altaAdherencia }
-  }, [recetas])
-
   const filtrosCuracion = [
     { id: 'chef', label: 'Chef healthy', detail: 'Atractivas', icon: ChefHat },
     { id: 'adherencia', label: 'Alta adherencia', detail: 'Score 80+', icon: Sparkle },
@@ -291,9 +283,9 @@ export default function RecetasPage() {
           }}
         />
 
-        <div className="relative px-6 pt-8 pb-5 max-w-[110rem] mx-auto">
+        <div className="relative px-6 pt-8 pb-4 max-w-[110rem] mx-auto">
           <FadeIn delay={0}>
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between">
               <div>
                 <h1 className="coach-recipe-title" style={{ color: 'var(--text)' }}>
                   Recetas
@@ -312,38 +304,16 @@ export default function RecetasPage() {
             </div>
           </FadeIn>
 
-          <FadeIn delay={0.08}>
-            <div className="coach-recipe-metrics grid gap-px sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                { label: 'Chef healthy', value: statsCuracion.chef, icon: ChefHat },
-                { label: 'Alta adherencia', value: statsCuracion.altaAdherencia, icon: Sparkle },
-                { label: 'Batch/tupper', value: statsCuracion.batch, icon: Package },
-                { label: 'Rendimiento', value: statsCuracion.performance, icon: Trophy },
-              ].map(stat => {
-                const Icon = stat.icon
-                return (
-                  <div
-                    key={stat.label}
-                    className="coach-recipe-metric"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
-                        <p className="mt-1 text-xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>{stat.value}</p>
-                      </div>
-                      <div className="coach-recipe-metric__icon">
-                        <Icon size={17} />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </FadeIn>
 
-          {/* Buscador */}
-          <FadeIn delay={0.1}>
-            <div ref={searchRef} className="coach-recipe-search relative max-w-xl">
+        </div>
+      </div>
+
+      <div className="px-6 max-w-[110rem] mx-auto pb-safe">
+        {/* ═══════ FILTROS ═══════ */}
+        <FadeIn delay={0.15}>
+          {/* Fila utilidad: botón Filtros + Orden */}
+          <div className="flex items-center gap-2 mb-4">
+            <div ref={searchRef} className="relative flex-1 min-w-[12rem]">
               <MagnifyingGlass size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
               <input
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all duration-200"
@@ -394,15 +364,6 @@ export default function RecetasPage() {
                 </div>
               )}
             </div>
-          </FadeIn>
-        </div>
-      </div>
-
-      <div className="px-6 max-w-[110rem] mx-auto pb-safe">
-        {/* ═══════ FILTROS ═══════ */}
-        <FadeIn delay={0.15}>
-          {/* Fila utilidad: botón Filtros + Orden */}
-          <div className="flex items-center justify-between gap-2 mb-3">
             <div className="relative">
               <button
                 ref={filterBtnRef}
@@ -431,11 +392,52 @@ export default function RecetasPage() {
                   style={{
                     background: 'var(--surface)',
                     borderColor: 'var(--border)',
-                    minWidth: 300,
+                    minWidth: 340,
                     maxWidth: 'calc(100vw - 2rem)',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
                   }}
                 >
+                  {/* Enfoque */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Enfoque
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {filtrosCuracion.map(f => (
+                        <button
+                          key={f.id}
+                          title={f.detail}
+                          onClick={() => setCuracionFilter(curacionFilter === f.id ? null : f.id)}
+                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
+                          style={curacionFilter === f.id ? chipActive : chipInactive}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Apta para */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Apta para
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {APTA_PARA.map(({ valor, etiqueta }) => (
+                        <button
+                          key={valor}
+                          onClick={() => setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor)}
+                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
+                          style={intoleranciaFilter === valor
+                            ? { background: 'rgba(34,197,94,0.12)', borderColor: 'rgba(34,197,94,0.3)', color: 'rgb(21,128,61)' }
+                            : chipInactive}
+                        >
+                          {etiqueta}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Cocción */}
                   <div className="mb-4">
                     <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
@@ -523,7 +525,7 @@ export default function RecetasPage() {
                     </div>
                   </div>
 
-                  {/* «Apta para» vive en la fila rápida de arriba; aquí el resto de exclusiones */}
+                  {/* Resto de exclusiones («Apta para» y «Enfoque» van arriba del panel) */}
                   <div className="mb-4">
                     <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
                       Sin
@@ -606,30 +608,6 @@ export default function RecetasPage() {
             </select>
           </div>
 
-          <div className="coach-recipe-curation mb-4 grid gap-px sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {filtrosCuracion.map(filter => {
-              const Icon = filter.icon
-              const active = curacionFilter === filter.id
-              return (
-                <button
-                  key={filter.id}
-                  onClick={() => setCuracionFilter(active ? null : filter.id)}
-                  className="coach-recipe-curation__item flex items-center gap-3 p-3 text-left transition-all duration-150 active:scale-[0.98]"
-                  style={active
-                    ? { borderColor: 'rgba(163,230,53,0.48)', background: 'rgba(163,230,53,0.10)', color: '#A3E635' }
-                    : { borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: active ? 'rgba(163,230,53,0.14)' : 'var(--surface-hover)' }}>
-                    <Icon size={16} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-xs font-semibold leading-tight">{filter.label}</span>
-                    <span className="mt-0.5 block text-[11px]" style={{ color: active ? '#A3E635' : 'var(--text-muted)' }}>{filter.detail}</span>
-                  </span>
-                </button>
-              )
-            })}
-          </div>
 
           {/* Tipo de plato */}
           <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
@@ -664,22 +642,6 @@ export default function RecetasPage() {
               ))}
             </div>
           )}
-          {/* ═══════ APTA PARA (única fila; el panel de filtros solo añade «Sin» y «Contiene») ═══════ */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-5 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-            <span className="shrink-0 pr-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Apta para</span>
-            {APTA_PARA.map(({ valor, etiqueta }) => (
-              <button
-                key={valor}
-                onClick={() => setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor)}
-                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-semibold transition-all duration-150"
-                style={intoleranciaFilter === valor
-                  ? { background: 'rgba(34,197,94,0.12)', borderColor: 'rgba(34,197,94,0.3)', color: 'rgb(21,128,61)' }
-                  : chipInactive}
-              >
-                {etiqueta}
-              </button>
-            ))}
-          </div>
         </FadeIn>
 
         {/* ═══════ CONTENIDO ═══════ */}
