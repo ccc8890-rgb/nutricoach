@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, SlidersHorizontal, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@phosphor-icons/react'
+import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, recetaLibreDe, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
@@ -221,7 +221,6 @@ export default function RecetasPage() {
         || (curacionFilter === 'batch' && (r.batch_cooking || r.tupper || r.estilos?.includes('batch_cooking') || r.estilos?.includes('tupper')))
         || (curacionFilter === 'prepost' && (r.momentos?.includes('pre_entreno') || r.momentos?.includes('post_entreno') || r.momentos?.includes('carga_cho')))
         || (curacionFilter === 'endurance' && (r.deportes?.includes('running') || r.deportes?.includes('hyrox') || r.deportes?.includes('endurance') || r.deportes?.includes('triatlon') || r.deportes?.includes('ciclismo')))
-        || (curacionFilter === 'rapidas' && (((r.tiempo_prep_min ?? 0) + (r.tiempo_coccion_min ?? 0)) > 0 && ((r.tiempo_prep_min ?? 0) + (r.tiempo_coccion_min ?? 0)) <= 20))
 
       // Filtro rango kcal
       let matchKcal = true
@@ -308,7 +307,6 @@ export default function RecetasPage() {
   ].filter(Boolean).length
 
   const filtrosCuracion = [
-    { id: 'rapidas', grupo: 'En la cocina', label: 'Rápidas (≤ 20 min)', icon: SlidersHorizontal },
     { id: 'batch', grupo: 'En la cocina', label: 'Para la semana (batch / tupper)', icon: Package },
     { id: 'prepost', grupo: 'Para entrenar', label: 'Antes y después de entrenar', icon: Lightning },
     { id: 'endurance', grupo: 'Para entrenar', label: 'Resistencia (running, Hyrox, ciclismo)', icon: Trophy },
