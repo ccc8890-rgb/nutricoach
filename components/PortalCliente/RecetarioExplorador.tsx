@@ -7,15 +7,72 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { BotonFavorita } from './BotonFavorita'
-import { MagnifyingGlass, ForkKnife, SlidersHorizontal, X, Rows, SquaresFour } from '@phosphor-icons/react'
+import { MagnifyingGlass, ForkKnife, X, Rows, SquaresFour, CaretDown, Check } from '@phosphor-icons/react'
+import { CATEGORIAS as CATEGORIAS_BASE, TIPOS_COCCION, APTA_PARA, ALERGENOS_NEGATIVOS, nombreSin } from '@/lib/recetas-constants'
 
-const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre'] as const
+// Mismos filtros y nombres que la Biblioteca del coach
+const CATEGORIAS = CATEGORIAS_BASE
+const OPCIONES_APTA = [...APTA_PARA, { valor: 'Halal', etiqueta: 'Halal' }]
+const OPCIONES_SIN = [...ALERGENOS_NEGATIVOS, 'Sin Cacahuetes'] as const
+const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
+const USOS = [
+  { id: 'batch', grupo: 'En la cocina', label: 'Para la semana (batch / tupper)' },
+  { id: 'prepost', grupo: 'Para entrenar', label: 'Antes y después de entrenar' },
+  { id: 'endurance', grupo: 'Para entrenar', label: 'Resistencia (running, Hyrox, ciclismo)' },
+  { id: 'chef', grupo: 'Calidad', label: 'Más elaboradas (chef healthy)' },
+  { id: 'adherencia', grupo: 'Calidad', label: 'Fáciles de seguir (score 80+)' },
+]
+const KCAL = [['<300', '< 300 kcal'], ['300-600', '300–600 kcal'], ['>600', '> 600 kcal']]
+const TIEMPO = [['<15', '< 15 min'], ['15-30', '15–30 min'], ['>30', '> 30 min']]
 
-// Filtro por ingrediente principal, aparte del tipo de comida. Usa el mismo
-// vocabulario que ya genera lib/auto-tag.ts y guarda en recetas.tags — no
-// es un sistema nuevo, solo se expone aquí como chips. Curado a los
-// ingredientes con cobertura real en el recetario (ver auditoría 28-09).
-const TAGS_INGREDIENTE = ['Pollo', 'Carne', 'Pescado', 'Pasta', 'Arroz', 'Legumbre', 'Patata', 'Yogur'] as const
+function Filtro({ etiqueta, valor, onLimpiar, children }: {
+  etiqueta: string; valor: string | null; onLimpiar: () => void; children: React.ReactNode
+}) {
+  const [abierto, setAbierto] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!abierto) return
+    const fuera = (e: Event) => { if (ref.current && !ref.current.contains(e.target as Node)) setAbierto(false) }
+    document.addEventListener('pointerdown', fuera)
+    return () => document.removeEventListener('pointerdown', fuera)
+  }, [abierto])
+  const activo = valor !== null
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setAbierto(v => !v)}
+        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold"
+        style={{
+          background: activo ? 'var(--primary)' : 'var(--surface)',
+          color: activo ? 'var(--bg)' : 'var(--text-muted)',
+          border: '1px solid var(--border)',
+        }}
+      >
+        {etiqueta}{activo && <span className="max-w-[9rem] truncate">· {valor}</span>}
+        {activo
+          ? <span role="button" aria-label={`Quitar ${etiqueta}`} onClick={e => { e.stopPropagation(); onLimpiar(); setAbierto(false) }}><X size={11} weight="bold" /></span>
+          : <CaretDown size={10} />}
+      </button>
+      {abierto && (
+        <div className="absolute left-0 top-full z-40 mt-1.5 min-w-[13rem] max-h-72 overflow-y-auto rounded-lg p-1"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Opcion({ activa, onClick, children }: { activa: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" onClick={onClick}
+      className="flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-2 text-left text-xs"
+      style={{ color: activa ? 'var(--text)' : 'var(--text-muted)', fontWeight: activa ? 700 : 400 }}>
+      <span>{children}</span>{activa && <Check size={12} weight="bold" />}
+    </button>
+  )
+}
 
 const CLAVE_SNAPSHOT = 'nc:recetario:snapshot'
 
@@ -50,8 +107,19 @@ export default function RecetarioExplorador({
   // Filtros en la URL: al abrir una receta y volver, la búsqueda sigue igual
   const [q, setQ] = useEstadoUrl<string>('q', '')
   const [categoria, setCategoria] = useEstadoUrl<string>('cat', 'Todos')
-  const [tag, setTag] = useEstadoUrl<string | null>('tag', null)
-  const [mostrarFiltros, setMostrarFiltros] = useState(false)
+  const [usoF, setUsoF] = useEstadoUrl<string | null>('uso', null)
+  const [aptaP, setAptaP] = useEstadoUrl<string | null>('apta', null)
+  const [sinP, setSinP] = useEstadoUrl<string | null>('sin', null)
+  const [metodo, setMetodo] = useEstadoUrl<string | null>('metodo', null)
+  const [kcalF, setKcalF] = useEstadoUrl<string | null>('kcal', null)
+  const [tiempoF, setTiempoF] = useEstadoUrl<string | null>('tiempo', null)
+  const aptaL = aptaP ? aptaP.split(',').filter(Boolean) : []
+  const sinL = sinP ? sinP.split(',').filter(Boolean) : []
+  const alternar = (lista: string[], v: string, set: (x: string | null) => void) => {
+    const n = lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]
+    set(n.length ? n.join(',') : null)
+  }
+  const hayFiltros = Boolean(usoF || aptaP || sinP || metodo || kcalF || tiempoF)
   const [vista, setVista] = useState<'lista' | 'cuadricula'>('lista')
   useEffect(() => {
     try {
@@ -64,7 +132,7 @@ export default function RecetarioExplorador({
     try { localStorage.setItem('recetario-vista', v) } catch {}
   }
   // Primera página sin filtros: viene de la caché compartida (precargada por el portal).
-  const sinFiltros = !q.trim() && categoria === 'Todos' && !tag
+  const sinFiltros = !q.trim() && categoria === 'Todos' && !hayFiltros
   const { data: inicial, error: errorInicial } = useSWR<{ recetas?: RecetaCatalogo[]; hayMas?: boolean }>(
     `/api/cliente/${codigo}/recetario?page=0`, fetchJson,
   )
@@ -115,7 +183,7 @@ export default function RecetarioExplorador({
     }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, categoria, tag, sinFiltros])
+  }, [q, categoria, usoF, aptaP, sinP, metodo, kcalF, tiempoF, sinFiltros])
 
   async function cargar(paginaSolicitada: number, reemplazar: boolean) {
     setCargando(true)
@@ -123,7 +191,8 @@ export default function RecetarioExplorador({
       const params = new URLSearchParams({ page: String(paginaSolicitada) })
       if (q.trim()) params.set('q', q.trim())
       if (categoria !== 'Todos') params.set('categoria', categoria)
-      if (tag) params.set('tag', tag)
+      const extra: Record<string, string | null> = { uso: usoF, apta: aptaP, sin: sinP, metodo, kcal: kcalF, tiempo: tiempoF }
+      for (const [k, v] of Object.entries(extra)) if (v) params.set(k, v)
       const res = await fetch(`/api/cliente/${codigo}/recetario?${params.toString()}`)
       const data = await res.json()
       setRecetas(prev => reemplazar ? (data.recetas ?? []) : [...prev, ...(data.recetas ?? [])])
@@ -165,18 +234,6 @@ export default function RecetarioExplorador({
         >
           {vista === 'lista' ? <SquaresFour size={16} /> : <Rows size={16} />}
         </button>
-        <button
-          onClick={() => setMostrarFiltros(v => !v)}
-          className="recipe-filter-toggle shrink-0 px-3 flex items-center justify-center"
-          style={{
-            background: mostrarFiltros || tag ? 'var(--primary)' : 'var(--surface)',
-            border: '1px solid var(--border)',
-            color: mostrarFiltros || tag ? 'var(--bg)' : 'var(--text-muted)',
-          }}
-          aria-label="Más filtros"
-        >
-          <SlidersHorizontal size={16} />
-        </button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -196,33 +253,43 @@ export default function RecetarioExplorador({
         ))}
       </div>
 
-      {mostrarFiltros && (
-        <div className="flex flex-wrap items-center gap-2">
-          {TAGS_INGREDIENTE.map(t => (
-            <button
-              key={t}
-              onClick={() => setTag(tag === t ? null : t)}
-              className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold"
-              style={{
-                background: tag === t ? 'var(--accent)' : 'var(--surface)',
-                color: tag === t ? 'var(--bg)' : 'var(--text-muted)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              {t}
-            </button>
+      <div className="flex flex-wrap gap-2">
+        <Filtro etiqueta="Uso" valor={USOS.find(u => u.id === usoF)?.label ?? null} onLimpiar={() => setUsoF(null)}>
+          {USOS.map((u, i) => (
+            <div key={u.id}>
+              {USOS[i - 1]?.grupo !== u.grupo && <p className="px-2.5 pt-2 pb-1 text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{u.grupo}</p>}
+              <Opcion activa={usoF === u.id} onClick={() => setUsoF(usoF === u.id ? null : u.id)}>{u.label}</Opcion>
+            </div>
           ))}
-          {tag && (
-            <button
-              onClick={() => setTag(null)}
-              className="shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              <X size={12} /> Quitar
-            </button>
-          )}
-        </div>
-      )}
+        </Filtro>
+        <Filtro etiqueta="Apta para" valor={aptaL.length ? aptaL.map(v => OPCIONES_APTA.find(a => a.valor === v)?.etiqueta ?? v).join(', ') : null} onLimpiar={() => setAptaP(null)}>
+          {OPCIONES_APTA.map(({ valor, etiqueta }) => (
+            <Opcion key={valor} activa={aptaL.includes(valor)} onClick={() => alternar(aptaL, valor, setAptaP)}>{etiqueta}</Opcion>
+          ))}
+        </Filtro>
+        <Filtro etiqueta="Sin" valor={sinL.length ? sinL.map(v => mayuscula(nombreSin(v))).join(', ') : null} onLimpiar={() => setSinP(null)}>
+          {OPCIONES_SIN.map(v => (
+            <Opcion key={v} activa={sinL.includes(v)} onClick={() => alternar(sinL, v, setSinP)}>{mayuscula(nombreSin(v))}</Opcion>
+          ))}
+        </Filtro>
+        <Filtro etiqueta="Cocción" valor={metodo} onLimpiar={() => setMetodo(null)}>
+          {TIPOS_COCCION.map(m => (
+            <Opcion key={m} activa={metodo === m} onClick={() => setMetodo(metodo === m ? null : m)}>{m}</Opcion>
+          ))}
+        </Filtro>
+        <Filtro etiqueta="Kcal" valor={KCAL.find(k => k[0] === kcalF)?.[1] ?? null} onLimpiar={() => setKcalF(null)}>
+          {KCAL.map(([v, l]) => <Opcion key={v} activa={kcalF === v} onClick={() => setKcalF(kcalF === v ? null : v)}>{l} / porción</Opcion>)}
+        </Filtro>
+        <Filtro etiqueta="Tiempo" valor={TIEMPO.find(k => k[0] === tiempoF)?.[1] ?? null} onLimpiar={() => setTiempoF(null)}>
+          {TIEMPO.map(([v, l]) => <Opcion key={v} activa={tiempoF === v} onClick={() => setTiempoF(tiempoF === v ? null : v)}>{l}</Opcion>)}
+        </Filtro>
+        {hayFiltros && (
+          <button type="button" className="shrink-0 px-2 text-xs underline" style={{ color: 'var(--text-muted)' }}
+            onClick={() => { setUsoF(null); setAptaP(null); setSinP(null); setMetodo(null); setKcalF(null); setTiempoF(null) }}>
+            Limpiar todo
+          </button>
+        )}
+      </div>
 
       {cargando && recetas.length === 0 ? (
         <div className="flex justify-center py-8">

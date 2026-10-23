@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
-import { cumpleRestriccionesReligiosas, pideRestriccionReligiosa } from '@/lib/recetas/halal'
+import { cumpleRestriccionesReligiosas, pideRestriccionReligiosa, contieneCerdo, esHalalPorIngredientes } from '@/lib/recetas/halal'
+import { recetaLibreDe, recetaTieneEtiqueta } from '@/lib/recetas-constants'
 
 // Mismo mapeo restricción → alérgenos EU que ya usan lib/plan-recetas.ts
 // y app/api/recetas/sugeridas/route.ts para generar planes. Se duplica
@@ -36,6 +37,14 @@ export async function GET(
   const q = searchParams.get('q')?.trim() ?? ''
   const categoria = searchParams.get('categoria')?.trim() ?? ''
   const tag = searchParams.get('tag')?.trim() ?? ''
+  // Mismos filtros que la Biblioteca del coach (valores separados por comas)
+  const lista = (k: string) => (searchParams.get(k) ?? '').split(',').map(x => x.trim()).filter(Boolean)
+  const aptaFiltros = lista('apta')
+  const sinFiltros = lista('sin')
+  const uso = searchParams.get('uso')?.trim() ?? ''
+  const metodo = searchParams.get('metodo')?.trim() ?? ''
+  const rangoKcal = searchParams.get('kcal')?.trim() ?? ''
+  const tiempoPrep = searchParams.get('tiempo')?.trim() ?? ''
   const page = Math.max(parseInt(searchParams.get('page') ?? '0', 10) || 0, 0)
 
   const supabase = createServiceSupabase()
@@ -48,7 +57,7 @@ export async function GET(
   // y paginar en memoria es correcto y sigue siendo barato.
   let query = supabase
     .from('recetas')
-    .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias')
+    .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, tags, tipo_coccion, tiempo_prep_min, tiempo_coccion_min, premium_chef, estilos, adherencia_score, batch_cooking, tupper, momentos, deportes')
     .eq('estado', 'aprobada')
     .order('nombre', { ascending: true })
 
@@ -67,10 +76,11 @@ export async function GET(
 
   // Halal / Sin cerdo se deciden por los ingredientes: solo en ese caso se pide también la lista de ingredientes
   let recetas: (NonNullable<typeof recetasBase>[number] & { receta_ingredientes?: { nombre_libre?: string | null; alimento?: { nombre?: string | null } | { nombre?: string | null }[] | null }[] })[] | null = recetasBase
-  if (recetasBase && pideRestriccionReligiosa(restricciones)) {
+  const pideIngredientes = pideRestriccionReligiosa(restricciones) || aptaFiltros.includes('Halal') || sinFiltros.includes('Sin Cerdo')
+  if (recetasBase && pideIngredientes) {
     let conIngredientes = supabase
       .from('recetas')
-      .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+      .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, tags, tipo_coccion, tiempo_prep_min, tiempo_coccion_min, premium_chef, estilos, adherencia_score, batch_cooking, tupper, momentos, deportes, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
       .eq('estado', 'aprobada')
       .order('nombre', { ascending: true })
     if (categoria && categoria !== 'Todos') conIngredientes = conIngredientes.eq('categoria', categoria)
@@ -99,6 +109,38 @@ export async function GET(
     if (alergenosExcluir.length && alergenosExcluir.some(a => intol.includes(a))) return false
     if (tagsPositivosRequeridos.length && !tagsPositivosRequeridos.every(t => intol.includes(t))) return false
     if (!cumpleRestriccionesReligiosas(r, restricciones)) return false
+
+    // Las aparcadas (sin fuente real) no se enseñan, igual que en la Biblioteca del coach
+    if (Array.isArray(r.tags) && r.tags.includes('Aparcada')) return false
+
+    if (metodo && r.tipo_coccion !== metodo) return false
+    if (rangoKcal) {
+      if (r.kcal == null) return false
+      if (rangoKcal === '<300' && !(r.kcal < 300)) return false
+      if (rangoKcal === '300-600' && !(r.kcal >= 300 && r.kcal <= 600)) return false
+      if (rangoKcal === '>600' && !(r.kcal > 600)) return false
+    }
+    if (tiempoPrep) {
+      const total = (r.tiempo_prep_min ?? 0) + (r.tiempo_coccion_min ?? 0)
+      if (tiempoPrep === '<15' && !(total > 0 && total < 15)) return false
+      if (tiempoPrep === '15-30' && !(total >= 15 && total <= 30)) return false
+      if (tiempoPrep === '>30' && !(total > 30)) return false
+    }
+    const estilos: string[] = r.estilos ?? []
+    const momentos: string[] = r.momentos ?? []
+    const deportes: string[] = r.deportes ?? []
+    if (uso === 'chef' && !(r.premium_chef || estilos.includes('chef_healthy') || estilos.includes('comfort_healthy') || estilos.includes('gourmet_simple'))) return false
+    if (uso === 'adherencia' && !((r.adherencia_score ?? 0) >= 80)) return false
+    if (uso === 'batch' && !(r.batch_cooking || r.tupper || estilos.includes('batch_cooking') || estilos.includes('tupper'))) return false
+    if (uso === 'prepost' && !(momentos.includes('pre_entreno') || momentos.includes('post_entreno') || momentos.includes('carga_cho'))) return false
+    if (uso === 'endurance' && !['running', 'hyrox', 'endurance', 'triatlon', 'ciclismo'].some(d => deportes.includes(d))) return false
+
+    const tagsInt: string[] = r.intolerancias ?? []
+    const okApta = aptaFiltros.every(v => v === 'Halal'
+      ? esHalalPorIngredientes(r)
+      : v === 'Sin Gluten' || v === 'Sin Lactosa' ? recetaLibreDe(tagsInt, v) : recetaTieneEtiqueta(tagsInt, v))
+    if (!okApta) return false
+    if (!sinFiltros.every(v => v === 'Sin Cerdo' ? !contieneCerdo(r) : recetaLibreDe(tagsInt, v))) return false
     return true
   })
 
