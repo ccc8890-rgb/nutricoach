@@ -72,7 +72,7 @@ const PLANES_ITEMS: NavItem[] = [
 ]
 
 const RECETARIO_ITEMS: NavItem[] = [
-  { href: '/recetas', label: 'Recetas y revisión', icon: BookOpenText },
+  { href: '/recetas', label: 'Recetas', icon: BookOpenText },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
 ]
 
