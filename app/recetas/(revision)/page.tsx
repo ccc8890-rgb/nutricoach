@@ -308,13 +308,13 @@ export default function RecetasPage() {
   ].filter(Boolean).length
 
   const filtrosCuracion = [
-    { id: 'chef', label: 'Chef healthy', detail: 'Atractivas', icon: ChefHat },
-    { id: 'adherencia', label: 'Alta adherencia', detail: 'Score 80+', icon: Sparkle },
-    { id: 'batch', label: 'Batch/tupper', detail: 'Semana real', icon: Package },
-    { id: 'prepost', label: 'Pre/Post', detail: 'Timing entreno', icon: Lightning },
-    { id: 'endurance', label: 'Endurance/Hyrox', detail: 'Rendimiento', icon: Trophy },
-    { id: 'rapidas', label: 'Rápidas', detail: '≤20 min', icon: SlidersHorizontal },
-    { id: 'aparcadas', label: 'Aparcadas', detail: 'Sin fuente real', icon: Package },
+    { id: 'rapidas', grupo: 'En la cocina', label: 'Rápidas (≤ 20 min)', icon: SlidersHorizontal },
+    { id: 'batch', grupo: 'En la cocina', label: 'Para la semana (batch / tupper)', icon: Package },
+    { id: 'prepost', grupo: 'Para entrenar', label: 'Antes y después de entrenar', icon: Lightning },
+    { id: 'endurance', grupo: 'Para entrenar', label: 'Resistencia (running, Hyrox, ciclismo)', icon: Trophy },
+    { id: 'chef', grupo: 'Calidad', label: 'Más elaboradas (chef healthy)', icon: ChefHat },
+    { id: 'adherencia', grupo: 'Calidad', label: 'Fáciles de seguir (score 80+)', icon: Sparkle },
+    { id: 'aparcadas', grupo: 'Estado', label: 'Aparcadas (sin fuente real)', icon: Package },
   ]
 
   return (
@@ -464,11 +464,16 @@ export default function RecetasPage() {
 
           {/* ═══════ FILTROS POR CATEGORÍA (un botón por tipo, un clic) ═══════ */}
           <div className="flex flex-wrap items-center gap-1.5 mb-5">
-            <FiltroMenu etiqueta="Enfoque" valor={filtrosCuracion.find(f => f.id === curacionFilter)?.label ?? null} onLimpiar={() => setCuracionFilter(null)}>
-              {cerrar => filtrosCuracion.map(f => (
-                <OpcionMenu key={f.id} activa={curacionFilter === f.id} onClick={() => { setCuracionFilter(curacionFilter === f.id ? null : f.id); cerrar() }}>
-                  {f.label} <span style={{ color: 'var(--text-muted)' }}>· {f.detail}</span>
-                </OpcionMenu>
+            <FiltroMenu etiqueta="Uso" valor={filtrosCuracion.find(f => f.id === curacionFilter)?.label ?? null} onLimpiar={() => setCuracionFilter(null)}>
+              {cerrar => filtrosCuracion.map((f, i) => (
+                <div key={f.id}>
+                  {filtrosCuracion[i - 1]?.grupo !== f.grupo && (
+                    <p className="px-2.5 pt-2 pb-1 text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{f.grupo}</p>
+                  )}
+                  <OpcionMenu activa={curacionFilter === f.id} onClick={() => { setCuracionFilter(curacionFilter === f.id ? null : f.id); cerrar() }}>
+                    {f.label}
+                  </OpcionMenu>
+                </div>
               ))}
             </FiltroMenu>
 
