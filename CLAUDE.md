@@ -4,6 +4,16 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 23-10-2026 (mediodía, 2.ª parte, Claude) — Nomenclatura de los filtros de la Biblioteca
+
+Solo UI en `app/recetas/(revision)/page.tsx` y `components/Sidebar.tsx`; `tsc` y ESLint OK; **sin ver en pantalla**. Todo en `main`.
+- **Sin:** opciones con mayúscula inicial (`mayuscula()` local; `nombreSin` sigue devolviendo minúsculas porque lo usa la ficha).
+- **Apta para:** `OPCIONES_APTA = [...APTA_PARA, Halal]` (Vegana, Vegetariana, Celíacos, Intolerantes a la lactosa, Halal). **Multi-selección** como «Sin»: `aptaParam` en la URL (`?apta=a,b`), `alternarApta`, todas deben cumplirse. Sin Gluten/Sin Lactosa filtran con `recetaLibreDe` (etiqueta o auditoría sin detectar gluten/lácteos); Halal con `esHalalPorIngredientes`; el resto con `recetaTieneEtiqueta`.
+- **Uso (antes «Enfoque»):** `filtrosCuracion` con `grupo` y títulos de grupo en el menú. Ids sin cambios (`batch`, `prepost`, `endurance`, `chef`, `adherencia`, `aparcadas`); `rapidas` eliminado (duplicaba el filtro Tiempo).
+- **Menú lateral:** «Recetas y revisión» → «Recetas» (el contador de pendientes sigue).
+- **Decidido no hacer (aparcado):** «Apto para diabéticos»: no hay etiqueta ni regla; habría que fijar tope de azúcar/hidratos por ración y tratar edulcorantes/fruta. Carlos reorganizará él mismo las nomenclaturas (Uso, Cocción, Kcal, Tiempo).
+- **Lección:** un filtro «Apta para» de una sola opción no encaja con las combinaciones reales (vegana + celíaca): usar siempre multi-selección y el mismo patrón `useEstadoUrl` con valores separados por comas.
+
 ## ✅ 23-10-2026 (mediodía, Claude) — Biblioteca de recetas simplificada, filtro «Sin» combinable, auditoría de alérgenos y Halal / Sin cerdo
 
 Todo en `main` (commits `61e4ef92`, `9f475585`, `63e08f4c`, `59c70941`, `df32df9f`, `906c4199`, `40aa6f93`); `tsc`, ESLint y `scripts/halal.test.ts` OK. **Sin ver en pantalla** (Mac): comprobar que la fila de filtros se ve bien y que «Sin» y «Halal» devuelven lo esperado.
