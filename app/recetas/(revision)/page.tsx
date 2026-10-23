@@ -143,7 +143,9 @@ export default function RecetasPage() {
   const [sinParam, setSinParam] = useEstadoUrl<string | null>('sin', null)
   const sinFiltros = useMemo(() => (sinParam ? sinParam.split(',').filter(Boolean) : []), [sinParam])
   const alternarSin = (v: string) => { const n = sinFiltros.includes(v) ? sinFiltros.filter(x => x !== v) : [...sinFiltros, v]; setSinParam(n.length ? n.join(',') : null) }
-  const [intoleranciaFilter, setIntoleranciaFilter] = useEstadoUrl<string | null>('apta', null)
+  const [aptaParam, setAptaParam] = useEstadoUrl<string | null>('apta', null)
+  const aptaFiltros = useMemo(() => (aptaParam ? aptaParam.split(',').filter(Boolean) : []), [aptaParam])
+  const alternarApta = (v: string) => { const n = aptaFiltros.includes(v) ? aptaFiltros.filter(x => x !== v) : [...aptaFiltros, v]; setAptaParam(n.length ? n.join(',') : null) }
   const [tagFilter, setTagFilter] = useEstadoUrl<string | null>('tag', null)
   const [curacionFilter, setCuracionFilter] = useEstadoUrl<string | null>('curacion', null)
   const [orden, setOrden] = useEstadoUrl<'reciente' | 'antiguo'>('orden', 'reciente', ['reciente', 'antiguo'])
@@ -242,16 +244,12 @@ export default function RecetasPage() {
       }
 
       // Filtro intolerancia — soporta etiquetas positivas (ej. "Gluten") y negativas (ej. "Sin Gluten")
-      let matchIntolerancia = true
-      const filtroActivo = intoleranciaFilter
-      if (filtroActivo) {
-        const recetaIntolerancias = r.intolerancias ?? []
-        matchIntolerancia = filtroActivo === 'Halal'
-          ? esHalalPorIngredientes(r)
-          : filtroActivo === 'Sin Gluten' || filtroActivo === 'Sin Lactosa'
-            ? recetaLibreDe(recetaIntolerancias, filtroActivo)
-            : recetaTieneEtiqueta(recetaIntolerancias, filtroActivo)
-      }
+      const recetaIntolerancias = r.intolerancias ?? []
+      const matchIntolerancia = aptaFiltros.every(v => v === 'Halal'
+        ? esHalalPorIngredientes(r)
+        : v === 'Sin Gluten' || v === 'Sin Lactosa'
+          ? recetaLibreDe(recetaIntolerancias, v)
+          : recetaTieneEtiqueta(recetaIntolerancias, v))
 
       const matchSin = sinFiltros.every(v => v === 'Sin Cerdo' ? !contieneCerdo(r) : recetaLibreDe(r.intolerancias ?? [], v))
       return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchCuracion && matchKcal && matchTiempo && matchIntolerancia && matchSin
@@ -262,7 +260,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, palabrasBusqueda, categoria, metodoCoccion, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter, sinFiltros])
+  }, [recetas, palabrasBusqueda, categoria, metodoCoccion, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, aptaFiltros, sinFiltros])
 
   // Sugerencias de tags que coinciden con la búsqueda actual
   const tagSugeridos = useMemo(() => {
@@ -302,7 +300,7 @@ export default function RecetasPage() {
     curacionFilter !== null,
     rangoKcal !== null,
     tiempoPrep !== null,
-    intoleranciaFilter !== null,
+    aptaFiltros.length > 0,
     sinFiltros.length > 0,
   ].filter(Boolean).length
 
@@ -475,9 +473,9 @@ export default function RecetasPage() {
               ))}
             </FiltroMenu>
 
-            <FiltroMenu etiqueta="Apta para" valor={OPCIONES_APTA.find(a => a.valor === intoleranciaFilter)?.etiqueta ?? null} onLimpiar={() => setIntoleranciaFilter(null)}>
-              {cerrar => OPCIONES_APTA.map(({ valor, etiqueta }) => (
-                <OpcionMenu key={valor} activa={intoleranciaFilter === valor} onClick={() => { setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor); cerrar() }}>{etiqueta}</OpcionMenu>
+            <FiltroMenu etiqueta="Apta para" valor={aptaFiltros.length ? aptaFiltros.map(v => OPCIONES_APTA.find(a => a.valor === v)?.etiqueta ?? v).join(', ') : null} onLimpiar={() => setAptaParam(null)}>
+              {() => OPCIONES_APTA.map(({ valor, etiqueta }) => (
+                <OpcionMenu key={valor} activa={aptaFiltros.includes(valor)} onClick={() => alternarApta(valor)}>{etiqueta}</OpcionMenu>
               ))}
             </FiltroMenu>
 
@@ -508,7 +506,7 @@ export default function RecetasPage() {
             {(activeFilterCount > 0 || tagFilter || categoria !== 'Todos') && (
               <button
                 type="button"
-                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setIntoleranciaFilter(null); setCuracionFilter(null); setSinParam(null); setCategoria('Todos'); setTagFilter(null) }}
+                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setAptaParam(null); setCuracionFilter(null); setSinParam(null); setCategoria('Todos'); setTagFilter(null) }}
                 className="px-2 py-1.5 text-xs underline-offset-2 hover:underline"
                 style={{ color: 'var(--text-muted)' }}
               >
