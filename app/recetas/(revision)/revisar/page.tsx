@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Check, ChevronDown, ExternalLink, ImageOff, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react'
 import EnlaceReceta from '@/components/recetas/EnlaceReceta'
+import SubirFotoReceta from '@/components/recetas/SubirFotoReceta'
 import CandidatasReporte from '@/components/recetas/CandidatasReporte'
 import { etiquetaCalidad } from '@/lib/recetas/etiquetas-calidad'
 import { useToast } from '@/components/ui/Toast'
@@ -332,14 +333,14 @@ export default function RevisarRecetasPage() {
               <p className="px-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Listas para aprobar ({listas.length}) · después, las que necesitan arreglo o ya están reportadas ({necesitanArreglo.length})</p>
             )}
             <div className="grid gap-3 2xl:hidden">
-              {ordenadas.map(receta => <RecetaCard key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} onFoto={fotoOk} />)}
+              {ordenadas.map(receta => <RecetaCard key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} onFoto={fotoOk} onRecargar={cargar} />)}
             </div>
             <div className="hidden overflow-x-auto rounded-2xl border 2xl:block" style={{ borderColor: 'var(--border)' }}>
               <table className="w-full text-left text-sm">
                 <thead style={{ background: 'var(--surface)' }}><tr className="border-b" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                   {['Foto', 'Receta', 'Macros/ración', 'Calidad', 'Estado y alta', 'Acciones'].map(label => <th key={label} className={`px-3 py-3 text-xs font-semibold${label === 'Acciones' ? ' sticky right-0' : ''}`} style={label === 'Acciones' ? { background: 'var(--surface)' } : undefined}>{label}</th>)}
                 </tr></thead>
-                <tbody>{ordenadas.map(receta => <RecetaFila key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} onFoto={fotoOk} />)}</tbody>
+                <tbody>{ordenadas.map(receta => <RecetaFila key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} onFoto={fotoOk} onRecargar={cargar} />)}</tbody>
               </table>
             </div>
           </>
@@ -365,12 +366,13 @@ function FotoReceta({ receta }: { receta: RecetaRevision }) {
   </EnlaceReceta>
 }
 
-function Acciones({ receta, busy, onEstado, onFoto }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void }) {
+function Acciones({ receta, busy, onEstado, onFoto, onRecargar }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void; onRecargar: () => void | Promise<void> }) {
   const fotoPorRevisar = !!receta.imagen_url && (receta.imagen_estado === 'revisar' || receta.imagen_estado === 'rechazada')
   const aprobable = esRecetaAprobable(receta.estado, receta.quality_issues)
   const motivo = receta.quality_issues?.bloqueantes?.join(' · ') || (receta.estado === 'aprobada' ? 'La receta ya está aprobada' : 'Solo se aprueban recetas pendientes')
   return <div className="flex flex-wrap gap-1.5">
     {fotoPorRevisar && <button disabled={busy} onClick={() => onFoto(receta)} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-40" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}><Check size={13} />Foto OK</button>}
+    <SubirFotoReceta recetaId={receta.id} tieneFoto={!!receta.imagen_url} onSubida={onRecargar} />
     <button disabled={busy || !aprobable} title={aprobable ? 'Aprobar receta' : motivo} onClick={() => onEstado(receta, 'aprobada')} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>{busy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}Aprobar</button>
     <button disabled={busy || receta.estado === 'descartada'} onClick={() => onEstado(receta, 'descartada')} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-40" style={{ borderColor: 'var(--error)', color: 'var(--error)' }}><Trash2 size={13} />Descartar</button>
     {receta.tags?.includes('Corregir') && <a href={`/recetas/${receta.id}/editar?returnTo=${encodeURIComponent('/recetas/revisar?tarea=corregir')}`} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Arreglar a mano</a>}
@@ -390,23 +392,23 @@ function NotaCorreccion({ receta }: { receta: RecetaRevision }) {
   )
 }
 
-function RecetaCard({ receta, busy, onEstado, onFoto }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void }) {
+function RecetaCard({ receta, busy, onEstado, onFoto, onRecargar }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void; onRecargar: () => void | Promise<void> }) {
   return <article className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
     <div className="flex gap-3"><FotoReceta receta={receta} /><div className="min-w-0 flex-1"><EnlaceReceta id={receta.id} className="block font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{receta.tipo_plato ?? receta.categoria ?? 'Sin tipo'} · alta {fechaAlta(receta.created_at)}</p><p className="mt-2 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>{Math.round(receta.kcal ?? 0)} kcal · P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</p></div><span className="text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}</span></div>
     <ProblemasReceta receta={receta} />
     <NotaCorreccion receta={receta} />
     <div className="mt-3"><ChipsCalidad issues={receta.quality_issues} /></div>
-    <div className="mt-3 flex items-center justify-between gap-2"><span className="rounded-full px-2 py-1 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><Acciones receta={receta} busy={busy} onEstado={onEstado} onFoto={onFoto} /></div>
+    <div className="mt-3 flex items-center justify-between gap-2"><span className="rounded-full px-2 py-1 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><Acciones receta={receta} busy={busy} onEstado={onEstado} onFoto={onFoto} onRecargar={onRecargar} /></div>
   </article>
 }
 
-function RecetaFila({ receta, busy, onEstado, onFoto }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void }) {
+function RecetaFila({ receta, busy, onEstado, onFoto, onRecargar }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void; onRecargar: () => void | Promise<void> }) {
   return <tr className="border-b last:border-b-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
     <td className="px-3 py-3"><FotoReceta receta={receta} /></td>
     <td className="min-w-[220px] px-3 py-3"><EnlaceReceta id={receta.id} className="block font-semibold hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{receta.tipo_plato ?? receta.categoria ?? 'Sin tipo'} · {receta.num_ingredientes} ingredientes</p><ProblemasReceta receta={receta} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}><b style={{ color: 'var(--text)' }}>{Math.round(receta.kcal ?? 0)} kcal</b><br />P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</td>
     <td className="max-w-[310px] px-3 py-3"><div className="mb-1 text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}/100</div><ChipsCalidad issues={receta.quality_issues} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}><span className="rounded-full px-2 py-1" style={{ background: 'var(--surface)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><br /><span className="mt-2 inline-block" style={{ color: 'var(--text-muted)' }}>{fechaAlta(receta.created_at)}</span></td>
-    <td className="sticky right-0 px-3 py-3" style={{ background: 'var(--bg)' }}><Acciones receta={receta} busy={busy} onEstado={onEstado} onFoto={onFoto} /></td>
+    <td className="sticky right-0 px-3 py-3" style={{ background: 'var(--bg)' }}><Acciones receta={receta} busy={busy} onEstado={onEstado} onFoto={onFoto} onRecargar={onRecargar} /></td>
   </tr>
 }

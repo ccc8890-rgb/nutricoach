@@ -94,6 +94,7 @@ export async function PATCH(
     }
   }
   if (imagen_origen) patch.imagen_origen = imagen_origen
+  if (['propia', 'txt2img', 'placeholder'].includes(body.imagen_tipo)) patch.imagen_tipo = body.imagen_tipo
   if ('imagen_review_notes' in body) patch.imagen_review_notes = String(body.imagen_review_notes ?? '').slice(0, 1200)
   if ('imagen_quality_score' in body) patch.imagen_quality_score = clampScore(body.imagen_quality_score)
   if ('imagen_realismo_score' in body) patch.imagen_realismo_score = clampScore(body.imagen_realismo_score)
