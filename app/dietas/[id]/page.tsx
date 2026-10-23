@@ -1506,7 +1506,7 @@ export default function EditarDietaPage() {
                           {/* Chip de tag activo */}
                           {fuente === 'recetas' && tagReceta && (
                             <span className="flex items-center gap-1 ml-1 pl-2 pr-1 py-0.5 rounded-full text-xs font-semibold flex-shrink-0"
-                              style={{ background: '#A3E635', color: '#1C1C1E' }}>
+                              style={{ background: 'var(--accent-bg)', color: 'var(--text)' }}>
                               {tagReceta}
                               <button onMouseDown={e => { e.preventDefault(); setTagReceta(null); setResultadosRecetas([]) }}
                                 className="rounded-full p-0.5 hover:bg-black/10">
@@ -1549,7 +1549,7 @@ export default function EditarDietaPage() {
                                 <button key={tag}
                                   onMouseDown={e => { e.preventDefault(); setTagReceta(tag); setQueryReceta('') }}
                                   className="text-xs px-2.5 py-1 rounded-full border transition-all"
-                                  style={{ background: 'rgba(163,230,53,0.12)', color: '#A3E635', borderColor: 'rgba(163,230,53,0.3)' }}>
+                                  style={{ background: 'var(--accent-bg)', color: 'var(--text)', borderColor: 'var(--border-strong)' }}>
                                   {tag}
                                 </button>
                               ))}

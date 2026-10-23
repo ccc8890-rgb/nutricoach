@@ -482,10 +482,10 @@ export default function EditarRecetaPage() {
                                                 onClick={() => setTags(active ? tags.filter(t => t !== tag) : [...tags, tag])}
                                                 className="text-xs px-2.5 py-1 rounded-full border transition-all"
                                                 style={active ? {
-                                                    background: '#A3E635',
-                                                    color: '#1C1C1E',
+                                                    background: 'var(--accent-bg)',
+                                                    color: 'var(--text)',
                                                     fontWeight: 600,
-                                                    borderColor: '#A3E635',
+                                                    borderColor: 'var(--accent)',
                                                 } : {
                                                     background: 'transparent',
                                                     color: 'var(--text-secondary)',
