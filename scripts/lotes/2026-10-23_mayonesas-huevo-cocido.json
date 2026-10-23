@@ -1,0 +1,206 @@
+{
+ "lote": "mayonesas-huevo-cocido-2026-10-23",
+ "tipo_plato": "Snack",
+ "tipo_receta": "salsa_base",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 20,
+  "kcal_max": 150,
+  "proteina_pct_min": 0.1
+ },
+ "alimentos": {
+  "aceite": {
+   "nombre": "Aceite de oliva",
+   "prefijo": "bf392211",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Zumo de limón",
+   "prefijo": "12a8ab46",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimienta": {
+   "nombre": "Pimienta negra molida",
+   "prefijo": "3350c934",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "sal": {
+   "nombre": "Sal",
+   "prefijo": "0adc820b",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "huevo": {
+   "nombre": "Huevo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "agua": {
+   "nombre": "Agua",
+   "prefijo": "c125af5a",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "albahaca": {
+   "nombre": "Albahaca fresca",
+   "prefijo": "49230ad1",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "soja": {
+   "nombre": "Salsa de soja (baja en sal)",
+   "prefijo": "dd0b9d3c",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Gluten",
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "tabasco": {
+   "nombre": "Salsa tabasco",
+   "prefijo": "e98d8405",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Ajonesa de huevo cocido",
+   "descripcion": "Salsa cremosa de ajo sin mayonesa: huevo cocido, aceite de oliva y limón triturados. Ligera y con proteína.",
+   "tiempo_prep_min": 15,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "huevo",
+     100
+    ],
+    [
+     "aceite",
+     20
+    ],
+    [
+     "agua",
+     40
+    ],
+    [
+     "limon",
+     5
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "sal",
+     1
+    ],
+    [
+     "pimienta",
+     0.5
+    ]
+   ],
+   "instrucciones": "1. Cuece los huevos 10 minutos en agua hirviendo, enfríalos y pélalos.\n2. Pon en la batidora los 2 huevos cocidos, el aceite de oliva, el agua, el limón, el ajo crudo, la sal y la pimienta.\n3. Tritura hasta obtener una crema homogénea. Si queda espesa, añade un poco más de agua.",
+   "consejos": "Aguanta 3 días en la nevera en un bote cerrado. Para un ajo más suave, quita el germen central.",
+   "tipo_plato": "Snack",
+   "tipo_receta": "salsa_base"
+  },
+  {
+   "nombre": "Mayonesa de albahaca de huevo cocido",
+   "descripcion": "Salsa cremosa de albahaca fresca con base de huevo cocido y aceite de oliva, sin mayonesa industrial.",
+   "tiempo_prep_min": 15,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "huevo",
+     100
+    ],
+    [
+     "aceite",
+     20
+    ],
+    [
+     "agua",
+     40
+    ],
+    [
+     "limon",
+     5
+    ],
+    [
+     "albahaca",
+     5
+    ],
+    [
+     "sal",
+     1
+    ],
+    [
+     "pimienta",
+     0.5
+    ]
+   ],
+   "instrucciones": "1. Cuece los huevos 10 minutos en agua hirviendo, enfríalos y pélalos.\n2. Pon en el procesador los 2 huevos cocidos, el aceite de oliva, el agua, el limón, la albahaca fresca, la sal y la pimienta.\n3. Procesa hasta integrar y que quede cremosa.",
+   "consejos": "Añade la albahaca al final para que no oscurezca. Aguanta 3 días en la nevera.",
+   "tipo_plato": "Snack",
+   "tipo_receta": "salsa_base"
+  },
+  {
+   "nombre": "Mayonesa picante de huevo cocido",
+   "descripcion": "Salsa cremosa y picante con base de huevo cocido, soja baja en sal y tabasco, sin mayonesa industrial.",
+   "tiempo_prep_min": 15,
+   "porciones": 4,
+   "ingredientes": [
+    [
+     "huevo",
+     100
+    ],
+    [
+     "aceite",
+     20
+    ],
+    [
+     "agua",
+     40
+    ],
+    [
+     "limon",
+     5
+    ],
+    [
+     "soja",
+     15
+    ],
+    [
+     "tabasco",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece los huevos 10 minutos en agua hirviendo, enfríalos y pélalos.\n2. Pon en la batidora los 2 huevos cocidos, el aceite de oliva, el agua, el limón, la salsa de soja y el tabasco.\n3. Tritura bien hasta que quede lisa. Ajusta el picante con más tabasco al gusto.",
+   "consejos": "La soja ya aporta sal: prueba antes de añadir más. Aguanta 3 días en la nevera.",
+   "tipo_plato": "Snack",
+   "tipo_receta": "salsa_base"
+  }
+ ]
+}
