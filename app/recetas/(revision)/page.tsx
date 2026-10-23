@@ -13,7 +13,8 @@ import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEst
 import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
 import { contieneCerdo, esHalalPorIngredientes } from '@/lib/recetas/halal'
 
-const OPCIONES_APTA = [...APTA_PARA.filter(a => a.valor === 'Vegano' || a.valor === 'Vegetariano'), { valor: 'Halal', etiqueta: 'Halal' }]
+const OPCIONES_APTA = [...APTA_PARA, { valor: 'Halal', etiqueta: 'Halal' }]
+const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
 const OPCIONES_SIN = [...ALERGENOS_NEGATIVOS, 'Sin Cacahuetes'] as const
 
 const METODOS_COCCION = [
@@ -248,7 +249,9 @@ export default function RecetasPage() {
         const recetaIntolerancias = r.intolerancias ?? []
         matchIntolerancia = filtroActivo === 'Halal'
           ? esHalalPorIngredientes(r)
-          : recetaTieneEtiqueta(recetaIntolerancias, filtroActivo)
+          : filtroActivo === 'Sin Gluten' || filtroActivo === 'Sin Lactosa'
+            ? recetaLibreDe(recetaIntolerancias, filtroActivo)
+            : recetaTieneEtiqueta(recetaIntolerancias, filtroActivo)
       }
 
       const matchSin = sinFiltros.every(v => v === 'Sin Cerdo' ? !contieneCerdo(r) : recetaLibreDe(r.intolerancias ?? [], v))
@@ -475,9 +478,9 @@ export default function RecetasPage() {
               ))}
             </FiltroMenu>
 
-            <FiltroMenu etiqueta="Sin" valor={sinFiltros.length ? sinFiltros.map(nombreSin).join(', ') : null} onLimpiar={() => setSinParam(null)}>
+            <FiltroMenu etiqueta="Sin" valor={sinFiltros.length ? sinFiltros.map(v => mayuscula(nombreSin(v))).join(', ') : null} onLimpiar={() => setSinParam(null)}>
               {() => OPCIONES_SIN.map(valor => (
-                <OpcionMenu key={valor} activa={sinFiltros.includes(valor)} onClick={() => alternarSin(valor)}>{nombreSin(valor)}</OpcionMenu>
+                <OpcionMenu key={valor} activa={sinFiltros.includes(valor)} onClick={() => alternarSin(valor)}>{mayuscula(nombreSin(valor))}</OpcionMenu>
               ))}
             </FiltroMenu>
 
