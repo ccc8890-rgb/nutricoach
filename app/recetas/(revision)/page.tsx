@@ -205,7 +205,11 @@ export default function RecetasPage() {
       // Cuando hay sub-tag activo, el tag es la clasificación real → ignorar categoría principal
       const matchCategoria = categoria === 'Todos' || tagFilter !== null || r.categoria === categoria
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
+      // Las aparcadas (sin fuente real) solo se ven con el enfoque «Aparcadas»
+      const esAparcada = Array.isArray(r.tags) && r.tags.includes('Aparcada')
+      if (esAparcada !== (curacionFilter === 'aparcadas')) return false
       const matchCuracion = !curacionFilter
+        || curacionFilter === 'aparcadas'
         || (curacionFilter === 'chef' && (r.premium_chef || r.estilos?.includes('chef_healthy') || r.estilos?.includes('comfort_healthy') || r.estilos?.includes('gourmet_simple')))
         || (curacionFilter === 'adherencia' && (r.adherencia_score ?? 0) >= 80)
         || (curacionFilter === 'batch' && (r.batch_cooking || r.tupper || r.estilos?.includes('batch_cooking') || r.estilos?.includes('tupper')))
@@ -311,6 +315,7 @@ export default function RecetasPage() {
     { id: 'prepost', label: 'Pre/Post', detail: 'Timing entreno', icon: Lightning },
     { id: 'endurance', label: 'Endurance/Hyrox', detail: 'Rendimiento', icon: Trophy },
     { id: 'rapidas', label: 'Rápidas', detail: '≤20 min', icon: SlidersHorizontal },
+    { id: 'aparcadas', label: 'Aparcadas', detail: 'Sin fuente real', icon: Package },
   ]
 
   return (
