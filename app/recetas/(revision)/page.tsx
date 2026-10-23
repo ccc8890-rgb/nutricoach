@@ -246,9 +246,9 @@ export default function RecetasPage() {
 
   const coccionEnUso = new Set(recetas.map(r => r.tipo_coccion).filter(Boolean))
 
-  const chipActive = { background: '#A3E635', color: '#1C1C1E', fontWeight: 600, borderColor: '#A3E635' }
+  const chipActive = { background: 'var(--accent-bg)', color: 'var(--text)', fontWeight: 600, borderColor: 'var(--accent)' }
   const chipInactive = { color: 'var(--text-secondary)', borderColor: 'var(--border)' }
-  const tagActive = { background: 'rgba(163,230,53,0.13)', color: '#A3E635', fontWeight: 600, borderColor: 'rgba(163,230,53,0.35)' }
+  const tagActive = { background: 'var(--accent-bg)', color: 'var(--text)', fontWeight: 600, borderColor: 'var(--accent)' }
 
   const activeFilterCount = [
     metodoCoccion !== 'Todos',
@@ -353,7 +353,7 @@ export default function RecetasPage() {
                       <span className="flex items-center gap-2 min-w-0">
                         <span
                           className="text-xs px-2 py-0.5 rounded-full font-medium truncate max-w-[180px]"
-                          style={{ background: 'rgba(163,230,53,0.15)', color: '#A3E635' }}
+                          style={{ background: 'var(--accent-bg)', color: 'var(--text)' }}
                         >
                           {tag}
                         </span>
@@ -370,7 +370,7 @@ export default function RecetasPage() {
                 onClick={() => setShowFilterPanel(!showFilterPanel)}
                 className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-all duration-150"
                 style={activeFilterCount > 0
-                  ? { borderColor: 'rgba(163,230,53,0.4)', color: '#A3E635', background: 'rgba(163,230,53,0.07)' }
+                  ? { borderColor: 'var(--accent)', color: 'var(--text)', background: 'var(--accent-bg)' }
                   : { borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'transparent' }}
               >
                 <SlidersHorizontal size={13} />
@@ -378,7 +378,7 @@ export default function RecetasPage() {
                 {activeFilterCount > 0 && (
                   <span
                     className="w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center"
-                    style={{ background: '#A3E635', color: '#1C1C1E' }}
+                    style={{ background: 'var(--accent)', color: 'var(--bg)' }}
                   >
                     {activeFilterCount}
                   </span>
@@ -584,7 +584,7 @@ export default function RecetasPage() {
                       }}
                       className="w-full text-xs py-2 rounded-xl border font-medium transition-all duration-150 mt-1"
                       style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.4)'; e.currentTarget.style.color = '#A3E635' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)' }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                     >
                       Limpiar filtros avanzados
@@ -600,7 +600,7 @@ export default function RecetasPage() {
               onChange={e => setOrden(e.target.value as 'reciente' | 'antiguo')}
               className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
               style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: 'var(--border)' }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#A3E635' }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
               onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
             >
               <option value="reciente">Más reciente</option>
@@ -617,7 +617,7 @@ export default function RecetasPage() {
                 onClick={() => { setCategoria(c); setTagFilter(null) }}
                 className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
                 style={categoria === c ? chipActive : chipInactive}
-                onMouseEnter={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.4)'; e.currentTarget.style.color = '#A3E635' } }}
+                onMouseEnter={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)' } }}
                 onMouseLeave={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
               >
                 {c}
@@ -634,7 +634,7 @@ export default function RecetasPage() {
                   onClick={() => setTagFilter(tagFilter === sub ? null : sub)}
                   className="text-xs whitespace-nowrap px-2.5 py-1 rounded-lg border font-medium transition-all duration-150"
                   style={tagFilter === sub ? tagActive : chipInactive}
-                  onMouseEnter={e => { if (tagFilter !== sub) { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.35)'; e.currentTarget.style.color = '#A3E635' } }}
+                  onMouseEnter={e => { if (tagFilter !== sub) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)' } }}
                   onMouseLeave={e => { if (tagFilter !== sub) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
                 >
                   {sub}
