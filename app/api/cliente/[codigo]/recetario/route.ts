@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
+import { cumpleRestriccionesReligiosas, pideRestriccionReligiosa } from '@/lib/recetas/halal'
 
 // Mismo mapeo restricción → alérgenos EU que ya usan lib/plan-recetas.ts
 // y app/api/recetas/sugeridas/route.ts para generar planes. Se duplica
@@ -58,13 +59,27 @@ export async function GET(
   if (tag) query = query.contains('tags', [tag])
 
   // clienteId viene del guard (antes se repetía la consulta del plan); onboarding y recetas van en paralelo.
-  const [{ data: onboarding }, { data: recetas }] = await Promise.all([
+  const [{ data: onboarding }, { data: recetasBase }] = await Promise.all([
     supabase.from('onboarding_responses').select('restricciones').eq('cliente_id', auth.clienteId).maybeSingle(),
     query,
   ])
+  const restricciones = (onboarding?.restricciones as string[] | null) ?? []
+
+  // Halal / Sin cerdo se deciden por los ingredientes: solo en ese caso se pide también la lista de ingredientes
+  let recetas: (NonNullable<typeof recetasBase>[number] & { receta_ingredientes?: { nombre_libre?: string | null; alimento?: { nombre?: string | null } | { nombre?: string | null }[] | null }[] })[] | null = recetasBase
+  if (recetasBase && pideRestriccionReligiosa(restricciones)) {
+    let conIngredientes = supabase
+      .from('recetas')
+      .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+      .eq('estado', 'aprobada')
+      .order('nombre', { ascending: true })
+    if (categoria && categoria !== 'Todos') conIngredientes = conIngredientes.eq('categoria', categoria)
+    if (tag) conIngredientes = conIngredientes.contains('tags', [tag])
+    const { data } = await conIngredientes
+    recetas = data ?? recetasBase
+  }
   if (!recetas) return NextResponse.json({ recetas: [], hayMas: false })
 
-  const restricciones = (onboarding?.restricciones as string[] | null) ?? []
   const alergenosExcluir = [...new Set(
     restricciones.flatMap(r => RESTRICCION_A_ALERGENOS[r.toLowerCase()] ?? [])
   )]
@@ -83,6 +98,7 @@ export async function GET(
     const intol: string[] = r.intolerancias ?? []
     if (alergenosExcluir.length && alergenosExcluir.some(a => intol.includes(a))) return false
     if (tagsPositivosRequeridos.length && !tagsPositivosRequeridos.every(t => intol.includes(t))) return false
+    if (!cumpleRestriccionesReligiosas(r, restricciones)) return false
     return true
   })
 

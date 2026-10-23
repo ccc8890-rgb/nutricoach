@@ -11,7 +11,9 @@ import { RecipeCardPremium } from '@/components/premium'
 import ReportarProblema from '@/components/recetas/ReportarProblema'
 import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
+import { contieneCerdo, esHalalPorIngredientes } from '@/lib/recetas/halal'
 
+const OPCIONES_APTA = [...APTA_PARA.filter(a => a.valor === 'Vegano' || a.valor === 'Vegetariano'), { valor: 'Halal', etiqueta: 'Halal' }]
 const OPCIONES_SIN = [...ALERGENOS_NEGATIVOS, 'Sin Cacahuetes'] as const
 
 const METODOS_COCCION = [
@@ -244,10 +246,12 @@ export default function RecetasPage() {
       const filtroActivo = intoleranciaFilter
       if (filtroActivo) {
         const recetaIntolerancias = r.intolerancias ?? []
-        matchIntolerancia = recetaTieneEtiqueta(recetaIntolerancias, filtroActivo)
+        matchIntolerancia = filtroActivo === 'Halal'
+          ? esHalalPorIngredientes(r)
+          : recetaTieneEtiqueta(recetaIntolerancias, filtroActivo)
       }
 
-      const matchSin = sinFiltros.every(v => recetaLibreDe(r.intolerancias ?? [], v))
+      const matchSin = sinFiltros.every(v => v === 'Sin Cerdo' ? !contieneCerdo(r) : recetaLibreDe(r.intolerancias ?? [], v))
       return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchCuracion && matchKcal && matchTiempo && matchIntolerancia && matchSin
     })
       .sort((a, b) => {
@@ -465,8 +469,8 @@ export default function RecetasPage() {
               ))}
             </FiltroMenu>
 
-            <FiltroMenu etiqueta="Apta para" valor={['Vegano', 'Vegetariano'].includes(intoleranciaFilter ?? '') ? APTA_PARA.find(a => a.valor === intoleranciaFilter)?.etiqueta ?? null : null} onLimpiar={() => setIntoleranciaFilter(null)}>
-              {cerrar => APTA_PARA.filter(a => a.valor === 'Vegano' || a.valor === 'Vegetariano').map(({ valor, etiqueta }) => (
+            <FiltroMenu etiqueta="Apta para" valor={OPCIONES_APTA.find(a => a.valor === intoleranciaFilter)?.etiqueta ?? null} onLimpiar={() => setIntoleranciaFilter(null)}>
+              {cerrar => OPCIONES_APTA.map(({ valor, etiqueta }) => (
                 <OpcionMenu key={valor} activa={intoleranciaFilter === valor} onClick={() => { setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor); cerrar() }}>{etiqueta}</OpcionMenu>
               ))}
             </FiltroMenu>

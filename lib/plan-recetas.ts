@@ -1,4 +1,5 @@
 // lib/plan-recetas.ts
+import { cumpleRestriccionesReligiosas, pideRestriccionReligiosa, type RecetaConIngredientes } from '@/lib/recetas/halal'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { RESTRICCION_A_ALERGENO, RESTRICCION_A_TAG_POSITIVO, RESTRICCION_A_EVITAR, expandirEvitar } from '@/lib/nutricion/compatibilidad-receta'
 import type { RecetaCandidata, TipoReceta } from '@/types'
@@ -194,6 +195,11 @@ export async function filtrarRecetasPorSlot(
     }
     return true
   })
+
+  // Filtro duro: Halal / Sin cerdo (cerdo y alcohol por ingredientes; no certifica el sacrificio de la carne)
+  if (pideRestriccionReligiosa(restricciones)) {
+    candidatas = candidatas.filter(r => cumpleRestriccionesReligiosas(r as unknown as RecetaConIngredientes, restricciones))
+  }
 
   // Filtro duro: alimentos a evitar — se comprueba tanto el nombre de la
   // receta como sus ingredientes reales. Antes solo miraba el título: una
