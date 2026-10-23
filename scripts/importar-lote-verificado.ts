@@ -29,6 +29,8 @@ type RecetaLote = {
   nombre: string; descripcion: string; tiempo_prep_min: number; porciones?: number
   tipo_plato?: string; tipo_receta?: string; perfil?: Perfil
   ingredientes: [string, number][]; instrucciones: string; consejos?: string
+  /** Receta tomada de una web: se guarda enlace y autor, y se contrasta la kcal con la de la web. */
+  origen_web?: { url: string; autor?: string | null; kcal_web?: number | null }
 }
 type Lote = {
   lote: string; tipo_plato: string; tipo_receta?: string; fuente: string
@@ -105,6 +107,7 @@ async function main() {
     const macros = { kcal: Math.round(total.kcal / porciones), proteinas: r(total.p), carbohidratos: r(total.c), grasas: r(total.g), fibra: r(total.fibra) }
     const intolerancias = intoleranciasDe(receta.ingredientes.map(([k]) => k))
     const criterios = (receta.perfil && lote.criterios_por_perfil?.[receta.perfil]) || lote.criterios
+      || (receta.origen_web ? { kcal_min: 30, kcal_max: 1500 } : undefined)
     if (!criterios) throw new Error(`"${receta.nombre}": sin criterios para validar`)
     const pctP = (macros.proteinas * 4) / macros.kcal
     const pctC = (macros.carbohidratos * 4) / macros.kcal
@@ -118,6 +121,12 @@ async function main() {
     if (criterios.hc_pct_min && pctC < criterios.hc_pct_min) motivos.push(`hidratos ${Math.round(pctC * 100)}% < ${Math.round(criterios.hc_pct_min * 100)}%`)
     if (criterios.grasa_pct_max && pctG > criterios.grasa_pct_max) motivos.push(`grasa ${Math.round(pctG * 100)}% > ${Math.round(criterios.grasa_pct_max * 100)}%`)
     if (duplicada) motivos.push('ya existe una receta con ese nombre')
+    if (receta.origen_web) {
+      const { count: mismaUrl } = await db.from('recetas').select('id', { count: 'exact', head: true }).eq('url_origen', receta.origen_web.url)
+      if (mismaUrl) motivos.push('ya existe una receta con esa URL de origen')
+      const kw = receta.origen_web.kcal_web
+      if (kw && Math.abs(macros.kcal - kw) / kw > 0.3) motivos.push(`kcal ${macros.kcal} difiere >30% de la web (${kw}): revisa cantidades o ingredientes`)
+    }
 
     const linea = `${receta.perfil ? `[${receta.perfil}] ` : ''}${String(macros.kcal).padStart(4)} kcal · P ${String(macros.proteinas).padStart(5)} (${Math.round(pctP * 100)}%) · C ${String(macros.carbohidratos).padStart(5)} (${Math.round(pctC * 100)}%) · G ${String(macros.grasas).padStart(4)} (${Math.round(pctG * 100)}%) · fibra ${macros.fibra}`
     if (motivos.length) {
@@ -160,8 +169,9 @@ async function main() {
       }),
       estado: 'en_revision',
       coach_id: coachId,
-      fuente: `${lote.fuente}:${lote.lote}`,
-      fuente_tipo: 'ia_generada',
+      fuente: receta.origen_web ? `web:${new URL(receta.origen_web.url).hostname.replace(/^www\./, '')}` : `${lote.fuente}:${lote.lote}`,
+      fuente_tipo: receta.origen_web ? 'web' : 'ia_generada',
+      ...(receta.origen_web ? { url_origen: receta.origen_web.url, autor_original: receta.origen_web.autor ?? null } : {}),
       taxonomia_version: 2,
       imagen_estado: 'sin_imagen',
       imagen_origen: 'missing',

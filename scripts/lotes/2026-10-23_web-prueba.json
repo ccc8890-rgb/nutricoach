@@ -1,0 +1,24 @@
+{
+  "lote": "web-prueba-2026-10-23",
+  "tipo_plato": "Comida",
+  "fuente": "web",
+  "alimentos": {
+    "edamame": {"nombre": "Edamame (cocido)", "prefijo": "dcca3ed5", "rol": "proteina_principal", "alergenos": ["Soja"], "origen": "vegetal"},
+    "cebolleta": {"nombre": "Cebolleta", "prefijo": "82930270", "rol": "verdura_volumen", "alergenos": [], "origen": "vegetal"},
+    "cilantro": {"nombre": "Cilantro fresco", "prefijo": "d61c2a0f", "rol": "especias_aromaticos", "alergenos": [], "origen": "vegetal"},
+    "feta": {"nombre": "Queso feta", "prefijo": "6187036a", "rol": "grasa_saludable", "alergenos": ["Lácteos"], "origen": "lacteo"},
+    "lima": {"nombre": "Jugo de lima", "prefijo": "3d357e79", "rol": "salsa_condimento", "alergenos": [], "origen": "vegetal"},
+    "rucula": {"nombre": "Rúcula", "prefijo": "d23e1bdd", "rol": "verdura_volumen", "alergenos": [], "origen": "vegetal"}
+  },
+  "recetas": [
+    {
+      "nombre": "Plato vegetariano alto en proteína con edamame y queso feta",
+      "descripcion": "Plato rápido de edamame con queso feta, cebolleta, cilantro y lima sobre hojas verdes.",
+      "tiempo_prep_min": 10,
+      "porciones": 1,
+      "ingredientes": [["edamame", 170], ["cebolleta", 15], ["cilantro", 10], ["feta", 55], ["lima", 15], ["rucula", 50]],
+      "instrucciones": "1. Poner el edamame en un bol con un toque de agua, mezclarlo y cubrir con una servilleta de papel. Calentar en el microondas durante 2 minutos o hasta que estén tiernos.\n2. Escurrir el exceso de agua y mezclar todos los ingredientes excepto las hojas verdes. Sazonar con sal y pimienta al gusto.\n3. Añadir las hojas verdes y el edamame a un plato y servir.",
+      "origen_web": {"url": "https://www.dietdoctor.com/es/recetas/plato-vegetariano-alto-en-proteina-con-edamame-y-queso-feta", "autor": "Franziska Spritzler, dietista titulada (Diet Doctor)", "kcal_web": 379}
+    }
+  ]
+}
