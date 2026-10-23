@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, SlidersHorizontal, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
-import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_POSITIVOS, APTA_PARA, SIN_ALERGENO, nombreSin, recetaTieneEtiqueta, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
+import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
@@ -133,10 +133,11 @@ export default function RecetasPage() {
   const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
   const [categoria, setCategoria] = useEstadoUrl<string>('cat', 'Todos')
   const [metodoCoccion, setMetodoCoccion] = useEstadoUrl<string>('metodo', 'Todos')
-  const [fechaDesde, setFechaDesde] = useEstadoUrl<string>('desde', '')
-  const [fechaHasta, setFechaHasta] = useEstadoUrl<string>('hasta', '')
   const [rangoKcal, setRangoKcal] = useEstadoUrl<string | null>('kcal', null)
   const [tiempoPrep, setTiempoPrep] = useEstadoUrl<string | null>('tiempo', null)
+  const [sinParam, setSinParam] = useEstadoUrl<string | null>('sin', null)
+  const sinFiltros = useMemo(() => (sinParam ? sinParam.split(',').filter(Boolean) : []), [sinParam])
+  const alternarSin = (v: string) => { const n = sinFiltros.includes(v) ? sinFiltros.filter(x => x !== v) : [...sinFiltros, v]; setSinParam(n.length ? n.join(',') : null) }
   const [intoleranciaFilter, setIntoleranciaFilter] = useEstadoUrl<string | null>('apta', null)
   const [tagFilter, setTagFilter] = useEstadoUrl<string | null>('tag', null)
   const [curacionFilter, setCuracionFilter] = useEstadoUrl<string | null>('curacion', null)
@@ -244,19 +245,8 @@ export default function RecetasPage() {
         matchIntolerancia = recetaTieneEtiqueta(recetaIntolerancias, filtroActivo)
       }
 
-      let matchFecha = true
-      if (r.created_at) {
-        const fechaReceta = new Date(r.created_at)
-        if (fechaDesde) {
-          const desde = new Date(fechaDesde)
-          matchFecha = matchFecha && fechaReceta >= desde
-        }
-        if (fechaHasta) {
-          const hasta = new Date(fechaHasta + 'T23:59:59')
-          matchFecha = matchFecha && fechaReceta <= hasta
-        }
-      }
-      return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchCuracion && matchKcal && matchTiempo && matchIntolerancia && matchFecha
+      const matchSin = sinFiltros.every(v => recetaTieneEtiqueta(r.intolerancias ?? [], v))
+      return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchCuracion && matchKcal && matchTiempo && matchIntolerancia && matchSin
     })
       .sort((a, b) => {
         if (!a.created_at || !b.created_at) return 0
@@ -264,7 +254,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, palabrasBusqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter])
+  }, [recetas, palabrasBusqueda, categoria, metodoCoccion, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter, sinFiltros])
 
   // Sugerencias de tags que coinciden con la búsqueda actual
   const tagSugeridos = useMemo(() => {
@@ -305,7 +295,7 @@ export default function RecetasPage() {
     rangoKcal !== null,
     tiempoPrep !== null,
     intoleranciaFilter !== null,
-    !!(fechaDesde || fechaHasta),
+    sinFiltros.length > 0,
   ].filter(Boolean).length
 
   const filtrosCuracion = [
@@ -473,21 +463,15 @@ export default function RecetasPage() {
               ))}
             </FiltroMenu>
 
-            <FiltroMenu etiqueta="Apta para" valor={APTA_PARA.find(a => a.valor === intoleranciaFilter)?.etiqueta ?? null} onLimpiar={() => setIntoleranciaFilter(null)}>
-              {cerrar => APTA_PARA.map(({ valor, etiqueta }) => (
+            <FiltroMenu etiqueta="Apta para" valor={['Vegano', 'Vegetariano'].includes(intoleranciaFilter ?? '') ? APTA_PARA.find(a => a.valor === intoleranciaFilter)?.etiqueta ?? null : null} onLimpiar={() => setIntoleranciaFilter(null)}>
+              {cerrar => APTA_PARA.filter(a => a.valor === 'Vegano' || a.valor === 'Vegetariano').map(({ valor, etiqueta }) => (
                 <OpcionMenu key={valor} activa={intoleranciaFilter === valor} onClick={() => { setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor); cerrar() }}>{etiqueta}</OpcionMenu>
               ))}
             </FiltroMenu>
 
-            <FiltroMenu etiqueta="Contiene" valor={ALERGENOS_POSITIVOS.includes(intoleranciaFilter as never) ? intoleranciaFilter : null} onLimpiar={() => setIntoleranciaFilter(null)}>
-              {cerrar => ALERGENOS_POSITIVOS.map(i => (
-                <OpcionMenu key={i} activa={intoleranciaFilter === i} onClick={() => { setIntoleranciaFilter(intoleranciaFilter === i ? null : i); cerrar() }}>{i}</OpcionMenu>
-              ))}
-            </FiltroMenu>
-
-            <FiltroMenu etiqueta="Sin" valor={SIN_ALERGENO.includes(intoleranciaFilter as never) ? nombreSin(intoleranciaFilter as string) : null} onLimpiar={() => setIntoleranciaFilter(null)}>
-              {cerrar => SIN_ALERGENO.map(valor => (
-                <OpcionMenu key={valor} activa={intoleranciaFilter === valor} onClick={() => { setIntoleranciaFilter(intoleranciaFilter === valor ? null : valor); cerrar() }}>{nombreSin(valor)}</OpcionMenu>
+            <FiltroMenu etiqueta="Sin" valor={sinFiltros.length ? sinFiltros.map(nombreSin).join(', ') : null} onLimpiar={() => setSinParam(null)}>
+              {() => ALERGENOS_NEGATIVOS.map(valor => (
+                <OpcionMenu key={valor} activa={sinFiltros.includes(valor)} onClick={() => alternarSin(valor)}>{nombreSin(valor)}</OpcionMenu>
               ))}
             </FiltroMenu>
 
@@ -509,20 +493,10 @@ export default function RecetasPage() {
               ))}
             </FiltroMenu>
 
-            <FiltroMenu etiqueta="Fecha" valor={fechaDesde || fechaHasta ? `${fechaDesde || '…'} → ${fechaHasta || '…'}` : null} onLimpiar={() => { setFechaDesde(''); setFechaHasta('') }}>
-              {() => (
-                <div className="flex items-center gap-2 p-1.5">
-                  <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} className="text-xs py-1.5 px-2 rounded-lg border outline-none" style={{ color: 'var(--text)', background: 'var(--bg)', borderColor: 'var(--border)' }} />
-                  <span style={{ color: 'var(--text-muted)' }}>—</span>
-                  <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} className="text-xs py-1.5 px-2 rounded-lg border outline-none" style={{ color: 'var(--text)', background: 'var(--bg)', borderColor: 'var(--border)' }} />
-                </div>
-              )}
-            </FiltroMenu>
-
             {(activeFilterCount > 0 || tagFilter || categoria !== 'Todos') && (
               <button
                 type="button"
-                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setIntoleranciaFilter(null); setCuracionFilter(null); setFechaDesde(''); setFechaHasta(''); setCategoria('Todos'); setTagFilter(null) }}
+                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setIntoleranciaFilter(null); setCuracionFilter(null); setSinParam(null); setCategoria('Todos'); setTagFilter(null) }}
                 className="px-2 py-1.5 text-xs underline-offset-2 hover:underline"
                 style={{ color: 'var(--text-muted)' }}
               >
