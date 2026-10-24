@@ -25,8 +25,8 @@ const USOS = [
 const KCAL = [['<300', '< 300 kcal'], ['300-600', '300–600 kcal'], ['>600', '> 600 kcal']]
 const TIEMPO = [['<15', '< 15 min'], ['15-30', '15–30 min'], ['>30', '> 30 min']]
 
-function Filtro({ etiqueta, valor, onLimpiar, children }: {
-  etiqueta: string; valor: string | null; onLimpiar: () => void; children: React.ReactNode
+function Filtro({ etiqueta, valor, onLimpiar, children, v = 'a' }: {
+  etiqueta: string; valor: string | null; onLimpiar: () => void; children: React.ReactNode; v?: string
 }) {
   const [abierto, setAbierto] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -42,12 +42,12 @@ function Filtro({ etiqueta, valor, onLimpiar, children }: {
       <button
         type="button"
         onClick={() => setAbierto(v => !v)}
-        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold"
-        style={{
+        className={v === 'a' ? 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold' : `rc-filtro flex items-center gap-1.5${activo ? ' is-active' : ''}`}
+        style={v === 'a' ? {
           background: activo ? 'var(--primary)' : 'var(--surface)',
           color: activo ? 'var(--bg)' : 'var(--text-muted)',
           border: '1px solid var(--border)',
-        }}
+        } : undefined}
       >
         {etiqueta}{activo && <span className="max-w-[9rem] truncate">· {valor}</span>}
         {activo
@@ -121,6 +121,8 @@ export default function RecetarioExplorador({
   }
   const hayFiltros = Boolean(usoF || aptaP || sinP || metodo || kcalF || tiempoF)
   const [vista, setVista] = useState<'lista' | 'cuadricula'>('lista')
+  // TEMPORAL: selector de estilo de chips para elegir (a = actual, b/c/d = propuestas)
+  const [chips, setChips] = useState('a')
   useEffect(() => {
     try {
       const guardada = localStorage.getItem('recetario-vista')
@@ -236,25 +238,33 @@ export default function RecetarioExplorador({
         </button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+        <span>Estilo (prueba):</span>
+        {['a', 'b', 'c', 'd'].map(x => (
+          <button key={x} type="button" onClick={() => setChips(x)} className="px-2.5 py-1 font-bold uppercase"
+            style={{ border: '1px solid var(--border)', borderRadius: 3, color: chips === x ? 'var(--text)' : 'var(--text-muted)', background: chips === x ? 'var(--surface-hover)' : 'transparent' }}>{x}</button>
+        ))}
+      </div>
+
+      <div data-chips={chips} className={chips === 'a' ? 'flex gap-2 overflow-x-auto pb-1 -mx-1 px-1' : 'rc-cats'}>
         {CATEGORIAS.map(c => (
           <button
             key={c}
             onClick={() => setCategoria(c)}
-            className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold"
-            style={{
+            className={chips === 'a' ? 'shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold' : `rc-cat${categoria === c ? ' is-active' : ''}`}
+            style={chips === 'a' ? {
               background: categoria === c ? 'var(--primary)' : 'var(--surface)',
               color: categoria === c ? 'var(--bg)' : 'var(--text-muted)',
               border: '1px solid var(--border)',
-            }}
+            } : undefined}
           >
             {c}
           </button>
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Filtro etiqueta="Uso" valor={USOS.find(u => u.id === usoF)?.label ?? null} onLimpiar={() => setUsoF(null)}>
+      <div data-chips={chips} className={chips === 'a' ? 'flex flex-wrap gap-2' : 'rc-filtros'}>
+        <Filtro v={chips} etiqueta="Uso" valor={USOS.find(u => u.id === usoF)?.label ?? null} onLimpiar={() => setUsoF(null)}>
           {USOS.map((u, i) => (
             <div key={u.id}>
               {USOS[i - 1]?.grupo !== u.grupo && <p className="px-2.5 pt-2 pb-1 text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{u.grupo}</p>}
@@ -262,25 +272,25 @@ export default function RecetarioExplorador({
             </div>
           ))}
         </Filtro>
-        <Filtro etiqueta="Apta para" valor={aptaL.length ? aptaL.map(v => OPCIONES_APTA.find(a => a.valor === v)?.etiqueta ?? v).join(', ') : null} onLimpiar={() => setAptaP(null)}>
+        <Filtro v={chips} etiqueta="Apta para" valor={aptaL.length ? aptaL.map(v => OPCIONES_APTA.find(a => a.valor === v)?.etiqueta ?? v).join(', ') : null} onLimpiar={() => setAptaP(null)}>
           {OPCIONES_APTA.map(({ valor, etiqueta }) => (
             <Opcion key={valor} activa={aptaL.includes(valor)} onClick={() => alternar(aptaL, valor, setAptaP)}>{etiqueta}</Opcion>
           ))}
         </Filtro>
-        <Filtro etiqueta="Sin" valor={sinL.length ? sinL.map(v => mayuscula(nombreSin(v))).join(', ') : null} onLimpiar={() => setSinP(null)}>
+        <Filtro v={chips} etiqueta="Sin" valor={sinL.length ? sinL.map(v => mayuscula(nombreSin(v))).join(', ') : null} onLimpiar={() => setSinP(null)}>
           {OPCIONES_SIN.map(v => (
             <Opcion key={v} activa={sinL.includes(v)} onClick={() => alternar(sinL, v, setSinP)}>{mayuscula(nombreSin(v))}</Opcion>
           ))}
         </Filtro>
-        <Filtro etiqueta="Cocción" valor={metodo} onLimpiar={() => setMetodo(null)}>
+        <Filtro v={chips} etiqueta="Cocción" valor={metodo} onLimpiar={() => setMetodo(null)}>
           {TIPOS_COCCION.map(m => (
             <Opcion key={m} activa={metodo === m} onClick={() => setMetodo(metodo === m ? null : m)}>{m}</Opcion>
           ))}
         </Filtro>
-        <Filtro etiqueta="Kcal" valor={KCAL.find(k => k[0] === kcalF)?.[1] ?? null} onLimpiar={() => setKcalF(null)}>
+        <Filtro v={chips} etiqueta="Kcal" valor={KCAL.find(k => k[0] === kcalF)?.[1] ?? null} onLimpiar={() => setKcalF(null)}>
           {KCAL.map(([v, l]) => <Opcion key={v} activa={kcalF === v} onClick={() => setKcalF(kcalF === v ? null : v)}>{l} / porción</Opcion>)}
         </Filtro>
-        <Filtro etiqueta="Tiempo" valor={TIEMPO.find(k => k[0] === tiempoF)?.[1] ?? null} onLimpiar={() => setTiempoF(null)}>
+        <Filtro v={chips} etiqueta="Tiempo" valor={TIEMPO.find(k => k[0] === tiempoF)?.[1] ?? null} onLimpiar={() => setTiempoF(null)}>
           {TIEMPO.map(([v, l]) => <Opcion key={v} activa={tiempoF === v} onClick={() => setTiempoF(tiempoF === v ? null : v)}>{l}</Opcion>)}
         </Filtro>
         {hayFiltros && (
