@@ -203,7 +203,6 @@ export default function RecetarioExplorador({
 
   return (
     <div className="recipe-archive flex flex-col gap-3">
-      <div className="recipe-archive__heading"><span>03 / ARCHIVE</span><h2>Recetario</h2><samp>{recetas.length} ITEMS</samp></div>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
