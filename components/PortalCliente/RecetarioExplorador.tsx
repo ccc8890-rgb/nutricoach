@@ -22,11 +22,9 @@ const USOS = [
   { id: 'chef', grupo: 'Calidad', label: 'Más elaboradas (chef healthy)' },
   { id: 'adherencia', grupo: 'Calidad', label: 'Fáciles de seguir (score 80+)' },
 ]
-const KCAL = [['<300', '< 300 kcal'], ['300-600', '300–600 kcal'], ['>600', '> 600 kcal']]
-const TIEMPO = [['<15', '< 15 min'], ['15-30', '15–30 min'], ['>30', '> 30 min']]
 
-function Filtro({ etiqueta, valor, onLimpiar, children, v = 'a' }: {
-  etiqueta: string; valor: string | null; onLimpiar: () => void; children: React.ReactNode; v?: string
+function Filtro({ etiqueta, valor, onLimpiar, children }: {
+  etiqueta: string; valor: string | null; onLimpiar: () => void; children: React.ReactNode
 }) {
   const [abierto, setAbierto] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -42,12 +40,7 @@ function Filtro({ etiqueta, valor, onLimpiar, children, v = 'a' }: {
       <button
         type="button"
         onClick={() => setAbierto(v => !v)}
-        className={v === 'a' ? 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold' : `rc-filtro flex items-center gap-1.5${activo ? ' is-active' : ''}`}
-        style={v === 'a' ? {
-          background: activo ? 'var(--primary)' : 'var(--surface)',
-          color: activo ? 'var(--bg)' : 'var(--text-muted)',
-          border: '1px solid var(--border)',
-        } : undefined}
+        className={`rc-filtro flex items-center gap-1.5${activo ? ' is-active' : ''}`}
       >
         {etiqueta}{activo && <span className="max-w-[9rem] truncate">· {valor}</span>}
         {activo
@@ -111,18 +104,14 @@ export default function RecetarioExplorador({
   const [aptaP, setAptaP] = useEstadoUrl<string | null>('apta', null)
   const [sinP, setSinP] = useEstadoUrl<string | null>('sin', null)
   const [metodo, setMetodo] = useEstadoUrl<string | null>('metodo', null)
-  const [kcalF, setKcalF] = useEstadoUrl<string | null>('kcal', null)
-  const [tiempoF, setTiempoF] = useEstadoUrl<string | null>('tiempo', null)
   const aptaL = aptaP ? aptaP.split(',').filter(Boolean) : []
   const sinL = sinP ? sinP.split(',').filter(Boolean) : []
   const alternar = (lista: string[], v: string, set: (x: string | null) => void) => {
     const n = lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]
     set(n.length ? n.join(',') : null)
   }
-  const hayFiltros = Boolean(usoF || aptaP || sinP || metodo || kcalF || tiempoF)
+  const hayFiltros = Boolean(usoF || aptaP || sinP || metodo)
   const [vista, setVista] = useState<'lista' | 'cuadricula'>('lista')
-  // TEMPORAL: selector de estilo de chips para elegir (a = actual, b/c/d = propuestas)
-  const [chips, setChips] = useState('a')
   useEffect(() => {
     try {
       const guardada = localStorage.getItem('recetario-vista')
@@ -185,7 +174,7 @@ export default function RecetarioExplorador({
     }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, categoria, usoF, aptaP, sinP, metodo, kcalF, tiempoF, sinFiltros])
+  }, [q, categoria, usoF, aptaP, sinP, metodo, sinFiltros])
 
   async function cargar(paginaSolicitada: number, reemplazar: boolean) {
     setCargando(true)
@@ -193,7 +182,7 @@ export default function RecetarioExplorador({
       const params = new URLSearchParams({ page: String(paginaSolicitada) })
       if (q.trim()) params.set('q', q.trim())
       if (categoria !== 'Todos') params.set('categoria', categoria)
-      const extra: Record<string, string | null> = { uso: usoF, apta: aptaP, sin: sinP, metodo, kcal: kcalF, tiempo: tiempoF }
+      const extra: Record<string, string | null> = { uso: usoF, apta: aptaP, sin: sinP, metodo }
       for (const [k, v] of Object.entries(extra)) if (v) params.set(k, v)
       const res = await fetch(`/api/cliente/${codigo}/recetario?${params.toString()}`)
       const data = await res.json()
@@ -238,33 +227,20 @@ export default function RecetarioExplorador({
         </button>
       </div>
 
-      <div className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-        <span>Estilo (prueba):</span>
-        {['a', 'b', 'c', 'd'].map(x => (
-          <button key={x} type="button" onClick={() => setChips(x)} className="px-2.5 py-1 font-bold uppercase"
-            style={{ border: '1px solid var(--border)', borderRadius: 3, color: chips === x ? 'var(--text)' : 'var(--text-muted)', background: chips === x ? 'var(--surface-hover)' : 'transparent' }}>{x}</button>
-        ))}
-      </div>
-
-      <div data-chips={chips} className={chips === 'a' ? 'flex gap-2 overflow-x-auto pb-1 -mx-1 px-1' : 'rc-cats'}>
+      <div className="rc-cats">
         {CATEGORIAS.map(c => (
           <button
             key={c}
             onClick={() => setCategoria(c)}
-            className={chips === 'a' ? 'shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold' : `rc-cat${categoria === c ? ' is-active' : ''}`}
-            style={chips === 'a' ? {
-              background: categoria === c ? 'var(--primary)' : 'var(--surface)',
-              color: categoria === c ? 'var(--bg)' : 'var(--text-muted)',
-              border: '1px solid var(--border)',
-            } : undefined}
+            className={`rc-cat${categoria === c ? ' is-active' : ''}`}
           >
             {c}
           </button>
         ))}
       </div>
 
-      <div data-chips={chips} className={chips === 'a' ? 'flex flex-wrap gap-2' : 'rc-filtros'}>
-        <Filtro v={chips} etiqueta="Uso" valor={USOS.find(u => u.id === usoF)?.label ?? null} onLimpiar={() => setUsoF(null)}>
+      <div className="rc-filtros">
+        <Filtro etiqueta="Uso" valor={USOS.find(u => u.id === usoF)?.label ?? null} onLimpiar={() => setUsoF(null)}>
           {USOS.map((u, i) => (
             <div key={u.id}>
               {USOS[i - 1]?.grupo !== u.grupo && <p className="px-2.5 pt-2 pb-1 text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{u.grupo}</p>}
@@ -272,30 +248,24 @@ export default function RecetarioExplorador({
             </div>
           ))}
         </Filtro>
-        <Filtro v={chips} etiqueta="Apta para" valor={aptaL.length ? aptaL.map(v => OPCIONES_APTA.find(a => a.valor === v)?.etiqueta ?? v).join(', ') : null} onLimpiar={() => setAptaP(null)}>
+        <Filtro etiqueta="Apta para" valor={aptaL.length ? aptaL.map(v => OPCIONES_APTA.find(a => a.valor === v)?.etiqueta ?? v).join(', ') : null} onLimpiar={() => setAptaP(null)}>
           {OPCIONES_APTA.map(({ valor, etiqueta }) => (
             <Opcion key={valor} activa={aptaL.includes(valor)} onClick={() => alternar(aptaL, valor, setAptaP)}>{etiqueta}</Opcion>
           ))}
         </Filtro>
-        <Filtro v={chips} etiqueta="Sin" valor={sinL.length ? sinL.map(v => mayuscula(nombreSin(v))).join(', ') : null} onLimpiar={() => setSinP(null)}>
+        <Filtro etiqueta="Sin" valor={sinL.length ? sinL.map(v => mayuscula(nombreSin(v))).join(', ') : null} onLimpiar={() => setSinP(null)}>
           {OPCIONES_SIN.map(v => (
             <Opcion key={v} activa={sinL.includes(v)} onClick={() => alternar(sinL, v, setSinP)}>{mayuscula(nombreSin(v))}</Opcion>
           ))}
         </Filtro>
-        <Filtro v={chips} etiqueta="Cocción" valor={metodo} onLimpiar={() => setMetodo(null)}>
+        <Filtro etiqueta="Cocción" valor={metodo} onLimpiar={() => setMetodo(null)}>
           {TIPOS_COCCION.map(m => (
             <Opcion key={m} activa={metodo === m} onClick={() => setMetodo(metodo === m ? null : m)}>{m}</Opcion>
           ))}
         </Filtro>
-        <Filtro v={chips} etiqueta="Kcal" valor={KCAL.find(k => k[0] === kcalF)?.[1] ?? null} onLimpiar={() => setKcalF(null)}>
-          {KCAL.map(([v, l]) => <Opcion key={v} activa={kcalF === v} onClick={() => setKcalF(kcalF === v ? null : v)}>{l} / porción</Opcion>)}
-        </Filtro>
-        <Filtro v={chips} etiqueta="Tiempo" valor={TIEMPO.find(k => k[0] === tiempoF)?.[1] ?? null} onLimpiar={() => setTiempoF(null)}>
-          {TIEMPO.map(([v, l]) => <Opcion key={v} activa={tiempoF === v} onClick={() => setTiempoF(tiempoF === v ? null : v)}>{l}</Opcion>)}
-        </Filtro>
         {hayFiltros && (
           <button type="button" className="shrink-0 px-2 text-xs underline" style={{ color: 'var(--text-muted)' }}
-            onClick={() => { setUsoF(null); setAptaP(null); setSinP(null); setMetodo(null); setKcalF(null); setTiempoF(null) }}>
+            onClick={() => { setUsoF(null); setAptaP(null); setSinP(null); setMetodo(null) }}>
             Limpiar todo
           </button>
         )}

@@ -719,25 +719,10 @@
 .datos-sesiones__nombre { color: var(--text); font-size: 0.88rem; font-weight: 600; line-height: 1.25; }
 .datos-sesiones__datos { color: var(--text-secondary); font: 500 0.68rem/1.4 var(--font-geist-mono), ui-monospace, monospace; }
 
-/* TEMPORAL: variantes de chips del recetario (b, c, d) — elegir y borrar el resto */
-.rc-cats, .rc-filtros { display: flex; overflow-x: auto; scrollbar-width: none; }
+/* Chips del recetario: solo texto, subrayado fino en el activo */
+.rc-cats, .rc-filtros { display: flex; gap: 1.1rem; overflow-x: auto; scrollbar-width: none; }
+.rc-cats { border-bottom: 1px solid var(--editorial-rule); }
 .rc-filtros { flex-wrap: wrap; overflow: visible; }
-.rc-cat, .rc-filtro { flex: none; white-space: nowrap; min-height: 40px; padding: 0.6rem 0.85rem; color: var(--text-muted); font: 600 0.63rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong); }
-/* b: tira de celdas (como Dieta) + celdas finas */
-[data-chips="b"].rc-cats { gap: 1px; border-block: 1px solid var(--editorial-rule); background: var(--editorial-rule); }
-[data-chips="b"] .rc-cat { background: var(--editorial-panel); }
-[data-chips="b"] .rc-cat.is-active { background: var(--metal-bright); color: var(--atelier-carbon); }
-[data-chips="b"].rc-filtros { gap: 6px; }
-[data-chips="b"] .rc-filtro { border: 1px solid var(--editorial-rule); border-radius: var(--editorial-radius-sm); background: var(--editorial-panel); }
-[data-chips="b"] .rc-filtro.is-active { color: var(--text); background: color-mix(in srgb, var(--metal-mid) 14%, var(--editorial-panel)); box-shadow: inset 0 -2px 0 var(--metal-bright); }
-/* c: solo texto con subrayado */
-[data-chips="c"].rc-cats { gap: 1.1rem; border-bottom: 1px solid var(--editorial-rule); }
-[data-chips="c"] .rc-cat, [data-chips="c"] .rc-filtro { padding-inline: 0; background: transparent; }
-[data-chips="c"] .rc-cat.is-active { color: var(--text); box-shadow: inset 0 -2px 0 var(--metal-bright); }
-[data-chips="c"].rc-filtros { gap: 1.1rem; }
-[data-chips="c"] .rc-filtro { min-height: 32px; }
-[data-chips="c"] .rc-filtro.is-active { color: var(--text); box-shadow: inset 0 -2px 0 var(--metal-bright); }
-/* d: chips rectangulares con borde fino */
-[data-chips="d"].rc-cats, [data-chips="d"].rc-filtros { gap: 6px; }
-[data-chips="d"] .rc-cat, [data-chips="d"] .rc-filtro { min-height: 34px; padding: 0.5rem 0.75rem; border: 1px solid var(--editorial-rule); border-radius: var(--editorial-radius-sm); background: transparent; }
-[data-chips="d"] .rc-cat.is-active, [data-chips="d"] .rc-filtro.is-active { color: var(--text); background: color-mix(in srgb, var(--text) 11%, transparent); box-shadow: inset 0 -2px 0 var(--metal-bright); }
+.rc-cat, .rc-filtro { flex: none; white-space: nowrap; min-height: 40px; padding: 0.6rem 0; background: transparent; color: var(--text-muted); font: 600 0.63rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; transition: color 180ms var(--ease-out-strong); }
+.rc-filtro { min-height: 32px; }
+.rc-cat.is-active, .rc-filtro.is-active { color: var(--text); box-shadow: inset 0 -2px 0 var(--metal-bright); }
