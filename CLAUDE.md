@@ -4,6 +4,15 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 26-10-2026 (Claude) — Elaboraciones como categorías propias (fase 1)
+
+Diseño: `docs/superpowers/specs/2026-10-26-elaboraciones-design.md`; plan: `docs/superpowers/plans/2026-10-26-elaboraciones-fase1.md`. Resumen y pendientes en la fila de `NUTRICION/CLAUDE.md`.
+- **Regla:** una elaboración (salsa, condimento, base como el poolish) es una receta con `categoria` ∈ `CATEGORIAS_ELABORACION` (`lib/recetas-constants.ts`) y `tipo_receta='salsa_base'`. **`recetas_tipo_plato_check` solo admite Desayuno, Almuerzo, Comida, Merienda, Cena, Snack, Postre**: no escribir `tipo_plato='Salsa'` aunque esté en `TIPOS_PLATO` (constante del planificador). No hay check en `categoria`.
+- **Filtro:** `categoriaCoincide` / `filtroExcluyeElaboraciones` (con «Todos» y sin texto de búsqueda no salen). Aplicado en `app/api/cliente/[codigo]/recetario/route.ts` (ambas consultas) y en la Biblioteca. Otras lecturas de recetas (planificador, `sugeridas`, favoritas) no cambian: el planificador no ve estas categorías en `SLOT_CATEGORIAS`.
+- **Clasificación por nombre:** `categoriaElaboracion` (`lib/recetas/tipo-receta.ts`) y `inferir_categoria_elaboracion` (`Content-Radar/scripts/receta_calidad.py`): la palabra clave debe estar entre las dos primeras palabras y sin palabra de plato antes («Pollo con salsa barbacoa» = plato; «Ajonesa de huevo cocido» = salsa). **Dos implementaciones con los mismos casos: al cambiar una, cambiar la otra y sus tests** (`scripts/elaboraciones.test.ts`, `test_receta_calidad.py`).
+- **Reclasificar:** `npx tsx scripts/reclasificar-elaboraciones.ts [--apply]` (idempotente; lista candidatas sin tocarlas).
+- **Lecciones:** (1) mirar los `check` de la BD antes de escribir un valor «lógico» (`pg_get_constraintdef`); (2) los `.ts` de `scripts/` no admiten `await` de nivel superior con tsx (envolver en `main()`); (3) no se vio fallar primero el test de Python (test e implementación escritos juntos); los mismos casos sí fallaron primero en TS.
+
 ## ✅ 23-10-2026 (mediodía, 2.ª parte, Claude) — Nomenclatura de los filtros de la Biblioteca
 
 Solo UI en `app/recetas/(revision)/page.tsx` y `components/Sidebar.tsx`; `tsc` y ESLint OK; **sin ver en pantalla**. Todo en `main`.
