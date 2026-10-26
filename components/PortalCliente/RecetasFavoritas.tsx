@@ -32,17 +32,12 @@ export default function RecetasFavoritas({ codigo, recetaHref }: { codigo: strin
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="rc-cats">
         {tipos.map(c => (
           <button
             key={c}
             onClick={() => setCategoria(c)}
-            className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold"
-            style={{
-              background: activa === c ? 'var(--primary)' : 'var(--surface)',
-              color: activa === c ? 'var(--bg)' : 'var(--text-muted)',
-              border: '1px solid var(--border)',
-            }}
+            className={`rc-cat${activa === c ? ' is-active' : ''}`}
           >
             {c} · {c === 'Todos' ? recetas.length : cuenta(c)}
           </button>

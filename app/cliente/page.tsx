@@ -356,6 +356,25 @@ function PortalClientePageContent() {
     return resultado
   }
 
+  // Recetas del plan agrupadas por comida (Desayuno, Comida…), en el orden del día
+  function gruposRecetasDelPlan() {
+    const comidas = [...((dieta?.comidas ?? []) as unknown as {
+      nombre: string
+      orden: number
+      receta?: { id: string; nombre: string; imagen_url: string | null; kcal: number; proteinas: number } | null
+    }[])].sort((a, b) => a.orden - b.orden)
+    const grupos: { nombre: string; recetas: { id: string; nombre: string; imagen_url: string | null; kcal: number | null; proteinas: number | null }[] }[] = []
+    const vistas = new Set<string>()
+    for (const c of comidas) {
+      if (!c.receta || vistas.has(c.receta.id)) continue
+      vistas.add(c.receta.id)
+      let g = grupos.find(x => x.nombre.toLowerCase() === c.nombre.toLowerCase())
+      if (!g) { g = { nombre: c.nombre, recetas: [] }; grupos.push(g) }
+      g.recetas.push(c.receta)
+    }
+    return grupos
+  }
+
   const recetaHref = (recetaId: string) =>
     `/cliente/receta/${recetaId}?codigo=${encodeURIComponent(codigo)}&returnTo=${encodeURIComponent(
       typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/cliente?tab=recetas',
@@ -602,9 +621,14 @@ function PortalClientePageContent() {
                         {vistaPlan === 'lista' ? <SquaresFour size={16} /> : <Rows size={16} />}
                       </button>
                     </div>
+                    {gruposRecetasDelPlan().map(g => (
+                      <div key={g.nombre} className="flex flex-col gap-3">
+                        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] pb-1" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--editorial-rule)' }}>
+                          {g.nombre} · {g.recetas.length}
+                        </p>
                     {vistaPlan === 'cuadricula' ? (
                       <div className="recipe-grid-compact">
-                        {recetasDelPlan().map(r => (
+                        {g.recetas.map(r => (
                           <Link key={r.id} href={recetaHref(r.id)} prefetch={false} className="recipe-grid-compact__item">
                             <div className="recipe-grid-compact__img">
                               {r.imagen_url ? (
@@ -624,7 +648,7 @@ function PortalClientePageContent() {
                       </div>
                     ) : (
                     <div className="recipe-editorial-list">
-                      {recetasDelPlan().map((r, index) => (
+                      {g.recetas.map((r, index) => (
                         <Link
                           key={r.id}
                           href={recetaHref(r.id)}
@@ -651,6 +675,8 @@ function PortalClientePageContent() {
                       ))}
                     </div>
                     )}
+                      </div>
+                    ))}
                   </div>
                 )}
 
