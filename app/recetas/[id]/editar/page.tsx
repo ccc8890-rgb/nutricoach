@@ -235,6 +235,13 @@ export default function EditarRecetaPage() {
         setIngredientes(prev => prev.map(i => i.tempId === tempId ? { ...i, [campo]: valor } : i))
     }
 
+    /** La equivalencia casera («= 2 huevos») solo se ofrece si ya la tiene o si es algo que se cuenta; la ficha ya deduce el resto por el nombre */
+    function equivalenciaVisible(ing: Ingrediente) {
+        if (ing.unidad_display?.trim() || ing.cantidad_original) return true
+        const nom = ing.nombre_libre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        return /^(huevos?|claras?|yemas?|yogur(es)?|ajo)\b/.test(nom) && !/polvo/.test(nom)
+    }
+
     function eliminarIngrediente(tempId: string) {
         setIngredientes(prev => prev.filter(i => i.tempId !== tempId))
     }
@@ -702,6 +709,7 @@ export default function EditarRecetaPage() {
                                                     onChange={e => actualizarIngrediente(ing.tempId, 'cantidad_gramos', parseFloat(e.target.value) || 0)}
                                                 />
                                                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{ing.cantidad_gramos === 0 ? 'al gusto' : 'g'}</span>
+                                                {equivalenciaVisible(ing) && (<>
                                                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>=</span>
                                                 <input
                                                     type="number"
@@ -723,6 +731,7 @@ export default function EditarRecetaPage() {
                                                     value={ing.unidad_display ?? ''}
                                                     onChange={e => actualizarIngrediente(ing.tempId, 'unidad_display', e.target.value)}
                                                 />
+                                                </>)}
                                             </div>
 
                                             {/* Macros si vinculado y tiene cantidad */}
