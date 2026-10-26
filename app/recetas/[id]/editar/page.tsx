@@ -242,6 +242,7 @@ export default function EditarRecetaPage() {
 
     /** La equivalencia casera («= 2 huevos») solo se ofrece si ya la tiene o si es algo que se cuenta; la ficha ya deduce el resto por el nombre */
     function equivalenciaVisible(ing: Ingrediente) {
+        if (/^(g|gr|gramos?|ml)$/i.test(ing.unidad_display?.trim() ?? '')) return false // «150 g = 150 g» no aporta nada
         if (ing.unidad_display?.trim() || ing.cantidad_original) return true
         const nom = ing.nombre_libre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         return /^(huevos?|claras?|yemas?|yogur(es)?|ajo)\b/.test(nom) && !/polvo/.test(nom)
@@ -429,7 +430,7 @@ export default function EditarRecetaPage() {
 
     return (
         <PageTransition className="coach-recipe-editor">
-            <div className="p-6 max-w-3xl mx-auto pb-safe">
+            <div className="p-6 max-w-6xl mx-auto pb-safe">
                 <div className="flex items-center gap-3 mb-8">
                     <Link href={volverReceta} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
                     <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Editar receta</h1>
@@ -452,45 +453,12 @@ export default function EditarRecetaPage() {
                 </div>
 
                 <div className="flex flex-col gap-6">
-                    {/* Imagen */}
-                    <FadeIn delay={0.05}>
-                        <div className="card">
-                            <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Imagen</p>
-                            {imagenPreviewFinal ? (
-                                <div className="relative">
-                                    <img
-                                        src={imagenPreviewFinal}
-                                        alt="Preview"
-                                        className="w-full h-48 object-cover rounded-lg"
-                                    />
-                                    <button
-                                        onClick={() => { setImagenFile(null); setImagenPreview(null); setImagenUrlExterna(''); setImagenExistente('') }}
-                                        className="absolute top-2 right-2 rounded-full p-1 shadow"
-                                        style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => fileRef.current?.click()}
-                                    className="w-full h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 transition-colors"
-                                    style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary)' }}
-                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-                                >
-                                    <Upload size={20} />
-                                    <span className="text-sm">Subir foto</span>
-                                </button>
-                            )}
-                            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImagenChange} />
-                        </div>
-                    </FadeIn>
-
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] items-start">
+                        <div className="flex flex-col gap-6 min-w-0">
                     {/* Datos básicos */}
                     <FadeIn delay={0.1}>
                         <div className="card flex flex-col gap-4">
-                            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Información básica</p>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Receta</p>
 
                             <div>
                                 <label style={{ color: 'var(--text-secondary)' }}>Nombre *</label>
@@ -504,136 +472,11 @@ export default function EditarRecetaPage() {
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Tipo</label>
-                                    <select className="input" value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value as TipoContenido, familia: '' }))}>
-                                        <option value="plato">Plato</option>
-                                        <option value="elaboracion">Elaboración (masa, salsa, fondo…)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Familia</label>
-                                    <select className="input" value={form.familia} onChange={e => setForm(p => ({ ...p, familia: e.target.value }))}>
-                                        <option value="">— Seleccionar —</option>
-                                        {(esElaboracion ? FAMILIAS_ELABORACION : FAMILIAS_PLATO).map(f => <option key={f} value={f}>{f}</option>)}
-                                    </select>
-                                </div>
-                                {!esElaboracion && (
-                                    <div>
-                                        <label style={{ color: 'var(--text-secondary)' }}>Categoría (cuándo se come)</label>
-                                        <select className="input" value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}>
-                                            <option value="">— Seleccionar —</option>
-                                            {CATEGORIAS_PLATO.filter(c => c !== 'Todos').map(c => <option key={c} value={c}>{c}</option>)}
-                                        </select>
-                                    </div>
-                                )}
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Tipo de plato</label>
-                                    <select className="input" value={form.tipo_plato} onChange={e => setForm(p => ({ ...p, tipo_plato: e.target.value }))}>
-                                        <option value="">— Seleccionar —</option>
-                                        {TIPOS_PLATO.filter(t => t !== 'Salsa' && t !== 'Acompañamiento').map(t => <option key={t} value={t}>{t}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Tipo de cocción</label>
-                                    <select className="input" value={form.tipo_coccion} onChange={e => setForm(p => ({ ...p, tipo_coccion: e.target.value }))}>
-                                        <option value="">— Seleccionar —</option>
-                                        {TIPOS_COCCION.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Dificultad</label>
-                                    <select className="input" value={form.dificultad} onChange={e => setForm(p => ({ ...p, dificultad: e.target.value }))}>
-                                        <option value="">— Seleccionar —</option>
-                                        {['Fácil', 'Medio', 'Difícil'].map(d => <option key={d} value={d}>{d}</option>)}
-                                    </select>
-                                </div>
-                                <div>
                                     <label style={{ color: 'var(--text-secondary)' }}>Porciones</label>
                                     <input type="number" min={1} className="input" value={form.porciones} onChange={e => setForm(p => ({ ...p, porciones: e.target.value }))} />
                                 </div>
-                                {esElaboracion && (
-                                    <div>
-                                        <label style={{ color: 'var(--text-secondary)' }}>Peso final (g)</label>
-                                        <input type="number" min={1} className="input" placeholder="Suma de ingredientes" title="Peso del producto terminado: una masa pierde agua al cocinar. Vacío = suma de los ingredientes" value={form.peso_final_g} onChange={e => setForm(p => ({ ...p, peso_final_g: e.target.value }))} />
-                                    </div>
-                                )}
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Qué es una porción</label>
-                                    <input className="input" placeholder="Ej: 1 galleta, 2 tacos, 1 rebanada" value={form.descripcion_porcion} onChange={e => setForm(p => ({ ...p, descripcion_porcion: e.target.value }))} />
-                                </div>
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Prep (min)</label>
-                                    <input type="number" min={0} className="input" placeholder="15" value={form.tiempo_prep_min} onChange={e => setForm(p => ({ ...p, tiempo_prep_min: e.target.value }))} />
-                                </div>
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Cocción (min)</label>
-                                    <input type="number" min={0} className="input" placeholder="20" value={form.tiempo_coccion_min} onChange={e => setForm(p => ({ ...p, tiempo_coccion_min: e.target.value }))} />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="mb-2" style={{ color: 'var(--text-secondary)' }}>Alérgenos / clasificación dietética</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {INTOLERANCIAS.map(i => (
-                                        <button key={i} type="button" onClick={() => toggleIntolerancia(i)}
-                                            className="text-xs px-3 py-1.5 rounded-full border transition-colors"
-                                            style={intolerancias.includes(i)
-                                                ? { background: 'var(--primary)', borderColor: 'var(--primary)', color: '#fff' }
-                                                : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
-                                            onMouseEnter={e => { if (!intolerancias.includes(i)) { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary)' } }}
-                                            onMouseLeave={e => { if (!intolerancias.includes(i)) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}>
-                                            {i}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="mb-1" style={{ color: 'var(--text-secondary)' }}>Clasificación</label>
-                                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                                    Cómo aparece en los filtros del recetario. Una receta puede tener varios.
-                                </p>
-                                <div className="flex flex-wrap gap-1.5 mb-3">
-                                    {KNOWN_TAGS.map(tag => {
-                                        const active = tags.includes(tag)
-                                        return (
-                                            <button
-                                                key={tag}
-                                                type="button"
-                                                onClick={() => setTags(active ? tags.filter(t => t !== tag) : [...tags, tag])}
-                                                className="text-xs px-2.5 py-1 rounded-full border transition-all"
-                                                style={active ? {
-                                                    background: 'var(--accent-bg)',
-                                                    color: 'var(--text)',
-                                                    fontWeight: 600,
-                                                    borderColor: 'var(--accent)',
-                                                } : {
-                                                    background: 'transparent',
-                                                    color: 'var(--text-secondary)',
-                                                    borderColor: 'var(--border)',
-                                                }}
-                                            >
-                                                {tag}
-                                            </button>
-                                        )
-                                    })}
-                                </div>
-                                <TagInput
-                                    tags={tags.filter(t => !KNOWN_TAGS.includes(t))}
-                                    onChange={custom => setTags([...tags.filter(t => KNOWN_TAGS.includes(t)), ...custom])}
-                                    placeholder="Tag personalizado (ej: mealprep, rápido…)"
-                                />
-                            </div>
-
-                            <div>
-                                <label style={{ color: 'var(--text-secondary)' }}>URL de origen</label>
-                                <input className="input" placeholder="https://..." value={form.url_origen} onChange={e => setForm(p => ({ ...p, url_origen: e.target.value }))} />
                             </div>
                         </div>
-                    </FadeIn>
-
-                    <FadeIn delay={0.12}>
-                        <TaxonomiaRecetaPanel value={taxonomia} onChange={setTaxonomia} />
                     </FadeIn>
 
                     {/* Ingredientes */}
@@ -733,7 +576,7 @@ export default function EditarRecetaPage() {
                                                 <input
                                                     type="number"
                                                     min={0}
-                                                    className="w-16 text-right border rounded px-2 py-1 text-sm outline-none"
+                                                    className="w-20 text-right border rounded px-2 py-1 text-sm outline-none"
                                                     style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                                                     value={ing.cantidad_gramos}
                                                     onChange={e => actualizarIngrediente(ing.tempId, 'cantidad_gramos', parseFloat(e.target.value) || 0)}
@@ -747,7 +590,7 @@ export default function EditarRecetaPage() {
                                                     step="any"
                                                     placeholder="cant."
                                                     title="Equivalencia casera, opcional: cantidad (ej. 2)"
-                                                    className="w-12 text-right border rounded px-2 py-1 text-sm outline-none"
+                                                    className="w-20 text-right border rounded px-2 py-1 text-sm outline-none"
                                                     style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                                                     value={ing.cantidad_original ?? ''}
                                                     onChange={e => actualizarIngrediente(ing.tempId, 'cantidad_original', e.target.value === '' ? null : parseFloat(e.target.value))}
@@ -809,6 +652,179 @@ export default function EditarRecetaPage() {
                             </div>
                         </div>
                     </FadeIn>
+
+                        </div>
+                        <div className="flex flex-col gap-6 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+                    {/* Imagen */}
+                    <FadeIn delay={0.05}>
+                        <div className="card">
+                            <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Imagen</p>
+                            {imagenPreviewFinal ? (
+                                <div className="relative">
+                                    <img
+                                        src={imagenPreviewFinal}
+                                        alt="Preview"
+                                        className="w-full h-48 object-cover rounded-lg"
+                                    />
+                                    <button
+                                        onClick={() => { setImagenFile(null); setImagenPreview(null); setImagenUrlExterna(''); setImagenExistente('') }}
+                                        className="absolute top-2 right-2 rounded-full p-1 shadow"
+                                        style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => fileRef.current?.click()}
+                                    className="w-full h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 transition-colors"
+                                    style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary)' }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                                >
+                                    <Upload size={20} />
+                                    <span className="text-sm">Subir foto</span>
+                                </button>
+                            )}
+                            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImagenChange} />
+                        </div>
+                    </FadeIn>
+
+                    <details className="card">
+                        <summary className="cursor-pointer select-none text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                            Clasificación y datos
+                            <span className="block text-xs font-normal mt-1" style={{ color: 'var(--text-muted)' }}>{form.porciones || '—'} porciones · {form.tipo_plato || 'sin tipo'} · {form.tipo_coccion || 'sin cocción'} · {form.dificultad || 'sin dificultad'}</span>
+                        </summary>
+                        <div className="flex flex-col gap-4 mt-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Tipo</label>
+                                    <select className="input" value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value as TipoContenido, familia: '' }))}>
+                                        <option value="plato">Plato</option>
+                                        <option value="elaboracion">Elaboración (masa, salsa, fondo…)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Familia</label>
+                                    <select className="input" value={form.familia} onChange={e => setForm(p => ({ ...p, familia: e.target.value }))}>
+                                        <option value="">— Seleccionar —</option>
+                                        {(esElaboracion ? FAMILIAS_ELABORACION : FAMILIAS_PLATO).map(f => <option key={f} value={f}>{f}</option>)}
+                                    </select>
+                                </div>
+                                {!esElaboracion && (
+                                    <div>
+                                        <label style={{ color: 'var(--text-secondary)' }}>Categoría (cuándo se come)</label>
+                                        <select className="input" value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}>
+                                            <option value="">— Seleccionar —</option>
+                                            {CATEGORIAS_PLATO.filter(c => c !== 'Todos').map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </div>
+                                )}
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Tipo de plato</label>
+                                    <select className="input" value={form.tipo_plato} onChange={e => setForm(p => ({ ...p, tipo_plato: e.target.value }))}>
+                                        <option value="">— Seleccionar —</option>
+                                        {TIPOS_PLATO.filter(t => t !== 'Salsa' && t !== 'Acompañamiento').map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Tipo de cocción</label>
+                                    <select className="input" value={form.tipo_coccion} onChange={e => setForm(p => ({ ...p, tipo_coccion: e.target.value }))}>
+                                        <option value="">— Seleccionar —</option>
+                                        {TIPOS_COCCION.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Dificultad</label>
+                                    <select className="input" value={form.dificultad} onChange={e => setForm(p => ({ ...p, dificultad: e.target.value }))}>
+                                        <option value="">— Seleccionar —</option>
+                                        {['Fácil', 'Medio', 'Difícil'].map(d => <option key={d} value={d}>{d}</option>)}
+                                    </select>
+                                </div>
+                                {esElaboracion && (
+                                    <div>
+                                        <label style={{ color: 'var(--text-secondary)' }}>Peso final (g)</label>
+                                        <input type="number" min={1} className="input" placeholder="Suma de ingredientes" title="Peso del producto terminado: una masa pierde agua al cocinar. Vacío = suma de los ingredientes" value={form.peso_final_g} onChange={e => setForm(p => ({ ...p, peso_final_g: e.target.value }))} />
+                                    </div>
+                                )}
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Qué es una porción</label>
+                                    <input className="input" placeholder="Ej: 1 galleta, 2 tacos, 1 rebanada" value={form.descripcion_porcion} onChange={e => setForm(p => ({ ...p, descripcion_porcion: e.target.value }))} />
+                                </div>
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Prep (min)</label>
+                                    <input type="number" min={0} className="input" placeholder="15" value={form.tiempo_prep_min} onChange={e => setForm(p => ({ ...p, tiempo_prep_min: e.target.value }))} />
+                                </div>
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Cocción (min)</label>
+                                    <input type="number" min={0} className="input" placeholder="20" value={form.tiempo_coccion_min} onChange={e => setForm(p => ({ ...p, tiempo_coccion_min: e.target.value }))} />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2" style={{ color: 'var(--text-secondary)' }}>Alérgenos / clasificación dietética</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {INTOLERANCIAS.map(i => (
+                                        <button key={i} type="button" onClick={() => toggleIntolerancia(i)}
+                                            className="text-xs px-3 py-1.5 rounded-full border transition-colors"
+                                            style={intolerancias.includes(i)
+                                                ? { background: 'var(--primary)', borderColor: 'var(--primary)', color: '#fff' }
+                                                : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
+                                            onMouseEnter={e => { if (!intolerancias.includes(i)) { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary)' } }}
+                                            onMouseLeave={e => { if (!intolerancias.includes(i)) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}>
+                                            {i}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-1" style={{ color: 'var(--text-secondary)' }}>Clasificación</label>
+                                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                                    Cómo aparece en los filtros del recetario. Una receta puede tener varios.
+                                </p>
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                    {KNOWN_TAGS.map(tag => {
+                                        const active = tags.includes(tag)
+                                        return (
+                                            <button
+                                                key={tag}
+                                                type="button"
+                                                onClick={() => setTags(active ? tags.filter(t => t !== tag) : [...tags, tag])}
+                                                className="text-xs px-2.5 py-1 rounded-full border transition-all"
+                                                style={active ? {
+                                                    background: 'var(--accent-bg)',
+                                                    color: 'var(--text)',
+                                                    fontWeight: 600,
+                                                    borderColor: 'var(--accent)',
+                                                } : {
+                                                    background: 'transparent',
+                                                    color: 'var(--text-secondary)',
+                                                    borderColor: 'var(--border)',
+                                                }}
+                                            >
+                                                {tag}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                                <TagInput
+                                    tags={tags.filter(t => !KNOWN_TAGS.includes(t))}
+                                    onChange={custom => setTags([...tags.filter(t => KNOWN_TAGS.includes(t)), ...custom])}
+                                    placeholder="Tag personalizado (ej: mealprep, rápido…)"
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ color: 'var(--text-secondary)' }}>URL de origen</label>
+                                <input className="input" placeholder="https://..." value={form.url_origen} onChange={e => setForm(p => ({ ...p, url_origen: e.target.value }))} />
+                            </div>
+
+                            <TaxonomiaRecetaPanel value={taxonomia} onChange={setTaxonomia} />
+                        </div>
+                    </details>
+                        </div>
+                    </div>
 
                     {/* Guardar */}
                     <FadeIn delay={0.25}>
