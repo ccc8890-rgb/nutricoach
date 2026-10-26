@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { ArrowLeft, Link2, Plus, Search, X, Trash2, Upload } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Alimento } from '@/types'
-import { CATEGORIAS, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
+import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
+import { camposAlCambiarTipo, clasificarFicha, type TipoContenido } from '@/lib/recetas/clasificacion'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
 import TaxonomiaRecetaPanel, { type TaxonomiaReceta } from '@/components/recetas/TaxonomiaRecetaPanel'
@@ -25,7 +26,7 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
 
   const [form, setForm] = useState({
     nombre: '', descripcion: '', instrucciones: '', consejos: '',
-    categoria: '', tipo_coccion: '', dificultad: '',
+    categoria: '', tipo: 'plato' as TipoContenido, familia: '', tipo_coccion: '', dificultad: '',
     porciones: '1', tiempo_prep_min: '', tiempo_coccion_min: '', url_origen: '',
   })
   const [intolerancias, setIntolerancias] = useState<string[]>([])
@@ -139,7 +140,8 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
     const { data: receta, error } = await supabase.from('recetas').insert({
       coach_id: user.id, nombre: form.nombre.trim(),
       descripcion: form.descripcion || null, instrucciones: form.instrucciones || null,
-      consejos: form.consejos || null, categoria: form.categoria || null,
+      consejos: form.consejos || null,
+      ...camposAlCambiarTipo({ nombre: form.nombre, tipo: form.tipo, familia: form.familia || null, categoria: form.categoria || null, kcal: macrosTotales?.kcal, proteinas: macrosTotales?.proteinas, tipoRecetaActual: null }),
       tipo_coccion: form.tipo_coccion || null, dificultad: form.dificultad || null,
       intolerancias: intolerancias.length ? intolerancias : null,
       tags: tags.length ? tags : null,
@@ -216,17 +218,40 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
         <div>
           <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Nombre *</label>
           <input className="input" placeholder="Ej: Tortitas de avena y plátano" value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} />
+          {(() => {
+            // Propuesta según el nombre (no se impone): «Parece una elaboración: Salsas»
+            const prop = form.nombre.trim().length > 3 ? clasificarFicha({ nombre: form.nombre }) : null
+            if (!prop?.familia || (prop.tipo_contenido === form.tipo && prop.familia === form.familia)) return null
+            return (
+              <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                {prop.tipo_contenido === 'elaboracion' ? 'Parece una elaboración' : 'Parece un plato'}: {prop.familia}{' · '}
+                <button type="button" className="underline" onClick={() => setForm(p => ({ ...p, tipo: prop.tipo_contenido, familia: prop.familia ?? '' }))}>Usar</button>
+              </p>
+            )
+          })()}
         </div>
         <div>
           <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Descripción</label>
           <textarea className="input resize-none h-20" placeholder="Breve descripción de la receta…" value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Categoría</label>
-            <select className="input" value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}>
-              <option value="">— Seleccionar —</option>
-              {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+          <div><label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Tipo</label>
+            <select className="input" value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value as TipoContenido, familia: '' }))}>
+              <option value="plato">Plato</option>
+              <option value="elaboracion">Elaboración (masa, salsa, fondo…)</option>
             </select></div>
+          <div><label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Familia</label>
+            <select className="input" value={form.familia} onChange={e => setForm(p => ({ ...p, familia: e.target.value }))}>
+              <option value="">— Seleccionar —</option>
+              {(form.tipo === 'elaboracion' ? FAMILIAS_ELABORACION : FAMILIAS_PLATO).map(f => <option key={f} value={f}>{f}</option>)}
+            </select></div>
+          {form.tipo === 'plato' && (
+            <div><label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Categoría (cuándo se come)</label>
+              <select className="input" value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}>
+                <option value="">— Seleccionar —</option>
+                {CATEGORIAS_PLATO.filter(c => c !== 'Todos').map(c => <option key={c} value={c}>{c}</option>)}
+              </select></div>
+          )}
           <div><label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Tipo cocción</label>
             <select className="input" value={form.tipo_coccion} onChange={e => setForm(p => ({ ...p, tipo_coccion: e.target.value }))}>
               <option value="">— Seleccionar —</option>

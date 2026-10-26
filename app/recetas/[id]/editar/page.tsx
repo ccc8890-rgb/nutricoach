@@ -7,9 +7,8 @@ import { ArrowLeft, X, Search, Plus, Trash2, Upload } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import type { Alimento } from '@/types'
-import { CATEGORIAS, TIPOS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
-import { tipoRecetaTrasCambioCategoria } from '@/lib/recetas/tipo-receta'
-import { esCategoriaElaboracion } from '@/lib/recetas-constants'
+import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
+import { camposAlCambiarTipo, type TipoContenido } from '@/lib/recetas/clasificacion'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
@@ -55,6 +54,8 @@ export default function EditarRecetaPage() {
         instrucciones: '',
         consejos: '',
         categoria: '',
+        tipo: 'plato' as TipoContenido,
+        familia: '',
         tipo_plato: '',
         tipo_coccion: '',
         dificultad: '',
@@ -119,6 +120,8 @@ export default function EditarRecetaPage() {
                 instrucciones: receta.instrucciones ?? '',
                 consejos: receta.consejos ?? '',
                 categoria: receta.categoria ?? '',
+                tipo: (receta.tipo_contenido === 'elaboracion' ? 'elaboracion' : 'plato') as TipoContenido,
+                familia: receta.familia ?? '',
                 tipo_plato: receta.tipo_plato ?? '',
                 tipo_coccion: receta.tipo_coccion ?? '',
                 dificultad: receta.dificultad ?? '',
@@ -259,8 +262,8 @@ export default function EditarRecetaPage() {
         setImagenPreview(URL.createObjectURL(file))
     }
 
-    // Una receta es elaboración si ya lo era o si se le ha elegido una categoría de elaboración
-    const esElaboracion = tipoRecetaActual === 'salsa_base' || esCategoriaElaboracion(form.categoria)
+    // Una ficha es elaboración (masa, salsa, fondo…) cuando así se elige en «Tipo»
+    const esElaboracion = form.tipo === 'elaboracion'
 
     // Calcular macros totales por porción
     const macrosTotales = (() => {
@@ -321,10 +324,9 @@ export default function EditarRecetaPage() {
             descripcion: form.descripcion || null,
             instrucciones: form.instrucciones || null,
             consejos: form.consejos || null,
-            categoria: form.categoria || null,
             peso_final_g: form.peso_final_g.trim() ? parseFloat(form.peso_final_g) || null : null,
-            // Elegir Elaboración base/Salsa/Condimento la convierte en elaboración; sacarla de ahí la devuelve a plato
-            ...tipoRecetaTrasCambioCategoria({ nombre: form.nombre, categoria: form.categoria || null, kcal: macrosTotales?.kcal, proteinas: macrosTotales?.proteinas, tipoActual: tipoRecetaActual }),
+            // Tipo y familia: una elaboración lleva categoría «Elaboración» y la marca interna salsa_base; un plato conserva su momento del día
+            ...camposAlCambiarTipo({ nombre: form.nombre, tipo: form.tipo, familia: form.familia || null, categoria: form.categoria || null, kcal: macrosTotales?.kcal, proteinas: macrosTotales?.proteinas, tipoRecetaActual }),
             tipo_plato: form.tipo_plato || null,
             tipo_coccion: form.tipo_coccion || null,
             dificultad: form.dificultad || null,
@@ -490,12 +492,28 @@ export default function EditarRecetaPage() {
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label style={{ color: 'var(--text-secondary)' }}>Categoría</label>
-                                    <select className="input" value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}>
-                                        <option value="">— Seleccionar —</option>
-                                        {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+                                    <label style={{ color: 'var(--text-secondary)' }}>Tipo</label>
+                                    <select className="input" value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value as TipoContenido, familia: '' }))}>
+                                        <option value="plato">Plato</option>
+                                        <option value="elaboracion">Elaboración (masa, salsa, fondo…)</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Familia</label>
+                                    <select className="input" value={form.familia} onChange={e => setForm(p => ({ ...p, familia: e.target.value }))}>
+                                        <option value="">— Seleccionar —</option>
+                                        {(esElaboracion ? FAMILIAS_ELABORACION : FAMILIAS_PLATO).map(f => <option key={f} value={f}>{f}</option>)}
+                                    </select>
+                                </div>
+                                {!esElaboracion && (
+                                    <div>
+                                        <label style={{ color: 'var(--text-secondary)' }}>Categoría (cuándo se come)</label>
+                                        <select className="input" value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}>
+                                            <option value="">— Seleccionar —</option>
+                                            {CATEGORIAS_PLATO.filter(c => c !== 'Todos').map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </div>
+                                )}
                                 <div>
                                     <label style={{ color: 'var(--text-secondary)' }}>Tipo de plato</label>
                                     <select className="input" value={form.tipo_plato} onChange={e => setForm(p => ({ ...p, tipo_plato: e.target.value }))}>
