@@ -18,7 +18,7 @@ const set = (...w: string[]) => new Set(w)
 const FAMILIAS_CLAVE: [FamiliaElaboracion, Set<string>][] = [
   ['Panes y masas', set('pan', 'brioche', 'focaccia', 'masa', 'poolish', 'levain', 'prefermento')],
   ['Salsas', set('salsa', 'salsas', 'mayonesa', 'mayonesas', 'ajonesa', 'alioli', 'alino', 'vinagreta', 'chimichurri', 'pesto', 'hummus', 'guacamole',
-    'tahini', 'ketchup', 'aderezo', 'dressing', 'mostaza', 'hollandaise', 'holandesa', 'bechamel', 'veloute', 'bearnesa')],
+    'tahini', 'ketchup', 'aderezo', 'dressing', 'mostaza', 'sirope', 'hollandaise', 'holandesa', 'bechamel', 'veloute', 'bearnesa')],
   ['Condimentos y mezclas', set('mix', 'adobo', 'adobos', 'marinada', 'marinado', 'especias', 'sazonador', 'rub')],
   ['Fondos y caldos', set('fondo', 'caldo', 'demi', 'glace')],
   ['Grasas aromáticas', set('aceite', 'chili', 'oil')],
@@ -88,9 +88,9 @@ export function clasificarFicha(r: EntradaPlato): { tipo_contenido: TipoContenid
 export function camposAlCambiarTipo(r: { nombre: string; tipo: TipoContenido; familia: string | null; categoria: string | null; kcal?: number | null; proteinas?: number | null; tipoRecetaActual: string | null }): { tipo_contenido: TipoContenido; familia: string | null; categoria: string | null; tipo_receta: string | null } {
   if (r.tipo === 'elaboracion') return { tipo_contenido: 'elaboracion', familia: r.familia, categoria: 'Elaboración', tipo_receta: 'salsa_base' }
   const categoria = r.categoria === 'Elaboración' ? null : r.categoria
-  const tipo_receta = r.tipoRecetaActual === 'salsa_base'
-    ? inferirTipoReceta({ nombre: r.nombre, categoria, kcal: r.kcal, proteinas: r.proteinas })
-    : r.tipoRecetaActual
+  // Un plato nunca queda como salsa_base, aunque el nombre lo parezca («Chimichurri»): el planificador no lo usaría
+  const inferido = inferirTipoReceta({ nombre: r.nombre, categoria, kcal: r.kcal, proteinas: r.proteinas })
+  const tipo_receta = r.tipoRecetaActual === 'salsa_base' ? (inferido === 'salsa_base' ? 'completa' : inferido) : r.tipoRecetaActual
   return { tipo_contenido: 'plato', familia: r.familia, categoria, tipo_receta }
 }
 
@@ -116,7 +116,9 @@ export function migrarCategoriaAntigua(cat: string | null): { tipo: TipoVista; f
 /** Filtros efectivos del recetario a partir de la URL: tipo, momento del día (solo platos) y familia. */
 export function filtrosRecetarioDeUrl(p: { tipo: string | null; cat: string | null; fam: string | null; buscando: boolean }): { tipo: TipoVista; categoria: string; familia: string | null } {
   const antigua = !p.tipo ? migrarCategoriaAntigua(p.cat) : null
-  if (antigua) return { tipo: antigua.tipo, categoria: 'Todos', familia: antigua.familia }
-  const tipo = tipoEfectivo(p.tipo, p.buscando)
-  return { tipo, categoria: tipo === 'platos' ? (p.cat || 'Todos') : 'Todos', familia: p.fam || null }
+  if (antigua) return { tipo: antigua.tipo, categoria: 'Todos', familia: p.fam || antigua.familia }
+  // Buscar amplía a «todo» solo si no se había elegido nada (ni tipo, ni momento del día, ni familia): así no se pierden filtros
+  const sinElegir = (!p.cat || p.cat === 'Todos') && !p.fam
+  const tipo = tipoEfectivo(p.tipo, p.buscando && sinElegir)
+  return { tipo, categoria: tipo === 'platos' ? (p.cat || 'Todos') : 'Todos', familia: tipo === 'todo' ? null : (p.fam || null) }
 }

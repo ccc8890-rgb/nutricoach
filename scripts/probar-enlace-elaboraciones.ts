@@ -3,7 +3,7 @@
 import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 import assert from 'node:assert/strict'
-import { expandirIngredientes, expandirRecetas, recalcularMacrosReceta, propagarCambioElaboracion, enlaceCreaCiclo, ETIQUETA_REVISAR_ALERGENOS } from '../lib/recetas/elaboraciones-db'
+import { expandirIngredientes, expandirRecetas, recalcularMacrosReceta, propagarCambioElaboracion, enlaceCreaCiclo, nivelesAlEnlazar, ETIQUETA_REVISAR_ALERGENOS } from '../lib/recetas/elaboraciones-db'
 
 const env = Object.fromEntries(fs.readFileSync('.env.local', 'utf8').split('\n').filter(l => l.includes('=') && !l.startsWith('#')).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, '')] }))
 const db = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY) as any
@@ -54,6 +54,22 @@ async function main() {
     const [rx] = await expandirRecetas(db, recs)
     const gx = (id: string) => rx.receta_ingredientes.filter((f: any) => f.alimento_id === id).reduce((t: number, f: any) => t + f.cantidad_gramos, 0)
     assert.ok(rx.receta_ingredientes.every((f: any) => !f.elaboracion_id)); cerca(gx(A.id), 250, 0.01); cerca(gx(B.id), 75, 0.01); console.log('(f) expandirRecetas OK')
+
+    // (g) revisión independiente: una elaboración EN REVISIÓN sigue contando en las recetas que ya la llevan
+    await db.from('recetas').update({ estado: 'en_revision' }).eq('id', E)
+    const antes = Number((await db.from('recetas').select('kcal').eq('id', R).single()).data.kcal)
+    await recalcularMacrosReceta(db, R)
+    const despues = Number((await db.from('recetas').select('kcal').eq('id', R).single()).data.kcal)
+    cerca(despues, antes, 0.01); console.log('(g) elaboración en revisión sigue contando OK')
+
+    // (h) niveles: 1 con la elaboración suelta; 2 si lleva otra dentro; 3 si lleva otra dentro de esa
+    assert.equal(await nivelesAlEnlazar(db, [E]), 1)
+    const E2 = await nueva('ZZ-PRUEBA-ELAB2', { estado: 'aprobada', tipo_receta: 'salsa_base', categoria: 'Elaboración', tipo_plato: 'Comida' })
+    await lin(E, { elaboracion_id: E2, nombre_libre: 'ZZ-PRUEBA-ELAB2', cantidad_gramos: 10, orden: 5 })
+    assert.equal(await nivelesAlEnlazar(db, [E]), 2)
+    const E3 = await nueva('ZZ-PRUEBA-ELAB3', { estado: 'aprobada', tipo_receta: 'salsa_base', categoria: 'Elaboración', tipo_plato: 'Comida' })
+    await lin(E2, { elaboracion_id: E3, nombre_libre: 'ZZ-PRUEBA-ELAB3', cantidad_gramos: 10, orden: 0 })
+    assert.equal(await nivelesAlEnlazar(db, [E]), 3); console.log('(h) niveles OK')
 
     // (e) etiqueta
     assert.ok((rr.tags ?? []).includes(ETIQUETA_REVISAR_ALERGENOS)); console.log('(e) etiqueta OK')

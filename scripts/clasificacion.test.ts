@@ -61,6 +61,14 @@ assert.deepEqual(camposAlCambiarTipo({ nombre: 'Pollo al horno', tipo: 'plato', 
 assert.deepEqual(camposAlCambiarTipo({ nombre: 'Bowl', tipo: 'plato', familia: null, categoria: 'Comida', tipoRecetaActual: 'completa' }),
   { tipo_contenido: 'plato', familia: null, categoria: 'Comida', tipo_receta: 'completa' })
 
+// Revisión independiente: pasar una elaboración a plato nunca la deja como salsa_base (aunque el nombre lo parezca)
+for (const nombre of ['Chimichurri', 'Mix de especias barbacoa', 'Aceite de Cebollino', 'Mayonesa de camarón']) {
+  const r = camposAlCambiarTipo({ nombre, tipo: 'plato', familia: null, categoria: 'Comida', tipoRecetaActual: 'salsa_base' })
+  assert.notEqual(r.tipo_receta, 'salsa_base', nombre)
+  assert.equal(r.tipo_contenido, 'plato')
+}
+assert.equal(familiaElaboracion('Sirope de dátiles'), 'Salsas')
+
 // Vista
 assert.equal(tipoEfectivo('elaboraciones', true), 'elaboraciones')
 assert.equal(tipoEfectivo(null, true), 'todo')
@@ -83,6 +91,11 @@ assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: 'Cena', fam: 'Carnes',
 assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: null, fam: null, buscando: true }), { tipo: 'todo', categoria: 'Todos', familia: null })
 assert.deepEqual(filtrosRecetarioDeUrl({ tipo: 'elaboraciones', cat: 'Cena', fam: 'Salsas', buscando: false }), { tipo: 'elaboraciones', categoria: 'Todos', familia: 'Salsas' })
 assert.deepEqual(filtrosRecetarioDeUrl({ tipo: 'todo', cat: 'Cena', fam: null, buscando: false }), { tipo: 'todo', categoria: 'Todos', familia: null })
+// Revisión independiente: con texto de búsqueda no se pierden los filtros elegidos, y la familia no se queda oculta en «todo»
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: 'Desayuno', fam: null, buscando: true }), { tipo: 'platos', categoria: 'Desayuno', familia: null })
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: 'Todos', fam: 'Carnes', buscando: true }), { tipo: 'platos', categoria: 'Todos', familia: 'Carnes' })
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: 'todo', cat: 'Todos', fam: 'Carnes', buscando: true }), { tipo: 'todo', categoria: 'Todos', familia: null })
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: 'Salsa', fam: 'Fondos y caldos', buscando: false }), { tipo: 'elaboraciones', categoria: 'Todos', familia: 'Fondos y caldos' })
 assert.deepEqual([...CATEGORIAS_PLATO], ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre'])
 
 console.log('clasificacion.test OK')

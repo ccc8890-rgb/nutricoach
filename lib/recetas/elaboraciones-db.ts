@@ -10,7 +10,7 @@ export const ETIQUETA_REVISAR_ALERGENOS = 'Revisar alérgenos'
 
 type FilaElaboracion = { id: string; peso_final_g: number | null; receta_ingredientes: Linea[] | null }
 
-/** Carga elaboraciones aprobadas con sus líneas, y por niveles (máx. 2) las que estas contengan. */
+/** Carga elaboraciones (en cualquier estado salvo descartada: una en revisión sigue contando en las recetas que ya la llevan) con sus líneas, y por niveles (máx. 2) las que estas contengan. */
 export async function cargarElaboraciones(db: Db, ids: string[]): Promise<Map<string, Elaboracion>> {
   const mapa = new Map<string, Elaboracion>()
   let pendientes = [...new Set(ids)]
@@ -20,7 +20,7 @@ export async function cargarElaboraciones(db: Db, ids: string[]): Promise<Map<st
       .select(`id, peso_final_g, receta_ingredientes!receta_ingredientes_receta_id_fkey(${LINEAS})`)
       .in('id', pendientes)
       .eq('tipo_receta', 'salsa_base')
-      .eq('estado', 'aprobada')
+      .neq('estado', 'descartada')
     if (error) throw error
     const siguientes = new Set<string>()
     for (const r of (data ?? []) as unknown as FilaElaboracion[]) {
@@ -41,9 +41,15 @@ export async function expandirIngredientes<T extends Linea>(db: Db, filas: T[], 
   const ids = filas.filter(f => f.elaboracion_id).map(f => f.elaboracion_id as string)
   if (ids.length === 0) return filas
   const mapa = await cargarElaboraciones(db, ids)
-  const { lineas, sinResolver } = aplanarLineas(filas, mapa, { raiz })
-  if (sinResolver.length) console.warn('[elaboraciones] líneas sin resolver:', sinResolver.join(','))
-  return lineas as T[]
+  try {
+    const { lineas, sinResolver } = aplanarLineas(filas, mapa, { raiz })
+    if (sinResolver.length) console.warn('[elaboraciones] líneas sin resolver:', sinResolver.join(','))
+    return lineas as T[]
+  } catch (e) {
+    // Un ciclo (solo posible por una carrera entre dos guardados o por un script) no debe dar 500 en la compra o el escandallo
+    if (e instanceof CicloElaboracion) { console.warn('[elaboraciones] ciclo en', raiz ?? ids.join(',')); return filas }
+    throw e
+  }
 }
 
 /**
@@ -127,6 +133,17 @@ export async function enlaceCreaCiclo(db: Db, recetaId: string, elaboracionIds: 
     return false
   }
   return profundidadHasta(elaboracionIds, 0)
+}
+
+/** Niveles de elaboración que habría al enlazar estas dentro de una receta (1 = solo ellas; el máximo permitido es 2). */
+export async function nivelesAlEnlazar(db: Db, elaboracionIds: string[]): Promise<number> {
+  const mapa = await cargarElaboracionesSinFiltro(db, elaboracionIds)
+  const nivel = (id: string, vistos: string[]): number => {
+    if (vistos.includes(id)) return 1
+    const hijas = mapa.get(id) ?? []
+    return 1 + Math.max(0, ...hijas.map(h => nivel(h, [...vistos, id])))
+  }
+  return Math.max(0, ...elaboracionIds.map(id => nivel(id, [])))
 }
 
 // Para detectar ciclos no importa el estado de la elaboración: mapa id → ids de elaboraciones que contiene

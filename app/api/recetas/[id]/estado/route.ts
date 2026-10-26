@@ -4,6 +4,7 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 import { marcarFotoRevisada } from '@/lib/recetas/imagen-revision'
 import { quitarMarcasReporte } from '@/lib/recetas/reportes'
+import { propagarCambioElaboracion } from '@/lib/recetas/elaboraciones-db'
 
 export async function PATCH(
   req: NextRequest,
@@ -81,6 +82,9 @@ export async function PATCH(
       const { data: t } = await srvTags.from('recetas').select('tags').eq('id', id).maybeSingle()
       if (t?.tags?.some((x: string) => x === 'Corregir' || x === 'Reporte cliente')) await srvTags.from('recetas').update({ tags: quitarMarcasReporte(t.tags) }).eq('id', id)
     }
+
+    // Una elaboración que cambia de estado puede cambiar los macros de las recetas que la usan
+    if (estado === 'aprobada') await propagarCambioElaboracion(createServiceSupabase(), id).catch(() => null)
 
     // Aprobar sin verificar deja la receta fuera de los planes: se verifica si está completa
     const verif = estado === 'aprobada' ? await verificarRecetasCompletas(createServiceSupabase(), [id]).catch(() => null) : null
