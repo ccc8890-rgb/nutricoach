@@ -208,7 +208,15 @@ export default function DetalleRecetaPage() {
   async function borrar() {
     if (!confirm('¿Borrar esta receta? Esta acción no se puede deshacer.')) return
     setBorrando(true)
-    await supabase.from('recetas').delete().eq('id', id)
+    const { error } = await supabase.from('recetas').delete().eq('id', id)
+    if (error) {
+      setBorrando(false)
+      // 23503: otra receta la lleva como ingrediente (elaboración en uso)
+      alert(error.code === '23503'
+        ? 'Esta elaboración se usa en otras recetas: quítala de ellas primero.'
+        : 'No se pudo borrar la receta.')
+      return
+    }
     window.location.href = returnTo.startsWith('/') ? returnTo : '/recetas'
   }
 

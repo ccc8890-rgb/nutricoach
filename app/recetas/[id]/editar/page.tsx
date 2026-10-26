@@ -9,6 +9,7 @@ import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import type { Alimento } from '@/types'
 import { CATEGORIAS, TIPOS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
 import { tipoRecetaTrasCambioCategoria } from '@/lib/recetas/tipo-receta'
+import { esCategoriaElaboracion } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
@@ -24,6 +25,17 @@ interface Ingrediente {
     cantidad_original?: number | null
     unidad_display?: string | null
     alimento?: Alimento
+    /** Línea que es una elaboración (poolish, masa, salsa…) en vez de un alimento */
+    elaboracion_id?: string | null
+    elaboracion?: ElaboracionEnlazada
+}
+
+interface ElaboracionEnlazada {
+    id: string
+    nombre: string
+    categoria?: string | null
+    kcal100: number
+    macros100: { kcal: number; proteinas: number; carbohidratos: number; grasas: number; fibra: number }
 }
 
 export default function EditarRecetaPage() {
@@ -49,6 +61,7 @@ export default function EditarRecetaPage() {
         tiempo_prep_min: '',
         tiempo_coccion_min: '',
         url_origen: '',
+        peso_final_g: '',
     })
     const [intolerancias, setIntolerancias] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
@@ -77,6 +90,7 @@ export default function EditarRecetaPage() {
     const [buscadorAbierto, setBuscadorAbierto] = useState<string | null>(null)
     const [queryAlimento, setQueryAlimento] = useState('')
     const [resultados, setResultados] = useState<Alimento[]>([])
+    const [resultadosElab, setResultadosElab] = useState<ElaboracionEnlazada[]>([])
     const [buscando, setBuscando] = useState(false)
 
     const [guardando, setGuardando] = useState(false)
@@ -111,6 +125,7 @@ export default function EditarRecetaPage() {
                 tiempo_prep_min: receta.tiempo_prep_min ? String(receta.tiempo_prep_min) : '',
                 tiempo_coccion_min: receta.tiempo_coccion_min ? String(receta.tiempo_coccion_min) : '',
                 url_origen: receta.url_origen ?? '',
+                peso_final_g: receta.peso_final_g ? String(receta.peso_final_g) : '',
             })
 
             setIntolerancias(receta.intolerancias ?? [])
@@ -133,9 +148,20 @@ export default function EditarRecetaPage() {
             setImagenExistente(receta.imagen_url ?? '')
             setImagenUrlExterna(receta.imagen_url ?? '')
 
+            // Datos de las elaboraciones ya enlazadas (nombre y macros por 100 g)
+            const idsElab = [...new Set((ingRes.data ?? []).map(i => i.elaboracion_id).filter(Boolean))] as string[]
+            let enlazadas: ElaboracionEnlazada[] = []
+            if (idsElab.length > 0) {
+                try {
+                    const r = await fetch(`/api/recetas/elaboraciones?ids=${idsElab.join(',')}`)
+                    if (r.ok) enlazadas = (await r.json()).elaboraciones ?? []
+                } catch { /* sin datos: la línea se ve sin kcal */ }
+            }
             setIngredientes((ingRes.data ?? []).map(ing => ({
                 id: ing.id,
                 tempId: crypto.randomUUID(),
+                elaboracion_id: ing.elaboracion_id ?? null,
+                elaboracion: enlazadas.find(e => e.id === ing.elaboracion_id),
                 alimento_id: ing.alimento_id,
                 nombre_libre: ing.nombre_libre ?? ing.alimento?.nombre ?? '',
                 cantidad_gramos: ing.cantidad_gramos,
@@ -151,24 +177,25 @@ export default function EditarRecetaPage() {
 
     // Búsqueda de alimentos via API (service_role bypass RLS)
     useEffect(() => {
-        if (!queryAlimento || queryAlimento.length < 2) { setResultados([]); return }
+        if (!queryAlimento || queryAlimento.length < 2) { setResultados([]); setResultadosElab([]); return }
         setBuscando(true)
         const timer = setTimeout(async () => {
             try {
-                const res = await fetch(`/api/alimentos?q=${encodeURIComponent(queryAlimento)}&custom=all`)
-                if (res.ok) {
-                    const data = await res.json()
-                    setResultados(data ?? [])
-                } else {
-                    setResultados([])
-                }
+                const [res, resElab] = await Promise.all([
+                    fetch(`/api/alimentos?q=${encodeURIComponent(queryAlimento)}&custom=all`),
+                    fetch(`/api/recetas/elaboraciones?q=${encodeURIComponent(queryAlimento)}`),
+                ])
+                setResultados(res.ok ? (await res.json()) ?? [] : [])
+                // No se puede enlazar una receta dentro de sí misma
+                setResultadosElab(resElab.ok ? ((await resElab.json()).elaboraciones ?? []).filter((e: ElaboracionEnlazada) => e.id !== id) : [])
             } catch {
                 setResultados([])
+                setResultadosElab([])
             }
             setBuscando(false)
         }, 300)
         return () => clearTimeout(timer)
-    }, [queryAlimento])
+    }, [queryAlimento, id])
 
     function añadirIngredienteLibre() {
         setIngredientes(prev => [...prev, {
@@ -181,12 +208,24 @@ export default function EditarRecetaPage() {
 
     function vincularAlimento(tempId: string, alimento: Alimento) {
         setIngredientes(prev => prev.map(i => i.tempId === tempId
-            ? { ...i, alimento_id: alimento.id, nombre_libre: alimento.nombre, alimento }
+            ? { ...i, alimento_id: alimento.id, nombre_libre: alimento.nombre, alimento, elaboracion_id: null, elaboracion: undefined }
             : i
         ))
         setBuscadorAbierto(null)
         setQueryAlimento('')
         setResultados([])
+        setResultadosElab([])
+    }
+
+    function vincularElaboracion(tempId: string, e: ElaboracionEnlazada) {
+        setIngredientes(prev => prev.map(i => i.tempId === tempId
+            ? { ...i, alimento_id: null, alimento: undefined, nombre_libre: e.nombre, elaboracion_id: e.id, elaboracion: e }
+            : i
+        ))
+        setBuscadorAbierto(null)
+        setQueryAlimento('')
+        setResultados([])
+        setResultadosElab([])
     }
 
     function actualizarIngrediente(tempId: string, campo: 'nombre_libre' | 'cantidad_gramos' | 'cantidad_original' | 'unidad_display', valor: string | number | null) {
@@ -210,14 +249,22 @@ export default function EditarRecetaPage() {
         setImagenPreview(URL.createObjectURL(file))
     }
 
+    // Una receta es elaboración si ya lo era o si se le ha elegido una categoría de elaboración
+    const esElaboracion = tipoRecetaActual === 'salsa_base' || esCategoriaElaboracion(form.categoria)
+
     // Calcular macros totales por porción
     const macrosTotales = (() => {
         const porcion = parseInt(form.porciones) || 1
-        const ingConAlimento = ingredientes.filter(i => i.alimento)
+        // Una línea cuenta con los macros de su alimento o, si es una elaboración, con los suyos por 100 g
+        const macrosBase = (i: Ingrediente) => i.elaboracion
+            ? { calorias: i.elaboracion.macros100.kcal, proteinas: i.elaboracion.macros100.proteinas, carbohidratos: i.elaboracion.macros100.carbohidratos, grasas: i.elaboracion.macros100.grasas, fibra: i.elaboracion.macros100.fibra }
+            : i.alimento ? { calorias: i.alimento.calorias, proteinas: i.alimento.proteinas, carbohidratos: i.alimento.carbohidratos, grasas: i.alimento.grasas, fibra: i.alimento.fibra ?? 0 } : null
+        const ingConAlimento = ingredientes.filter(i => macrosBase(i))
         if (ingConAlimento.length === 0) return null
-        const total = sumarMacros(ingConAlimento.map(i =>
-            calcularMacrosPorCantidad(i.alimento!.calorias, i.alimento!.proteinas, i.alimento!.carbohidratos, i.alimento!.grasas, i.alimento!.fibra ?? 0, i.cantidad_gramos)
-        ))
+        const total = sumarMacros(ingConAlimento.map(i => {
+            const m = macrosBase(i)!
+            return calcularMacrosPorCantidad(m.calorias, m.proteinas, m.carbohidratos, m.grasas, m.fibra, i.cantidad_gramos)
+        }))
         return {
             kcal: total.calorias / porcion,
             proteinas: total.proteinas / porcion,
@@ -230,6 +277,18 @@ export default function EditarRecetaPage() {
     async function guardar() {
         if (!form.nombre.trim()) return
         setGuardando(true)
+
+        // Enlazar elaboraciones: comprobar antes de guardar que no se crea un ciclo (A dentro de B y B dentro de A)
+        const idsElab = [...new Set(ingredientes.map(i => i.elaboracion_id).filter(Boolean))] as string[]
+        if (idsElab.length > 0) {
+            const val = await fetch(`/api/recetas/${id}/enlaces`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ elaboracion_ids: idsElab }) }).catch(() => null)
+            if (!val || !val.ok) {
+                const msg = val ? (await val.json().catch(() => null))?.error : null
+                addToast({ type: 'error', title: 'No se puede enlazar', message: msg ?? 'No se pudo comprobar el enlace de elaboraciones' })
+                setGuardando(false)
+                return
+            }
+        }
 
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { setGuardando(false); addToast({ type: 'error', title: 'Error', message: 'No autenticado' }); return }
@@ -253,6 +312,7 @@ export default function EditarRecetaPage() {
             instrucciones: form.instrucciones || null,
             consejos: form.consejos || null,
             categoria: form.categoria || null,
+            peso_final_g: form.peso_final_g.trim() ? parseFloat(form.peso_final_g) || null : null,
             // Elegir Elaboración base/Salsa/Condimento la convierte en elaboración; sacarla de ahí la devuelve a plato
             ...tipoRecetaTrasCambioCategoria({ nombre: form.nombre, categoria: form.categoria || null, kcal: macrosTotales?.kcal, proteinas: macrosTotales?.proteinas, tipoActual: tipoRecetaActual }),
             tipo_plato: form.tipo_plato || null,
@@ -302,7 +362,8 @@ export default function EditarRecetaPage() {
             const ing = ingredientes[idx]
             const { error: ingErr } = ing.id
                 ? await supabase.from('receta_ingredientes').update({
-                    alimento_id: ing.alimento_id || null,
+                    alimento_id: ing.elaboracion_id ? null : ing.alimento_id || null,
+                    elaboracion_id: ing.elaboracion_id || null,
                     nombre_libre: ing.nombre_libre || null,
                     cantidad_gramos: ing.cantidad_gramos,
                     cantidad_original: ing.unidad_display?.trim() ? ing.cantidad_original : null,
@@ -311,7 +372,8 @@ export default function EditarRecetaPage() {
                 }).eq('id', ing.id)
                 : await supabase.from('receta_ingredientes').insert({
                     receta_id: id,
-                    alimento_id: ing.alimento_id || null,
+                    alimento_id: ing.elaboracion_id ? null : ing.alimento_id || null,
+                    elaboracion_id: ing.elaboracion_id || null,
                     nombre_libre: ing.nombre_libre || null,
                     cantidad_gramos: ing.cantidad_gramos,
                     cantidad_original: ing.unidad_display?.trim() ? ing.cantidad_original : null,
@@ -319,6 +381,12 @@ export default function EditarRecetaPage() {
                     orden: idx,
                 })
             if (ingErr) addToast({ type: 'error', title: 'Error', message: 'Error al guardar ingrediente: ' + ingErr.message })
+        }
+
+        // Con elaboraciones enlazadas, o si esta receta ES una elaboración, los macros se recalculan en servidor (y en las recetas que la usan)
+        if (idsElab.length > 0 || esElaboracion) {
+            const rec = await fetch(`/api/recetas/${id}/recalcular`, { method: 'POST' }).catch(() => null)
+            if (!rec || !rec.ok) addToast({ type: 'error', title: 'Macros', message: 'Se guardó, pero no se pudieron recalcular los macros de las recetas que usan esta elaboración' })
         }
 
         addToast({ type: 'success', title: 'Guardado', message: 'Receta actualizada correctamente' })
@@ -441,6 +509,12 @@ export default function EditarRecetaPage() {
                                     <label style={{ color: 'var(--text-secondary)' }}>Porciones</label>
                                     <input type="number" min={1} className="input" value={form.porciones} onChange={e => setForm(p => ({ ...p, porciones: e.target.value }))} />
                                 </div>
+                                {esElaboracion && (
+                                    <div>
+                                        <label style={{ color: 'var(--text-secondary)' }}>Peso final (g)</label>
+                                        <input type="number" min={1} className="input" placeholder="Suma de ingredientes" title="Peso del producto terminado: una masa pierde agua al cocinar. Vacío = suma de los ingredientes" value={form.peso_final_g} onChange={e => setForm(p => ({ ...p, peso_final_g: e.target.value }))} />
+                                    </div>
+                                )}
                                 <div>
                                     <label style={{ color: 'var(--text-secondary)' }}>Qué es una porción</label>
                                     <input className="input" placeholder="Ej: 1 galleta, 2 tacos, 1 rebanada" value={form.descripcion_porcion} onChange={e => setForm(p => ({ ...p, descripcion_porcion: e.target.value }))} />
@@ -530,7 +604,7 @@ export default function EditarRecetaPage() {
                                 </button>
                             </div>
 
-                            {ingredientes.some(i => !i.alimento) && (
+                            {ingredientes.some(i => !i.alimento && !i.elaboracion_id) && (
                                 <p className="text-xs mb-3 px-3 py-2 rounded-lg" style={{ color: 'var(--warning)', backgroundColor: 'var(--warning-bg)' }}>
                                     Los ingredientes en naranja no están vinculados a la base de datos. Pulsa sobre ellos para buscarlos manualmente.
                                 </p>
@@ -561,9 +635,18 @@ export default function EditarRecetaPage() {
                                                                 <X size={13} />
                                                             </button>
                                                         </div>
-                                                        {(resultados.length > 0 || buscando) && (
+                                                        {(resultados.length > 0 || resultadosElab.length > 0 || buscando) && (
                                                             <div className="absolute z-10 left-0 right-0 mt-1 rounded-lg max-h-40 overflow-y-auto" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                                                                 {buscando && <p className="px-3 py-2 text-xs" style={{ color: 'var(--text-muted)' }}>Buscando…</p>}
+                                                                {resultadosElab.map(e => (
+                                                                    <button key={e.id} onClick={() => vincularElaboracion(ing.tempId, e)}
+                                                                        className="w-full text-left px-3 py-2 text-xs border-b last:border-0"
+                                                                        style={{ borderColor: 'var(--border)' }}>
+                                                                        <span className="font-medium" style={{ color: 'var(--text)' }}>{e.nombre}</span>
+                                                                        <span className="ml-1 uppercase tracking-wide" style={{ color: 'var(--text-muted)', fontSize: 10 }}>Elaboración</span>
+                                                                        <span className="ml-1" style={{ color: 'var(--text-muted)' }}>{e.kcal100} kcal/100g</span>
+                                                                    </button>
+                                                                ))}
                                                                 {resultados.map(a => (
                                                                     <button key={a.id} onClick={() => vincularAlimento(ing.tempId, a)}
                                                                         className="w-full text-left px-3 py-2 text-xs border-b last:border-0"
@@ -581,8 +664,8 @@ export default function EditarRecetaPage() {
                                                         className="w-full text-left text-sm truncate"
                                                     >
                                                         {ing.nombre_libre ? (
-                                                            <span className={ing.alimento ? 'font-medium' : 'underline decoration-dotted'}
-                                                                style={{ color: ing.alimento ? 'var(--text)' : 'var(--warning)' }}>
+                                                            <span className={ing.alimento || ing.elaboracion_id ? 'font-medium' : 'underline decoration-dotted'}
+                                                                style={{ color: ing.alimento || ing.elaboracion_id ? 'var(--text)' : 'var(--warning)' }}>
                                                                 {ing.nombre_libre}
                                                             </span>
                                                         ) : (
@@ -627,9 +710,9 @@ export default function EditarRecetaPage() {
                                             </div>
 
                                             {/* Macros si vinculado y tiene cantidad */}
-                                            {ing.alimento && ing.cantidad_gramos > 0 && (
+                                            {(ing.alimento || ing.elaboracion) && ing.cantidad_gramos > 0 && (
                                                 <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
-                                                    {Math.round(ing.alimento.calorias * ing.cantidad_gramos / 100)} kcal
+                                                    {Math.round((ing.elaboracion ? ing.elaboracion.kcal100 : ing.alimento!.calorias) * ing.cantidad_gramos / 100)} kcal
                                                 </span>
                                             )}
 
