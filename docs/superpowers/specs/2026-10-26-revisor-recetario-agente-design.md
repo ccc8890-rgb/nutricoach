@@ -16,7 +16,7 @@ Carlos mete fichas constantemente (reels de Content Radar, webs, a mano) y todas
 
 ## No objetivos
 
-- No aprueba solo en las primeras fases (la aprobación sigue siendo de Carlos).
+- No aprueba solo en las primeras fases (la aprobación sigue siendo de Carlos, que además revisa dos veces).
 - No toca fichas ya aprobadas salvo petición explícita.
 - No genera recetas nuevas ni fotos, ni reescribe el texto de las recetas (solo señala y sugiere).
 - No sustituye al control de calidad determinista existente (`profesional.ts`, bloqueantes): lo complementa.
@@ -29,6 +29,25 @@ Carlos mete fichas constantemente (reels de Content Radar, webs, a mano) y todas
 - Que se fíe de lo que dice el modelo sin validarlo: toda salida se valida con esquema y reglas del proyecto antes de usarse.
 
 ## Diseño
+
+### Flujo en dos revisiones (decisión de Carlos, 26-10-2026)
+
+Carlos revisa **dos veces** cada ficha y el agente trabaja entre medias, para tener todo ordenado y ver cómo evoluciona:
+
+```
+Nueva ──(1ª revisión de Carlos: «Pasar al agente»)──▶ Con el agente
+   ▲                                                      │  cada X horas (o «Revisar ahora»)
+   │                                                      ▼
+   └────────(«Devolver al agente», con nota)──── 2ª revisión de Carlos ──▶ Aprobada / Descartada
+```
+
+- **Nueva** (`fase_revision='nueva'`, por defecto): la cola de hoy, la que Carlos ve primero. En su primera pasada puede aprobar directamente (si es evidente), descartar, o **«Pasar al agente»**.
+- **Con el agente** (`'en_agente'`): esperando turno. El agente las toma cada X horas (propuesta: 6 h) o al pulsar «Revisar ahora»; deja su veredicto, aplica las correcciones seguras y las pasa a `'segunda'`.
+- **2ª revisión** (`'segunda'`): Carlos ve el veredicto del agente y los hallazgos y decide: **Aprobar**, **Descartar** o **Devolver al agente** con una nota (vuelve a `'en_agente'`; el agente la tendrá en cuenta).
+- Una ficha aprobada o descartada sale del circuito (`fase_revision` nulo).
+- **Evolución visible:** cada ficha guarda su historial (nueva → al agente → veredicto del agente → correcciones aplicadas → devuelta/aprobada), con fechas, y se ve como una línea de tiempo corta en la tarjeta y en la ficha.
+- **Orden:** en la barra del recetario, las pestañas son `Biblioteca · Por revisar (nuevas) · Con el agente · 2ª revisión · Ampliar`, cada una con su contador. «Por revisar» ya no mezcla fichas en estados distintos.
+- Las 51 fichas actuales empiezan en `'nueva'`.
 
 ### Qué revisa (por ficha)
 
@@ -55,11 +74,13 @@ Validación antes de usar nada: esquema estricto, `familia` dentro de las listas
 
 ### Dónde se guarda
 
+Columna `recetas.fase_revision` (`'nueva'|'en_agente'|'segunda'`, nula fuera del circuito; solo tiene sentido con `estado='en_revision'`) y la tabla de revisiones del agente:
+
 Tabla nueva `revisiones_agente`: `id, receta_id, modelo, tokens_entrada, tokens_salida, veredicto, confianza, resumen, hallazgos (jsonb), correcciones (jsonb), aplicadas (jsonb), hash_ficha, decision_coach (null | 'aprobada' | 'descartada' | 'corregida'), created_at`. `hash_ficha` es un hash del contenido revisado: si no cambia, no se vuelve a revisar. `decision_coach` se rellena cuando Carlos aprueba o descarta la ficha (en la ruta de cambio de estado), y de ahí sale el **porcentaje de acuerdo**.
 
 ### Interfaz
 
-En la cola «Por revisar», cada ficha muestra una línea del agente: «Agente: lista» / «Agente: revisar (3)» con los hallazgos desplegables y un botón «Aplicar correcciones sugeridas» cuando haya. Un ajuste de filtro «Solo las que el agente da por listas» para aprobar rápido. Una tarjeta de resumen (acuerdo con Carlos, coste acumulado) en Ajustes → Estado del sistema.
+Las pestañas del flujo (arriba). En «2ª revisión» y en las tarjetas de las demás, cada ficha muestra una línea del agente: «Agente: lista» / «Agente: revisar (3)» con los hallazgos desplegables y un botón «Aplicar correcciones sugeridas» cuando haya. Un filtro «Solo las que el agente da por listas» en «2ª revisión» para aprobar rápido, y la acción «Devolver al agente». Un botón «Revisar ahora» en «Con el agente». Una tarjeta de resumen (acuerdo con Carlos, coste acumulado) en Ajustes → Estado del sistema.
 
 ### Modelos y coste
 
@@ -67,10 +88,14 @@ En la cola «Por revisar», cada ficha muestra una línea del agente: «Agente: 
 - El enrutador ya devuelve los tokens usados; se guardan por ficha. **Tope por ejecución y por día** (`--presupuesto`, por defecto 1 €/día, configurable); al llegar al tope se detiene y avisa. Si falta saldo, avisa y reintenta en la siguiente pasada (patrón de `corregir-marcadas.mjs`).
 - Estimación (mía, a verificar con las 10 primeras): 0,01-0,05 € por ficha con Sonnet o GPT, ≈ 0,5-2,5 € para las 51 de hoy, y menos de 0,5 €/día en régimen normal.
 
+### Cuándo se ejecuta
+
+Ruta de cron en Vercel (`/api/cron/revisor-recetas`, p. ej. cada 6 horas, protegida con `CRON_SECRET` y registrada en «Estado del sistema» con `registrarCron`), para que funcione aunque el Mac esté apagado (la pasada local de launchd no sirve para esto). Procesa fichas `en_agente` por orden de antigüedad hasta agotar el tiempo (300 s) o el presupuesto. «Revisar ahora» llama a la misma lógica para un lote pequeño. La frecuencia se cambia en `vercel.json`.
+
 ### Fases (por prioridad)
 
-1. **Núcleo:** tabla, revisor sobre la ficha en BD, validación, script bajo demanda (`revisar-cola.ts --limite=10`), informe en la cola. Se prueba con 10 fichas y se mide coste y acierto.
-2. **Automático:** enganchar a la pasada de 6 h para fichas nuevas en revisión (con presupuesto), correcciones seguras aplicadas, métrica de acuerdo con Carlos.
+1. **Núcleo y flujo:** `fase_revision` y las pestañas del flujo («Pasar al agente», «Devolver al agente»), tabla de revisiones, revisor sobre la ficha en BD, validación, «Revisar ahora» y script bajo demanda (`revisar-cola.ts --limite=10`), línea de tiempo de la ficha. Se prueba con 10 fichas y se mide coste y acierto.
+2. **Automático:** cron en Vercel cada X horas (con presupuesto), correcciones seguras aplicadas, métrica de acuerdo con Carlos.
 3. **Contraste con la fuente:** guardar en el origen (Content Radar) el texto del reel/web (pie, transcripción) en `recetas.fuente_texto` y dárselo al revisor para cazar cantidades e ingredientes inventados; fotogramas solo bajo demanda (más caro).
 4. **Autonomía gradual:** aprobación automática de fichas `lista` con confianza alta solo cuando el acuerdo con Carlos sea ≥ 90 % en al menos 30 fichas, siempre reversible y con rastro.
 
@@ -81,6 +106,8 @@ En la cola «Por revisar», cada ficha muestra una línea del agente: «Agente: 
 3. Tope de 1 €/día por defecto.
 4. La autonomía sube por métricas de acuerdo, no por fecha.
 5. Solo clasificación se aplica sola; todo lo demás es sugerencia.
+6. Cada 6 horas por defecto, en la nube (cron de Vercel), con «Revisar ahora» manual.
+7. El historial de cada ficha se compone con la tabla de revisiones y los eventos que ya guarda `recetas_auditoria`.
 
 ## Pendiente del builder
 
