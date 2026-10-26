@@ -55,6 +55,7 @@ export async function GET(request: NextRequest) {
             .from('recetas')
             .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min, score_calidad, verificacion, recipe_intelligence_score, macro_flex_score, planning_roles, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score')
             .eq('estado', 'aprobada')
+            .neq('tipo_contenido', 'elaboracion') // las elaboraciones (masas, salsas…) no son platos
             .order('kcal', { ascending: true })
             .limit(extraFilters?.excludeIds ? limite * 2 : limite * 4)
 

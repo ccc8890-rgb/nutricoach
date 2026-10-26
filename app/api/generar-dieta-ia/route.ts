@@ -97,6 +97,7 @@ export async function POST(request: Request) {
             .select('id, nombre, categoria, kcal, proteinas, carbohidratos, grasas, fibra')
             .or(`coach_id.eq.${user.id},coach_id.is.null`)
             .eq('estado', 'aprobada')
+            .neq('tipo_contenido', 'elaboracion') // las elaboraciones (masas, salsas…) no son platos
 
         if (!recetas || recetas.length < 5) {
             await actualizarEstadoError(respuesta_cliente_id, 'Recetas insuficientes (mín. 5)')

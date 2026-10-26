@@ -65,7 +65,7 @@ async function main() {
   }
 
   if (!apply) { console.log('\nsimulación; usa --apply'); return }
-  fs.writeFileSync('salidas/26-10-2026_BACKUP-clasificar-recetario.json', JSON.stringify(cambios.map(c => ({ id: c.fila.id, tipo_contenido: c.fila.tipo_contenido, familia: c.fila.familia, categoria: c.fila.categoria, tipo_receta: c.fila.tipo_receta }))))
+  fs.writeFileSync(`salidas/${new Date().toISOString().replace(/[:.]/g, '-')}_BACKUP-clasificar-recetario.json`, JSON.stringify(cambios.map(c => ({ id: c.fila.id, tipo_contenido: c.fila.tipo_contenido, familia: c.fila.familia, categoria: c.fila.categoria, tipo_receta: c.fila.tipo_receta }))))
   let n = 0
   for (const c of cambios) {
     const { error } = await sb.from('recetas').update(c.nuevo).eq('id', c.fila.id)

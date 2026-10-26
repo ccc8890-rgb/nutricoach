@@ -52,7 +52,11 @@ export async function GET(
 
     // El vídeo original solo se muestra a los clientes a los que el coach se lo ha activado
     const { data: ajuste } = await supabase.from('clientes').select('ver_video_recetas').eq('id', plan.cliente_id).maybeSingle()
-    const receta = ajuste?.ver_video_recetas ? recetaRes.data : { ...recetaRes.data, url_origen: null }
+    // Campos internos del coach (notas, calidad, clínico, scraping…) no salen al cliente
+    const INTERNOS = ['notas_coach', 'notas_clinicas', 'raw_scrape', 'quality_issues', 'quality_estado_sugerido', 'quality_actualizado_at', 'score_calidad_detalle', 'revisado_clinico',
+      'clasificacion_manual', 'recipe_intelligence_detail', 'recipe_intelligence_flags', 'imagen_prompt_base', 'imagen_review_notes', 'imagen_reviewed_by', 'coach_id', 'cliente_id', 'notion_id', 'similar_ids']
+    const publica = Object.fromEntries(Object.entries(recetaRes.data).filter(([k]) => !INTERNOS.includes(k)))
+    const receta = ajuste?.ver_video_recetas ? publica : { ...publica, url_origen: null }
 
     // "Tu ración": la comida del plan que lleva esta receta (indicada en el enlace o la de hoy)
     const comidaPlan = elegirComida((plan.comidas ?? []) as { id: string; nombre: string; dia_semana: string | null; receta_id: string | null }[], recetaId, new URL(request.url).searchParams.get('comida'))

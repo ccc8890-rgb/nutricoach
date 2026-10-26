@@ -9,7 +9,7 @@ import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { BotonFavorita } from './BotonFavorita'
 import { MagnifyingGlass, ForkKnife, X, Rows, SquaresFour, CaretDown, Check } from '@phosphor-icons/react'
 import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, APTA_PARA, ALERGENOS_NEGATIVOS, nombreSin } from '@/lib/recetas-constants'
-import { filtrosRecetarioDeUrl, type TipoVista } from '@/lib/recetas/clasificacion'
+import { filtrosRecetarioDeUrl, migrarCategoriaAntigua, type TipoVista } from '@/lib/recetas/clasificacion'
 
 // Mismos filtros y nombres que la Biblioteca del coach
 const TIPOS: { id: TipoVista; etiqueta: string }[] = [{ id: 'platos', etiqueta: 'Platos' }, { id: 'elaboraciones', etiqueta: 'Elaboraciones' }, { id: 'todo', etiqueta: 'Todo' }]
@@ -106,6 +106,12 @@ export default function RecetarioExplorador({
   // Tipo de ficha (platos / elaboraciones / todo), «cuándo se come» (solo platos) y familia de cocinero
   const { tipo, categoria, familia } = filtrosRecetarioDeUrl({ tipo: tipoUrl, cat: catUrl, fam: famUrl, buscando: q.trim().length > 0 })
   function cambiarTipo(t: TipoVista) { setTipoUrl(t); setCatUrl('Todos'); setFamUrl(null) }
+  // Enlaces antiguos (?cat=Salsa…): se reescriben al formato nuevo para que los chips funcionen con normalidad
+  useEffect(() => {
+    const antigua = !tipoUrl ? migrarCategoriaAntigua(catUrl) : null
+    if (antigua) { setTipoUrl(antigua.tipo); setFamUrl(famUrl || antigua.familia); setCatUrl('Todos') }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [usoF, setUsoF] = useEstadoUrl<string | null>('uso', null)
   const [aptaP, setAptaP] = useEstadoUrl<string | null>('apta', null)
   const [sinP, setSinP] = useEstadoUrl<string | null>('sin', null)

@@ -1,3 +1,4 @@
+import { agruparPorAlimento, type Linea } from '@/lib/recetas/elaboraciones'
 import { expandirRecetas } from '@/lib/recetas/elaboraciones-db'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { calcularGramajeAjustado } from '@/lib/ingredient-roles'
@@ -144,8 +145,11 @@ export async function aplicarRecetaAComida(
 
   // Las elaboraciones enlazadas (masa, salsa…) entran en la comida como sus ingredientes base
   const [recetaExpandida] = await expandirRecetas(db, [receta])
-  const ingredientesRaw = ((recetaExpandida.receta_ingredientes ?? []) as unknown as RecetaIngredienteRow[])
+  const ingredientesOrdenados = ((recetaExpandida.receta_ingredientes ?? []) as unknown as RecetaIngredienteRow[])
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+  // Con elaboraciones, la misma harina (la propia + la de la masa) sale en una sola línea de la comida
+  const llevaElaboraciones = ((receta.receta_ingredientes ?? []) as unknown as { elaboracion_id?: string | null }[]).some(l => l.elaboracion_id)
+  const ingredientesRaw = llevaElaboraciones ? (agruparPorAlimento(ingredientesOrdenados as unknown as Linea[]) as unknown as RecetaIngredienteRow[]) : ingredientesOrdenados
 
   const porciones = Math.max(1, Number(receta.porciones ?? 1))
   // Las cantidades de receta_ingredientes son de la receta ENTERA (porciones raciones). Todo el escalado

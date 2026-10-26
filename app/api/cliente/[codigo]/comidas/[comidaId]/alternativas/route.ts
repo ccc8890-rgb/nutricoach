@@ -62,6 +62,7 @@ export async function GET(
       .from('recetas')
       .select('id, kcal, proteinas, intolerancias, tipo_plato, verificacion')
       .eq('estado', 'aprobada')
+      .neq('tipo_contenido', 'elaboracion') // las elaboraciones (masas, salsas…) no son platos
       .in('tipo_plato', tiposPermitidos.length ? tiposPermitidos : ['Comida', 'Cena', 'Desayuno', 'Merienda', 'Snack', 'Postre'])
       .gt('kcal', 0)
       .limit(120)

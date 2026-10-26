@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, recetaLibreDe, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
-import { filtrosRecetarioDeUrl, visibleEnTipo, type TipoVista } from '@/lib/recetas/clasificacion'
+import { filtrosRecetarioDeUrl, migrarCategoriaAntigua, visibleEnTipo, type TipoVista } from '@/lib/recetas/clasificacion'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
@@ -157,6 +157,12 @@ export default function RecetasPage() {
   // Tipo de ficha (platos / elaboraciones / todo), «cuándo se come» (solo platos) y familia de cocinero
   const { tipo, categoria, familia } = filtrosRecetarioDeUrl({ tipo: tipoUrl, cat: catUrl, fam: famUrl, buscando: busqueda.trim().length > 0 })
   const cambiarTipo = (t: TipoVista) => { setTipoUrl(t); setCategoria('Todos'); setFamUrl(null); setTagFilter(null) }
+  // Enlaces antiguos (?cat=Salsa…): se reescriben al formato nuevo
+  useEffect(() => {
+    const antigua = !tipoUrl ? migrarCategoriaAntigua(catUrl) : null
+    if (antigua) { setTipoUrl(antigua.tipo); setFamUrl(famUrl || antigua.familia); setCategoria('Todos') }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [loading, setLoading] = useState(true)
   useRestaurarScroll(!loading)
   const [showSearchDrop, setShowSearchDrop] = useState(false)
@@ -219,9 +225,9 @@ export default function RecetasPage() {
         r.nombre.toLowerCase().includes(tagLower)
       )
       // Cuando hay sub-tag activo, el tag es la clasificación real → ignorar categoría principal
-      const matchCategoria = tagFilter !== null || (visibleEnTipo(r, tipo)
-        && (tipo !== 'platos' || categoria === 'Todos' || r.categoria === categoria)
-        && (!familia || r.familia === familia))
+      const matchCategoria = visibleEnTipo(r, tipo)
+        && (tagFilter !== null || ((tipo !== 'platos' || categoria === 'Todos' || r.categoria === categoria)
+          && (!familia || r.familia === familia)))
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
       // Las aparcadas (sin fuente real) solo se ven con el enfoque «Aparcadas»
       const esAparcada = Array.isArray(r.tags) && r.tags.includes('Aparcada')

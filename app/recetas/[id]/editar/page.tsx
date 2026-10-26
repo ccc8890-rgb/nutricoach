@@ -99,6 +99,7 @@ export default function EditarRecetaPage() {
     const [guardando, setGuardando] = useState(false)
     const [estadoReceta, setEstadoReceta] = useState('')
     const [tipoRecetaActual, setTipoRecetaActual] = useState<string | null>(null)
+    const [tipoOriginal, setTipoOriginal] = useState<TipoContenido>('plato')
     const [reportando, setReportando] = useState(false)
 
     // Cargar datos existentes
@@ -113,6 +114,7 @@ export default function EditarRecetaPage() {
             if (!receta) return
             setEstadoReceta(receta.estado ?? '')
             setTipoRecetaActual(receta.tipo_receta ?? null)
+            setTipoOriginal(receta.tipo_contenido === 'elaboracion' ? 'elaboracion' : 'plato')
 
             setForm({
                 nombre: receta.nombre ?? '',
@@ -298,6 +300,16 @@ export default function EditarRecetaPage() {
             if (!val || !val.ok) {
                 const msg = val ? (await val.json().catch(() => null))?.error : null
                 addToast({ type: 'error', title: 'No se puede enlazar', message: msg ?? 'No se pudo comprobar el enlace de elaboraciones' })
+                setGuardando(false)
+                return
+            }
+        }
+
+        // Una elaboración en uso no puede pasar a plato: las recetas que la llevan perderían sus ingredientes
+        if (tipoOriginal === 'elaboracion' && form.tipo === 'plato') {
+            const { count } = await supabase.from('receta_ingredientes').select('id', { count: 'exact', head: true }).eq('elaboracion_id', id)
+            if (count && count > 0) {
+                addToast({ type: 'error', title: 'No se puede convertir en plato', message: `Esta elaboración se usa en ${count} ${count === 1 ? 'línea de receta' : 'líneas de receta'}: quítala de ellas primero.` })
                 setGuardando(false)
                 return
             }
@@ -518,7 +530,7 @@ export default function EditarRecetaPage() {
                                     <label style={{ color: 'var(--text-secondary)' }}>Tipo de plato</label>
                                     <select className="input" value={form.tipo_plato} onChange={e => setForm(p => ({ ...p, tipo_plato: e.target.value }))}>
                                         <option value="">— Seleccionar —</option>
-                                        {TIPOS_PLATO.map(t => <option key={t} value={t}>{t}</option>)}
+                                        {TIPOS_PLATO.filter(t => t !== 'Salsa' && t !== 'Acompañamiento').map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
                                 </div>
                                 <div>
