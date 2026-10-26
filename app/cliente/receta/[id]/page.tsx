@@ -42,6 +42,7 @@ interface RecetaDetalle {
 interface IngredienteConAlimento {
   id: string
   nombre_libre?: string | null
+  elaboracion_id?: string | null
   cantidad_gramos: number
   cantidad_original?: number | null
   unidad_display?: string | null
@@ -101,6 +102,8 @@ export default function RecetaClientePage() {
         opcional: Boolean(ing.es_opcional),
         cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
         grupo: ing.grupo ?? null,
+        // Elaboración enlazada (masa, salsa…): el nombre abre su preparación
+        href: ing.elaboracion_id ? `/cliente/receta/${ing.elaboracion_id}` : undefined,
       }))
   const ingredientesFormato = ordenarPorFases(ingredientesBase, parsePasos(receta?.instrucciones))
   const cantidadesDistintas = racion

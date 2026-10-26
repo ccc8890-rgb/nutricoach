@@ -60,6 +60,7 @@ interface IngredienteConAlimento {
   receta_id: string
   alimento_id?: string | null
   nombre_libre?: string | null
+  elaboracion_id?: string | null
   cantidad_gramos: number
   cantidad_original?: number | null
   unidad_display?: string | null
@@ -108,6 +109,9 @@ export default function DetalleRecetaPage() {
   const clienteCodigo = isClientView ? returnPath.split('/').filter(Boolean)[1] : null
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
+  // Elaboraciones enlazadas: kcal por 100 g para cada línea, y (si esta receta es una elaboración) dónde se usa
+  const [kcalElaboracion, setKcalElaboracion] = useState<Record<string, number>>({})
+  const [seUsaEn, setSeUsaEn] = useState<{ id: string; nombre: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [borrando, setBorrando] = useState(false)
   const [accionando, setAccionando] = useState(false)
@@ -186,6 +190,21 @@ export default function DetalleRecetaPage() {
       ])
       setReceta(recetaRes.data)
       setIngredientes(ingRes.data ?? [])
+      const idsElab = [...new Set((ingRes.data ?? []).map((i: IngredienteConAlimento) => i.elaboracion_id).filter(Boolean))] as string[]
+      if (idsElab.length > 0) {
+        fetch(`/api/recetas/elaboraciones?ids=${idsElab.join(',')}`).then(r => r.ok ? r.json() : null).then(j => {
+          if (j?.elaboraciones) setKcalElaboracion(Object.fromEntries(j.elaboraciones.map((e: { id: string; kcal100: number }) => [e.id, e.kcal100])))
+        }).catch(() => {})
+      }
+      if (recetaRes.data?.tipo_receta === 'salsa_base') {
+        const { data: usos } = await supabase.from('receta_ingredientes').select('receta:recetas!receta_ingredientes_receta_id_fkey(id, nombre)').eq('elaboracion_id', id)
+        const unicas = new Map<string, string>()
+        for (const u of (usos ?? []) as unknown as { receta: { id: string; nombre: string } | { id: string; nombre: string }[] | null }[]) {
+          const r = Array.isArray(u.receta) ? u.receta[0] : u.receta
+          if (r) unicas.set(r.id, r.nombre)
+        }
+        setSeUsaEn([...unicas].map(([rid, nombre]) => ({ id: rid, nombre })))
+      }
       setLoading(false)
     }
     load()
@@ -300,7 +319,9 @@ export default function DetalleRecetaPage() {
     cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
     kcal: ing.alimento ? Math.round(calcularMacrosPorCantidad(
       ing.alimento.calorias, ing.alimento.proteinas, ing.alimento.carbohidratos, ing.alimento.grasas, ing.alimento.fibra ?? 0, ing.cantidad_gramos
-    ).calorias * factorVista) : undefined,
+    ).calorias * factorVista) : (ing.elaboracion_id && kcalElaboracion[ing.elaboracion_id] !== undefined
+      ? Math.round(kcalElaboracion[ing.elaboracion_id] * ing.cantidad_gramos / 100 * factorVista) : undefined),
+    href: ing.elaboracion_id ? `/recetas/${ing.elaboracion_id}?returnTo=${encodeURIComponent(`/recetas/${id}`)}` : undefined,
   })), parsePasos(r.instrucciones ?? receta.instrucciones))
 
   // Pasos para StepByStep: si se cambian las raciones, las cantidades escritas en los pasos ya no valen
@@ -603,6 +624,14 @@ export default function DetalleRecetaPage() {
                 }}
               >
                 <IngredientChecklist ingredientes={checklistItems} sinCabecera={pasos.length > 0} />
+                {seUsaEn.length > 0 && (
+                  <p className="text-[11px] mt-4" style={{ color: 'var(--text-muted)' }}>
+                    <span className="uppercase tracking-[0.14em]" style={{ fontFamily: 'var(--font-mono, monospace)' }}>Se usa en</span>{' '}
+                    {seUsaEn.map((u, i) => (
+                      <span key={u.id}>{i > 0 && ' · '}<Link href={`/recetas/${u.id}`} className="underline decoration-dotted underline-offset-4">{u.nombre}</Link></span>
+                    ))}
+                  </p>
+                )}
                 {nVista !== porcionesReceta && (
                   <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
                     Cantidades recalculadas para {nVista} {nVista === 1 ? 'ración' : 'raciones'}; los pasos van sin cantidades.

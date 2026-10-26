@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { FaseTitulo } from './FaseTitulo'
 
 interface IngredientItem {
@@ -10,6 +11,8 @@ interface IngredientItem {
     grupo?: string | null
     /** «Al gusto»: sin cantidad ni kcal, en gris */
     opcional?: boolean
+    /** Elaboración enlazada (masa, salsa…): el nombre abre su ficha */
+    href?: string
     kcal?: number
     proteinas?: number
     carbohidratos?: number
@@ -61,6 +64,11 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
                         </span>
                         <span className="text-lg font-medium leading-snug" style={{ color: ing.opcional ? 'var(--text-muted)' : 'var(--text)' }}>
                             {ing.nombre}{ing.opcional && <span className="ml-2 text-sm font-normal">(opcional)</span>}
+                            {ing.href && (
+                                <Link href={ing.href} prefetch={false} className="ml-2 align-middle text-[11px] font-normal uppercase tracking-[0.14em] underline decoration-dotted underline-offset-4" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono, monospace)' }}>
+                                    ver preparación
+                                </Link>
+                            )}
                         </span>
                         {!ing.opcional && ing.kcal !== undefined && (
                             <span className="text-sm tabular-nums whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
