@@ -4,7 +4,7 @@ import { autorizarCoach } from '@/lib/contenido/auth'
 const MAX_SALSAS = 4
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// Salsas que combinan con una receta («Va bien con…»). Solo coach.
+// Salsas que combinan con una receta («Va bien con…»). Solo coach. Solo categoría «Salsa»: los condimentos (especias, aceites) y las elaboraciones base (poolish) también son `salsa_base` pero no son salsas.
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await autorizarCoach(request)
   if ('error' in auth) return auth.error
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const [{ data: enlaces }, { data: disponibles }] = await Promise.all([
     auth.admin.from('receta_salsas').select('salsa_id, orden').eq('receta_id', id).order('orden'),
-    auth.admin.from('recetas').select('id, nombre, kcal').eq('estado', 'aprobada').eq('tipo_receta', 'salsa_base').neq('id', id).order('nombre'),
+    auth.admin.from('recetas').select('id, nombre, kcal').eq('estado', 'aprobada').eq('tipo_receta', 'salsa_base').eq('categoria', 'Salsa').neq('id', id).order('nombre'),
   ])
   const porId = new Map((disponibles ?? []).map(s => [s.id, s]))
   const vinculadas = (enlaces ?? []).map(e => porId.get(e.salsa_id)).filter((s): s is NonNullable<typeof s> => Boolean(s))
@@ -32,7 +32,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (ids.includes(id)) return NextResponse.json({ error: 'Una receta no puede ser su propia salsa' }, { status: 400 })
 
   if (ids.length > 0) {
-    const { data: validas } = await auth.admin.from('recetas').select('id').in('id', ids).eq('estado', 'aprobada').eq('tipo_receta', 'salsa_base')
+    const { data: validas } = await auth.admin.from('recetas').select('id').in('id', ids).eq('estado', 'aprobada').eq('tipo_receta', 'salsa_base').eq('categoria', 'Salsa')
     if ((validas ?? []).length !== ids.length) return NextResponse.json({ error: 'Solo se pueden enlazar salsas aprobadas' }, { status: 400 })
   }
 
