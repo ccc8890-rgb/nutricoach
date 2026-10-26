@@ -47,6 +47,7 @@ interface RecetaDb {
 interface IngredienteDb {
   id: string
   alimento_id: string | null
+  elaboracion_id?: string | null
   nombre_libre: string | null
   cantidad_gramos: number | null
   es_opcional?: boolean | null
@@ -79,9 +80,11 @@ function toInput(receta: RecetaDb, ingredientes: IngredienteDb[], conPrecio: Set
       const alimento = Array.isArray(i.alimentos) ? i.alimentos[0] : i.alimentos
       return {
         alimento_id: i.alimento_id,
+        elaboracion_id: i.elaboracion_id ?? null,
         nombre_libre: i.nombre_libre,
         cantidad_gramos: i.cantidad_gramos,
-        tiene_precio: i.alimento_id ? conPrecio.has(i.alimento_id) : false,
+        // Una elaboración enlazada no tiene precio propio: su coste sale de sus ingredientes base
+        tiene_precio: i.elaboracion_id ? true : i.alimento_id ? conPrecio.has(i.alimento_id) : false,
         nombre_alimento: alimento?.nombre ?? null,
         kcal_alimento: alimento?.calorias ?? null,
       }
@@ -109,7 +112,7 @@ export async function auditarRecetaProfesional(
       .single(),
     srv
       .from('receta_ingredientes')
-      .select('id, alimento_id, nombre_libre, cantidad_gramos, es_opcional, alimentos!left(nombre, calorias)')
+      .select('id, alimento_id, elaboracion_id, nombre_libre, cantidad_gramos, es_opcional, alimentos!left(nombre, calorias)')
       .eq('receta_id', recetaId),
   ])
 

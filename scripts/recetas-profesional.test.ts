@@ -372,5 +372,12 @@ assert.equal(gazpacho.alcohol_culinario, false)
 const lentejas = clasificarRecetaProfesional({ nombre: 'Lentejas estofadas con verduras y arroz', categoria: 'Comida', kcal: 612, proteinas: 28, grasas: 12, instrucciones: 'Añade pimentón dulce y batata dulce', ingredientes: [{ nombre_libre: 'Lentejas' }] })
 assert.notEqual(lentejas.nivel_fit, 'indulgente')
 assert.equal(clasificarRecetaProfesional({ nombre: 'Peras al vino tinto', categoria: 'Postre', kcal: 145, ingredientes: [{ nombre_libre: 'Vino tinto' }] }).alcohol_culinario, true)
+// Una línea que es una elaboración enlazada no se considera «sin alimento»
+{
+  const conElab = calcularScoreCalidadReceta({ ...base, ingredientes: [...(base.ingredientes ?? []), { alimento_id: null, elaboracion_id: 'masa', nombre_libre: 'Masa de pizza', cantidad_gramos: 250, tiene_precio: true }] })
+  assert.ok(!conElab.bloqueantes.includes('ingredientes_sin_alimento'))
+  const sinElab = calcularScoreCalidadReceta({ ...base, ingredientes: [...(base.ingredientes ?? []), { alimento_id: null, nombre_libre: 'Masa de pizza', cantidad_gramos: 250 }] })
+  assert.ok(sinElab.bloqueantes.includes('ingredientes_sin_alimento'))
+}
 console.log('profesional: falsos positivos OK')
 assert.equal(clasificarRecetaProfesional({ nombre: 'Muesli casero', categoria: 'Desayuno', kcal: 246, ingredientes: [{ nombre_libre: 'Pasas moscatel sin semillas' }] }).alcohol_culinario, false)

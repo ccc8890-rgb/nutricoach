@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 export type RecetaParaVerificar = {
   instrucciones: string | null; tipo_plato: string | null; intolerancias: string[] | null; tiempo_prep_min: number | null
-  receta_ingredientes: { alimento_id: string | null; rol_ingrediente: string | null }[] | null
+  receta_ingredientes: { alimento_id: string | null; elaboracion_id?: string | null; rol_ingrediente: string | null }[] | null
 }
 
 /** Motivos por los que una receta aprobada todavía no es de confianza (vacío = completa; la foto no se exige). */
@@ -13,8 +13,8 @@ export function motivosIncompleta(r: RecetaParaVerificar): string[] {
   return [
     (!r.instrucciones || r.instrucciones.length < 80) && 'instrucciones',
     ings.length < 3 && '<3 ingredientes',
-    ings.some(i => !i.alimento_id) && 'ingrediente sin vincular',
-    ings.some(i => !i.rol_ingrediente) && 'ingrediente sin rol',
+    ings.some(i => !i.alimento_id && !i.elaboracion_id) && 'ingrediente sin vincular',
+    ings.some(i => !i.rol_ingrediente && !i.elaboracion_id) && 'ingrediente sin rol',
     !r.tipo_plato && 'sin franja',
     !(r.intolerancias ?? []).length && 'sin etiquetas',
     !r.tiempo_prep_min && 'sin tiempo',
@@ -25,7 +25,7 @@ export function motivosIncompleta(r: RecetaParaVerificar): string[] {
 export async function verificarRecetasCompletas(db: SupabaseClient, ids: string[]): Promise<{ verificadas: number; incompletas: { id: string; motivos: string[] }[] }> {
   if (ids.length === 0) return { verificadas: 0, incompletas: [] }
   const { data, error } = await db.from('recetas')
-    .select('id, instrucciones, tipo_plato, intolerancias, tiempo_prep_min, verificacion, receta_ingredientes!receta_ingredientes_receta_id_fkey(alimento_id, rol_ingrediente)')
+    .select('id, instrucciones, tipo_plato, intolerancias, tiempo_prep_min, verificacion, receta_ingredientes!receta_ingredientes_receta_id_fkey(alimento_id, elaboracion_id, rol_ingrediente)')
     .in('id', ids).eq('estado', 'aprobada')
   if (error) throw error
   const completas: string[] = []

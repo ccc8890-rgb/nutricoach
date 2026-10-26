@@ -11,6 +11,8 @@ export type BandaCalidad = 'excelente' | 'buena' | 'revisar' | 'bloqueada'
 
 export interface IngredienteProfesionalInput {
   alimento_id?: string | null
+  /** Línea que es una elaboración enlazada (masa, salsa…): cuenta como vinculada */
+  elaboracion_id?: string | null
   nombre_libre?: string | null
   cantidad_gramos?: number | null
   tiene_precio?: boolean
@@ -380,9 +382,9 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
   const detalles0: Record<string, string[]> = {}
 
   if (ingredientes.length === 0) bloqueantes.push('sin_ingredientes')
-  if (ingredientes.some(i => !i.alimento_id)) {
+  if (ingredientes.some(i => !i.alimento_id && !i.elaboracion_id)) {
     bloqueantes.push('ingredientes_sin_alimento')
-    ;(detalles0.ingredientes_sin_alimento ??= []).push(...ingredientes.filter(i => !i.alimento_id).map(i => `«${i.nombre_libre}» sin alimento enlazado`))
+    ;(detalles0.ingredientes_sin_alimento ??= []).push(...ingredientes.filter(i => !i.alimento_id && !i.elaboracion_id).map(i => `«${i.nombre_libre}» sin alimento enlazado`))
   }
   if (ingredientes.some(i => n(i.cantidad_gramos) <= 0)) bloqueantes.push('cantidades_invalidas')
   if (!receta.porciones || receta.porciones <= 0) bloqueantes.push('porciones_invalidas')

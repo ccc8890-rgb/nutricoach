@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const ings = ingredientes || []
     if (ings.length < 3) issues.push(issue('aviso', 'pocos_ingredientes', `Solo tiene ${ings.length} ingrediente${ings.length === 1 ? '' : 's'}.`))
 
-    const sinAlimento = ings.filter(i => !i.alimento_id)
+    const sinAlimento = ings.filter(i => !i.alimento_id && !i.elaboracion_id)
     if (sinAlimento.length > 0) issues.push(issue('bloqueante', 'ingredientes_sin_alimento', `${sinAlimento.length} ingrediente${sinAlimento.length === 1 ? '' : 's'} sin alimento vinculado.`))
 
     const cantidadInvalida = ings.filter(i => !Number.isFinite(Number(i.cantidad_gramos)) || Number(i.cantidad_gramos) <= 0)

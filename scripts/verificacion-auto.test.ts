@@ -13,4 +13,7 @@ assert.deepEqual(motivosIncompleta({ ...buena, receta_ingredientes: [ing(), ing(
 assert.deepEqual(motivosIncompleta({ ...buena, receta_ingredientes: [ing(), ing('a', null), ing()] }), ['ingrediente sin rol'])
 assert.deepEqual(motivosIncompleta({ ...buena, tipo_plato: null, intolerancias: [], tiempo_prep_min: null }), ['sin franja', 'sin etiquetas', 'sin tiempo'])
 assert.deepEqual(motivosIncompleta({ ...buena, receta_ingredientes: null, instrucciones: null }).includes('<3 ingredientes'), true)
+// Una elaboración enlazada (masa, salsa…) cuenta como ingrediente vinculado y con rol
+const elab = { alimento_id: null, elaboracion_id: 'e1', rol_ingrediente: null }
+assert.deepEqual(motivosIncompleta({ ...buena, receta_ingredientes: [ing(), ing(), elab] }), [])
 console.log('verificacion-auto: OK')
