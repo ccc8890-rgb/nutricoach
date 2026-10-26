@@ -2,7 +2,7 @@
 // Las cantidades de una receta son de la receta ENTERA; las de una elaboración, de la elaboración entera.
 
 export type AlimentoMacros = {
-  id?: string; nombre?: string
+  id?: string; nombre?: string; categoria?: string | null; es_generico?: boolean | null
   calorias: number; proteinas: number; carbohidratos: number; grasas: number; fibra?: number | null
 }
 
@@ -14,6 +14,8 @@ export type Linea = {
   cantidad_gramos: number
   orden?: number | null
   es_opcional?: boolean | null
+  rol_ingrediente?: string | null
+  es_cantidad_fija?: boolean | null
   alimento?: AlimentoMacros | null
 }
 
@@ -98,4 +100,17 @@ export function macrosPorRacion(lineasPlanas: Linea[], porciones: number): Macro
   const t = sumar(lineasPlanas)
   const p = Math.max(1, Number(porciones) || 1)
   return { kcal: r1(t.kcal / p), proteinas: r1(t.proteinas / p), carbohidratos: r1(t.carbohidratos / p), grasas: r1(t.grasas / p), fibra: r1(t.fibra / p) }
+}
+
+/** Suma los gramos de las líneas con el mismo alimento (tras aplanar, harina propia + harina de la masa = una sola línea). */
+export function agruparPorAlimento(lineas: Linea[]): Linea[] {
+  const porAlimento = new Map<string, Linea>()
+  const salida: Linea[] = []
+  for (const l of lineas) {
+    if (!l.alimento_id) { salida.push(l); continue }
+    const previa = porAlimento.get(l.alimento_id)
+    if (previa) previa.cantidad_gramos += Number(l.cantidad_gramos) || 0
+    else { const copia = { ...l, cantidad_gramos: Number(l.cantidad_gramos) || 0 }; porAlimento.set(l.alimento_id, copia); salida.push(copia) }
+  }
+  return salida
 }

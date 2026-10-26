@@ -1,5 +1,6 @@
 // Semanas futuras de un plan: planificación del coach (tabla comidas_planificadas), sin efecto en el
 // cliente hasta que se activa la semana. semana = 1 es la próxima respecto a la semana en curso.
+import { expandirRecetas } from '@/lib/recetas/elaboraciones-db'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DIAS_SEMANA } from './comidas-dia'
 import { materializarComidasRecurrentes } from './materializar-comidas'
@@ -45,10 +46,10 @@ async function cargarIngredientesRecetas(db: SupabaseClient, ids: string[]) {
   const ingredientes = new Map<string, IngredienteRecetaCargado[]>()
   if (ids.length === 0) return ingredientes
   const { data, error } = await db.from('recetas')
-    .select('id, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, alimento:alimentos(id, nombre, categoria, es_generico, calorias, proteinas, carbohidratos, grasas))')
+    .select('id, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(elaboracion_id, cantidad_gramos, rol_ingrediente, es_cantidad_fija, alimento:alimentos(id, nombre, categoria, es_generico, calorias, proteinas, carbohidratos, grasas))')
     .in('id', ids)
   if (error) throw new Error('No se pudieron leer los ingredientes de las recetas')
-  for (const r of (data ?? []) as unknown as { id: string; porciones: number | null; receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; alimento: { id: string; nombre: string; categoria: string | null; es_generico: boolean | null; calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[] }[]) {
+  for (const r of (await expandirRecetas(db, data ?? [])) as unknown as { id: string; porciones: number | null; receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; alimento: { id: string; nombre: string; categoria: string | null; es_generico: boolean | null; calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[] }[]) {
     ingredientes.set(r.id, r.receta_ingredientes.filter(i => i.alimento && Number(i.cantidad_gramos) > 0).map(i => ({
       alimento_id: i.alimento!.id, alimento_nombre: i.alimento!.nombre, categoria: i.alimento!.categoria ?? 'Otros', es_generico: i.alimento!.es_generico ?? false,
       rol: i.rol_ingrediente, gramos: Number(i.cantidad_gramos) / Math.max(1, Number(r.porciones ?? 1)), fija: i.es_cantidad_fija === true,

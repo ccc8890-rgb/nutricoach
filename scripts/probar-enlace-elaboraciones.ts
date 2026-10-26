@@ -3,7 +3,7 @@
 import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 import assert from 'node:assert/strict'
-import { expandirIngredientes, recalcularMacrosReceta, propagarCambioElaboracion, enlaceCreaCiclo, ETIQUETA_REVISAR_ALERGENOS } from '../lib/recetas/elaboraciones-db'
+import { expandirIngredientes, expandirRecetas, recalcularMacrosReceta, propagarCambioElaboracion, enlaceCreaCiclo, ETIQUETA_REVISAR_ALERGENOS } from '../lib/recetas/elaboraciones-db'
 
 const env = Object.fromEntries(fs.readFileSync('.env.local', 'utf8').split('\n').filter(l => l.includes('=') && !l.startsWith('#')).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, '')] }))
 const db = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY) as any
@@ -48,6 +48,12 @@ async function main() {
     assert.ok(planas.every((f: any) => !f.elaboracion_id) && planas.length === 3, `líneas ${planas.length}`)
     const g = (id: string) => planas.filter((f: any) => f.alimento_id === id).reduce((s: number, f: any) => s + f.cantidad_gramos, 0)
     cerca(g(A.id), 250, 0.01); cerca(g(B.id), 75, 0.01); console.log('(d) expandir OK')
+
+    // (f) bloque: expandirRecetas (compra, detalle del día, planificador…) deja una sola línea por alimento base tras agrupar
+    const { data: recs } = await db.from('recetas').select('id, receta_ingredientes!receta_ingredientes_receta_id_fkey(alimento_id, elaboracion_id, cantidad_gramos, alimento:alimentos(id, nombre))').in('id', [R])
+    const [rx] = await expandirRecetas(db, recs)
+    const gx = (id: string) => rx.receta_ingredientes.filter((f: any) => f.alimento_id === id).reduce((t: number, f: any) => t + f.cantidad_gramos, 0)
+    assert.ok(rx.receta_ingredientes.every((f: any) => !f.elaboracion_id)); cerca(gx(A.id), 250, 0.01); cerca(gx(B.id), 75, 0.01); console.log('(f) expandirRecetas OK')
 
     // (e) etiqueta
     assert.ok((rr.tags ?? []).includes(ETIQUETA_REVISAR_ALERGENOS)); console.log('(e) etiqueta OK')

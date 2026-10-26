@@ -1,6 +1,7 @@
 // Postre / complemento de una comida: alimentos sueltos (fruta, yogur…) o una receta (postre) añadidos
 // fuera de la receta principal. Se guardan como ingredientes de la comida (es_complemento) para que
 // cuenten en los macros de la comida, el día y la semana en todo lo que lee comida_alimentos.
+import { expandirRecetas } from '@/lib/recetas/elaboraciones-db'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DIAS_SEMANA } from './comidas-dia'
 import { materializarComidasRecurrentes } from './materializar-comidas'
@@ -55,11 +56,12 @@ export async function anadirComplemento(
     if (error) throw new Error('No se pudo añadir el complemento')
   } else {
     const { data: receta } = await db.from('recetas')
-      .select('id, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(alimento_id, cantidad_gramos)')
+      .select('id, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(alimento_id, elaboracion_id, cantidad_gramos)')
       .eq('id', p.receta_id!).eq('estado', 'aprobada').maybeSingle()
     if (!receta) throw new Error('Receta no encontrada o no aprobada')
     const porciones = Math.max(1, Number(receta.porciones ?? 1))
-    const filas = ((receta.receta_ingredientes ?? []) as { alimento_id: string | null; cantidad_gramos: number | null }[])
+    const [recetaExpandida] = await expandirRecetas(db, [receta])
+    const filas = ((recetaExpandida.receta_ingredientes ?? []) as { alimento_id: string | null; cantidad_gramos: number | null }[])
       .filter(i => i.alimento_id && Number(i.cantidad_gramos) > 0)
       // Una ración del postre: las cantidades de la receta están en total
       .map(i => ({ comida_id: comida!.id, alimento_id: i.alimento_id, cantidad_gramos: Math.max(1, Math.round(Number(i.cantidad_gramos) / porciones)), es_complemento: true, complemento_receta_id: receta.id }))

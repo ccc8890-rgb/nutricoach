@@ -8,6 +8,8 @@
  * - Mejor opción de supermercado (menor coste total)
  */
 
+import { expandirIngredientes } from '@/lib/recetas/elaboraciones-db'
+import { agruparPorAlimento, type Linea } from '@/lib/recetas/elaboraciones'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
@@ -43,11 +45,16 @@ export async function GET(request: NextRequest) {
         const porciones = receta.porciones || 1
 
         // 2. Ingredientes con su alimento_id
-        const { data: ingredientes } = await srv
+        const { data: ingredientesRaw } = await srv
             .from('receta_ingredientes')
-            .select('alimento_id, cantidad_gramos, alimentos(id, nombre, categoria)')
+            .select('alimento_id, elaboracion_id, cantidad_gramos, alimento:alimentos(id, nombre, categoria)')
             .eq('receta_id', recetaId)
             .gt('cantidad_gramos', 0)
+
+        // Las elaboraciones enlazadas se cuestan por sus ingredientes base (harina propia + harina de la masa = una línea)
+        const conElaboraciones = (ingredientesRaw ?? []).some(i => i.elaboracion_id)
+        const expandidas = ingredientesRaw && conElaboraciones ? agruparPorAlimento(await expandirIngredientes(srv, ingredientesRaw as unknown as Linea[], recetaId)) : ingredientesRaw
+        const ingredientes = expandidas?.map(i => ({ ...i, alimentos: (i as { alimento?: unknown }).alimento })) as { alimento_id: string; cantidad_gramos: number; alimentos: unknown }[] | undefined
 
         if (!ingredientes || ingredientes.length === 0) {
             return NextResponse.json({

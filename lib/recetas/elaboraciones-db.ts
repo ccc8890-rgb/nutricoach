@@ -1,11 +1,11 @@
 // Elaboraciones como ingrediente: carga, expansión y recálculo en servidor (cliente Supabase de servicio).
 import type { createServiceSupabase } from '@/lib/supabase-server'
-import { aplanarLineas, macrosPorRacion, type Elaboracion, type Linea } from './elaboraciones'
+import { aplanarLineas, macrosPorRacion, CicloElaboracion, type Elaboracion, type Linea } from './elaboraciones'
 
 type Db = ReturnType<typeof createServiceSupabase>
 
 const PROFUNDIDAD = 2
-const LINEAS = 'id, alimento_id, elaboracion_id, nombre_libre, cantidad_gramos, orden, es_opcional, alimento:alimentos(id, nombre, calorias, proteinas, carbohidratos, grasas, fibra)'
+const LINEAS = 'id, alimento_id, elaboracion_id, nombre_libre, cantidad_gramos, orden, es_opcional, rol_ingrediente, es_cantidad_fija, alimento:alimentos(id, nombre, categoria, es_generico, calorias, proteinas, carbohidratos, grasas, fibra)'
 export const ETIQUETA_REVISAR_ALERGENOS = 'Revisar alérgenos'
 
 type FilaElaboracion = { id: string; peso_final_g: number | null; receta_ingredientes: Linea[] | null }
@@ -44,6 +44,29 @@ export async function expandirIngredientes<T extends Linea>(db: Db, filas: T[], 
   const { lineas, sinResolver } = aplanarLineas(filas, mapa, { raiz })
   if (sinResolver.length) console.warn('[elaboraciones] líneas sin resolver:', sinResolver.join(','))
   return lineas as T[]
+}
+
+/**
+ * Variante en bloque para lectores que cargan muchas recetas con su `receta_ingredientes`: sustituye en cada una las líneas
+ * de elaboración por sus ingredientes base (una sola carga de elaboraciones para todas). Una receta con ciclo se deja como está.
+ */
+export async function expandirRecetas<R extends { id?: string; receta_ingredientes?: unknown }>(db: Db, recetas: R[]): Promise<R[]> {
+  const lineasDe = (r: R) => (Array.isArray(r.receta_ingredientes) ? r.receta_ingredientes : []) as Linea[]
+  const ids = [...new Set(recetas.flatMap(r => lineasDe(r).filter(l => l.elaboracion_id).map(l => l.elaboracion_id as string)))]
+  if (ids.length === 0) return recetas
+  const mapa = await cargarElaboraciones(db, ids)
+  return recetas.map(r => {
+    const ls = lineasDe(r)
+    if (!ls.some(l => l.elaboracion_id)) return r
+    try {
+      const { lineas, sinResolver } = aplanarLineas(ls, mapa, { raiz: r.id })
+      if (sinResolver.length) console.warn('[elaboraciones] líneas sin resolver:', sinResolver.join(','))
+      return { ...r, receta_ingredientes: lineas }
+    } catch (e) {
+      if (e instanceof CicloElaboracion) return r
+      throw e
+    }
+  })
 }
 
 /** Recalcula kcal y macros por ración de una receta contando sus elaboraciones; marca «Revisar alérgenos» si las lleva. */

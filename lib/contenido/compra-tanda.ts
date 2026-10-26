@@ -1,3 +1,4 @@
+import { expandirRecetas } from '@/lib/recetas/elaboraciones-db'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { agregarIngredientes, type FuenteIngrediente } from '@/lib/lista-compra/agregar'
 
@@ -21,11 +22,11 @@ const redondear = (n: number) => Math.round(n * 100) / 100
 export async function compraDeTanda(db: SupabaseClient, recetaIds: string[]): Promise<{ lineas: LineaCompraTanda[]; costeEstimado: number }> {
   if (recetaIds.length === 0) return { lineas: [], costeEstimado: 0 }
   const { data, error } = await db.from('recetas')
-    .select('id, nombre, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, alimento:alimentos(id, nombre, categoria, es_generico))')
+    .select('id, nombre, receta_ingredientes!receta_ingredientes_receta_id_fkey(elaboracion_id, cantidad_gramos, alimento:alimentos(id, nombre, categoria, es_generico))')
     .in('id', recetaIds)
   if (error) throw new Error('No se pudieron leer los ingredientes de la tanda')
 
-  const fuentes: FuenteIngrediente[] = ((data ?? []) as unknown as FilaReceta[]).flatMap(r =>
+  const fuentes: FuenteIngrediente[] = ((await expandirRecetas(db, data ?? [])) as unknown as FilaReceta[]).flatMap(r =>
     r.receta_ingredientes.flatMap(i => i.alimento && Number(i.cantidad_gramos) > 0 ? [{
       alimento_id: i.alimento.id, alimento_nombre: i.alimento.nombre, categoria: i.alimento.categoria ?? 'Otros',
       es_generico: i.alimento.es_generico ?? false, cantidad_gramos: Number(i.cantidad_gramos), receta_nombre: r.nombre,

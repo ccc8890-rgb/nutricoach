@@ -1,6 +1,7 @@
 // Detalle de un día de la dieta: cada comida con su receta, ingredientes y macros.
 // Semana en curso = comidas reales; semana futura = recetas planificadas con las cantidades que
 // calcularía el optimizador al activarla.
+import { expandirRecetas } from '@/lib/recetas/elaboraciones-db'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { comidasDelDia, DIAS_SEMANA } from './comidas-dia'
 import { FRANJAS, REPARTO } from './semana-dieta'
@@ -87,10 +88,12 @@ export async function detalleSemanaFutura(db: SupabaseClient, plan: PlanObjetivo
 
   const ids = [...new Set(todasFilas.map(f => f.receta_id))]
   const { data: recs } = ids.length === 0 ? { data: [] } : await db.from('recetas')
-    .select('id, nombre, imagen_url, tiempo_prep_min, contenido_estado, url_origen, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, orden, alimento:alimentos(nombre, categoria, calorias, proteinas, carbohidratos, grasas))')
+    .select('id, nombre, imagen_url, tiempo_prep_min, contenido_estado, url_origen, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(elaboracion_id, cantidad_gramos, rol_ingrediente, es_cantidad_fija, orden, alimento:alimentos(nombre, categoria, calorias, proteinas, carbohidratos, grasas))')
     .in('id', ids)
   type RecRow = RecetaDetalle & { porciones: number | null; receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; orden: number | null; alimento: Alimento | null }[] }
-  const porId = new Map(((recs ?? []) as unknown as RecRow[]).map(r => [r.id, r]))
+  // Las elaboraciones enlazadas (masa, salsa…) cuentan por sus ingredientes base
+  const recsExpandidas = await expandirRecetas(db, recs ?? [])
+  const porId = new Map((recsExpandidas as unknown as RecRow[]).map(r => [r.id, r]))
 
   return DIAS_SEMANA.map(dia => {
   const filas = todasFilas.filter(f => f.dia_semana === dia)

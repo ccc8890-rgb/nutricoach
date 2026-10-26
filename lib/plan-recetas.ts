@@ -1,4 +1,5 @@
 // lib/plan-recetas.ts
+import { expandirRecetas } from '@/lib/recetas/elaboraciones-db'
 import { cumpleRestriccionesReligiosas, pideRestriccionReligiosa, type RecetaConIngredientes } from '@/lib/recetas/halal'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { RESTRICCION_A_ALERGENO, RESTRICCION_A_TAG_POSITIVO, RESTRICCION_A_EVITAR, expandirEvitar } from '@/lib/nutricion/compatibilidad-receta'
@@ -157,7 +158,7 @@ export async function filtrarRecetasPorSlot(
   // para ningún cliente, aunque el código los usara como si existieran.
   let query = supabase
     .from('recetas')
-    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, fibra, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, verificacion, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad, apto_sop, apto_hashimoto, apto_rendimiento, es_post_entreno, es_pre_entreno, densidad_proteica, score_saciedad, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, fibra, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, verificacion, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad, apto_sop, apto_hashimoto, apto_rendimiento, es_post_entreno, es_pre_entreno, densidad_proteica, score_saciedad, receta_ingredientes!receta_ingredientes_receta_id_fkey(elaboracion_id, nombre_libre, alimento:alimentos(nombre))')
     .eq('estado', 'aprobada')
     .gt('kcal', 0)
     .in('categoria', categorias)
@@ -170,8 +171,10 @@ export async function filtrarRecetasPorSlot(
     query = query.contains('momentos', [momentoTaxonomia])
   }
 
-  const { data: recetas } = await query.limit(poolMax)
-  if (!recetas || recetas.length === 0) return []
+  const { data: recetasBrutas } = await query.limit(poolMax)
+  if (!recetasBrutas || recetasBrutas.length === 0) return []
+  // Los ingredientes de las elaboraciones enlazadas (masa, salsa…) cuentan para evitar/alérgenos/Halal
+  const recetas = await expandirRecetas(supabase, recetasBrutas)
 
   const alergenosExcluir = [...new Set(
     restricciones.flatMap(r => RESTRICCION_A_ALERGENO[r.toLowerCase()] ?? [r])

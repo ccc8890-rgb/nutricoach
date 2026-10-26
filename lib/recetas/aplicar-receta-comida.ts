@@ -1,3 +1,4 @@
+import { expandirRecetas } from '@/lib/recetas/elaboraciones-db'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { calcularGramajeAjustado } from '@/lib/ingredient-roles'
 import type { RolIngrediente } from '@/types'
@@ -129,7 +130,7 @@ export async function aplicarRecetaAComida(
     .select(`
       id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, porciones,
       receta_ingredientes!receta_ingredientes_receta_id_fkey(
-        id, alimento_id, nombre_libre, cantidad_gramos, rol_ingrediente, es_cantidad_fija, orden,
+        id, alimento_id, elaboracion_id, nombre_libre, cantidad_gramos, rol_ingrediente, es_cantidad_fija, orden,
         alimento:alimentos(id, nombre, calorias, proteinas, carbohidratos, grasas, fibra)
       )
     `)
@@ -141,7 +142,9 @@ export async function aplicarRecetaAComida(
     throw new Error('Receta no encontrada o no aprobada')
   }
 
-  const ingredientesRaw = ((receta.receta_ingredientes ?? []) as unknown as RecetaIngredienteRow[])
+  // Las elaboraciones enlazadas (masa, salsa…) entran en la comida como sus ingredientes base
+  const [recetaExpandida] = await expandirRecetas(db, [receta])
+  const ingredientesRaw = ((recetaExpandida.receta_ingredientes ?? []) as unknown as RecetaIngredienteRow[])
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
 
   const porciones = Math.max(1, Number(receta.porciones ?? 1))

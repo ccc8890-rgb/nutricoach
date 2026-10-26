@@ -1,3 +1,4 @@
+import { expandirRecetas } from '@/lib/recetas/elaboraciones-db'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
@@ -84,14 +85,15 @@ export async function GET(
   if (recetasBase && pideIngredientes) {
     let conIngredientes = supabase
       .from('recetas')
-      .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, tags, tipo_coccion, tiempo_prep_min, tiempo_coccion_min, premium_chef, estilos, adherencia_score, batch_cooking, tupper, momentos, deportes, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+      .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, tags, tipo_coccion, tiempo_prep_min, tiempo_coccion_min, premium_chef, estilos, adherencia_score, batch_cooking, tupper, momentos, deportes, receta_ingredientes!receta_ingredientes_receta_id_fkey(elaboracion_id, nombre_libre, alimento:alimentos(nombre))')
       .eq('estado', 'aprobada')
       .order('nombre', { ascending: true })
     if (categoria && categoria !== 'Todos') conIngredientes = conIngredientes.eq('categoria', categoria)
     if (sinElaboraciones) conIngredientes = conIngredientes.not('categoria', 'in', listaElaboraciones)
     if (tag) conIngredientes = conIngredientes.contains('tags', [tag])
     const { data } = await conIngredientes
-    recetas = data ?? recetasBase
+    // Los ingredientes de las elaboraciones enlazadas cuentan para Halal / Sin cerdo
+    recetas = await expandirRecetas(supabase, data ?? recetasBase)
   }
   if (!recetas) return NextResponse.json({ recetas: [], hayMas: false })
 

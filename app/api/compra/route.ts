@@ -13,6 +13,8 @@
  *   { lista: LineaCompra[], coste_total, periodo }
  */
 
+import { expandirIngredientes } from '@/lib/recetas/elaboraciones-db'
+import type { Linea } from '@/lib/recetas/elaboraciones'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
@@ -58,30 +60,32 @@ export async function GET(request: NextRequest) {
 
                 if (!receta) continue
 
-                const { data: ings } = await srv
+                const { data: ingsRaw } = await srv
                     .from('receta_ingredientes')
-                    .select('alimento_id, cantidad_gramos, alimentos(id, nombre, categoria)')
+                    .select('alimento_id, elaboracion_id, cantidad_gramos, alimento:alimentos(id, nombre, categoria)')
                     .eq('receta_id', recetaId)
                     .gt('cantidad_gramos', 0)
 
-                if (!ings) continue
+                if (!ingsRaw) continue
+                // Las elaboraciones enlazadas (masa, salsa…) se compran por sus ingredientes base
+                const ings = await expandirIngredientes(srv, ingsRaw as unknown as Linea[], recetaId)
 
                 const factorPorciones = porciones / (receta.porciones || 1)
 
                 for (const ing of ings) {
-                    const a = ing.alimentos as any
+                    const a = ing.alimento
                     if (!a) continue
                     const gramos = (ing.cantidad_gramos || 0) * factorPorciones * mult
 
-                    if (mapaIngredientes.has(ing.alimento_id)) {
-                        const prev = mapaIngredientes.get(ing.alimento_id)!
+                    if (mapaIngredientes.has(ing.alimento_id!)) {
+                        const prev = mapaIngredientes.get(ing.alimento_id!)!
                         prev.cantidad_gramos += gramos
                         if (!prev.recetas_origen.includes(receta.nombre)) {
                             prev.recetas_origen.push(receta.nombre)
                         }
                     } else {
-                        mapaIngredientes.set(ing.alimento_id, {
-                            alimento_id: ing.alimento_id,
+                        mapaIngredientes.set(ing.alimento_id!, {
+                            alimento_id: ing.alimento_id!,
                             alimento_nombre: a.nombre || '',
                             categoria: a.categoria || 'Otros',
                             cantidad_gramos: gramos,
