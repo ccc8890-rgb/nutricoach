@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
-import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, recetaLibreDe, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
+import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, categoriaCoincide, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, recetaLibreDe, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
@@ -211,7 +211,7 @@ export default function RecetasPage() {
         r.nombre.toLowerCase().includes(tagLower)
       )
       // Cuando hay sub-tag activo, el tag es la clasificación real → ignorar categoría principal
-      const matchCategoria = categoria === 'Todos' || tagFilter !== null || r.categoria === categoria
+      const matchCategoria = tagFilter !== null || categoriaCoincide(r.categoria, categoria, palabrasBusqueda.length > 0)
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
       // Las aparcadas (sin fuente real) solo se ven con el enfoque «Aparcadas»
       const esAparcada = Array.isArray(r.tags) && r.tags.includes('Aparcada')

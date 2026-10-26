@@ -3,7 +3,7 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
 import { cumpleRestriccionesReligiosas, pideRestriccionReligiosa, contieneCerdo, esHalalPorIngredientes } from '@/lib/recetas/halal'
-import { recetaLibreDe, recetaTieneEtiqueta } from '@/lib/recetas-constants'
+import { recetaLibreDe, recetaTieneEtiqueta, CATEGORIAS_ELABORACION, filtroExcluyeElaboraciones } from '@/lib/recetas-constants'
 
 // Mismo mapeo restricción → alérgenos EU que ya usan lib/plan-recetas.ts
 // y app/api/recetas/sugeridas/route.ts para generar planes. Se duplica
@@ -62,6 +62,10 @@ export async function GET(
     .order('nombre', { ascending: true })
 
   if (categoria && categoria !== 'Todos') query = query.eq('categoria', categoria)
+  // Las elaboraciones (salsas, condimentos, bases) tienen su propia categoría: «Todos» no las mezcla con los platos, salvo al buscar por texto
+  const sinElaboraciones = filtroExcluyeElaboraciones(categoria, q)
+  const listaElaboraciones = `(${CATEGORIAS_ELABORACION.map(c => `"${c}"`).join(',')})`
+  if (sinElaboraciones) query = query.not('categoria', 'in', listaElaboraciones)
   // `tag` filtra por ingrediente principal (Pollo/Carne/Pescado/Pasta/...),
   // ya calculado por lib/auto-tag.ts y guardado en recetas.tags. Filtro
   // independiente de `categoria` (tipo de comida) — se pueden combinar.
@@ -84,6 +88,7 @@ export async function GET(
       .eq('estado', 'aprobada')
       .order('nombre', { ascending: true })
     if (categoria && categoria !== 'Todos') conIngredientes = conIngredientes.eq('categoria', categoria)
+    if (sinElaboraciones) conIngredientes = conIngredientes.not('categoria', 'in', listaElaboraciones)
     if (tag) conIngredientes = conIngredientes.contains('tags', [tag])
     const { data } = await conIngredientes
     recetas = data ?? recetasBase
