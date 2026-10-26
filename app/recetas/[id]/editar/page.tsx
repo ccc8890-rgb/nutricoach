@@ -8,6 +8,7 @@ import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import type { Alimento } from '@/types'
 import { CATEGORIAS, TIPOS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
+import { tipoRecetaTrasCambioCategoria } from '@/lib/recetas/tipo-receta'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
@@ -80,6 +81,7 @@ export default function EditarRecetaPage() {
 
     const [guardando, setGuardando] = useState(false)
     const [estadoReceta, setEstadoReceta] = useState('')
+    const [tipoRecetaActual, setTipoRecetaActual] = useState<string | null>(null)
     const [reportando, setReportando] = useState(false)
 
     // Cargar datos existentes
@@ -93,6 +95,7 @@ export default function EditarRecetaPage() {
             const receta = recetaRes.data
             if (!receta) return
             setEstadoReceta(receta.estado ?? '')
+            setTipoRecetaActual(receta.tipo_receta ?? null)
 
             setForm({
                 nombre: receta.nombre ?? '',
@@ -250,6 +253,8 @@ export default function EditarRecetaPage() {
             instrucciones: form.instrucciones || null,
             consejos: form.consejos || null,
             categoria: form.categoria || null,
+            // Elegir Elaboración base/Salsa/Condimento la convierte en elaboración; sacarla de ahí la devuelve a plato
+            ...tipoRecetaTrasCambioCategoria({ nombre: form.nombre, categoria: form.categoria || null, kcal: macrosTotales?.kcal, proteinas: macrosTotales?.proteinas, tipoActual: tipoRecetaActual }),
             tipo_plato: form.tipo_plato || null,
             tipo_coccion: form.tipo_coccion || null,
             dificultad: form.dificultad || null,
