@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     }
 
     let query = supabase.from('recetas').select(`
-      id, nombre, categoria, tipo_plato, porciones,
+      id, nombre, categoria, tipo_contenido, familia, tipo_plato, porciones,
       kcal, proteinas, carbohidratos, grasas,
       imagen_url, imagen_estado, estado, score_calidad, nivel_fit, tipo_uso, apta_cliente, tags, notas_coach,
       quality_estado_sugerido, quality_issues, quality_actualizado_at, created_at

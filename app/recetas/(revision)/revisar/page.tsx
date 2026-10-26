@@ -17,6 +17,8 @@ type RecetaRevision = {
   id: string
   nombre: string
   categoria: string | null
+  tipo_contenido?: string | null
+  familia?: string | null
   tipo_plato: string | null
   porciones: number | null
   kcal: number | null
@@ -57,6 +59,12 @@ const ACOTAR: Array<{ id: TareaRevision; label: string }> = [
   { id: 'corregir', label: 'Reportadas' },
   { id: 'nuevas_hoy', label: 'Nuevas hoy' },
 ]
+
+// «Elaboración · Panes y masas» o «Comida · Carnes»: tipo de ficha y familia de cocinero
+function etiquetaFicha(r: { tipo_contenido?: string | null; familia?: string | null; tipo_plato: string | null; categoria: string | null }) {
+  const base = r.tipo_contenido === 'elaboracion' ? 'Elaboración' : (r.tipo_plato ?? r.categoria ?? 'Sin tipo')
+  return r.familia ? `${base} · ${r.familia}` : base
+}
 
 function ProblemasReceta({ receta }: { receta: RecetaRevision }) {
   const items: { texto: string; color: string }[] = []
@@ -394,7 +402,7 @@ function NotaCorreccion({ receta }: { receta: RecetaRevision }) {
 
 function RecetaCard({ receta, busy, onEstado, onFoto, onRecargar }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void; onRecargar: () => void | Promise<void> }) {
   return <article className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-    <div className="flex gap-3"><FotoReceta receta={receta} /><div className="min-w-0 flex-1"><EnlaceReceta id={receta.id} className="block font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{receta.tipo_plato ?? receta.categoria ?? 'Sin tipo'} · alta {fechaAlta(receta.created_at)}</p><p className="mt-2 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>{Math.round(receta.kcal ?? 0)} kcal · P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</p></div><span className="text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}</span></div>
+    <div className="flex gap-3"><FotoReceta receta={receta} /><div className="min-w-0 flex-1"><EnlaceReceta id={receta.id} className="block font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{etiquetaFicha(receta)} · alta {fechaAlta(receta.created_at)}</p><p className="mt-2 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>{Math.round(receta.kcal ?? 0)} kcal · P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</p></div><span className="text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}</span></div>
     <ProblemasReceta receta={receta} />
     <NotaCorreccion receta={receta} />
     <div className="mt-3"><ChipsCalidad issues={receta.quality_issues} /></div>
@@ -405,7 +413,7 @@ function RecetaCard({ receta, busy, onEstado, onFoto, onRecargar }: { receta: Re
 function RecetaFila({ receta, busy, onEstado, onFoto, onRecargar }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void; onRecargar: () => void | Promise<void> }) {
   return <tr className="border-b last:border-b-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
     <td className="px-3 py-3"><FotoReceta receta={receta} /></td>
-    <td className="min-w-[220px] px-3 py-3"><EnlaceReceta id={receta.id} className="block font-semibold hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{receta.tipo_plato ?? receta.categoria ?? 'Sin tipo'} · {receta.num_ingredientes} ingredientes</p><ProblemasReceta receta={receta} /></td>
+    <td className="min-w-[220px] px-3 py-3"><EnlaceReceta id={receta.id} className="block font-semibold hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{etiquetaFicha(receta)} · {receta.num_ingredientes} ingredientes</p><ProblemasReceta receta={receta} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}><b style={{ color: 'var(--text)' }}>{Math.round(receta.kcal ?? 0)} kcal</b><br />P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</td>
     <td className="max-w-[310px] px-3 py-3"><div className="mb-1 text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}/100</div><ChipsCalidad issues={receta.quality_issues} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}><span className="rounded-full px-2 py-1" style={{ background: 'var(--surface)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><br /><span className="mt-2 inline-block" style={{ color: 'var(--text-muted)' }}>{fechaAlta(receta.created_at)}</span></td>
