@@ -77,8 +77,10 @@ for (const c of cambios) { const {error}=await sb.from('receta_ingredientes').up
 const antesKcal={}
 for (const rid of new Set(cambios.map(c=>c.receta_id))) {
   const {data:r}=await sb.from('recetas').select('nombre,porciones,kcal').eq('id',rid).single()
-  const {data:is}=await sb.from('receta_ingredientes').select('cantidad_gramos,alimentos(calorias,proteinas,carbohidratos,grasas,fibra)').eq('receta_id',rid)
+  const {data:is}=await sb.from('receta_ingredientes').select('cantidad_gramos,elaboracion_id,alimentos(calorias,proteinas,carbohidratos,grasas,fibra)').eq('receta_id',rid)
   let k=0,p=0,c=0,g=0,fi=0,peso=0
+  // Una receta con elaboraciones enlazadas no se recalcula aquí (no las expande): se recalcula desde el editor / lib/recetas/elaboraciones-db.ts
+  if(is.some(x=>x.elaboracion_id)){ console.log('  omitida (lleva elaboraciones):',r.nombre); continue }
   for(const x of is){ if(!x.alimentos||!x.cantidad_gramos) continue; const f=x.cantidad_gramos/100; k+=(x.alimentos.calorias||0)*f;p+=(x.alimentos.proteinas||0)*f;c+=(x.alimentos.carbohidratos||0)*f;g+=(x.alimentos.grasas||0)*f;fi+=(x.alimentos.fibra||0)*f;peso+=x.cantidad_gramos }
   const n=r.porciones||1, R=v=>Math.round(v/n*100)/100
   await sb.from('recetas').update({kcal:R(k),proteinas:R(p),carbohidratos:R(c),grasas:R(g),fibra:R(fi),kcal_100g:peso?Math.round(k/peso*100):null,proteinas_100g:peso?Math.round(p/peso*100):null,carbohidratos_100g:peso?Math.round(c/peso*100):null,grasas_100g:peso?Math.round(g/peso*100):null,fibra_100g:peso?Math.round(fi/peso*100):null,peso_total_g:peso,updated_at:new Date().toISOString()}).eq('id',rid)
