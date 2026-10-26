@@ -169,8 +169,8 @@ function validarMatchSemantico(ing: IngredienteProfesionalInput): string | null 
   const soloAgua = /^agua$/.test(alimento)
   if (aguaCoco && soloAgua) return 'match_semantico_sospechoso'
 
-  // Fallback to token overlap check
-  const tokensLibre = tokensSignificativos(ing.nombre_libre)
+  // Fallback to token overlap check («cebolla verde» y «cebolleta» son lo mismo)
+  const tokensLibre = tokensSignificativos(ing.nombre_libre.replace(/cebollas? verdes?/gi, 'cebolleta'))
   const tokensAlimento = tokensSignificativos(ing.nombre_alimento)
   if (tokensLibre.length === 0 || tokensAlimento.length === 0) return null
   const compartidos = tokensCompartidos(tokensLibre, tokensAlimento)

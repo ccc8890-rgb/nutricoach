@@ -120,6 +120,18 @@ assert.equal(resumen.estado_sugerido, 'bloqueada')
   assert.ok(!score.bloqueantes.includes('match_semantico_sospechoso'), 'No debería bloquear plural/singular')
 }
 
+// 1d. caso bueno: Cebolla verde -> Cebolleta (mismo ingrediente)
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Cebolla verde picada', nombre_alimento: 'Cebolleta', cantidad_gramos: 20, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(!score.bloqueantes.includes('match_semantico_sospechoso'), 'No debería bloquear cebolla verde -> cebolleta')
+}
+
 // 2. Nata espesa -> Aperitivo de patata con sabor a nata agria y cebolla
 {
   const input: RecetaProfesionalInput = {
