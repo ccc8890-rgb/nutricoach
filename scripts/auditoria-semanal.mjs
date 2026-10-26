@@ -29,12 +29,7 @@ console.log(lineas(run('npx', ['tsx', 'scripts/verificar-recetas-auto.ts', '--ap
 // Fases (bizcocho, salsa…) de las recetas nuevas: la IA solo agrupa y el script comprueba que ningún texto cambia (por eso puede ir sin supervisión)
 const fas = run('node', ['scripts/organizar-fases-recetas.mjs', '--auto', '--limite=15'])
 console.log(lineas(fas, /^\d+ candidatas|^aplicada/))
-// Recetas marcadas «Corregir» (Reportar problema): el motor atiende lo que puede (fotos, ingredientes, pasos, textos…) y las deja en «Por aprobar» para la revisión final; máx. 10 por pasada
-const cor2 = run('node', ['scripts/corregir-marcadas.mjs', '--aplica', '--limite=10'])
-console.log(lineas(cor2, /^Marcadas|^Fotos regeneradas|sin saldo/))
-// Resto de aspectos marcados (ingredientes, pasos, textos, título, gramos, raciones): reenlaza/redacta con validación, revierte si el quality gate empeora y nunca aprueba
-const cor3 = run('npx', ['tsx', 'scripts/corregir-marcadas-motor.ts', '--aplica', '--limite=10'])
-console.log(lineas(cor3, /^Marcadas|^Correcciones del motor|^❌/))
+// Recetas marcadas «Corregir»: las atiende aparte scripts/corregir-marcadas-ahora.mjs (tarea launchd cada 10 min, ver CLAUDE.md)
 const pas = run('node', ['scripts/auditar-pasos-ingredientes.mjs'])
 console.log(pas.split('\n')[0])
 // Nombres de alimentos en uso: minúsculas, duplicados y posibles erratas (solo informa; detalle con node scripts/auditar-nombres-alimentos.mjs)
