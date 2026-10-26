@@ -8,10 +8,11 @@ import Link from 'next/link'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { BotonFavorita } from './BotonFavorita'
 import { MagnifyingGlass, ForkKnife, X, Rows, SquaresFour, CaretDown, Check } from '@phosphor-icons/react'
-import { CATEGORIAS as CATEGORIAS_BASE, TIPOS_COCCION, APTA_PARA, ALERGENOS_NEGATIVOS, nombreSin } from '@/lib/recetas-constants'
+import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, APTA_PARA, ALERGENOS_NEGATIVOS, nombreSin } from '@/lib/recetas-constants'
+import { filtrosRecetarioDeUrl, type TipoVista } from '@/lib/recetas/clasificacion'
 
 // Mismos filtros y nombres que la Biblioteca del coach
-const CATEGORIAS = CATEGORIAS_BASE
+const TIPOS: { id: TipoVista; etiqueta: string }[] = [{ id: 'platos', etiqueta: 'Platos' }, { id: 'elaboraciones', etiqueta: 'Elaboraciones' }, { id: 'todo', etiqueta: 'Todo' }]
 const OPCIONES_APTA = [...APTA_PARA, { valor: 'Halal', etiqueta: 'Halal' }]
 const OPCIONES_SIN = [...ALERGENOS_NEGATIVOS, 'Sin Cacahuetes'] as const
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
@@ -99,7 +100,12 @@ export default function RecetarioExplorador({
 }) {
   // Filtros en la URL: al abrir una receta y volver, la búsqueda sigue igual
   const [q, setQ] = useEstadoUrl<string>('q', '')
-  const [categoria, setCategoria] = useEstadoUrl<string>('cat', 'Todos')
+  const [tipoUrl, setTipoUrl] = useEstadoUrl<string | null>('tipo', null)
+  const [catUrl, setCatUrl] = useEstadoUrl<string>('cat', 'Todos')
+  const [famUrl, setFamUrl] = useEstadoUrl<string | null>('fam', null)
+  // Tipo de ficha (platos / elaboraciones / todo), «cuándo se come» (solo platos) y familia de cocinero
+  const { tipo, categoria, familia } = filtrosRecetarioDeUrl({ tipo: tipoUrl, cat: catUrl, fam: famUrl, buscando: q.trim().length > 0 })
+  function cambiarTipo(t: TipoVista) { setTipoUrl(t); setCatUrl('Todos'); setFamUrl(null) }
   const [usoF, setUsoF] = useEstadoUrl<string | null>('uso', null)
   const [aptaP, setAptaP] = useEstadoUrl<string | null>('apta', null)
   const [sinP, setSinP] = useEstadoUrl<string | null>('sin', null)
@@ -123,7 +129,7 @@ export default function RecetarioExplorador({
     try { localStorage.setItem('recetario-vista', v) } catch {}
   }
   // Primera página sin filtros: viene de la caché compartida (precargada por el portal).
-  const sinFiltros = !q.trim() && categoria === 'Todos' && !hayFiltros
+  const sinFiltros = !q.trim() && tipo === 'platos' && categoria === 'Todos' && !familia && !hayFiltros
   const { data: inicial, error: errorInicial } = useSWR<{ recetas?: RecetaCatalogo[]; hayMas?: boolean }>(
     `/api/cliente/${codigo}/recetario?page=0`, fetchJson,
   )
@@ -174,14 +180,16 @@ export default function RecetarioExplorador({
     }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, categoria, usoF, aptaP, sinP, metodo, sinFiltros])
+  }, [q, tipo, categoria, familia, usoF, aptaP, sinP, metodo, sinFiltros])
 
   async function cargar(paginaSolicitada: number, reemplazar: boolean) {
     setCargando(true)
     try {
       const params = new URLSearchParams({ page: String(paginaSolicitada) })
       if (q.trim()) params.set('q', q.trim())
+      params.set('tipo', tipo)
       if (categoria !== 'Todos') params.set('categoria', categoria)
+      if (familia) params.set('familia', familia)
       const extra: Record<string, string | null> = { uso: usoF, apta: aptaP, sin: sinP, metodo }
       for (const [k, v] of Object.entries(extra)) if (v) params.set(k, v)
       const res = await fetch(`/api/cliente/${codigo}/recetario?${params.toString()}`)
@@ -227,16 +235,22 @@ export default function RecetarioExplorador({
       </div>
 
       <div className="rc-cats">
-        {CATEGORIAS.map(c => (
-          <button
-            key={c}
-            onClick={() => setCategoria(c)}
-            className={`rc-cat${categoria === c ? ' is-active' : ''}`}
-          >
-            {c}
-          </button>
+        {TIPOS.map(t => (
+          <button key={t.id} onClick={() => cambiarTipo(t.id)} className={`rc-cat${tipo === t.id ? ' is-active' : ''}`}>{t.etiqueta}</button>
         ))}
       </div>
+
+      {tipo !== 'todo' && (
+        <div className="rc-cats">
+          {tipo === 'platos'
+            ? CATEGORIAS_PLATO.map(c => (
+              <button key={c} onClick={() => setCatUrl(c)} className={`rc-cat${categoria === c ? ' is-active' : ''}`}>{c}</button>
+            ))
+            : ['Todas', ...FAMILIAS_ELABORACION].map(f => (
+              <button key={f} onClick={() => setFamUrl(f === 'Todas' ? null : f)} className={`rc-cat${(familia ?? 'Todas') === f ? ' is-active' : ''}`}>{f}</button>
+            ))}
+        </div>
+      )}
 
       <div className="rc-filtros">
         <Filtro etiqueta="Uso" valor={USOS.find(u => u.id === usoF)?.label ?? null} onLimpiar={() => setUsoF(null)}>
@@ -257,6 +271,13 @@ export default function RecetarioExplorador({
             <Opcion key={v} activa={sinL.includes(v)} onClick={() => alternar(sinL, v, setSinP)}>{mayuscula(nombreSin(v))}</Opcion>
           ))}
         </Filtro>
+        {tipo === 'platos' && (
+          <Filtro etiqueta="Familia" valor={familia} onLimpiar={() => setFamUrl(null)}>
+            {FAMILIAS_PLATO.map(f => (
+              <Opcion key={f} activa={familia === f} onClick={() => setFamUrl(familia === f ? null : f)}>{f}</Opcion>
+            ))}
+          </Filtro>
+        )}
         <Filtro etiqueta="Cocción" valor={metodo} onLimpiar={() => setMetodo(null)}>
           {TIPOS_COCCION.map(m => (
             <Opcion key={m} activa={metodo === m} onClick={() => setMetodo(metodo === m ? null : m)}>{m}</Opcion>

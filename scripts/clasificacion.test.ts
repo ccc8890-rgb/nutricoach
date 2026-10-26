@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { familiaElaboracion, familiaPlato, clasificarFicha, camposAlCambiarTipo, tipoEfectivo, visibleEnTipo, migrarCategoriaAntigua } from '../lib/recetas/clasificacion'
+import { filtrosRecetarioDeUrl, familiaElaboracion, familiaPlato, clasificarFicha, camposAlCambiarTipo, tipoEfectivo, visibleEnTipo, migrarCategoriaAntigua } from '../lib/recetas/clasificacion'
 import { inferirTipoReceta } from '../lib/recetas/tipo-receta'
 import { FAMILIAS_ELABORACION, FAMILIAS_PLATO, CATEGORIAS_PLATO } from '../lib/recetas-constants'
 
@@ -77,6 +77,12 @@ assert.deepEqual(migrarCategoriaAntigua('Salsa'), { tipo: 'elaboraciones', famil
 assert.deepEqual(migrarCategoriaAntigua('Condimento'), { tipo: 'elaboraciones', familia: 'Condimentos y mezclas' })
 assert.deepEqual(migrarCategoriaAntigua('Elaboración base'), { tipo: 'elaboraciones', familia: 'Panes y masas' })
 assert.equal(migrarCategoriaAntigua('Comida'), null)
+// Estado de la URL del recetario → filtros efectivos
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: 'Salsa', fam: null, buscando: false }), { tipo: 'elaboraciones', categoria: 'Todos', familia: 'Salsas' })
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: 'Cena', fam: 'Carnes', buscando: false }), { tipo: 'platos', categoria: 'Cena', familia: 'Carnes' })
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: null, fam: null, buscando: true }), { tipo: 'todo', categoria: 'Todos', familia: null })
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: 'elaboraciones', cat: 'Cena', fam: 'Salsas', buscando: false }), { tipo: 'elaboraciones', categoria: 'Todos', familia: 'Salsas' })
+assert.deepEqual(filtrosRecetarioDeUrl({ tipo: 'todo', cat: 'Cena', fam: null, buscando: false }), { tipo: 'todo', categoria: 'Todos', familia: null })
 assert.deepEqual([...CATEGORIAS_PLATO], ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre'])
 
 console.log('clasificacion.test OK')

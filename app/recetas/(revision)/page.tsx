@@ -4,7 +4,8 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
-import { CATEGORIAS, TIPOS_COCCION, SUBCATEGORIAS, categoriaCoincide, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, recetaLibreDe, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
+import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, recetaLibreDe, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
+import { filtrosRecetarioDeUrl, visibleEnTipo, type TipoVista } from '@/lib/recetas/clasificacion'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
@@ -83,6 +84,8 @@ type RecetaRow = {
   descripcion?: string | null
   imagen_url?: string | null
   categoria?: string | null
+  tipo_contenido?: string | null
+  familia?: string | null
   tipo_coccion?: string | null
   dificultad?: string | null
   porciones?: number | null
@@ -136,7 +139,9 @@ export default function RecetasPage() {
   // Filtros en la URL: al abrir una receta y volver atrás el listado reaparece igual
   useRecordarLista('recetas')
   const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
-  const [categoria, setCategoria] = useEstadoUrl<string>('cat', 'Todos')
+  const [tipoUrl, setTipoUrl] = useEstadoUrl<string | null>('tipo', null)
+  const [catUrl, setCategoria] = useEstadoUrl<string>('cat', 'Todos')
+  const [famUrl, setFamUrl] = useEstadoUrl<string | null>('fam', null)
   const [metodoCoccion, setMetodoCoccion] = useEstadoUrl<string>('metodo', 'Todos')
   const [rangoKcal, setRangoKcal] = useEstadoUrl<string | null>('kcal', null)
   const [tiempoPrep, setTiempoPrep] = useEstadoUrl<string | null>('tiempo', null)
@@ -149,6 +154,9 @@ export default function RecetasPage() {
   const [tagFilter, setTagFilter] = useEstadoUrl<string | null>('tag', null)
   const [curacionFilter, setCuracionFilter] = useEstadoUrl<string | null>('curacion', null)
   const [orden, setOrden] = useEstadoUrl<'reciente' | 'antiguo'>('orden', 'reciente', ['reciente', 'antiguo'])
+  // Tipo de ficha (platos / elaboraciones / todo), «cuándo se come» (solo platos) y familia de cocinero
+  const { tipo, categoria, familia } = filtrosRecetarioDeUrl({ tipo: tipoUrl, cat: catUrl, fam: famUrl, buscando: busqueda.trim().length > 0 })
+  const cambiarTipo = (t: TipoVista) => { setTipoUrl(t); setCategoria('Todos'); setFamUrl(null); setTagFilter(null) }
   const [loading, setLoading] = useState(true)
   useRestaurarScroll(!loading)
   const [showSearchDrop, setShowSearchDrop] = useState(false)
@@ -165,7 +173,7 @@ export default function RecetasPage() {
 
         const { data, error } = await supabase
           .from('recetas')
-          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, objetivos, deportes, momentos, estilos, premium_chef, batch_cooking, tupper, digestibilidad, adherencia_score, recipe_intelligence_score, recipe_intelligence_tier, macro_flex_score, planning_roles, coste_estimado_nivel, nivel_elaboracion, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+          .select('id, nombre, descripcion, imagen_url, categoria, tipo_contenido, familia, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, objetivos, deportes, momentos, estilos, premium_chef, batch_cooking, tupper, digestibilidad, adherencia_score, recipe_intelligence_score, recipe_intelligence_tier, macro_flex_score, planning_roles, coste_estimado_nivel, nivel_elaboracion, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
           .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
@@ -211,7 +219,9 @@ export default function RecetasPage() {
         r.nombre.toLowerCase().includes(tagLower)
       )
       // Cuando hay sub-tag activo, el tag es la clasificación real → ignorar categoría principal
-      const matchCategoria = tagFilter !== null || categoriaCoincide(r.categoria, categoria, palabrasBusqueda.length > 0)
+      const matchCategoria = tagFilter !== null || (visibleEnTipo(r, tipo)
+        && (tipo !== 'platos' || categoria === 'Todos' || r.categoria === categoria)
+        && (!familia || r.familia === familia))
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
       // Las aparcadas (sin fuente real) solo se ven con el enfoque «Aparcadas»
       const esAparcada = Array.isArray(r.tags) && r.tags.includes('Aparcada')
@@ -260,7 +270,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, palabrasBusqueda, categoria, metodoCoccion, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, aptaFiltros, sinFiltros])
+  }, [recetas, palabrasBusqueda, tipo, categoria, familia, metodoCoccion, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, aptaFiltros, sinFiltros])
 
   // Sugerencias de tags que coinciden con la búsqueda actual
   const tagSugeridos = useMemo(() => {
@@ -424,24 +434,40 @@ export default function RecetasPage() {
           </div>
 
 
-          {/* Tipo de plato */}
+          {/* Tipo de ficha */}
           <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-            {CATEGORIAS.map(c => (
-              <button
-                key={c}
-                onClick={() => { setCategoria(c); setTagFilter(null) }}
+            {([['platos', 'Platos'], ['elaboraciones', 'Elaboraciones'], ['todo', 'Todo']] as [TipoVista, string][]).map(([id, etiqueta]) => (
+              <button key={id} onClick={() => cambiarTipo(id)}
                 className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
-                style={categoria === c ? chipActive : chipInactive}
-                onMouseEnter={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)' } }}
-                onMouseLeave={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-              >
-                {c}
+                style={tipo === id ? chipActive : chipInactive}>
+                {etiqueta}
               </button>
             ))}
           </div>
 
+          {/* Momento del día (platos) o familia (elaboraciones) */}
+          {tipo !== 'todo' && (
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+            {(tipo === 'platos' ? [...CATEGORIAS_PLATO] : ['Todas', ...FAMILIAS_ELABORACION]).map(c => {
+              const activa = tipo === 'platos' ? categoria === c : (familia ?? 'Todas') === c
+              return (
+                <button
+                  key={c}
+                  onClick={() => { if (tipo === 'platos') { setCategoria(c); setTagFilter(null) } else setFamUrl(c === 'Todas' ? null : c) }}
+                  className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
+                  style={activa ? chipActive : chipInactive}
+                  onMouseEnter={e => { if (!activa) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)' } }}
+                  onMouseLeave={e => { if (!activa) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+                >
+                  {c}
+                </button>
+              )
+            })}
+          </div>
+          )}
+
           {/* Sub-categorías contextuales — solo cuando hay categoría activa */}
-          {categoria !== 'Todos' && SUBCATEGORIAS[categoria] && (
+          {tipo === 'platos' && categoria !== 'Todos' && SUBCATEGORIAS[categoria] && (
             <div className="flex gap-1.5 overflow-x-auto pb-2 mb-5 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
               {SUBCATEGORIAS[categoria]!.map(sub => (
                 <button
@@ -473,6 +499,14 @@ export default function RecetasPage() {
               ))}
             </FiltroMenu>
 
+            {tipo === 'platos' && (
+              <FiltroMenu etiqueta="Familia" valor={familia} onLimpiar={() => setFamUrl(null)}>
+                {cerrar => FAMILIAS_PLATO.map(f => (
+                  <OpcionMenu key={f} activa={familia === f} onClick={() => { setFamUrl(familia === f ? null : f); cerrar() }}>{f}</OpcionMenu>
+                ))}
+              </FiltroMenu>
+            )}
+
             <FiltroMenu etiqueta="Apta para" valor={aptaFiltros.length ? aptaFiltros.map(v => OPCIONES_APTA.find(a => a.valor === v)?.etiqueta ?? v).join(', ') : null} onLimpiar={() => setAptaParam(null)}>
               {() => OPCIONES_APTA.map(({ valor, etiqueta }) => (
                 <OpcionMenu key={valor} activa={aptaFiltros.includes(valor)} onClick={() => alternarApta(valor)}>{etiqueta}</OpcionMenu>
@@ -503,10 +537,10 @@ export default function RecetasPage() {
               ))}
             </FiltroMenu>
 
-            {(activeFilterCount > 0 || tagFilter || categoria !== 'Todos') && (
+            {(activeFilterCount > 0 || tagFilter || categoria !== 'Todos' || familia || tipoUrl) && (
               <button
                 type="button"
-                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setAptaParam(null); setCuracionFilter(null); setSinParam(null); setCategoria('Todos'); setTagFilter(null) }}
+                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setAptaParam(null); setCuracionFilter(null); setSinParam(null); setCategoria('Todos'); setFamUrl(null); setTipoUrl(null); setTagFilter(null) }}
                 className="px-2 py-1.5 text-xs underline-offset-2 hover:underline"
                 style={{ color: 'var(--text-muted)' }}
               >

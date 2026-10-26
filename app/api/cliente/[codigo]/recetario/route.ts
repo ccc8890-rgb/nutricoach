@@ -4,7 +4,7 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
 import { cumpleRestriccionesReligiosas, pideRestriccionReligiosa, contieneCerdo, esHalalPorIngredientes } from '@/lib/recetas/halal'
-import { recetaLibreDe, recetaTieneEtiqueta, CATEGORIAS_ELABORACION, filtroExcluyeElaboraciones } from '@/lib/recetas-constants'
+import { recetaLibreDe, recetaTieneEtiqueta } from '@/lib/recetas-constants'
 
 // Mismo mapeo restricción → alérgenos EU que ya usan lib/plan-recetas.ts
 // y app/api/recetas/sugeridas/route.ts para generar planes. Se duplica
@@ -37,6 +37,10 @@ export async function GET(
   const { searchParams } = new URL(request.url)
   const q = searchParams.get('q')?.trim() ?? ''
   const categoria = searchParams.get('categoria')?.trim() ?? ''
+  // Tipo de ficha (platos por defecto) y familia de cocinero
+  const tipoParam = searchParams.get('tipo')?.trim() ?? 'platos'
+  const tipo = tipoParam === 'elaboraciones' || tipoParam === 'todo' ? tipoParam : 'platos'
+  const familia = searchParams.get('familia')?.trim() ?? ''
   const tag = searchParams.get('tag')?.trim() ?? ''
   // Mismos filtros que la Biblioteca del coach (valores separados por comas)
   const lista = (k: string) => (searchParams.get(k) ?? '').split(',').map(x => x.trim()).filter(Boolean)
@@ -62,11 +66,11 @@ export async function GET(
     .eq('estado', 'aprobada')
     .order('nombre', { ascending: true })
 
-  if (categoria && categoria !== 'Todos') query = query.eq('categoria', categoria)
-  // Las elaboraciones (salsas, condimentos, bases) tienen su propia categoría: «Todos» no las mezcla con los platos, salvo al buscar por texto
-  const sinElaboraciones = filtroExcluyeElaboraciones(categoria, q)
-  const listaElaboraciones = `(${CATEGORIAS_ELABORACION.map(c => `"${c}"`).join(',')})`
-  if (sinElaboraciones) query = query.not('categoria', 'in', listaElaboraciones)
+  // «cuándo se come» solo tiene sentido en platos; las elaboraciones no se mezclan con ellos salvo en «todo»
+  if (tipo === 'platos' && categoria && categoria !== 'Todos') query = query.eq('categoria', categoria)
+  if (tipo === 'platos') query = query.neq('tipo_contenido', 'elaboracion')
+  if (tipo === 'elaboraciones') query = query.eq('tipo_contenido', 'elaboracion')
+  if (familia) query = query.eq('familia', familia)
   // `tag` filtra por ingrediente principal (Pollo/Carne/Pescado/Pasta/...),
   // ya calculado por lib/auto-tag.ts y guardado en recetas.tags. Filtro
   // independiente de `categoria` (tipo de comida) — se pueden combinar.
@@ -88,8 +92,10 @@ export async function GET(
       .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, tags, tipo_coccion, tiempo_prep_min, tiempo_coccion_min, premium_chef, estilos, adherencia_score, batch_cooking, tupper, momentos, deportes, receta_ingredientes!receta_ingredientes_receta_id_fkey(elaboracion_id, nombre_libre, alimento:alimentos(nombre))')
       .eq('estado', 'aprobada')
       .order('nombre', { ascending: true })
-    if (categoria && categoria !== 'Todos') conIngredientes = conIngredientes.eq('categoria', categoria)
-    if (sinElaboraciones) conIngredientes = conIngredientes.not('categoria', 'in', listaElaboraciones)
+    if (tipo === 'platos' && categoria && categoria !== 'Todos') conIngredientes = conIngredientes.eq('categoria', categoria)
+    if (tipo === 'platos') conIngredientes = conIngredientes.neq('tipo_contenido', 'elaboracion')
+    if (tipo === 'elaboraciones') conIngredientes = conIngredientes.eq('tipo_contenido', 'elaboracion')
+    if (familia) conIngredientes = conIngredientes.eq('familia', familia)
     if (tag) conIngredientes = conIngredientes.contains('tags', [tag])
     const { data } = await conIngredientes
     // Los ingredientes de las elaboraciones enlazadas cuentan para Halal / Sin cerdo

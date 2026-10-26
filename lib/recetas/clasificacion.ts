@@ -112,3 +112,11 @@ export function migrarCategoriaAntigua(cat: string | null): { tipo: TipoVista; f
   const mapa: Record<string, string> = { Salsa: 'Salsas', Condimento: 'Condimentos y mezclas', 'Elaboración base': 'Panes y masas' }
   return cat && mapa[cat] ? { tipo: 'elaboraciones', familia: mapa[cat] } : null
 }
+
+/** Filtros efectivos del recetario a partir de la URL: tipo, momento del día (solo platos) y familia. */
+export function filtrosRecetarioDeUrl(p: { tipo: string | null; cat: string | null; fam: string | null; buscando: boolean }): { tipo: TipoVista; categoria: string; familia: string | null } {
+  const antigua = !p.tipo ? migrarCategoriaAntigua(p.cat) : null
+  if (antigua) return { tipo: antigua.tipo, categoria: 'Todos', familia: antigua.familia }
+  const tipo = tipoEfectivo(p.tipo, p.buscando)
+  return { tipo, categoria: tipo === 'platos' ? (p.cat || 'Todos') : 'Todos', familia: p.fam || null }
+}
