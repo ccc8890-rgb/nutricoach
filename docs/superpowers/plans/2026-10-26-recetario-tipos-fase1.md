@@ -1,5 +1,7 @@
 # Recetario con tipos y familias — Fase 1 Implementation Plan
 
+> **Ajuste en ejecución (26-10-2026):** la simulación dejó 128 platos sin familia (desayunos, avena, tortitas, yogur…), así que se añadió la familia `Desayunos y meriendas` y `Arroces` pasó a `Arroces y cereales`. Quedan 56 platos sin familia (ambiguos de verdad); son un pendiente, no un error.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Que cada ficha del recetario tenga un **tipo** (plato o elaboración) y una **familia** de cocinero, que el recetario (cliente y coach) tenga un selector de tipo con chips por familia, y que las fichas nuevas (Content Radar, webs, editor) y las 55 de la cola de revisión caigan en su sitio.
@@ -14,7 +16,7 @@
 
 - `tipo_contenido` ∈ `'plato' | 'elaboracion'` (no nulo, por defecto `'plato'`); toda elaboración lleva además `tipo_receta='salsa_base'` y `categoria='Elaboración'`.
 - Familias de **elaboración**: `Panes y masas` · `Salsas` · `Condimentos y mezclas` · `Fondos y caldos` · `Grasas aromáticas` · `Mantequillas compuestas` · `Cremas y rellenos` · `Fermentos y curados`.
-- Familias de **plato**: `Entrantes` · `Sopas y cremas` · `Verduras y ensaladas` · `Arroces` · `Pastas` · `Carnes` · `Pescados` · `Huevos` · `Bocadillos y bowls` · `Postres` · `Guarniciones`.
+- Familias de **plato**: `Entrantes` · `Sopas y cremas` · `Verduras y ensaladas` · `Arroces y cereales` · `Pastas` · `Carnes` · `Pescados` · `Huevos` · `Bocadillos y bowls` · `Desayunos y meriendas` · `Postres` · `Guarniciones`.
 - `tipo_plato` NO se toca (la BD solo admite Desayuno, Almuerzo, Comida, Merienda, Cena, Snack, Postre). El planificador no cambia: sigue leyendo `categoria`/`tipo_receta`.
 - Chips de «cuándo se come» para platos: `Todos · Desayuno · Comida · Cena · Merienda · Snack · Postre`.
 - Selector de tipo: `PLATOS · ELABORACIONES · TODO` (Técnicas llega en otra fase). Por defecto `PLATOS`; si hay texto de búsqueda y el usuario no ha elegido tipo, se busca en `TODO`.

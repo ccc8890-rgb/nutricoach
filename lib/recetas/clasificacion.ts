@@ -23,7 +23,7 @@ const FAMILIAS_CLAVE: [FamiliaElaboracion, Set<string>][] = [
   ['Fondos y caldos', set('fondo', 'caldo', 'demi', 'glace')],
   ['Grasas aromáticas', set('aceite', 'chili', 'oil')],
   ['Mantequillas compuestas', set('mantequilla')],
-  ['Cremas y rellenos', set('ganache', 'caramelo', 'relleno', 'praline', 'confitura')],
+  ['Cremas y rellenos', set('ganache', 'caramelo', 'praline', 'confitura')],
   ['Fermentos y curados', set('curado', 'curada', 'curados', 'curadas', 'kimchi', 'encurtido', 'encurtidos', 'fermentado')],
 ]
 // Un plato que aparece primero (o al lado) impide que la palabra clave convierta la ficha en elaboración
@@ -45,15 +45,16 @@ type EntradaPlato = { nombre: string; categoria?: string | null; tags?: string[]
 const POSTRES = set('tarta', 'brownie', 'mousse', 'helado', 'dona', 'donas', 'donut', 'donuts', 'galleta', 'galletas', 'cookie', 'cookies', 'bizcocho', 'pudding', 'natillas', 'flan', 'pastel', 'cheesecake', 'tiramisu', 'coulant')
 const SOPAS = set('sopa', 'gazpacho', 'salmorejo')
 const BOCADILLOS = set('bowl', 'wrap', 'wraps', 'sandwich', 'burrito', 'tostada', 'tostadas', 'tosta', 'tostas', 'bocadillo', 'burger', 'hamburguesa', 'bao', 'kebab', 'taco', 'tacos', 'fajitas')
-const ARROCES = set('arroz', 'risotto', 'paella')
+const ARROCES = set('arroz', 'risotto', 'paella', 'cuscus', 'bulgur')
 const PASTAS = set('pasta', 'noquis', 'noodles', 'tallarines', 'espaguetis', 'macarrones', 'lasana', 'udon', 'fideos')
 const HUEVOS = set('huevo', 'huevos', 'tortilla', 'revuelto')
+const DESAYUNOS = set('avena', 'gachas', 'porridge', 'overnight', 'yogur', 'tortita', 'tortitas', 'pancake', 'pancakes', 'crepe', 'crepes', 'muffin', 'muffins', 'granola', 'batido', 'smoothie', 'gofre', 'gofres', 'waffle', 'cereales', 'bol')
 const PESCADOS = set('pescado', 'salmon', 'atun', 'merluza', 'bacalao', 'gambas', 'dorada', 'lubina', 'sardinas', 'pulpo', 'calamar')
 const CARNES = set('pollo', 'ternera', 'cerdo', 'carne', 'beef', 'chicken', 'pork', 'cordero', 'filete', 'carrillera', 'carrilleras', 'pavo', 'butifarra')
-const VERDURAS = set('ensalada', 'verdura', 'verduras', 'calabacin', 'berenjena', 'brocoli', 'coliflor', 'calabaza')
-const ENTRANTES = set('croqueta', 'croquetas', 'bunuelo', 'bunuelos')
+const VERDURAS = set('ensalada', 'verdura', 'verduras', 'calabacin', 'berenjena', 'brocoli', 'coliflor', 'calabaza', 'zanahoria', 'espinacas', 'champinones')
+const ENTRANTES = set('croqueta', 'croquetas', 'bunuelo', 'bunuelos', 'palitos', 'nachos')
 const TAG_A_FAMILIA: Record<string, FamiliaPlato> = {
-  pollo: 'Carnes', carne: 'Carnes', pescado: 'Pescados', arroz: 'Arroces', pasta: 'Pastas', sopa: 'Sopas y cremas', huevo: 'Huevos',
+  pollo: 'Carnes', carne: 'Carnes', pescado: 'Pescados', arroz: 'Arroces y cereales', pasta: 'Pastas', sopa: 'Sopas y cremas', huevo: 'Huevos',
   ensalada: 'Verduras y ensaladas', bowl: 'Bocadillos y bowls', wrap: 'Bocadillos y bowls', sandwich: 'Bocadillos y bowls', tostada: 'Bocadillos y bowls',
 }
 
@@ -64,14 +65,15 @@ export function familiaPlato(r: EntradaPlato): FamiliaPlato | null {
   if (cat === 'postre' || tiene(POSTRES)) return 'Postres'
   if (tiene(SOPAS) || p.some((w, i) => w === 'crema' && p[i + 1] === 'de')) return 'Sopas y cremas'
   if (tiene(BOCADILLOS)) return 'Bocadillos y bowls'
-  if (tiene(ARROCES)) return 'Arroces'
+  if (tiene(ARROCES)) return 'Arroces y cereales'
   if (tiene(PASTAS)) return 'Pastas'
   if (tiene(HUEVOS)) return 'Huevos'
+  if (tiene(DESAYUNOS)) return 'Desayunos y meriendas'
   if (r.tipo_receta === 'guarnicion' || p.includes('pure')) return 'Guarniciones'
   if (tiene(PESCADOS)) return 'Pescados'
   if (tiene(CARNES)) return 'Carnes'
-  if (tiene(VERDURAS)) return 'Verduras y ensaladas'
   if (cat === 'entrante' || tiene(ENTRANTES)) return 'Entrantes'
+  if (tiene(VERDURAS)) return 'Verduras y ensaladas'
   for (const t of r.tags ?? []) { const f = TAG_A_FAMILIA[t.toLowerCase()]; if (f) return f }
   return null
 }

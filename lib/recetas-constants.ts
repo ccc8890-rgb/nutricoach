@@ -7,7 +7,7 @@ export const CATEGORIAS = CATEGORIAS_PLATO
 
 // ─── Familias de cocinero ───
 export const FAMILIAS_ELABORACION = ['Panes y masas', 'Salsas', 'Condimentos y mezclas', 'Fondos y caldos', 'Grasas aromáticas', 'Mantequillas compuestas', 'Cremas y rellenos', 'Fermentos y curados'] as const
-export const FAMILIAS_PLATO = ['Entrantes', 'Sopas y cremas', 'Verduras y ensaladas', 'Arroces', 'Pastas', 'Carnes', 'Pescados', 'Huevos', 'Bocadillos y bowls', 'Postres', 'Guarniciones'] as const
+export const FAMILIAS_PLATO = ['Entrantes', 'Sopas y cremas', 'Verduras y ensaladas', 'Arroces y cereales', 'Pastas', 'Carnes', 'Pescados', 'Huevos', 'Bocadillos y bowls', 'Desayunos y meriendas', 'Postres', 'Guarniciones'] as const
 
 // Tipo de plato (el que usa el planificador para colocar la receta en la dieta)
 export const TIPOS_PLATO = ['Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre', 'Salsa', 'Acompañamiento'] as const

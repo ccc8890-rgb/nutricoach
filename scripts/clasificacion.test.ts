@@ -25,7 +25,7 @@ for (const n of ['Pan con tomate', 'Pollo con salsa barbacoa', 'Salmón al Horno
 
 // Familias de plato
 assert.equal(familiaPlato({ nombre: 'Firecracker Beef and Broccoli' }), 'Carnes')
-assert.equal(familiaPlato({ nombre: 'Arroz de montaña con butifarra, costilla de cerdo y trompetas de la muerte' }), 'Arroces')
+assert.equal(familiaPlato({ nombre: 'Arroz de montaña con butifarra, costilla de cerdo y trompetas de la muerte' }), 'Arroces y cereales')
 assert.equal(familiaPlato({ nombre: 'Puré de zanahoria con mantequilla avellana', tipo_receta: 'guarnicion' }), 'Guarniciones')
 assert.equal(familiaPlato({ nombre: 'Babă Neagră moldava (pastel panal)', categoria: 'Postre' }), 'Postres')
 assert.equal(familiaPlato({ nombre: 'Bao perezoso' }), 'Bocadillos y bowls')
@@ -37,8 +37,16 @@ assert.equal(familiaPlato({ nombre: 'Ensalada de quinoa con aguacate y granada' 
 assert.equal(familiaPlato({ nombre: 'Merluza al horno con limón' }), 'Pescados')
 assert.equal(familiaPlato({ nombre: 'Buñuelo relleno crujiente', categoria: 'Entrante' }), 'Entrantes')
 assert.equal(familiaPlato({ nombre: 'Tofu Lava' }), null)
+assert.equal(familiaPlato({ nombre: 'Cuscús dulce con pasas, naranja y canela' }), 'Arroces y cereales')
+assert.equal(familiaPlato({ nombre: 'Gachas de avena con proteína vegetal, plátano y chía' }), 'Desayunos y meriendas')
+assert.equal(familiaPlato({ nombre: 'Tortitas proteicas de plátano y avena con sirope de frutos rojos' }), 'Desayunos y meriendas')
+assert.equal(familiaPlato({ nombre: 'Yogur Griego con Frutos Rojos y Semillas' }), 'Desayunos y meriendas')
+assert.equal(familiaPlato({ nombre: 'Muffins de Avena y Pepitas de Chocolate' }), 'Desayunos y meriendas')
+assert.equal(familiaPlato({ nombre: 'Palitos de Zanahoria con Hummus Casero' }), 'Entrantes')
+assert.equal(familiaPlato({ nombre: 'Zanahoria Baby con Feta' }), 'Verduras y ensaladas')
+assert.equal(familiaElaboracion('Buñuelo relleno crujiente'), null)
 assert.equal(familiaPlato({ nombre: 'Plato misterioso', tags: ['Pollo'] }), 'Carnes')       // las etiquetas deciden si el nombre no
-for (const f of ['Carnes', 'Arroces', 'Guarniciones', 'Postres', 'Bocadillos y bowls', 'Pastas', 'Huevos', 'Sopas y cremas', 'Verduras y ensaladas', 'Pescados', 'Entrantes']) assert.ok((FAMILIAS_PLATO as readonly string[]).includes(f), f)
+for (const f of ['Carnes', 'Arroces y cereales', 'Desayunos y meriendas', 'Guarniciones', 'Postres', 'Bocadillos y bowls', 'Pastas', 'Huevos', 'Sopas y cremas', 'Verduras y ensaladas', 'Pescados', 'Entrantes']) assert.ok((FAMILIAS_PLATO as readonly string[]).includes(f), f)
 
 // Ficha completa
 assert.deepEqual(clasificarFicha({ nombre: 'Brioche' }), { tipo_contenido: 'elaboracion', familia: 'Panes y masas' })
