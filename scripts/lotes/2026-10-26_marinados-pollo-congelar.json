@@ -1,0 +1,339 @@
+{
+ "lote": "marinados-pollo-congelar-2026-10-26",
+ "tipo_plato": "Comida",
+ "tipo_receta": "completa",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 170,
+  "kcal_max": 450,
+  "proteina_pct_min": 0.25
+ },
+ "alimentos": {
+  "pollo": {
+   "nombre": "Pechuga de pollo",
+   "prefijo": "4ad8714c",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "aceite": {
+   "nombre": "Aceite de oliva",
+   "prefijo": "bf392211",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "miel": {
+   "nombre": "Miel",
+   "prefijo": "8619b09f",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "miel"
+  },
+  "lima": {
+   "nombre": "Jugo de lima",
+   "prefijo": "3d357e79",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Zumo de limón",
+   "prefijo": "12a8ab46",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cebolla": {
+   "nombre": "Cebolla en polvo",
+   "prefijo": "c17ad017",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo en polvo",
+   "prefijo": "bbece24a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cayena": {
+   "nombre": "Cayena molida",
+   "prefijo": "ac11d640",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimenton": {
+   "nombre": "Pimentón dulce",
+   "prefijo": "e4fdfad8",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "comino": {
+   "nombre": "Comino",
+   "prefijo": "88959dfb",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "sal": {
+   "nombre": "Sal",
+   "prefijo": "0adc820b",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimienta": {
+   "nombre": "Pimienta negra molida",
+   "prefijo": "3350c934",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cilantro": {
+   "nombre": "Cilantro",
+   "prefijo": "dfd57056",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pina": {
+   "nombre": "Zumo de piña selección",
+   "prefijo": "856d2ffd",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "soja": {
+   "nombre": "Salsa de soja",
+   "prefijo": "caa47a33",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Gluten",
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "mostaza": {
+   "nombre": "Mostaza de Dijon",
+   "prefijo": "20367cb0",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Mostaza"
+   ],
+   "origen": "vegetal"
+  },
+  "bbq": {
+   "nombre": "Salsa barbacoa",
+   "prefijo": "2628d64e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Pollo marinado a las fajitas para congelar",
+   "descripcion": "Marinado de fajitas con pimentón, comino y un toque de lima y miel. 600 g de pechuga para 4 raciones, listo para congelar.",
+   "tiempo_prep_min": 15,
+   "porciones": 4,
+   "tipo_plato": "Comida",
+   "tipo_receta": "completa",
+   "ingredientes": [
+    [
+     "pollo",
+     600
+    ],
+    [
+     "aceite",
+     30
+    ],
+    [
+     "miel",
+     15
+    ],
+    [
+     "lima",
+     10
+    ],
+    [
+     "cebolla",
+     5
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "pimenton",
+     5
+    ],
+    [
+     "cayena",
+     3
+    ],
+    [
+     "comino",
+     2.5
+    ],
+    [
+     "sal",
+     3
+    ]
+   ],
+   "instrucciones": "1. Corta 600 g de pechuga de pollo en tiras.\n2. Mezcla en un bol todos los ingredientes del marinado.\n3. Mete el pollo y el marinado en una bolsa de congelación, cierra sacando el aire y masajea para repartir bien.\n4. Congela la bolsa en plano (así ocupa menos y se descongela antes).\n5. La noche antes, pasa la bolsa a la nevera para descongelar.\n6. Cocina el pollo con su marinado en sartén o plancha bien caliente unos 5-6 minutos por lado, hasta que quede dorado y hecho por dentro.",
+   "consejos": "Ideal para servir en tortillas con pimientos y cebolla salteados."
+  },
+  {
+   "nombre": "Pollo marinado con cilantro y lima para congelar",
+   "descripcion": "Marinado fresco de cilantro y lima. 600 g de pechuga para 4 raciones, listo para congelar.",
+   "tiempo_prep_min": 15,
+   "porciones": 4,
+   "tipo_plato": "Comida",
+   "tipo_receta": "completa",
+   "ingredientes": [
+    [
+     "pollo",
+     600
+    ],
+    [
+     "aceite",
+     30
+    ],
+    [
+     "lima",
+     20
+    ],
+    [
+     "cilantro",
+     15
+    ],
+    [
+     "sal",
+     3
+    ],
+    [
+     "pimienta",
+     1
+    ]
+   ],
+   "instrucciones": "1. Pica fino el cilantro y corta 600 g de pechuga en filetes o tiras.\n2. Mezcla en un bol todos los ingredientes del marinado.\n3. Mete el pollo y el marinado en una bolsa de congelación, cierra sacando el aire y masajea para repartir bien.\n4. Congela la bolsa en plano (así ocupa menos y se descongela antes).\n5. La noche antes, pasa la bolsa a la nevera para descongelar.\n6. Cocina el pollo con su marinado en sartén o plancha bien caliente unos 5-6 minutos por lado, hasta que quede dorado y hecho por dentro.",
+   "consejos": "Va muy bien con arroz o en bowls."
+  },
+  {
+   "nombre": "Pollo marinado con piña y soja para congelar",
+   "descripcion": "Marinado dulce y salado de zumo de piña y salsa de soja. 600 g de pechuga para 4 raciones, listo para congelar.",
+   "tiempo_prep_min": 15,
+   "porciones": 4,
+   "tipo_plato": "Comida",
+   "tipo_receta": "completa",
+   "ingredientes": [
+    [
+     "pollo",
+     600
+    ],
+    [
+     "aceite",
+     30
+    ],
+    [
+     "pina",
+     100
+    ],
+    [
+     "soja",
+     45
+    ],
+    [
+     "cebolla",
+     3
+    ],
+    [
+     "pimienta",
+     1
+    ]
+   ],
+   "instrucciones": "1. Corta 600 g de pechuga de pollo en dados o tiras.\n2. Mezcla en un bol todos los ingredientes del marinado.\n3. Mete el pollo y el marinado en una bolsa de congelación, cierra sacando el aire y masajea para repartir bien.\n4. Congela la bolsa en plano (así ocupa menos y se descongela antes).\n5. La noche antes, pasa la bolsa a la nevera para descongelar.\n6. Cocina el pollo con su marinado en sartén o plancha bien caliente unos 5-6 minutos por lado, hasta que quede dorado y hecho por dentro.",
+   "consejos": "La salsa de soja ya aporta sal, por eso no lleva más. Muy bueno con arroz y verduras salteadas."
+  },
+  {
+   "nombre": "Pollo marinado con miel y mostaza para congelar",
+   "descripcion": "Clásico marinado de miel y mostaza de Dijon con limón. 600 g de pechuga para 4 raciones, listo para congelar.",
+   "tiempo_prep_min": 15,
+   "porciones": 4,
+   "tipo_plato": "Comida",
+   "tipo_receta": "completa",
+   "ingredientes": [
+    [
+     "pollo",
+     600
+    ],
+    [
+     "aceite",
+     30
+    ],
+    [
+     "limon",
+     15
+    ],
+    [
+     "miel",
+     30
+    ],
+    [
+     "mostaza",
+     30
+    ],
+    [
+     "sal",
+     3
+    ],
+    [
+     "pimienta",
+     1
+    ]
+   ],
+   "instrucciones": "1. Corta 600 g de pechuga de pollo en filetes o tiras.\n2. Mezcla en un bol todos los ingredientes del marinado.\n3. Mete el pollo y el marinado en una bolsa de congelación, cierra sacando el aire y masajea para repartir bien.\n4. Congela la bolsa en plano (así ocupa menos y se descongela antes).\n5. La noche antes, pasa la bolsa a la nevera para descongelar.\n6. Cocina el pollo con su marinado en sartén o plancha bien caliente unos 5-6 minutos por lado, hasta que quede dorado y hecho por dentro.",
+   "consejos": "Queda muy jugoso hecho al horno o a la plancha."
+  },
+  {
+   "nombre": "Pollo marinado barbacoa para congelar",
+   "descripcion": "Marinado rápido de salsa barbacoa con miel, limón y un toque picante. 600 g de pechuga para 4 raciones, listo para congelar.",
+   "tiempo_prep_min": 15,
+   "porciones": 4,
+   "tipo_plato": "Comida",
+   "tipo_receta": "completa",
+   "ingredientes": [
+    [
+     "pollo",
+     600
+    ],
+    [
+     "bbq",
+     100
+    ],
+    [
+     "miel",
+     15
+    ],
+    [
+     "limon",
+     7.5
+    ],
+    [
+     "cayena",
+     2
+    ],
+    [
+     "sal",
+     3
+    ]
+   ],
+   "instrucciones": "1. Deja 600 g de pechuga entera con unos cortes superficiales (o córtala en filetes gruesos).\n2. Mezcla en un bol todos los ingredientes del marinado.\n3. Mete el pollo y el marinado en una bolsa de congelación, cierra sacando el aire y masajea para repartir bien.\n4. Congela la bolsa en plano (así ocupa menos y se descongela antes).\n5. La noche antes, pasa la bolsa a la nevera para descongelar.\n6. Cocina el pollo con su marinado en sartén o plancha bien caliente unos 5-6 minutos por lado, hasta que quede dorado y hecho por dentro.",
+   "consejos": "Si la haces entera, mejor al horno a 200 °C unos 25 minutos o en plancha tapada."
+  }
+ ]
+}
