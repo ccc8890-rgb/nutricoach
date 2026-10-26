@@ -4,6 +4,15 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 26-10-2026 (Claude) — Recetario con tipo y familia (archivo de cocina, fase 1)
+
+Plan: `docs/superpowers/plans/2026-10-26-recetario-tipos-fase1.md`; diseño: `docs/superpowers/specs/2026-10-26-recetario-capas-y-tecnicas-design.md`. Resumen y pendientes en la fila de `NUTRICION/CLAUDE.md`. **Sustituye** el filtro por categorías de «Elaboraciones fase 1» (las funciones `CATEGORIAS_ELABORACION`, `categoriaCoincide`, etc. ya no existen).
+- **Modelo:** `recetas.tipo_contenido` ('plato'|'elaboracion', por defecto plato) y `recetas.familia` (texto, listas en `lib/recetas-constants.ts`: `FAMILIAS_ELABORACION`, `FAMILIAS_PLATO`). Una elaboración lleva además `categoria='Elaboración'` y `tipo_receta='salsa_base'` (marca que respeta el planificador); un plato conserva su `categoria` de momento del día. `tipo_plato` no se toca (check de BD).
+- **Clasificador único:** `lib/recetas/clasificacion.ts` (`familiaElaboracion`, `familiaPlato`, `clasificarFicha`, `camposAlCambiarTipo`, `filtrosRecetarioDeUrl`…) y su espejo `Content-Radar/scripts/receta_calidad.py` (`familia_elaboracion`, `familia_plato`, `clasificar_ficha`). **Al cambiar reglas, cambiar las dos y sus tests** (`scripts/clasificacion.test.ts`, `test_receta_calidad.py`). La palabra clave de elaboración debe estar entre las dos primeras palabras y sin plato antes («Pan con tomate», «Pollo con salsa barbacoa» = platos).
+- **UI:** parámetros de URL `tipo` (platos|elaboraciones|todo), `fam`, `cat`; los enlaces `?cat=Salsa|Condimento|Elaboración base` se traducen. API del cliente: `GET …/recetario?tipo=&familia=&categoria=` (por defecto `tipo=platos`).
+- **Datos:** `npx tsx scripts/clasificar-recetario.ts [--apply]` (idempotente; no cambia el tipo de fichas aprobadas, solo las lista como candidatas).
+- **Lecciones:** (1) simular antes de aplicar destapó reglas flojas (un «Buñuelo relleno» salía como crema; 128 platos sin familia → se añadió «Desayunos y meriendas» y «Arroces y cereales»); (2) en macOS `sed -i` necesita `''` y un `&&` encadenado tras un `sed` fallido salta el resto: comprobar el resultado de cada paso.
+
 ## ✅ 26-10-2026 (Claude) — Elaboraciones enlazadas como ingrediente (fase 2)
 
 Plan: `docs/superpowers/plans/2026-10-26-elaboraciones-fase2.md`. Resumen y pendientes en la fila de `NUTRICION/CLAUDE.md`.
