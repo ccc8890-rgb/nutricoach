@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { Fragment, useEffect, useState, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -24,6 +24,8 @@ interface Ingrediente {
     cantidad_gramos: number
     cantidad_original?: number | null
     unidad_display?: string | null
+    /** Fase de la receta (p. ej. «Fajitas», «Masa»): se conserva al guardar y agrupa la lista */
+    grupo?: string | null
     alimento?: Alimento
     /** Línea que es una elaboración (poolish, masa, salsa…) en vez de un alimento */
     elaboracion_id?: string | null
@@ -167,6 +169,7 @@ export default function EditarRecetaPage() {
                 cantidad_gramos: ing.cantidad_gramos,
                 cantidad_original: ing.cantidad_original ?? null,
                 unidad_display: ing.unidad_display ?? null,
+                grupo: ing.grupo ?? null,
                 alimento: ing.alimento,
             })))
 
@@ -197,13 +200,13 @@ export default function EditarRecetaPage() {
         return () => clearTimeout(timer)
     }, [queryAlimento, id])
 
-    function añadirIngredienteLibre() {
-        setIngredientes(prev => [...prev, {
-            tempId: crypto.randomUUID(),
-            alimento_id: null,
-            nombre_libre: '',
-            cantidad_gramos: 100,
-        }])
+    function añadirIngredienteLibre(grupo?: string | null) {
+        const nuevo: Ingrediente = { tempId: crypto.randomUUID(), alimento_id: null, nombre_libre: '', cantidad_gramos: 100, grupo: grupo ?? null }
+        setIngredientes(prev => {
+            // Dentro de una fase, el ingrediente nuevo va al final de esa fase
+            const ultimo = grupo ? prev.map(i => i.grupo).lastIndexOf(grupo) : -1
+            return ultimo < 0 ? [...prev, nuevo] : [...prev.slice(0, ultimo + 1), nuevo, ...prev.slice(ultimo + 1)]
+        })
     }
 
     function vincularAlimento(tempId: string, alimento: Alimento) {
@@ -368,6 +371,7 @@ export default function EditarRecetaPage() {
                     cantidad_gramos: ing.cantidad_gramos,
                     cantidad_original: ing.unidad_display?.trim() ? ing.cantidad_original : null,
                     unidad_display: ing.unidad_display?.trim() || null,
+                    grupo: ing.grupo || null,
                     orden: idx,
                 }).eq('id', ing.id)
                 : await supabase.from('receta_ingredientes').insert({
@@ -378,6 +382,7 @@ export default function EditarRecetaPage() {
                     cantidad_gramos: ing.cantidad_gramos,
                     cantidad_original: ing.unidad_display?.trim() ? ing.cantidad_original : null,
                     unidad_display: ing.unidad_display?.trim() || null,
+                    grupo: ing.grupo || null,
                     orden: idx,
                 })
             if (ingErr) addToast({ type: 'error', title: 'Error', message: 'Error al guardar ingrediente: ' + ingErr.message })
@@ -599,7 +604,7 @@ export default function EditarRecetaPage() {
                         <div className="card">
                             <div className="flex items-center justify-between mb-4">
                                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ingredientes</p>
-                                <button onClick={añadirIngredienteLibre} className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1">
+                                <button onClick={() => añadirIngredienteLibre()} className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1">
                                     <Plus size={13} /> Añadir
                                 </button>
                             </div>
@@ -614,8 +619,19 @@ export default function EditarRecetaPage() {
                                 <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Sin ingredientes — añade uno para calcular macros automáticamente</p>
                             ) : (
                                 <div className="flex flex-col gap-2">
-                                    {ingredientes.map((ing) => (
-                                        <div key={ing.tempId} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg)' }}>
+                                    {ingredientes.map((ing, idx) => (
+                                        <Fragment key={ing.tempId}>
+                                        {ingredientes.some(i => i.grupo) && ing.grupo !== (ingredientes[idx - 1]?.grupo ?? null) && (
+                                            <div className="flex items-center justify-between pt-3 first:pt-0">
+                                                <p className="coach-recipe-kicker">{ing.grupo ?? 'Otros'}</p>
+                                                {ing.grupo && (
+                                                    <button type="button" onClick={() => añadirIngredienteLibre(ing.grupo)} className="text-xs flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                                                        <Plus size={12} /> Añadir a {ing.grupo}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg)' }}>
                                             {/* Nombre / vinculado */}
                                             <div className="flex-1 relative">
                                                 {buscadorAbierto === ing.tempId ? (
@@ -691,8 +707,8 @@ export default function EditarRecetaPage() {
                                                     type="number"
                                                     min={0}
                                                     step="any"
-                                                    placeholder="2"
-                                                    title="Cantidad casera (ej. 2)"
+                                                    placeholder="cant."
+                                                    title="Equivalencia casera, opcional: cantidad (ej. 2)"
                                                     className="w-12 text-right border rounded px-2 py-1 text-sm outline-none"
                                                     style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                                                     value={ing.cantidad_original ?? ''}
@@ -700,8 +716,8 @@ export default function EditarRecetaPage() {
                                                 />
                                                 <input
                                                     type="text"
-                                                    placeholder="huevos"
-                                                    title="Unidad casera (huevos, cucharadas, yogur…)"
+                                                    placeholder="unidad"
+                                                    title="Equivalencia casera, opcional: unidad (huevos, cucharadas, yogur…)"
                                                     className="w-24 border rounded px-2 py-1 text-sm outline-none"
                                                     style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                                                     value={ing.unidad_display ?? ''}
@@ -720,6 +736,7 @@ export default function EditarRecetaPage() {
                                                 <Trash2 size={14} />
                                             </button>
                                         </div>
+                                        </Fragment>
                                     ))}
                                 </div>
                             )}
