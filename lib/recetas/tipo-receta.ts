@@ -4,6 +4,8 @@
 // «Vinagreta de mostaza» es una salsa. El script antiguo scripts/clasificar-tipo-receta.mjs
 // buscaba subcadenas («agua» dentro de «aguacate») y dejó platos completos como bebida o salsa.
 
+import { esCategoriaElaboracion, type CategoriaElaboracion } from '../recetas-constants'
+
 export type TipoRecetaInferido = 'completa' | 'desayuno' | 'snack_postre' | 'guarnicion' | 'bebida' | 'salsa_base'
 
 function palabras(s: string): string[] {
@@ -36,4 +38,31 @@ export function inferirTipoReceta(r: { nombre: string; categoria?: string | null
   }
   // merienda / snack / postre
   return kcal >= 300 && prot >= 15 ? 'completa' : 'snack_postre'
+}
+
+// ── Elaboraciones: la categoría es la familia (Elaboración base · Salsa · Condimento) ──
+const ELAB_BASE = new Set(['poolish', 'masa', 'fermento', 'levain', 'fondo', 'caldo'])
+const ELAB_CONDIMENTO = new Set(['mix', 'adobo', 'adobos', 'marinada', 'marinado', 'especias', 'sazonador', 'rub', 'aceite', 'chili', 'oil'])
+const ELAB_SALSA = new Set(['salsa', 'salsas', 'mayonesa', 'mayonesas', 'ajonesa', 'alioli', 'aliño', 'alino', 'vinagreta', 'chimichurri',
+  'pesto', 'hummus', 'guacamole', 'tahini', 'ketchup', 'aderezo', 'dressing', 'mostaza'])
+
+// La palabra clave debe estar entre las dos primeras palabras y ninguna palabra de plato puede ir antes:
+// «Pollo con salsa barbacoa» es un plato, «Ajonesa de huevo cocido» una salsa («huevo» va después).
+export function categoriaElaboracion(nombre: string): CategoriaElaboracion | null {
+  const p = palabras(nombre)
+  for (let i = 0; i < Math.min(2, p.length); i++) {
+    if (PLATO.has(p[i])) return null
+    if (ELAB_BASE.has(p[i])) return 'Elaboración base'
+    if (ELAB_CONDIMENTO.has(p[i])) return 'Condimento'
+    if (ELAB_SALSA.has(p[i])) return 'Salsa'
+  }
+  return null
+}
+
+// Al guardar desde el editor: elegir una categoría de elaboración la convierte en elaboración;
+// sacarla de ahí (si era salsa_base) la devuelve a plato; lo demás no se toca.
+export function tipoRecetaTrasCambioCategoria(r: { nombre: string; categoria: string | null; kcal?: number | null; proteinas?: number | null; tipoActual: string | null }): { tipo_receta: string | null; tipo_plato?: string } {
+  if (esCategoriaElaboracion(r.categoria)) return { tipo_receta: 'salsa_base', tipo_plato: 'Salsa' }
+  if (r.tipoActual === 'salsa_base') return { tipo_receta: inferirTipoReceta({ nombre: r.nombre, categoria: r.categoria, kcal: r.kcal, proteinas: r.proteinas }) }
+  return { tipo_receta: r.tipoActual }
 }

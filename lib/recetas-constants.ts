@@ -1,7 +1,25 @@
 import type { ReactNode } from 'react'
 
 // ─── Categorías ───
-export const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre', 'Salsa', 'Acompañamiento'] as const
+export const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre', 'Elaboración base', 'Salsa', 'Condimento', 'Acompañamiento'] as const
+
+// Elaboraciones: preparaciones que se usan dentro de otras recetas (no son platos). Son categorías propias y «Todos» no las mezcla.
+export const CATEGORIAS_ELABORACION = ['Elaboración base', 'Salsa', 'Condimento'] as const
+export type CategoriaElaboracion = (typeof CATEGORIAS_ELABORACION)[number]
+
+export function esCategoriaElaboracion(c: string | null | undefined): c is CategoriaElaboracion {
+    return !!c && (CATEGORIAS_ELABORACION as readonly string[]).includes(c)
+}
+
+// Con «Todos» (o sin filtro) las elaboraciones no salen entre los platos, salvo que se busque por texto
+export function categoriaCoincide(categoria: string | null | undefined, filtro: string, buscando: boolean): boolean {
+    if (!filtro || filtro === 'Todos') return buscando || !esCategoriaElaboracion(categoria)
+    return categoria === filtro
+}
+
+export function filtroExcluyeElaboraciones(categoria: string, q: string): boolean {
+    return (!categoria || categoria === 'Todos') && q.trim() === ''
+}
 
 // Tipo de plato (el que usa el planificador para colocar la receta en la dieta)
 export const TIPOS_PLATO = ['Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre', 'Salsa', 'Acompañamiento'] as const
@@ -16,6 +34,8 @@ export const SUBCATEGORIAS: Partial<Record<string, string[]>> = {
     Merienda: ['Batido', 'Bizcocho', 'Galleta', 'Tortitas', 'Tostada', 'Yogur', 'Donut', 'Crepe', 'Cookie', 'Pudding'],
     Snack: ['Galleta', 'Donut', 'Cookie', 'Yogur', 'Chocolate', 'Batido', 'Granola'],
     Postre: ['Bizcocho', 'Tortitas', 'Pancakes', 'Mousse', 'Galleta', 'Tarta', 'Helado', 'Brownie', 'Cookie', 'Pudding', 'Crepe', 'Donut'],
+    'Elaboración base': ['Masa', 'Fermento', 'Fondo', 'Caldo'],
+    Condimento: ['Adobo', 'Mix', 'Aceite', 'Marinada'],
     Salsa: ['Mayonesa', 'Pesto', 'Salsa', 'Barbacoa', 'Alioli', 'Hummus', 'Guacamole', 'Tzatziki'],
     Acompañamiento: ['Patata', 'Arroz', 'Pasta', 'Pan', 'Legumbre'],
 }
