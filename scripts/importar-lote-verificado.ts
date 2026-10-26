@@ -5,7 +5,7 @@
  *
  *   npx tsx scripts/importar-lote-verificado.ts scripts/lotes/<lote>.json [--apply] [--coach-email x]
  */
-import { categoriaElaboracion } from '../lib/recetas/tipo-receta'
+import { clasificarFicha } from '../lib/recetas/clasificacion'
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
@@ -147,14 +147,17 @@ async function main() {
   const idsCreadas: string[] = []
   for (const { receta, macros, intolerancias } of aceptadas) {
     const ingredientesTag = receta.ingredientes.map(([k]) => ({ nombre_libre: alimentos.get(k)!.nombre }))
-    // Salsas, condimentos y bases (poolish…) tienen categoría propia y no entran como platos
-    const catElaboracion = categoriaElaboracion(receta.nombre)
+    // Tipo y familia (plato / elaboración): una masa, salsa o fondo no entra como plato
+    const clasif = clasificarFicha({ nombre: receta.nombre, categoria: receta.tipo_plato ?? lote.tipo_plato, tipo_receta: receta.tipo_receta ?? lote.tipo_receta })
+    const esElaboracion = clasif.tipo_contenido === 'elaboracion'
     const { data, error } = await db.from('recetas').insert({
       nombre: receta.nombre,
       descripcion: receta.descripcion,
-      categoria: catElaboracion ?? receta.tipo_plato ?? lote.tipo_plato,
+      categoria: esElaboracion ? 'Elaboración' : receta.tipo_plato ?? lote.tipo_plato,
+      tipo_contenido: clasif.tipo_contenido,
+      familia: clasif.familia,
       tipo_plato: receta.tipo_plato ?? lote.tipo_plato,
-      ...(catElaboracion ? { tipo_receta: 'salsa_base' } : (receta.tipo_receta ?? lote.tipo_receta) ? { tipo_receta: receta.tipo_receta ?? lote.tipo_receta } : {}),
+      ...(esElaboracion ? { tipo_receta: 'salsa_base' } : (receta.tipo_receta ?? lote.tipo_receta) ? { tipo_receta: receta.tipo_receta ?? lote.tipo_receta } : {}),
       ...(receta.perfil ? { es_pre_entreno: receta.perfil === 'pre', es_post_entreno: receta.perfil === 'post', apto_rendimiento: true } : lote.apto_rendimiento ? { apto_rendimiento: true } : {}),
       porciones: receta.porciones ?? 1,
       tiempo_prep_min: receta.tiempo_prep_min,
