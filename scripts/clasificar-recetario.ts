@@ -10,6 +10,8 @@ import { familiaElaboracion, familiaPlato } from '../lib/recetas/clasificacion'
 const env = Object.fromEntries(fs.readFileSync('.env.local', 'utf8').split('\n').filter(l => l.includes('=') && !l.startsWith('#')).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, '')] }))
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 const apply = process.argv.includes('--apply')
+// --elaboraciones="Nombre A|Nombre B": decisión de Carlos, fichas aprobadas que se pasan a elaboración (por nombre exacto)
+const forzadas = new Set((process.argv.find(a => a.startsWith('--elaboraciones='))?.slice('--elaboraciones='.length) ?? '').split('|').map(x => x.trim()).filter(Boolean))
 
 type Fila = { id: string; nombre: string; estado: string; categoria: string | null; tipo_receta: string | null; tipo_contenido: string; familia: string | null; tags: string[] | null }
 
@@ -26,10 +28,11 @@ async function main() {
   for (const f of filas) {
     const elab = familiaElaboracion(f.nombre)
     const esElab = f.tipo_receta === 'salsa_base' || f.tipo_contenido === 'elaboracion'
-    if (esElab || (elab && f.estado === 'en_revision')) {
-      const familia = f.familia ?? elab
+    if (esElab || (elab && f.estado === 'en_revision') || (elab && forzadas.has(f.nombre))) {
+      // Una ficha que pasa a elaboración deja su familia de plato; una elaboración ya marcada conserva la suya
+      const familia = esElab ? (f.familia ?? elab) : elab
       const nuevo = { tipo_contenido: 'elaboracion', familia, categoria: 'Elaboración', tipo_receta: 'salsa_base' }
-      if (f.tipo_contenido !== 'elaboracion' || f.familia !== familia || f.categoria !== 'Elaboración' || f.tipo_receta !== 'salsa_base') cambios.push({ fila: f, nuevo, motivo: esElab ? 'elaboración marcada' : 'en revisión: parece elaboración' })
+      if (f.tipo_contenido !== 'elaboracion' || f.familia !== familia || f.categoria !== 'Elaboración' || f.tipo_receta !== 'salsa_base') cambios.push({ fila: f, nuevo, motivo: esElab ? 'elaboración marcada' : forzadas.has(f.nombre) ? 'decidida por Carlos' : 'en revisión: parece elaboración' })
     } else {
       if (elab && f.estado === 'aprobada') candidatas.push(f)
       if (!f.familia) {
@@ -51,6 +54,15 @@ async function main() {
   console.log(`\nPlatos sin familia tras clasificar: ${sinFamilia.length}`)
   sinFamilia.slice(0, 12).forEach(f => console.log('  · ' + f.nombre))
   if (candidatas.length) { console.log('\nAprobadas que parecen elaboraciones (NO se tocan):'); candidatas.forEach(f => console.log(`  · ${f.nombre} [${f.categoria}]`)) }
+
+  const forzadasSinCoincidir = [...forzadas].filter(n => !filas.some(f => f.nombre === n))
+  if (forzadasSinCoincidir.length) console.log('\n⚠️ Nombres de --elaboraciones sin coincidencia exacta:', forzadasSinCoincidir)
+  // Fichas decididas: ¿alguna está ya en un plan de cliente?
+  const decididas = cambios.filter(c => c.motivo === 'decidida por Carlos').map(c => c.fila.id)
+  if (decididas.length) {
+    const { data: enPlanes } = await sb.from('comidas').select('receta_id').in('receta_id', decididas)
+    console.log(`\nFichas decididas usadas en comidas de planes: ${enPlanes?.length ?? 0}`)
+  }
 
   if (!apply) { console.log('\nsimulación; usa --apply'); return }
   fs.writeFileSync('salidas/26-10-2026_BACKUP-clasificar-recetario.json', JSON.stringify(cambios.map(c => ({ id: c.fila.id, tipo_contenido: c.fila.tipo_contenido, familia: c.fila.familia, categoria: c.fila.categoria, tipo_receta: c.fila.tipo_receta }))))
