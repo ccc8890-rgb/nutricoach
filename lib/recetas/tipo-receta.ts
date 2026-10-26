@@ -61,8 +61,8 @@ export function categoriaElaboracion(nombre: string): CategoriaElaboracion | nul
 
 // Al guardar desde el editor: elegir una categoría de elaboración la convierte en elaboración;
 // sacarla de ahí (si era salsa_base) la devuelve a plato; lo demás no se toca.
-export function tipoRecetaTrasCambioCategoria(r: { nombre: string; categoria: string | null; kcal?: number | null; proteinas?: number | null; tipoActual: string | null }): { tipo_receta: string | null; tipo_plato?: string } {
-  if (esCategoriaElaboracion(r.categoria)) return { tipo_receta: 'salsa_base', tipo_plato: 'Salsa' }
+export function tipoRecetaTrasCambioCategoria(r: { nombre: string; categoria: string | null; kcal?: number | null; proteinas?: number | null; tipoActual: string | null }): { tipo_receta: string | null } {
+  if (esCategoriaElaboracion(r.categoria)) return { tipo_receta: 'salsa_base' }
   if (r.tipoActual === 'salsa_base') return { tipo_receta: inferirTipoReceta({ nombre: r.nombre, categoria: r.categoria, kcal: r.kcal, proteinas: r.proteinas }) }
   return { tipo_receta: r.tipoActual }
 }

@@ -37,7 +37,7 @@ assert.equal(filtroExcluyeElaboraciones('Todos', 'poolish'), false)
 assert.equal(filtroExcluyeElaboraciones('Salsa', ''), false)
 
 // Editor: categoría ↔ tipo_receta coherentes
-assert.deepEqual(tipoRecetaTrasCambioCategoria({ nombre: 'Adobo', categoria: 'Condimento', tipoActual: 'completa' }), { tipo_receta: 'salsa_base', tipo_plato: 'Salsa' })
+assert.deepEqual(tipoRecetaTrasCambioCategoria({ nombre: 'Adobo', categoria: 'Condimento', tipoActual: 'completa' }), { tipo_receta: 'salsa_base' })
 assert.deepEqual(tipoRecetaTrasCambioCategoria({ nombre: 'Pollo al horno', categoria: 'Comida', kcal: 400, proteinas: 40, tipoActual: 'salsa_base' }),
   { tipo_receta: inferirTipoReceta({ nombre: 'Pollo al horno', categoria: 'Comida', kcal: 400, proteinas: 40 }) })
 assert.deepEqual(tipoRecetaTrasCambioCategoria({ nombre: 'Bowl', categoria: 'Comida', tipoActual: 'completa' }), { tipo_receta: 'completa' })

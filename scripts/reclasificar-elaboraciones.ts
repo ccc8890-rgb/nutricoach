@@ -24,7 +24,7 @@ async function main() {
   for (const r of elaboraciones) {
     const cat = categoriaElaboracion(r.nombre)
     if (!cat) { console.log(`?  sin categoría clara (no se toca): ${r.nombre}`); continue }
-    if (r.categoria === cat && r.tipo_plato === 'Salsa') continue
+    if (r.categoria === cat) continue
     cambios.push({ ...r, nueva: cat })
     console.log(`${r.categoria ?? '—'} → ${cat}  ·  ${r.nombre}`)
   }
@@ -36,7 +36,7 @@ async function main() {
   if (!apply) { console.log('\nsimulación; usa --apply'); return }
   fs.writeFileSync('salidas/26-10-2026_BACKUP-reclasificar-elaboraciones.json', JSON.stringify(cambios.map(({ nueva, ...r }) => r)))
   for (const c of cambios) {
-    const { error } = await sb.from('recetas').update({ categoria: c.nueva, tipo_receta: 'salsa_base', tipo_plato: 'Salsa' }).eq('id', c.id)
+    const { error } = await sb.from('recetas').update({ categoria: c.nueva, tipo_receta: 'salsa_base' }).eq('id', c.id)
     if (error) { console.error(c.id, error.message); process.exit(1) }
   }
   console.log('actualizadas', cambios.length)
