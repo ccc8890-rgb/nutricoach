@@ -18,11 +18,13 @@ import BarraRevision from '@/components/recetas/BarraRevision'
 import { formatoCantidad } from '@/lib/recetas/equivalencia'
 import { cantidadEstimada } from '@/lib/recetas/estimadas'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
+import PanelEstudio from '@/components/recetas/PanelEstudio'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import type { Alimento } from '@/types'
 
 interface RecetaDetalle {
   id: string
+  estudio?: unknown   // capa Estudio (jsonb), solo se muestra al coach
   nombre: string
   imagen_url?: string | null
   video_url?: string | null
@@ -118,7 +120,7 @@ export default function DetalleRecetaPage() {
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
-  const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
+  const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion' | 'estudio'>('ingredientes')
   const [quality, setQuality] = useState<RecetaQuality | null>(null)
   const [calidadAbierta, setCalidadAbierta] = useState(false)
   const [fotoAmpliada, setFotoAmpliada] = useState(false)
@@ -602,22 +604,32 @@ export default function DetalleRecetaPage() {
           </div>
         )}
 
-        {/* Una sola lista a la vez: la receta no se hace larguísima con scroll */}
-        {ingredientes.length > 0 && pasos.length > 0 && (
-          <div className="mb-4 flex overflow-hidden" role="tablist" aria-label="Ingredientes o preparación" style={{ border: '1px solid var(--border)' }}>
-            {([['ingredientes', 'Ingredientes'], ['preparacion', 'Preparación']] as const).map(([clave, etiqueta]) => (
-              <button key={clave} role="tab" aria-selected={seccion === clave} onClick={() => setSeccion(clave)}
-                className="flex-1 px-3 py-2.5 text-sm font-semibold"
-                style={{ background: seccion === clave ? 'var(--primary)' : 'transparent', color: seccion === clave ? 'var(--bg)' : 'var(--text-muted)' }}>
-                {etiqueta}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Una sola lista a la vez: la receta no se hace larguísima con scroll. «Estudio» (cocina profesional) solo para el coach. */}
+        {(() => {
+          const pestanas: (readonly ['ingredientes' | 'preparacion' | 'estudio', string])[] = [
+            ...(ingredientes.length > 0 ? [['ingredientes', 'Ingredientes'] as const] : []),
+            ...(pasos.length > 0 ? [['preparacion', 'Preparación'] as const] : []),
+            ...(!isClientView ? [['estudio', 'Estudio'] as const] : []),
+          ]
+          if (pestanas.length < 2) return null
+          return (
+            <div className="mb-4 flex overflow-hidden" role="tablist" aria-label="Ingredientes, preparación o estudio" style={{ border: '1px solid var(--border)' }}>
+              {pestanas.map(([clave, etiqueta]) => (
+                <button key={clave} role="tab" aria-selected={seccion === clave} onClick={() => setSeccion(clave)}
+                  className="flex-1 px-3 py-2.5 text-sm font-semibold"
+                  style={{ background: seccion === clave ? 'var(--primary)' : 'transparent', color: seccion === clave ? 'var(--bg)' : 'var(--text-muted)' }}>
+                  {etiqueta}
+                </button>
+              ))}
+            </div>
+          )
+        })()}
+
+        {seccion === 'estudio' && !isClientView && <PanelEstudio estudio={receta.estudio} factor={factorVista} editarHref={`/recetas/${id}/editar`} />}
 
         {/* ═══════ INGREDIENTES (Checklist estilo Crouton) ═══════ */}
         <FadeIn delay={0.25}>
-          {ingredientes.length > 0 && (seccion === 'ingredientes' || pasos.length === 0) && (
+          {ingredientes.length > 0 && (seccion === 'ingredientes' || (pasos.length === 0 && seccion !== 'estudio')) && (
             <>
               <div
                 className="coach-recipe-detail__section p-5 mb-6"
@@ -647,7 +659,7 @@ export default function DetalleRecetaPage() {
 
         {/* ═══════ PASOS (StepByStep estilo Crouton) ═══════ */}
         <FadeIn delay={0.35}>
-          {pasos.length > 0 && (seccion === 'preparacion' || ingredientes.length === 0) && (
+          {pasos.length > 0 && (seccion === 'preparacion' || (ingredientes.length === 0 && seccion !== 'estudio')) && (
             <div
               className="coach-recipe-detail__section p-5 mb-6"
               style={{
@@ -664,7 +676,7 @@ export default function DetalleRecetaPage() {
         </FadeIn>
 
         {/* ═══════ CONSEJOS ═══════ */}
-        {receta.consejos && (seccion === 'preparacion' || ingredientes.length === 0 || pasos.length === 0) && (
+        {receta.consejos && seccion !== 'estudio' && (seccion === 'preparacion' || ingredientes.length === 0 || pasos.length === 0) && (
           <FadeIn delay={0.4}>
             <div
               className="rounded-2xl p-5 mb-6"

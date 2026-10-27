@@ -9,6 +9,7 @@ import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import type { Alimento } from '@/types'
 import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
 import { camposAlCambiarTipo, type TipoContenido } from '@/lib/recetas/clasificacion'
+import { estudioDeFormulario, estudioVacio, formularioDeEstudio, validarEstudio, UNIDADES_RENDIMIENTO, type FormEstudio } from '@/lib/recetas/estudio'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
@@ -100,6 +101,10 @@ export default function EditarRecetaPage() {
     const [estadoReceta, setEstadoReceta] = useState('')
     const [tipoRecetaActual, setTipoRecetaActual] = useState<string | null>(null)
     const [tipoOriginal, setTipoOriginal] = useState<TipoContenido>('plato')
+    // Capa «Estudio» (cocina profesional): solo se guarda si se rellena algo
+    const [estudioForm, setEstudioForm] = useState<FormEstudio>(formularioDeEstudio(null))
+    const [teniaEstudio, setTeniaEstudio] = useState(false)
+    const [estudioAbierto, setEstudioAbierto] = useState(false)
     const [reportando, setReportando] = useState(false)
 
     // Cargar datos existentes
@@ -115,6 +120,10 @@ export default function EditarRecetaPage() {
             setEstadoReceta(receta.estado ?? '')
             setTipoRecetaActual(receta.tipo_receta ?? null)
             setTipoOriginal(receta.tipo_contenido === 'elaboracion' ? 'elaboracion' : 'plato')
+            const est = validarEstudio(receta.estudio)
+            setEstudioForm(formularioDeEstudio(est))
+            setTeniaEstudio(!estudioVacio(est))
+            setEstudioAbierto(!estudioVacio(est))
 
             setForm({
                 nombre: receta.nombre ?? '',
@@ -338,6 +347,8 @@ export default function EditarRecetaPage() {
             instrucciones: form.instrucciones || null,
             consejos: form.consejos || null,
             peso_final_g: form.peso_final_g.trim() ? parseFloat(form.peso_final_g) || null : null,
+            // Estudio: solo se escribe si hay datos (o para vaciarlo si antes los había): una base sin la columna sigue guardando con normalidad
+            ...(() => { const est = estudioDeFormulario(estudioForm); return !estudioVacio(est) ? { estudio: est } : teniaEstudio ? { estudio: null } : {} })(),
             // Tipo y familia: una elaboración lleva categoría «Elaboración» y la marca interna salsa_base; un plato conserva su momento del día
             ...camposAlCambiarTipo({ nombre: form.nombre, tipo: form.tipo, familia: form.familia || null, categoria: form.categoria || null, kcal: macrosTotales?.kcal, proteinas: macrosTotales?.proteinas, tipoRecetaActual }),
             tipo_plato: form.tipo_plato || null,
@@ -636,6 +647,40 @@ export default function EditarRecetaPage() {
                                 </div>
                             )}
                         </div>
+                    </FadeIn>
+
+                    {/* Estudio (cocina profesional) */}
+                    <FadeIn delay={0.18}>
+                        <details className="card" open={estudioAbierto} onToggle={e => setEstudioAbierto((e.currentTarget as HTMLDetailsElement).open)}>
+                            <summary className="cursor-pointer text-sm font-semibold" style={{ color: 'var(--text)' }}>Estudio (cocina profesional) <span className="font-normal" style={{ color: 'var(--text-muted)' }}>· opcional: solo coach</span></summary>
+                            <div className="mt-4 grid grid-cols-2 gap-3">
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Rinde</label>
+                                    <div className="flex gap-2">
+                                        <input type="text" inputMode="decimal" className="input" placeholder="900" value={estudioForm.rendimiento_cantidad} onChange={e => setEstudioForm(p => ({ ...p, rendimiento_cantidad: e.target.value }))} />
+                                        <select className="input" value={estudioForm.rendimiento_unidad} onChange={e => setEstudioForm(p => ({ ...p, rendimiento_unidad: e.target.value }))}>
+                                            <option value="">—</option>
+                                            {UNIDADES_RENDIMIENTO.map(u => <option key={u} value={u}>{u}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div><label style={{ color: 'var(--text-secondary)' }}>Tiempo activo (min)</label><input type="number" min={0} className="input" value={estudioForm.tiempo_activo_min} onChange={e => setEstudioForm(p => ({ ...p, tiempo_activo_min: e.target.value }))} /></div>
+                                    <div><label style={{ color: 'var(--text-secondary)' }}>Tiempo total (min)</label><input type="number" min={0} className="input" value={estudioForm.tiempo_total_min} onChange={e => setEstudioForm(p => ({ ...p, tiempo_total_min: e.target.value }))} /></div>
+                                </div>
+                                <div className="col-span-2"><label style={{ color: 'var(--text-secondary)' }}>Mise en place</label><textarea className="input resize-none h-16" placeholder="Mantequilla a 16 °C, huevos a temperatura ambiente…" value={estudioForm.mise_en_place} onChange={e => setEstudioForm(p => ({ ...p, mise_en_place: e.target.value }))} /></div>
+                                <div className="col-span-2"><label style={{ color: 'var(--text-secondary)' }}>Porcionado</label><input type="text" className="input" placeholder="12 piezas de 75 g" value={estudioForm.porcionado} onChange={e => setEstudioForm(p => ({ ...p, porcionado: e.target.value }))} /></div>
+                                <div className="col-span-2 grid grid-cols-3 gap-2">
+                                    <div><label style={{ color: 'var(--text-secondary)' }}>Ambiente (h)</label><input type="text" inputMode="decimal" className="input" value={estudioForm.ambiente_h} onChange={e => setEstudioForm(p => ({ ...p, ambiente_h: e.target.value }))} /></div>
+                                    <div><label style={{ color: 'var(--text-secondary)' }}>Nevera (días)</label><input type="text" inputMode="decimal" className="input" value={estudioForm.nevera_dias} onChange={e => setEstudioForm(p => ({ ...p, nevera_dias: e.target.value }))} /></div>
+                                    <div><label style={{ color: 'var(--text-secondary)' }}>Congelador (meses)</label><input type="text" inputMode="decimal" className="input" value={estudioForm.congelador_meses} onChange={e => setEstudioForm(p => ({ ...p, congelador_meses: e.target.value }))} /></div>
+                                </div>
+                                <div className="col-span-2"><label style={{ color: 'var(--text-secondary)' }}>Notas de conservación</label><input type="text" className="input" placeholder="En bolsa hermética" value={estudioForm.conservacion_notas} onChange={e => setEstudioForm(p => ({ ...p, conservacion_notas: e.target.value }))} /></div>
+                                <div><label style={{ color: 'var(--text-secondary)' }}>Equipo</label><input type="text" className="input" placeholder="Amasadora, termómetro" value={estudioForm.equipo} onChange={e => setEstudioForm(p => ({ ...p, equipo: e.target.value }))} /></div>
+                                <div><label style={{ color: 'var(--text-secondary)' }}>Origen / cocina</label><input type="text" className="input" placeholder="Francia" value={estudioForm.origen} onChange={e => setEstudioForm(p => ({ ...p, origen: e.target.value }))} /></div>
+                                <div className="col-span-2"><label style={{ color: 'var(--text-secondary)' }}>Variantes</label><textarea className="input resize-none h-16" placeholder="Sin lactosa con mantequilla clarificada…" value={estudioForm.variantes} onChange={e => setEstudioForm(p => ({ ...p, variantes: e.target.value }))} /></div>
+                            </div>
+                        </details>
                     </FadeIn>
 
                     {/* Instrucciones */}
