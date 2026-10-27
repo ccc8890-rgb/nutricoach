@@ -1,0 +1,1954 @@
+{
+  "lote": "web-desayunos-fitfoodiefinds-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "51176662": {
+      "nombre": "Azúcar moreno",
+      "prefijo": "51176662",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "57641694": {
+      "nombre": "Queso rallado",
+      "prefijo": "57641694",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "86d39197": {
+      "nombre": "Leche entera",
+      "prefijo": "86d39197",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "265ec681": {
+      "nombre": "Pan de molde",
+      "prefijo": "265ec681",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "524ef8eb": {
+      "nombre": "Semillas de lino",
+      "prefijo": "524ef8eb",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "3cbe24f8": {
+      "nombre": "Almendras",
+      "prefijo": "3cbe24f8",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "6ca75761": {
+      "nombre": "Semillas de calabaza",
+      "prefijo": "6ca75761",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9286a63f": {
+      "nombre": "Aceite de coco",
+      "prefijo": "9286a63f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "dcf63110": {
+      "nombre": "Arándanos secos",
+      "prefijo": "dcf63110",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e5bd56d6": {
+      "nombre": "Fresas liofilizadas",
+      "prefijo": "e5bd56d6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d3c0b817": {
+      "nombre": "Levadura en Polvo Bote",
+      "prefijo": "d3c0b817",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b54b6e8b": {
+      "nombre": "Fresa",
+      "prefijo": "b54b6e8b",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8f023610": {
+      "nombre": "Clara de huevo",
+      "prefijo": "8f023610",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "46825bfa": {
+      "nombre": "Cacahuetes",
+      "prefijo": "46825bfa",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "32c7062f": {
+      "nombre": "Bacon 1/ 5 M",
+      "prefijo": "32c7062f",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bd6dc3a5": {
+      "nombre": "Tortilla de Trigo",
+      "prefijo": "bd6dc3a5",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "2249081f": {
+      "nombre": "Proteína en polvo (vainilla o chocolate)",
+      "prefijo": "2249081f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "013d90a9": {
+      "nombre": "Salchicha Wieners Pollo",
+      "prefijo": "013d90a9",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "057baedf": {
+      "nombre": "Pimiento",
+      "prefijo": "057baedf",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "67e4d52d": {
+      "nombre": "Queso cheddar",
+      "prefijo": "67e4d52d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "fa56e340": {
+      "nombre": "Quinoa cocida",
+      "prefijo": "fa56e340",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b0820d49": {
+      "nombre": "Pepitas de Chocolate Negro",
+      "prefijo": "b0820d49",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2aba459": {
+      "nombre": "Chocolate negro en pepitas",
+      "prefijo": "b2aba459",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja",
+        "Lácteos"
+      ],
+      "origen": "vegetal"
+    },
+    "c661ff5c": {
+      "nombre": "Leche de coco",
+      "prefijo": "c661ff5c",
+      "rol": "lacteo_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c7de73e8": {
+      "nombre": "Coco rallado",
+      "prefijo": "c7de73e8",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "ae08120b": {
+      "nombre": "Aceite de Aguacate Cristal",
+      "prefijo": "ae08120b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ef1e4c61": {
+      "nombre": "Cebolla blanca",
+      "prefijo": "ef1e4c61",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "464ace19": {
+      "nombre": "Salsa Worcestershire Botella",
+      "prefijo": "464ace19",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "vegetal"
+    },
+    "2ab31618": {
+      "nombre": "Caldo de Carne Concentrado",
+      "prefijo": "2ab31618",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ee0bcc3d": {
+      "nombre": "Harina Mix sin Gluten Múltiples Usos",
+      "prefijo": "ee0bcc3d",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b4add815": {
+      "nombre": "Té Matcha en polvo",
+      "prefijo": "b4add815",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "329a9ffa": {
+      "nombre": "Bebida de almendras 0% azúcar",
+      "prefijo": "329a9ffa",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "95aa4443": {
+      "nombre": "Salsa picante",
+      "prefijo": "95aa4443",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2856bf23": {
+      "nombre": "Hummus",
+      "prefijo": "2856bf23",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "8d2c1ba2": {
+      "nombre": "Frijoles negros guisados",
+      "prefijo": "8d2c1ba2",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "88db0b2d": {
+      "nombre": "Tomates cherry rama Dulcita",
+      "prefijo": "88db0b2d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "219fa68f": {
+      "nombre": "Lechuga romana",
+      "prefijo": "219fa68f",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "06262e59": {
+      "nombre": "Queso",
+      "prefijo": "06262e59",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "0401d093": {
+      "nombre": "Aceitunas negras sin hueso",
+      "prefijo": "0401d093",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95db3d38": {
+      "nombre": "Harina de avena",
+      "prefijo": "95db3d38",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "ecc2cdea": {
+      "nombre": "Bebida de Avena Brik",
+      "prefijo": "ecc2cdea",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "dc4e36af": {
+      "nombre": "Semillas Molidas de Lino",
+      "prefijo": "dc4e36af",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "649e4fa3": {
+      "nombre": "Mix frutas tropical Hacendado ultracongeladas",
+      "prefijo": "649e4fa3",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eea44971": {
+      "nombre": "Espinacas frescas",
+      "prefijo": "eea44971",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7fcfe0b8": {
+      "nombre": "Yogur griego natural (0%)",
+      "prefijo": "7fcfe0b8",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "f2671248": {
+      "nombre": "Zumo de naranja",
+      "prefijo": "f2671248",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6e801766": {
+      "nombre": "Tahini",
+      "prefijo": "6e801766",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "49230ad1": {
+      "nombre": "Albahaca fresca",
+      "prefijo": "49230ad1",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "46f7551d": {
+      "nombre": "Granola con Avena y Chocolate Negro",
+      "prefijo": "46f7551d",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten",
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "8767a425": {
+      "nombre": "Harina integral de trigo",
+      "prefijo": "8767a425",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "bc88e038": {
+      "nombre": "Arándanos frescos",
+      "prefijo": "bc88e038",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c17e7165": {
+      "nombre": "Carne picada de pollo",
+      "prefijo": "c17e7165",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "30ed35cf": {
+      "nombre": "Queso Azul D'Auvergne DOP",
+      "prefijo": "30ed35cf",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "87c8c74b": {
+      "nombre": "Pan rallado panko",
+      "prefijo": "87c8c74b",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "85ee8c30": {
+      "nombre": "Crema de Queso Azul Tarrina",
+      "prefijo": "85ee8c30",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Huevos"
+      ],
+      "origen": "lacteo"
+    },
+    "5036194d": {
+      "nombre": "Salsa buffalo",
+      "prefijo": "5036194d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a54e5749": {
+      "nombre": "Chocolate negro 75-80%",
+      "prefijo": "a54e5749",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja",
+        "Lácteos"
+      ],
+      "origen": "vegetal"
+    },
+    "5f015378": {
+      "nombre": "Pan Bagel",
+      "prefijo": "5f015378",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "c8c7806c": {
+      "nombre": "Jamón Cocido Delizias",
+      "prefijo": "c8c7806c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Palitos de torrija al hornillo",
+      "descripcion": "Tiras de pan empapadas en huevo, leche y sirope de arce, doradas a la sartén y espolvoreadas con azúcar moreno y canela. Un desayuno dulce y esponjoso listo en pocos minutos.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "86d39197",
+          180
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "265ec681",
+          320
+        ],
+        [
+          "668919bc",
+          42
+        ],
+        [
+          "51176662",
+          12
+        ],
+        [
+          "589e624a",
+          5
+        ]
+      ],
+      "instrucciones": "1. Mezcla el azúcar moreno y la canela en un bol pequeño para hacer el azúcar de canela y reserva.\n2. Bate los huevos, la leche y el sirope de arce en otro bol y reserva.\n3. Corta cada rebanada de pan por la mitad o en tercios, según su anchura, para formar tiras.\n4. Sumerge las tiras de pan en la mezcla de huevo y déjalas reposar unos 1 minuto para que absorban bien. Saca cada tira y deja que escurra el exceso de huevo. Repite con todas.\n5. Calienta 1 cucharada de mantequilla en una sartén grande antiadherente a fuego medio-bajo. Añade aproximadamente un tercio de las tiras, separadas y sin tocarse, y cocina unos 3 minutos o hasta que se doren.\n6. Dale la vuelta a las tiras y sube el fuego a medio. Cocina 2-3 minutos más o hasta que estén doradas. Antes de sacarlas de la sartén, espolvorea una cantidad generosa de azúcar de canela, dales la vuelta y cocina 20 segundos; repite por el otro lado.\n7. Limpia la sartén con papel de cocina para retirar los restos tostados. Baja de nuevo el fuego a medio-bajo y repite el proceso 2 veces más hasta cocinar todas las tiras.",
+      "consejos": "Usa pan del día anterior o ligeramente tostado para que absorba la mezcla de huevo sin deshacerse.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/french-toast-sticks/",
+        "autor": "Lee Funke",
+        "kcal_web": 432
+      }
+    },
+    {
+      "nombre": "Bol de avena superalimento",
+      "descripcion": "Un bol de avena cremosa cocida con leche de almendra, semillas de chía y lino, canela y un toque de sirope de arce. Ideal para un desayuno nutritivo y saciante.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "524ef8eb",
+          20
+        ],
+        [
+          "589e624a",
+          5
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "9dc9f005",
+          960
+        ],
+        [
+          "34d6fafa",
+          40
+        ]
+      ],
+      "instrucciones": "1. Pon todos los ingredientes en una olla mediana.\n2. Cocina a fuego medio-alto durante 10-15 minutos, removiendo de vez en cuando, hasta que la avena espese y tenga textura de papilla.\n3. Sirve caliente y añade tus toppings favoritos.",
+      "consejos": "Remueve de vez en cuando durante la cocción para evitar que la avena se pegue al fondo de la olla.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/superfood-oatmeal-bowl/",
+        "autor": null,
+        "kcal_web": 240
+      }
+    },
+    {
+      "nombre": "Granola casera con arándanos",
+      "descripcion": "Granola crujiente de avena, almendras y pepitas, endulzada con sirope de arce y con arándanos secos. Ideal para desayunos y meriendas.",
+      "tiempo_prep_min": 50,
+      "porciones": 8,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "3cbe24f8",
+          70
+        ],
+        [
+          "6ca75761",
+          70
+        ],
+        [
+          "589e624a",
+          3
+        ],
+        [
+          "34d6fafa",
+          60
+        ],
+        [
+          "9286a63f",
+          28
+        ],
+        [
+          "dcf63110",
+          70
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y prepara una bandeja de horno con papel vegetal.\n2. Extiende los copos de avena, las almendras y las semillas de calabaza en la bandeja y mezcla. Espolvorea la canela y rocía con el sirope de arce y el aceite de coco fundido.\n3. Remueve todo hasta que los ingredientes queden bien combinados y cubiertos de forma uniforme. Extiende la mezcla formando una capa de grosor homogéneo.\n4. Hornea a 175 °C durante 20-25 minutos, removiendo cada 10 minutos, hasta que esté dorada. Vigílala de cerca para que no se queme.\n5. Saca la granola del horno, añade los arándanos secos y mezcla. Deja enfriar al menos 15 minutos antes de consumir o guardar.\n6. Conserva en un recipiente hermético en un lugar fresco y oscuro hasta 2 semanas.",
+      "consejos": "Remueve la granola cada 10 minutos durante el horneado para que se dore de forma uniforme y no se queme.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/healthy-granola-recipe/",
+        "autor": null,
+        "kcal_web": 231
+      }
+    },
+    {
+      "nombre": "Bagels de fresa y requesón",
+      "descripcion": "Bagels caseros de fresa y requesón, ligeros y esponjosos, hechos en freidora de aire. Perfectos para desayuno o merienda.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          240
+        ],
+        [
+          "20c74a2a",
+          125
+        ],
+        [
+          "242a5689",
+          6
+        ],
+        [
+          "e5bd56d6",
+          24
+        ],
+        [
+          "51176662",
+          36
+        ],
+        [
+          "6cd81fed",
+          50
+        ]
+      ],
+      "instrucciones": "1. Precalienta la freidora de aire a 175 °C.\n2. En un bol grande, mezcla el requesón batido, la harina, la levadura química, la sal, el polvo de fresa liofilizada y el azúcar moreno. Remueve con una cuchara de silicona o madera hasta que se integre. Con las manos, presiona hasta formar una bola de masa.\n3. Pasa la masa a una superficie enharinada y amasa hasta que quede lisa. Puedes espolvorear un poco de harina por encima y por debajo para que no se pegue demasiado.\n4. Divide la bola en 4 porciones iguales. Forma bolas y aplánalas ligeramente. Con el extremo de una cuchara redondeada o el dedo, haz un agujero en el centro de cada masa aplastada. Estira el centro para que el agujero no se cierre durante la cocción.\n5. Pincela la parte superior e inferior de cada bagel con huevo batido.\n6. Forra la cesta de la freidora de aire con papel de horno y cocina los bagels a 175 °C durante 6 minutos, dales la vuelta y cocina 6 minutos más. Puede que necesites hacerlo en dos tandas.\n7. Sácalos de la freidora y déjalos enfriar 5 minutos antes de servir.\n8. Sirve con tus toppings favoritos para bagels.",
+      "consejos": "Si no tienes freidora de aire, puedes hornearlos a 180 °C durante 12-15 minutos, dándoles la vuelta a mitad de cocción.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/strawberry-cottage-cheese-bagels/",
+        "autor": null,
+        "kcal_web": 259
+      }
+    },
+    {
+      "nombre": "Horneado de requesón con fresa y plátano",
+      "descripcion": "Un horneado esponjoso y ligeramente dulce con requesón, plátano y fresa, ideal para un desayuno o merienda nutritiva.",
+      "tiempo_prep_min": 55,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "20c74a2a",
+          188
+        ],
+        [
+          "d3c0b817",
+          4
+        ],
+        [
+          "b54b6e8b",
+          36
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "1131a576",
+          118
+        ],
+        [
+          "b2c88c97",
+          226
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "8f023610",
+          33
+        ],
+        [
+          "9dc9f005",
+          60
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y forra un molde de 20x20 cm con papel de horno.\n2. En un bol, mezcla la harina, la levadura y la sal. Reserva.\n3. En otro bol, bate el sirope de arce, el plátano machacado, el requesón, el huevo, la clara, la bebida de almendra y la vainilla hasta que quede homogéneo. Añade los ingredientes secos y remueve hasta integrar.\n4. Vierte la masa en el molde preparado. Coloca encima las fresas laminadas y rodajas de plátano. Cubre con papel de aluminio y hornea 20 minutos. Destapa y hornea 15-20 minutos más o hasta que esté cuajado.\n5. Saca del horno y deja reposar 10 minutos. Pasa a una rejilla y sirve con mantequilla y sirope de arce.",
+      "consejos": "Puedes sustituir la bebida de almendra por cualquier leche que tengas en casa.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/cottage-cheese-breakfast-bake/",
+        "autor": null,
+        "kcal_web": 349
+      }
+    },
+    {
+      "nombre": "Batido verde de cacahuete",
+      "descripcion": "Un batido cremoso y refrescante con plátano congelado, espinacas y cacahuete. Ideal para desayunar o como merienda nutritiva.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          300
+        ],
+        [
+          "6328f4b9",
+          48
+        ],
+        [
+          "46825bfa",
+          30
+        ],
+        [
+          "9dc9f005",
+          360
+        ],
+        [
+          "cb57d667",
+          30
+        ]
+      ],
+      "instrucciones": "1. Introduce todos los ingredientes del batido en una batidora de alta velocidad.\n2. Tritura a velocidad alta durante 1-2 minutos hasta obtener una textura suave. Si queda demasiado espeso, añade más bebida de almendra hasta alcanzar la consistencia deseada.\n3. Sirve y decora con crema de cacahuete y cacahuetes tostados al gusto.",
+      "consejos": "Usa plátano congelado para lograr una textura más cremosa y fría sin necesidad de añadir hielo.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/peanut-lovers-green-smoothie/",
+        "autor": null,
+        "kcal_web": 332
+      }
+    },
+    {
+      "nombre": "Burritos de desayuno con huevo y bacon",
+      "descripcion": "Burritos rellenos de huevo revuelto con verduras, bacon crujiente y queso fundido. Un desayuno completo y saciante, listo en 15 minutos.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          400
+        ],
+        [
+          "318db297",
+          5
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "bdc11c5a",
+          10
+        ],
+        [
+          "d106e3bb",
+          120
+        ],
+        [
+          "08637e90",
+          70
+        ],
+        [
+          "32c7062f",
+          120
+        ],
+        [
+          "57641694",
+          113
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bd6dc3a5",
+          240
+        ]
+      ],
+      "instrucciones": "1. Bate los 8 huevos en un bol grande y añade un chorrito de leche. Reserva.\n2. Calienta el aceite de oliva y el ajo picado en una sartén a fuego medio-alto y sofríe durante 1 minuto. Añade el pimiento rojo y la cebolla picados finamente y cocina 2-3 minutos, hasta que la cebolla esté translúcida.\n3. Vierte los huevos y cocina 3-5 minutos, removiendo hasta que cuajen.\n4. Reparte el revuelto de huevo sobre cada tortilla (1/4 por tortilla), añade 1 tira de bacon cocido, 1/4 del queso rallado y una pizca de sal y pimienta.\n5. Enrolla apretadamente y sirve caliente, o congela para más tarde.",
+      "consejos": "Puedes congelar los burritos envueltos en papel de aluminio y recalentarlos en el microondas para un desayuno rápido entre semana.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/protein-packed-breakfast-burritos/",
+        "autor": null,
+        "kcal_web": 352
+      }
+    },
+    {
+      "nombre": "Avena nocturna con crema de cacahuete",
+      "descripcion": "Desayuno cremoso de avena remojada durante la noche con crema de cacahuete, chía y yogur griego. Se prepara en minutos y se deja lista para la mañana siguiente.",
+      "tiempo_prep_min": 120,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          125
+        ],
+        [
+          "6328f4b9",
+          32
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "9dc9f005",
+          300
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "2249081f",
+          30
+        ]
+      ],
+      "instrucciones": "1. Pon todos los ingredientes en un recipiente de cristal grande, como un tarro de conserva.\n2. Remueve hasta que se integren y tapa el recipiente.\n3. Refrigera al menos 2 horas o toda la noche.\n4. Sirve con un poco más de crema de cacahuete por encima.\n5. Alternativa: tritura todos los ingredientes en una batidora de alta velocidad durante aproximadamente 1 minuto hasta obtener una mezcla muy cremosa. Pasa la avena a un recipiente hermético y refrigera al menos 2 horas o toda la noche. Por la mañana puedes comerla tal cual o añadir un poco de bebida de almendra para aligerarla.",
+      "consejos": "Si la prefieres más líquida, añade un chorrito de bebida de almendra justo antes de comer.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/peanut-butter-overnight-oats/",
+        "autor": null,
+        "kcal_web": 325
+      }
+    },
+    {
+      "nombre": "Pimientos rellenos de salchicha y huevo",
+      "descripcion": "Pimientos asados rellenos de salchicha de pollo, kale y huevo batido, gratinados con queso cheddar. Un desayuno completo y saciante.",
+      "tiempo_prep_min": 60,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "950afc33",
+          30
+        ],
+        [
+          "013d90a9",
+          340
+        ],
+        [
+          "d946bd47",
+          130
+        ],
+        [
+          "057baedf",
+          600
+        ],
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "67e4d52d",
+          45
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C y forrar una fuente grande con papel de aluminio; engrasar ligeramente.\n2. Cortar los pimientos por la mitad a lo largo, retirar las semillas y el interior, engrasar por dentro y por fuera y sazonar con sal y pimienta. Colocarlos en la fuente.\n3. Batir los 6 huevos en un bol pequeño y reservar.\n4. Calentar el aceite de oliva con el ajo picado en una sartén grande a fuego medio-alto. Añadir la cebolla, la salchicha troceada y el kale y saltear 3-5 minutos hasta que la cebolla esté transparente.\n5. Rellenar las mitades de pimiento con la mezcla de salchicha y verduras y cubrir con el huevo batido.\n6. Hornear a 175 °C durante 40-50 minutos según el punto deseado del huevo. Sacar del horno, espolvorear 1 cucharada de queso cheddar sobre cada pimiento y hornear unos minutos más hasta que se derrita.",
+      "consejos": "Si usas salchichas ya cocidas, reduce el tiempo de horneado a 30-35 minutos para que el huevo no se seque.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/cheesy-breakfast-sausage-stuffed-peppers/",
+        "autor": null,
+        "kcal_web": 205
+      }
+    },
+    {
+      "nombre": "Crispis de quinoa y chocolate",
+      "descripcion": "Bocados crujientes de quinoa horneada mezclada con chocolate fundido, crema de cacahuete y un toque de sal marina. Un snack dulce y crujiente que se conserva en el congelador.",
+      "tiempo_prep_min": 60,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "fa56e340",
+          555
+        ],
+        [
+          "b0820d49",
+          270
+        ],
+        [
+          "9286a63f",
+          14
+        ],
+        [
+          "6328f4b9",
+          48
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 230 °C y forra una bandeja con papel de horno.\n2. Extiende la quinoa cocida sobre el papel y hornéala de 20 a 30 minutos, removiendo cada 5-7 minutos, hasta que esté dorada y crujiente.\n3. Saca la quinoa del horno y déjala enfriar.\n4. Funde las pepitas de chocolate con el aceite de coco en el microondas en intervalos de 30 segundos, removiendo entre cada uno, hasta que quede brillante.\n5. Incorpora la quinoa crujiente al chocolate fundido y mezcla hasta que quede bien cubierta.\n6. Extiende la mezcla de forma uniforme sobre la misma bandeja forrada, procurando que toda la quinoa quede en contacto. Rocía la crema de cacahuete por encima y espolvorea la sal marina.\n7. Mete la bandeja en el congelador al menos 30 minutos hasta que endurezca.\n8. Cuando la mezcla esté dura, trocéala en piezas pequeñas y guárdalas en una bolsa hermética en el congelador hasta 3 meses.",
+      "consejos": "Si la quinoa cocida está muy húmeda, escúrrela y sécala bien antes de hornearla para que quede más crujiente.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/chocolate-quinoa-crisps/",
+        "autor": null,
+        "kcal_web": 421
+      }
+    },
+    {
+      "nombre": "Avena nocturna batida con cuatro sabores",
+      "descripcion": "Una base cremosa de avena batida con yogur griego y leche de almendras que se prepara en minutos y se deja reposar toda la noche. Se puede personalizar con cuatro sabores distintos: chocolate y cacahuete, fresa, coco o arce.",
+      "tiempo_prep_min": 20,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          125
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "34d6fafa",
+          100
+        ],
+        [
+          "9dc9f005",
+          360
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "6328f4b9",
+          32
+        ],
+        [
+          "edb1e321",
+          6
+        ],
+        [
+          "b2aba459",
+          24
+        ],
+        [
+          "16665787",
+          24
+        ],
+        [
+          "c661ff5c",
+          480
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "c7de73e8",
+          6
+        ]
+      ],
+      "instrucciones": "1. Coloca en el vaso de la batidora los ingredientes de la base: copos de avena, semillas de chía, sirope de arce, bebida de almendras y yogur griego natural.\n2. Elige uno de los cuatro sabores y añade sus ingredientes a la batidora: chocolate y cacahuete (crema de cacahuete, cacao en polvo, pepitas de chocolate derretidas, 60 g de bebida de almendras y 20 g de sirope de arce), fresa (24 g de fresas y 20 g de sirope de arce), coco (sustituye la bebida de almendras por 480 g de leche de coco, añade la vainilla y el coco rallado) o arce (40 g de sirope de arce).\n3. Tritura hasta obtener una mezcla homogénea. Consume inmediatamente o guarda en la nevera toda la noche.",
+      "consejos": "Puedes preparar la base la noche anterior y añadir el sabor elegido justo antes de consumir para que la textura quede más fresca.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/blended-overnight-oats-4-ways/",
+        "autor": null,
+        "kcal_web": 247
+      }
+    },
+    {
+      "nombre": "Barritas de avena con crema de cacahuete y chocolate",
+      "descripcion": "Barritas energéticas sin horno con base de avena y crema de cacahuete, cubiertas de chocolate fundido y un toque de sal marina.",
+      "tiempo_prep_min": 22,
+      "porciones": 16,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6328f4b9",
+          256
+        ],
+        [
+          "8619b09f",
+          170
+        ],
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "b2aba459",
+          135
+        ]
+      ],
+      "instrucciones": "1. Forrar un molde cuadrado de 20x20 cm con papel de horno.\n2. Calentar la crema de cacahuete y la miel a fuego medio, removiendo de vez en cuando, hasta que se fundan y queden brillantes.\n3. Retirar del fuego y añadir los copos de avena. Remover hasta que todos los copos queden cubiertos. Añadir agua cucharadita a cucharadita si hace falta hasta obtener una consistencia de masa de galleta.\n4. Pasar la mezcla de avena al molde forrado y presionarla firmemente contra el fondo. Reservar.\n5. Poner las pepitas de chocolate en un bol apto para microondas y calentar a potencia alta en intervalos de 20 segundos, removiendo cada vez, hasta que el chocolate esté fundido y brillante.\n6. Verter el chocolate fundido sobre la capa de avena y extenderlo de forma uniforme con una espátula. Espolvorear la sal marina por encima.\n7. Llevar el molde al congelador al menos 20 minutos antes de cortar las barritas en cuadrados.\n8. Consumir inmediatamente o guardar las barritas en un recipiente apto para congelador.",
+      "consejos": "Guarda las barritas en el congelador y sácalas unos minutos antes de comer para que recuperen su textura.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/peanut-butter-cup-oatmeal-bars/",
+        "autor": null,
+        "kcal_web": 197
+      }
+    },
+    {
+      "nombre": "Dip de cebolla francesa con requesón",
+      "descripcion": "Un dip cremoso y sabroso de requesón batido con cebolla caramelizada, salsa Worcestershire y especias. Ideal para untar con verduras o pan.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ae08120b",
+          14
+        ],
+        [
+          "ef1e4c61",
+          50
+        ],
+        [
+          "b2c88c97",
+          480
+        ],
+        [
+          "464ace19",
+          5
+        ],
+        [
+          "2ab31618",
+          1
+        ],
+        [
+          "bbece24a",
+          1.5
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite de aguacate en una sartén mediana a fuego medio. Añade la cebolla cortada en juliana y la sal, y cocina unos 10 minutos, removiendo con regularidad, hasta que la cebolla esté blanda y dorada.\n2. Retira la sartén del fuego. Pasa la cebolla a un plato y déjala enfriar mientras preparas la base de requesón.\n3. Pon el requesón, la salsa Worcestershire, el caldo de carne concentrado y el ajo en polvo en un procesador de alimentos o en un vaso alto. Tritura o bate con una batidora de mano hasta obtener una mezcla completamente lisa y cremosa.\n4. Añade la cebolla enfriada y da solo unos pocos pulsos para incorporarla, dejando trocitos de cebolla en el dip. Evita triturar de forma continua en este paso para mantener la textura.\n5. Sirve inmediatamente o tapa y refrigera para que los sabores se asienten.",
+      "consejos": "Deja reposar el dip en la nevera al menos 30 minutos antes de servir para que los sabores se intensifiquen.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/cottage-cheese-french-onion-dip/",
+        "autor": null,
+        "kcal_web": 140
+      }
+    },
+    {
+      "nombre": "Gofres verdes de matcha",
+      "descripcion": "Gofres esponjosos con té matcha, sin gluten y endulzados con miel. Una opción original para el desayuno o la merienda.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ee0bcc3d",
+          250
+        ],
+        [
+          "242a5689",
+          8
+        ],
+        [
+          "b4add815",
+          5
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "8619b09f",
+          85
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "329a9ffa",
+          300
+        ],
+        [
+          "9286a63f",
+          28
+        ]
+      ],
+      "instrucciones": "1. Precalienta la gofrera a temperatura baja o media.\n2. En un bol mediano, mezcla la harina sin gluten, la levadura química, el bicarbonato sódico y el té matcha en polvo con unas varillas.\n3. En un bol grande, bate los huevos. Añade la miel, el extracto de vainilla y la bebida de almendra, y mezcla. Incorpora poco a poco los ingredientes secos y remueve hasta integrar. Por último, añade el aceite de coco derretido y mezcla hasta obtener una masa homogénea.\n4. Vierte 1/2 taza (120 ml) de masa en la gofrera y cocina durante 2-2,5 minutos. Repite con el resto de la masa.\n5. Sirve los gofres con tus toppings favoritos, como nata de coco montada y sirope de arce.",
+      "consejos": "No subas la temperatura de la gofrera para que los gofres conserven su color verde característico.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/matcha-green-tea-green-waffles/",
+        "autor": null,
+        "kcal_web": 292
+      }
+    },
+    {
+      "nombre": "Dip griego de 7 capas con yogur",
+      "descripcion": "Un dip fresco y saludable en capas con yogur griego especiado, hummus, frijoles negros, tomate, aguacate y lechuga. Ideal como aperitivo para compartir.",
+      "tiempo_prep_min": 20,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          240
+        ],
+        [
+          "95aa4443",
+          15
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "21a40eb5",
+          0.5
+        ],
+        [
+          "2856bf23",
+          240
+        ],
+        [
+          "8d2c1ba2",
+          255
+        ],
+        [
+          "d61c2a0f",
+          2
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "88db0b2d",
+          150
+        ],
+        [
+          "91ad5545",
+          300
+        ],
+        [
+          "65756599",
+          15
+        ],
+        [
+          "219fa68f",
+          50
+        ],
+        [
+          "06262e59",
+          60
+        ],
+        [
+          "0401d093",
+          30
+        ]
+      ],
+      "instrucciones": "1. En un bol pequeño, mezcla el yogur griego, la salsa picante, el chili en polvo, el comino, el pimentón y una pizca de sal. Extiende la mezcla de forma uniforme en el fondo de un molde de 20x20 cm.\n2. Extiende el hummus de forma uniforme sobre la capa de yogur.\n3. En un bol, mezcla los frijoles negros escurridos y enjuagados, el cilantro picado y la cebolla roja picada finamente. Esparce esta mezcla sobre la capa de hummus.\n4. Coloca los tomates cherry cortados por la mitad sobre la capa de frijoles.\n5. En un bol, machaca los aguacates con el zumo de lima y sal al gusto. Mezcla bien y extiende sobre la capa de tomate.\n6. Mezcla la lechuga romana picada con el zumo de lima restante y esparce sobre la capa de aguacate.\n7. Termina espolvoreando el queso Colby Jack rallado y las aceitunas negras sobre la lechuga. Sirve inmediatamente.",
+      "consejos": "Sirve el dip con totopos de maíz o verduras frescas para dipear, y añade las capas de aguacate y lechuga justo antes de servir para que no se oxiden.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/healthy-7-layer-greek-yogurt-taco-dip-easy-appetizer-idea/",
+        "autor": "Linley Richter",
+        "kcal_web": 323
+      }
+    },
+    {
+      "nombre": "Avena horneada con arándanos y crujiente",
+      "descripcion": "Un horneado de avena esponjoso con arándanos y una capa crujiente de mantequilla y azúcar moreno, ideal para desayunos o meriendas.",
+      "tiempo_prep_min": 55,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          120
+        ],
+        [
+          "95db3d38",
+          60
+        ],
+        [
+          "51176662",
+          50
+        ],
+        [
+          "668919bc",
+          56
+        ],
+        [
+          "f75a3721",
+          15
+        ],
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "8619b09f",
+          63
+        ],
+        [
+          "ecc2cdea",
+          420
+        ],
+        [
+          "242a5689",
+          4
+        ],
+        [
+          "508e2d88",
+          300
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C y forra un molde cuadrado de 23x23 cm con papel de horno o engrásalo.\n2. En un bol, mezcla 60 g de copos de avena, 30 g de harina de avena, el azúcar moreno, la mantequilla fría y 5 g de extracto de vainilla hasta formar un crujiente; reserva.\n3. En un bol grande, aplasta el plátano hasta que quede líquido y mezcla con los huevos, 10 g de extracto de vainilla, la miel y la bebida de avena hasta integrar.\n4. Añade 60 g de copos de avena, 30 g de harina de avena, la levadura, la sal y los arándanos; mezcla bien.\n5. Vierte la masa en el molde, cubre con el crujiente y hornea tapado unos 30 minutos; destapa y hornea 10 minutos más hasta que esté firme.\n6. Deja enfriar unos 10 minutos antes de servir.",
+      "consejos": "Puedes sustituir los arándanos por otra fruta de temporada sin cambiar las cantidades.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/blueberry-muffin-baked-oatmeal/",
+        "autor": null,
+        "kcal_web": 354
+      }
+    },
+    {
+      "nombre": "Avena nocturna con crema de cacahuete y cacao",
+      "descripcion": "Desayuno preparado la noche anterior con capas de avena a la crema de cacahuete y avena al cacao, endulzado con miel y sirope de arce.",
+      "tiempo_prep_min": 5,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "9dc9f005",
+          660
+        ],
+        [
+          "b5b5e57f",
+          8
+        ],
+        [
+          "8619b09f",
+          21
+        ],
+        [
+          "dc4e36af",
+          8
+        ],
+        [
+          "6328f4b9",
+          62
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "edb1e321",
+          15
+        ],
+        [
+          "b2aba459",
+          20
+        ]
+      ],
+      "instrucciones": "1. En un recipiente de vidrio, mezclar bien los copos de avena, 330 g de bebida de almendra, 4 g de semillas de chía, la miel, 4 g de semillas de lino molidas, 32 g de crema de cacahuete y una pizca de sal.\n2. En otro recipiente de vidrio, mezclar bien los copos de avena restantes, 330 g de bebida de almendra, 4 g de semillas de chía, el sirope de arce, 4 g de semillas de lino molidas, el cacao en polvo y una pizca de sal.\n3. Refrigerar ambos recipientes al menos 2 horas o toda la noche.\n4. En 4 tarros, alternar capas de la avena a la crema de cacahuete y de la avena al cacao hasta repartir todo.\n5. Coronar con 30 g de crema de cacahuete y las pepitas de chocolate.",
+      "consejos": "Se conserva en la nevera hasta 5 días; remueve antes de comer y añade un poco de bebida de almendra si espesa demasiado.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/vegan-peanut-butter-cup-overnight-oats/",
+        "autor": null,
+        "kcal_web": 279
+      }
+    },
+    {
+      "nombre": "Pudín de chía con crema de cacahuete y cacao",
+      "descripcion": "Pudín cremoso de semillas de chía batido con crema de cacahuete, cacao y sirope de arce. Un desayuno o merienda saciante que se prepara la noche anterior.",
+      "tiempo_prep_min": 180,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6328f4b9",
+          128
+        ],
+        [
+          "ecc2cdea",
+          480
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "edb1e321",
+          30
+        ],
+        [
+          "b5b5e57f",
+          80
+        ]
+      ],
+      "instrucciones": "1. En un bol, mezcla la crema de cacahuete, la bebida de avena y el sirope de arce hasta obtener una mezcla homogénea.\n2. Añade el cacao en polvo, las semillas de chía y la sal, y remueve hasta integrar todo.\n3. Cubre el bol y refrigera al menos 4 horas o toda la noche.\n4. Pasa la mezcla a una batidora de vaso y tritura hasta que quede espesa y cremosa.\n5. Sirve inmediatamente con tus toppings favoritos o guarda el pudín en la nevera hasta el momento de consumirlo.",
+      "consejos": "Remueve la mezcla a mitad del reposo para evitar que las semillas de chía se apelmacen en el fondo.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/blended-chia-seed-pudding/",
+        "autor": null,
+        "kcal_web": 284
+      }
+    },
+    {
+      "nombre": "Batido verde tropical",
+      "descripcion": "Un batido rápido y refrescante con fruta tropical congelada, espinacas y yogur griego, ideal para desayunos o meriendas.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "649e4fa3",
+          280
+        ],
+        [
+          "eea44971",
+          60
+        ],
+        [
+          "7fcfe0b8",
+          120
+        ],
+        [
+          "f2671248",
+          240
+        ]
+      ],
+      "instrucciones": "1. Coloca todos los ingredientes en una batidora de alta potencia.\n2. Tritura a velocidad alta hasta obtener una mezcla homogénea. Si queda demasiado espesa, añade un poco más de zumo de naranja hasta alcanzar la textura deseada.",
+      "consejos": "Sirve el batido bien frío y consúmelo enseguida para aprovechar mejor su textura y sabor.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/tropical-green-smoothie/",
+        "autor": null,
+        "kcal_web": 198
+      }
+    },
+    {
+      "nombre": "Hummus clásico de limón y ajo",
+      "descripcion": "Crema de garbanzos con tahini, limón y ajo, aromatizada con albahaca fresca. Ideal como aperitivo o para untar.",
+      "tiempo_prep_min": 10,
+      "porciones": 8,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "6e801766",
+          60
+        ],
+        [
+          "bdc11c5a",
+          3
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "49230ad1",
+          10
+        ]
+      ],
+      "instrucciones": "1. Poner todos los ingredientes del hummus en un procesador de alimentos de alta velocidad.\n2. Procesar a velocidad alta durante 1-2 minutos o hasta que quede una crema homogénea.\n3. Opcional: añadir 1-2 cucharadas más de agua según la textura deseada; debe quedar suave y fácil de untar.\n4. Servir inmediatamente o conservar en la nevera de 3 a 5 días.",
+      "consejos": "Añade el agua poco a poco hasta lograr una textura cremosa y fácil de untar.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/lemon-garlic-hummus/",
+        "autor": "Lee Hersh",
+        "kcal_web": 328
+      }
+    },
+    {
+      "nombre": "Tarta helada de yogur griego con chocolate y fresas",
+      "descripcion": "Una tarta helada crujiente y cremosa elaborada con yogur griego, cacao, granola, fresas y chocolate. Se corta en trozos y se guarda en el congelador para tomar como snack frío.",
+      "tiempo_prep_min": 181,
+      "porciones": 12,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          907
+        ],
+        [
+          "34d6fafa",
+          160
+        ],
+        [
+          "edb1e321",
+          25
+        ],
+        [
+          "46f7551d",
+          150
+        ],
+        [
+          "16665787",
+          100
+        ],
+        [
+          "b2aba459",
+          60
+        ]
+      ],
+      "instrucciones": "1. Forra una bandeja de horno con papel de hornear y reserva.\n2. En un bol grande, mezcla el yogur griego, el sirope de arce y el cacao en polvo hasta que el cacao esté completamente integrado. Añade 1 taza (125 g) de granola con chocolate y mezcla de nuevo.\n3. Vierte la mezcla de yogur sobre el papel de hornear y extiéndela de forma uniforme por la bandeja hasta que tenga un grosor de unos 6 mm. Reparte las fresas laminadas y el ¼ de taza (25 g) restante de granola por encima y presiónalas ligeramente sobre el yogur.\n4. Pon las pepitas de chocolate en un bol apto para microondas y calienta a potencia máxima en intervalos de 20 segundos durante 1 minuto o hasta que se derritan y queden brillantes. Remueve cada 20 segundos.\n5. Rocía el chocolate derretido por encima de todos los ingredientes y mete la bandeja en el congelador durante al menos 2 horas o hasta que el yogur esté completamente congelado.\n6. Saca la bandeja del congelador, rompe con cuidado la tarta helada en trozos y guárdalos en un recipiente o bolsa aptos para congelador hasta el momento de consumirlos.",
+      "consejos": "Sirve los trozos directamente del congelador para que mantengan su textura crujiente.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/frozen-yogurt-bark/",
+        "autor": null,
+        "kcal_web": 234
+      }
+    },
+    {
+      "nombre": "Gofres integrales de arándanos",
+      "descripcion": "Gofres esponjosos elaborados con harina integral, plátano y arándanos frescos, endulzados con sirope de arce. Una opción nutritiva para el desayuno o la merienda.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "8767a425",
+          188
+        ],
+        [
+          "242a5689",
+          2
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "bc88e038",
+          300
+        ],
+        [
+          "1131a576",
+          225
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "9286a63f",
+          28
+        ],
+        [
+          "329a9ffa",
+          240
+        ]
+      ],
+      "instrucciones": "1. Precalienta la gofrera a temperatura media.\n2. En un bol grande, mezcla todos los ingredientes secos. Añade los ingredientes húmedos, excepto el aceite de coco.\n3. Derrite parcialmente el aceite de coco (unos 20 segundos en el microondas) y añádelo a la masa. Mezcla hasta que quede homogénea.\n4. Engrasa la gofrera con aceite de coco en ambos lados. Vierte unos 160 g de masa, cierra la gofrera, dale la vuelta y cocina durante aproximadamente 1 minuto y 30 segundos.",
+      "consejos": "Sirve los gofres inmediatamente para que mantengan su textura crujiente por fuera y esponjosa por dentro.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/healthy-blueberry-waffles/",
+        "autor": null,
+        "kcal_web": 353
+      }
+    },
+    {
+      "nombre": "Barritas de pollo estilo búfalo con salsa para mojar",
+      "descripcion": "Barritas de pollo picado con verduras y queso azul, rebozadas con panko y parmesano, horneadas y servidas con salsa de queso azul y salsa búfalo para mojar.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c17e7165",
+          454
+        ],
+        [
+          "bbece24a",
+          1
+        ],
+        [
+          "4dacb910",
+          30
+        ],
+        [
+          "91f40662",
+          30
+        ],
+        [
+          "30ed35cf",
+          30
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "87c8c74b",
+          180
+        ],
+        [
+          "b983723d",
+          50
+        ],
+        [
+          "85ee8c30",
+          120
+        ],
+        [
+          "5036194d",
+          80
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C.\n2. En un bol, mezclar la carne picada de pollo, la sal, el ajo en polvo, la zanahoria picada, el apio picado, el queso azul desmenuzado y los huevos batidos.\n3. En otro bol, mezclar el pan rallado panko y el queso parmesano.\n4. Colocar papel de horno sobre una superficie plana y espolvorearlo generosamente con harina. Pasar la mezcla de pollo al papel y presionarla suavemente con las manos húmedas. Verter un tercio de la mezcla de panko sobre el pollo, cubrir con papel de horno y extender con un rodillo hasta que tenga unos 1,5 cm de grosor.\n5. Retirar el papel superior y pincelar la superficie con la mezcla de huevo. Añadir el resto de la mezcla de panko; para más crujiente, añadir más panko y parmesano.\n6. Rocíar con spray de aguacate y hornear durante 17-20 minutos o hasta que esté dorado.\n7. Sacar del horno y dejar reposar 5 minutos. Cortar en tiras de 5-7 cm de ancho.\n8. Mojar las barritas de pollo en la salsa de queso azul y la salsa búfalo.",
+      "consejos": "Sirve las barritas recién hechas para que el rebozado quede crujiente y acompaña con bastones de apio y zanahoria.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/chicken-protein-bars/",
+        "autor": null,
+        "kcal_web": 318
+      }
+    },
+    {
+      "nombre": "Copas de avena con cacahuete y chocolate",
+      "descripcion": "Bocados dulces sin horno con una base de avena y cacahuete, una capa de chocolate fundido y un toque cremoso de crema de cacahuete. Ideales como snack o merienda y se conservan en el congelador.",
+      "tiempo_prep_min": 35,
+      "porciones": 12,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "8619b09f",
+          170
+        ],
+        [
+          "6328f4b9",
+          210
+        ],
+        [
+          "46825bfa",
+          45
+        ],
+        [
+          "a54e5749",
+          170
+        ],
+        [
+          "9286a63f",
+          19
+        ],
+        [
+          "b2aba459",
+          45
+        ]
+      ],
+      "instrucciones": "1. Forra un molde metálico para muffins con cápsulas de papel o utiliza un molde de silicona sin forrar.\n2. Prepara la capa de avena: mezcla en un bol los copos de avena, la miel, 80 g de crema de cacahuete y los cacahuetes picados hasta que todo quede integrado. Si la mezcla parece seca, añade 1-2 cucharaditas de agua.\n3. Reparte aproximadamente 2 cucharadas de la mezcla de avena en el fondo de cada cápsula y presiónala bien.\n4. Prepara la capa de chocolate: pon el chocolate negro troceado y 14 g de aceite de coco en un bol apto para microondas. Calienta a potencia alta en intervalos de 20 segundos, removiendo entre cada intervalo, hasta que el chocolate se derrita.\n5. Añade 2 cucharaditas de chocolate fundido sobre la capa de avena de cada cápsula. Gira el molde en círculo para repartir el chocolate; si sobra chocolate, repártelo de forma uniforme. Congela el molde 5 minutos.\n6. Prepara la capa de crema de cacahuete: mezcla en otro bol apto para microondas 130 g de crema de cacahuete y 5 g de aceite de coco y calienta 15 segundos. Remueve hasta integrar bien.\n7. Añade 2 cucharaditas de la mezcla de crema de cacahuete sobre la capa de chocolate de cada cápsula. Gira de nuevo el molde para igualar la superficie y reparte las pepitas de chocolate por encima.\n8. Congela el molde entre 30 minutos y 1 hora, hasta que las copas estén firmes.\n9. Cuando estén cuajadas, retíralas del molde, guárdalas en una bolsa de congelación y consérvalas en el congelador.",
+      "consejos": "Saca las copas del congelador unos minutos antes de consumirlas para que la capa de chocolate no esté demasiado dura.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/no-bake-peanut-butter-oat-cups/",
+        "autor": null,
+        "kcal_web": 311
+      }
+    },
+    {
+      "nombre": "Bagels rellenos de huevo, jamón y queso",
+      "descripcion": "Mitades de bagel vaciadas y rellenas de una mezcla de huevo, jamón, cebolla y queso cheddar, horneadas hasta cuajar. Una idea práctica para desayuno o merienda.",
+      "tiempo_prep_min": 45,
+      "porciones": 12,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "5f015378",
+          600
+        ],
+        [
+          "6cd81fed",
+          600
+        ],
+        [
+          "9dc9f005",
+          60
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "c8c7806c",
+          105
+        ],
+        [
+          "950afc33",
+          40
+        ],
+        [
+          "67e4d52d",
+          85
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y engrasa una bandeja de horno.\n2. Vacía las mitades de bagel con los dedos, retirando la miga blanda sin romper la corteza. Reserva.\n3. Bate los huevos con la bebida de almendra, la sal y la pimienta en un bol grande.\n4. Coloca las mitades de bagel en la bandeja engrasada y reparte en cada una 2 cucharadas de jamón y 1 cucharada de cebolla.\n5. Añade la mezcla de huevo a cada bagel con un cazo de 60 ml; espera un minuto a que el bagel la absorba y vuelve a rellenar hasta agotar la mezcla.\n6. Espolvorea el queso cheddar por encima.\n7. Hornea durante 20-25 minutos.\n8. Saca del horno y deja templar antes de servir.",
+      "consejos": "Vacía bien la miga de los bagels sin romper la corteza para que la mezcla de huevo no se salga durante el horneado.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/bagel-ham-and-cheese-quiche/",
+        "autor": null,
+        "kcal_web": 246
+      }
+    }
+  ]
+}

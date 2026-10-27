@@ -1,0 +1,1485 @@
+{
+  "lote": "web-desayunos-loveandlemons-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "34906939": {
+      "nombre": "Levadura nutricional",
+      "prefijo": "34906939",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "51176662": {
+      "nombre": "Azúcar moreno",
+      "prefijo": "51176662",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "dc4e36af": {
+      "nombre": "Semillas Molidas de Lino",
+      "prefijo": "dc4e36af",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2aba459": {
+      "nombre": "Chocolate negro en pepitas",
+      "prefijo": "b2aba459",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "46825bfa": {
+      "nombre": "Cacahuetes",
+      "prefijo": "46825bfa",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "c7de73e8": {
+      "nombre": "Coco rallado",
+      "prefijo": "c7de73e8",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8810f4f6": {
+      "nombre": "Piña",
+      "prefijo": "8810f4f6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eea44971": {
+      "nombre": "Espinacas frescas",
+      "prefijo": "eea44971",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c661ff5c": {
+      "nombre": "Leche de coco",
+      "prefijo": "c661ff5c",
+      "rol": "lacteo_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2249081f": {
+      "nombre": "Proteína en polvo (vainilla o chocolate)",
+      "prefijo": "2249081f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "265ec681": {
+      "nombre": "Pan de molde",
+      "prefijo": "265ec681",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "86d39197": {
+      "nombre": "Leche entera",
+      "prefijo": "86d39197",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "081fbb40": {
+      "nombre": "Nuez moscada molida",
+      "prefijo": "081fbb40",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9ea83b94": {
+      "nombre": "Mantequilla sin sal",
+      "prefijo": "9ea83b94",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "87b0f802": {
+      "nombre": "Nueces o pacanas trituradas",
+      "prefijo": "87b0f802",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "bd85d62b": {
+      "nombre": "Arándanos enteros Hacendado ultracongelados",
+      "prefijo": "bd85d62b",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "bbcc9c7b": {
+      "nombre": "Coliflor Hacendado ultracongelada",
+      "prefijo": "bbcc9c7b",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0994bd1e": {
+      "nombre": "Frambuesas",
+      "prefijo": "0994bd1e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "244e90c6": {
+      "nombre": "Mantequilla de almendras",
+      "prefijo": "244e90c6",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ef6ecb36": {
+      "nombre": "Jengibre fresco",
+      "prefijo": "ef6ecb36",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b223775": {
+      "nombre": "Patata",
+      "prefijo": "0b223775",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5a2b6b52": {
+      "nombre": "Pimiento verde",
+      "prefijo": "5a2b6b52",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "44ccc481": {
+      "nombre": "Espinacas (crudas)",
+      "prefijo": "44ccc481",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "67e4d52d": {
+      "nombre": "Queso cheddar",
+      "prefijo": "67e4d52d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cb0e5aa3": {
+      "nombre": "Galleta Salada Bote",
+      "prefijo": "cb0e5aa3",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "7398705d": {
+      "nombre": "Macedonia de Verduras Frasco",
+      "prefijo": "7398705d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b6381c1c": {
+      "nombre": "Espinacas congeladas (cocidas)",
+      "prefijo": "b6381c1c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0a8c87df": {
+      "nombre": "Crema de Almendras Lata",
+      "prefijo": "0a8c87df",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "5e122ac4": {
+      "nombre": "Naranja",
+      "prefijo": "5e122ac4",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e3012f44": {
+      "nombre": "Leche de almendras (sin azúcar)",
+      "prefijo": "e3012f44",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "e6dd0fa6": {
+      "nombre": "Dátiles medjool",
+      "prefijo": "e6dd0fa6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bd6dc3a5": {
+      "nombre": "Tortilla de Trigo",
+      "prefijo": "bd6dc3a5",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "5d78a019": {
+      "nombre": "Salsa Casera Tarro",
+      "prefijo": "5d78a019",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f2759f83": {
+      "nombre": "Diente de ajo",
+      "prefijo": "f2759f83",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "564c253f": {
+      "nombre": "Ralladura de limón",
+      "prefijo": "564c253f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1762689b": {
+      "nombre": "Crackers",
+      "prefijo": "1762689b",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "ac0c0a04": {
+      "nombre": "Remolacha",
+      "prefijo": "ac0c0a04",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6e801766": {
+      "nombre": "Tahini",
+      "prefijo": "6e801766",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4218ee8b": {
+      "nombre": "Semillas de sésamo",
+      "prefijo": "4218ee8b",
+      "rol": "especias_aromaticos",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "d21b8e95": {
+      "nombre": "Pan de pita",
+      "prefijo": "d21b8e95",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "8767a425": {
+      "nombre": "Harina integral de trigo",
+      "prefijo": "8767a425",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5699a347": {
+      "nombre": "Jengibre molido",
+      "prefijo": "5699a347",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c8af7d4f": {
+      "nombre": "Compota de manzana",
+      "prefijo": "c8af7d4f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7dbc3a0d": {
+      "nombre": "Aceite vegetal",
+      "prefijo": "7dbc3a0d",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7d5a031f": {
+      "nombre": "Manzana",
+      "prefijo": "7d5a031f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "63c26672": {
+      "nombre": "Nueces",
+      "prefijo": "63c26672",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "ad30a656": {
+      "nombre": "Pasas",
+      "prefijo": "ad30a656",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9286a63f": {
+      "nombre": "Aceite de coco",
+      "prefijo": "9286a63f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "71805ea3": {
+      "nombre": "Canela Molida Frasco",
+      "prefijo": "71805ea3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "dcf63110": {
+      "nombre": "Arándanos secos",
+      "prefijo": "dcf63110",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "192e437a": {
+      "nombre": "Maicena",
+      "prefijo": "192e437a",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Bolitas energéticas de avena y cacahuete",
+      "descripcion": "Snack sin horno a base de avena, crema de cacahuete y miel, con trocitos de chocolate y coco. Ideales para llevar y tomar entre horas.",
+      "tiempo_prep_min": 20,
+      "porciones": 20,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          188
+        ],
+        [
+          "6328f4b9",
+          256
+        ],
+        [
+          "dc4e36af",
+          32
+        ],
+        [
+          "8619b09f",
+          85
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "b2aba459",
+          45
+        ],
+        [
+          "46825bfa",
+          18
+        ],
+        [
+          "c7de73e8",
+          12
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla los copos de avena, la crema de cacahuete, las semillas de lino molidas, la miel, el extracto de vainilla, las pepitas de chocolate, los cacahuetes picados y el coco rallado. Si la crema de cacahuete no lleva sal, añade una pizca de sal. Remueve hasta que todo quede bien integrado; la mezcla será espesa.\n2. Con una cuchara de 2 cucharadas, toma porciones de la mezcla y forma bolitas con las manos.\n3. Colócalas en un plato grande o en una bandeja y refrigera entre 1 y 2 horas, hasta que estén firmes.\n4. Se conservan en la nevera hasta una semana y también se pueden congelar.",
+      "consejos": "Si la mezcla queda demasiado seca, añade un poco más de crema de cacahuete o miel para poder formar las bolitas.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/energy-balls/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 146
+      }
+    },
+    {
+      "nombre": "Batido cremoso de aguacate y espinacas",
+      "descripcion": "Batido verde cremoso con aguacate, espinacas, piña y plátano, aromatizado con lima y un toque de sirope de arce. Ideal para desayuno o merienda.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "8810f4f6",
+          80
+        ],
+        [
+          "eea44971",
+          60
+        ],
+        [
+          "91ad5545",
+          150
+        ],
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "c661ff5c",
+          180
+        ],
+        [
+          "65756599",
+          46
+        ],
+        [
+          "34d6fafa",
+          7
+        ],
+        [
+          "2249081f",
+          60
+        ]
+      ],
+      "instrucciones": "1. Pon en la batidora la piña, las espinacas, el aguacate, el plátano, la leche de coco, el zumo y la ralladura de lima, el sirope de arce, la sal, los cubitos de hielo y la proteína en polvo si la usas.\n2. Tritura hasta obtener una textura cremosa.\n3. Prueba y ajusta el dulzor al gusto añadiendo más sirope de arce; si queda demasiado espeso, añade más leche de coco y vuelve a batir.",
+      "consejos": "Usa plátano y piña congelados para un batido más frío y cremoso sin diluir el sabor.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/avocado-smoothie/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 434
+      }
+    },
+    {
+      "nombre": "Cazuela de torrijas al horno",
+      "descripcion": "Una cazuela de pan empapado en una mezcla de huevo, leche y especias, horneada con un crujiente topping de azúcar moreno y nueces pecanas. Ideal para un desayuno o merienda especial.",
+      "tiempo_prep_min": 90,
+      "porciones": 8,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "265ec681",
+          680
+        ],
+        [
+          "6cd81fed",
+          250
+        ],
+        [
+          "86d39197",
+          360
+        ],
+        [
+          "51176662",
+          50
+        ],
+        [
+          "f75a3721",
+          10
+        ],
+        [
+          "589e624a",
+          2
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "9ea83b94",
+          28
+        ],
+        [
+          "87b0f802",
+          60
+        ],
+        [
+          "34d6fafa",
+          30
+        ]
+      ],
+      "instrucciones": "1. Engrasa una fuente de horno de 23x33 cm o similar y coloca dentro los cubos de pan.\n2. En un bol grande, bate los huevos con la leche, el azúcar moreno, la vainilla, la canela, la nuez moscada y la sal. Vierte la mezcla de forma uniforme sobre el pan. Si lo preparas con antelación, cubre la fuente y refrigera toda la noche; si no, deja reposar 30 minutos a temperatura ambiente para que el pan absorba la mezcla de huevo.\n3. Precalienta el horno a 175 °C.\n4. Añade el topping: rocía la cazuela con la mantequilla derretida y espolvorea el azúcar moreno y las nueces pecanas. Cubre y hornea 35 minutos, luego destapa y hornea otros 10-20 minutos, hasta que el topping esté dorado y la mezcla de huevo cuaje casi por completo. Saca del horno, cubre sin apretar con papel de aluminio y deja reposar 10 minutos.\n5. Sirve con sirope de arce.",
+      "consejos": "Usa pan de un día o dos para que absorba mejor la mezcla sin deshacerse.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/french-toast-casserole/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 328
+      }
+    },
+    {
+      "nombre": "Batido de arándanos y frambuesas",
+      "descripcion": "Un batido cremoso y refrescante de frutos rojos con coliflor congelada, mantequilla de almendra y un toque de jengibre. Ideal para desayuno o merienda.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bd85d62b",
+          225
+        ],
+        [
+          "9dc9f005",
+          300
+        ],
+        [
+          "bbcc9c7b",
+          100
+        ],
+        [
+          "0994bd1e",
+          60
+        ],
+        [
+          "1131a576",
+          60
+        ],
+        [
+          "244e90c6",
+          32
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "ef6ecb36",
+          2
+        ]
+      ],
+      "instrucciones": "1. Coloca en el vaso de la batidora los arándanos, la bebida de almendra, la coliflor, las frambuesas, el plátano, la mantequilla de almendra, el sirope de arce, el zumo de limón y el jengibre.\n2. Tritura hasta obtener una textura cremosa, añadiendo más bebida de almendra si es necesario para poder batir.",
+      "consejos": "Sirve el batido inmediatamente para conservar su textura cremosa y su color.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/blueberry-smoothie/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 267
+      }
+    },
+    {
+      "nombre": "Cazuela de desayuno con patatas, huevo y verduras",
+      "descripcion": "Una cazuela al horno con patatas asadas, huevos batidos con leche, pimientos, espinacas y queso cheddar. Ideal para un desayuno o comida familiar y fácil de preparar con antelación.",
+      "tiempo_prep_min": 75,
+      "porciones": 12,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0b223775",
+          454
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "3350c934",
+          2
+        ],
+        [
+          "6cd81fed",
+          600
+        ],
+        [
+          "318db297",
+          240
+        ],
+        [
+          "950afc33",
+          75
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "d106e3bb",
+          120
+        ],
+        [
+          "5a2b6b52",
+          120
+        ],
+        [
+          "44ccc481",
+          30
+        ],
+        [
+          "82930270",
+          60
+        ],
+        [
+          "67e4d52d",
+          170
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 220 °C y forrar una bandeja con papel de horno. Colocar las patatas en la bandeja, rociar con 14 g de aceite de oliva y espolvorear con sal y pimienta. Mezclar para cubrir y asar 20-25 minutos, hasta que estén tiernas y doradas.\n2. Bajar la temperatura del horno a 175 °C y engrasar una fuente de 23x33 cm.\n3. En un bol grande, batir los huevos, la leche y ¼ cucharadita de sal. Reservar.\n4. Calentar 28 g de aceite de oliva en una sartén grande a fuego medio. Añadir la cebolla, el resto de la sal y pimienta. Cocinar 5-8 minutos, removiendo de vez en cuando, hasta que esté blanda. Añadir el ajo, el pimiento rojo y el verde y cocinar 2 minutos. Añadir la espinaca y la mitad de las cebolletas y remover hasta que la espinaca se marchite.\n5. Extender las patatas en la fuente. Cubrir con 1 taza de queso cheddar, luego las verduras salteadas. Verter la mezcla de huevo y espolvorear con el resto del queso y las cebolletas reservadas.\n6. Hornear 40-45 minutos, hasta que los huevos cuajen.\n7. Dejar reposar 5 minutos antes de cortar y servir.",
+      "consejos": "Puedes preparar la cazuela la noche anterior y hornearla al día siguiente; solo añade unos minutos más de horno si la metes fría.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/breakfast-casserole/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 205
+      }
+    },
+    {
+      "nombre": "Dip de aguacate y requesón",
+      "descripcion": "Una crema suave y untuosa de aguacate y requesón con un toque de ajo y limón, ideal para untar o dipear.",
+      "tiempo_prep_min": 10,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          240
+        ],
+        [
+          "91ad5545",
+          200
+        ],
+        [
+          "bf392211",
+          7
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "03f57b8d",
+          5
+        ],
+        [
+          "cb0e5aa3",
+          60
+        ],
+        [
+          "7398705d",
+          200
+        ]
+      ],
+      "instrucciones": "1. Coloca el requesón, el aguacate, el aceite de oliva, el ajo, el zumo de limón y la sal en un procesador de alimentos y tritura hasta obtener una crema suave y homogénea.\n2. Pasa la crema a un bol de servir y espolvorea por encima el condimento tipo everything bagel y el cebollino picado.\n3. Sirve con galletas saladas y verduras para dipear.",
+      "consejos": "Sirve el dip recién hecho para que el aguacate no se oxide y mantenga su color verde.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/cottage-cheese-dip/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 147
+      }
+    },
+    {
+      "nombre": "Batido verde de espinacas y plátano",
+      "descripcion": "Un batido cremoso y refrescante con espinacas, plátano congelado, fruta y leche de almendras, ideal para empezar el día.",
+      "tiempo_prep_min": 5,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b6381c1c",
+          150
+        ],
+        [
+          "1131a576",
+          60
+        ],
+        [
+          "0a8c87df",
+          8
+        ],
+        [
+          "5e122ac4",
+          180
+        ],
+        [
+          "b5b5e57f",
+          2
+        ],
+        [
+          "9dc9f005",
+          240
+        ]
+      ],
+      "instrucciones": "1. En una batidora, pon las espinacas, el plátano, la crema de almendra, 180 g de naranja congelada y las semillas de chía. Añade la bebida de almendra y tritura hasta que quede homogéneo, añadiendo más bebida de almendra si es necesario.\n2. Añade un puñado de hielo y vuelve a triturar.\n3. Prueba y añade más fruta congelada si quieres que el batido sea más dulce. Tritura hasta que quede suave, añadiendo más bebida de almendra si hace falta.",
+      "consejos": "Congela la fruta la noche anterior para lograr una textura más espesa y fría sin necesidad de añadir mucho hielo.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/green-smoothie/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 276
+      }
+    },
+    {
+      "nombre": "Bolitas energéticas de avena y cacahuete",
+      "descripcion": "Bolitas sin horno de avena, crema de cacahuete y chocolate, ideales como snack energético. Se preparan en minutos y se conservan en la nevera.",
+      "tiempo_prep_min": 70,
+      "porciones": 20,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "6328f4b9",
+          256
+        ],
+        [
+          "dc4e36af",
+          30
+        ],
+        [
+          "8619b09f",
+          85
+        ],
+        [
+          "2249081f",
+          60
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "b2aba459",
+          90
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla los copos de avena, la crema de cacahuete, el lino molido, la miel, la proteína en polvo, la vainilla y las pepitas de chocolate hasta obtener una masa espesa.\n2. Con una cuchara de 2 cucharadas, toma porciones de la mezcla y forma bolitas con las manos.\n3. Refrigera durante 1 a 2 horas, o hasta que estén firmes.\n4. Conserva las bolitas en la nevera hasta una semana; también se pueden congelar.",
+      "consejos": "Si la masa queda demasiado seca, añade un poco más de crema de cacahuete o miel para poder formar las bolitas.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/no-bake-protein-balls/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 152
+      }
+    },
+    {
+      "nombre": "Batido de calabacín y cacao",
+      "descripcion": "Batido cremoso de calabacín congelado con leche de almendra, dátiles y cacao, ideal para desayuno o merienda.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          200
+        ],
+        [
+          "e3012f44",
+          240
+        ],
+        [
+          "e6dd0fa6",
+          96
+        ],
+        [
+          "0a8c87df",
+          32
+        ],
+        [
+          "edb1e321",
+          6
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "b2aba459",
+          10
+        ],
+        [
+          "c7de73e8",
+          5
+        ]
+      ],
+      "instrucciones": "1. En una batidora de alta velocidad, coloca el calabacín, la leche de almendra, los dátiles, la crema de almendra, el cacao en polvo, la vainilla y la nuez moscada. Bate hasta obtener una mezcla homogénea, añadiendo más leche de almendra si es necesario.\n2. Añade un puñado de hielo y vuelve a batir.\n3. Sirve en vasos, rocía con crema de almendra y espolvorea con chips de chocolate y coco rallado si se desea.",
+      "consejos": "Congela el calabacín troceado para que el batido quede más espeso y frío sin necesidad de añadir mucho hielo.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/zucchini-smoothie/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 275
+      }
+    },
+    {
+      "nombre": "Burritos de desayuno con huevo, patata y espinacas",
+      "descripcion": "Tortillas de trigo rellenas de huevo revuelto, patata especiada, pimiento y espinacas, con queso fundido. Ideales para preparar en lote y congelar.",
+      "tiempo_prep_min": 60,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0b223775",
+          454
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "e2dd1c2b",
+          1
+        ],
+        [
+          "bbece24a",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "82930270",
+          60
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "cb57d667",
+          60
+        ],
+        [
+          "6cd81fed",
+          400
+        ],
+        [
+          "bd6dc3a5",
+          420
+        ],
+        [
+          "67e4d52d",
+          120
+        ],
+        [
+          "5d78a019",
+          60
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 220 °C y forrar una bandeja con papel de horno.\n2. Colocar las patatas en la bandeja, rociar con aceite de oliva y espolvorear con el pimentón ahumado, el ajo en polvo, sal y pimienta. Mezclar y extender en una capa uniforme. Asar de 20 a 25 minutos, hasta que estén crujientes y doradas.\n3. Calentar un chorrito de aceite de oliva en una sartén grande antiadherente a fuego medio. Añadir el pimiento, la cebolleta, el ajo y una pizca de sal y pimienta. Cocinar removiendo de vez en cuando durante 5 minutos, hasta que se ablanden. Añadir las espinacas y cocinar hasta que se marchiten. Retirar de la sartén y reservar.\n4. En un bol mediano, batir los huevos con una pizca de sal y varios golpes de pimienta. Volver a poner la sartén a fuego medio-bajo y verter los huevos. Remover para hacer un revuelto, cocinando hasta que cuajen. Retirar de la sartén y reservar.\n5. Para montar los burritos, rellenar cada tortilla con parte de los huevos, las patatas, la mezcla de pimiento y el queso. Doblar y enrollar para cerrar.\n6. Para consumir al momento, pincelar ligeramente una sartén grande con aceite de oliva y calentar a fuego medio-bajo. Dorar los burritos de 2 a 4 minutos por cada lado, hasta que estén dorados y crujientes. Servir con salsa para mojar.\n7. Para congelar, envolver bien en papel de aluminio y congelar hasta 3 meses. Para recalentar, desenvolver y envolver holgadamente en papel de cocina. Calentar en el microondas de 3 a 4 minutos, dando la vuelta a mitad, hasta que estén blandos y descongelados por dentro. Calentar otros 2 a 3 minutos para que estén bien calientes, o dorar la tortilla en la sartén como se indica arriba.",
+      "consejos": "Puedes usar patata congelada en dados para ahorrar tiempo; dórala en la sartén con las especias en lugar de asarla.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/breakfast-burrito/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 338
+      }
+    },
+    {
+      "nombre": "Requesón batido con limón y ajo",
+      "descripcion": "Crema untable de requesón batido con aceite de oliva, limón y un toque de ajo. Ideal para untar en pan o acompañar con verduras y crackers.",
+      "tiempo_prep_min": 5,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          454
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "f2759f83",
+          4
+        ],
+        [
+          "59163485",
+          5
+        ],
+        [
+          "564c253f",
+          2
+        ],
+        [
+          "1762689b",
+          60
+        ],
+        [
+          "7398705d",
+          150
+        ]
+      ],
+      "instrucciones": "1. Pon el requesón, el aceite de oliva, el zumo de limón, el ajo y la sal en un robot de cocina y tritura a golpes hasta obtener una crema homogénea.\n2. Pasa la crema a un bol y alisa la superficie.\n3. Rocía con un poco más de aceite de oliva y espolvorea con perejil fresco picado, ralladura de limón y copos de guindilla.\n4. Sirve con crackers y verduras para mojar.",
+      "consejos": "Si quieres una textura más ligera, añade una cucharada de agua fría mientras trituras.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/whipped-cottage-cheese/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 175
+      }
+    },
+    {
+      "nombre": "Hummus de remolacha",
+      "descripcion": "Hummus cremoso de garbanzos con remolacha asada, tahini y especias. Un aperitivo colorido y saludable para untar.",
+      "tiempo_prep_min": 50,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ac0c0a04",
+          100
+        ],
+        [
+          "1f1a4cd3",
+          246
+        ],
+        [
+          "6e801766",
+          80
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "31f12840",
+          1
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "4218ee8b",
+          5
+        ],
+        [
+          "59163485",
+          5
+        ],
+        [
+          "d21b8e95",
+          120
+        ],
+        [
+          "7398705d",
+          150
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C.\n2. Colocar la remolacha sobre un trozo de papel de aluminio, rociar con aceite de oliva y espolvorear con sal. Envolver en el papel de aluminio, colocar en una bandeja de horno y asar durante 35-50 minutos, hasta que esté tierna al pincharla con un tenedor.\n3. Sacar del horno, retirar el papel de aluminio y dejar enfriar. Cuando esté templada, pelar la piel (se puede hacer bajo el grifo con las manos) y trocear la remolacha.\n4. En un procesador de alimentos, colocar la remolacha asada, los garbanzos, el tahini, el aceite de oliva, el zumo de limón, el ajo, el cilantro, el comino, la sal y el agua. Procesar hasta obtener una textura muy suave, añadiendo más agua si es necesario para alcanzar la consistencia deseada. Ajustar de sal.\n5. Pasar a un plato de servir y rociar con aceite de oliva. Decorar con semillas de sésamo, ralladura de limón y perejil. Servir con pan de pita templado y verduras.",
+      "consejos": "Asar la remolacha hasta que esté bien tierna aporta un sabor más dulce y una textura más cremosa al hummus.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/beet-hummus/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 165
+      }
+    },
+    {
+      "nombre": "Muffins morning glory",
+      "descripcion": "Muffins esponjosos de harina integral con zanahoria, manzana, nueces y pasas, ideales para un desayuno o merienda energética.",
+      "tiempo_prep_min": 40,
+      "porciones": 12,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "20c74a2a",
+          125
+        ],
+        [
+          "8767a425",
+          125
+        ],
+        [
+          "242a5689",
+          8
+        ],
+        [
+          "589e624a",
+          2
+        ],
+        [
+          "5699a347",
+          1
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "51176662",
+          150
+        ],
+        [
+          "c8af7d4f",
+          120
+        ],
+        [
+          "7dbc3a0d",
+          112
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "4dacb910",
+          330
+        ],
+        [
+          "7d5a031f",
+          120
+        ],
+        [
+          "63c26672",
+          90
+        ],
+        [
+          "ad30a656",
+          110
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C y engrasar un molde de 12 cavidades para muffins o forrarlo con cápsulas de papel.\n2. En un bol mediano, batir con varillas la harina de trigo, la harina integral, la levadura química, la canela, el bicarbonato, el jengibre y la sal.\n3. En un bol grande, batir los huevos con el azúcar moreno, la compota de manzana, el aceite vegetal y la vainilla. Añadir la zanahoria y la manzana ralladas y mezclar.\n4. Incorporar los ingredientes secos a los húmedos y mezclar hasta que se integren. Añadir las nueces picadas y las pasas con movimientos suaves.\n5. Repartir la masa en las cavidades del molde, unos 120 g en cada una.\n6. Hornear de 15 a 20 minutos, hasta que la superficie recupere su forma al tocarla y un palillo insertado salga limpio. Dejar enfriar en el molde 10 minutos antes de pasar a una rejilla para que se enfríen del todo.",
+      "consejos": "Ralla la zanahoria y la manzana justo antes de usarlas para que aporten humedad y no se oxiden.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/morning-glory-muffins/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 314
+      }
+    },
+    {
+      "nombre": "Barritas de avena para el desayuno",
+      "descripcion": "Barritas tiernas de avena con arándanos rojos secos y nueces, endulzadas con azúcar moreno y compota de manzana. Ideales para un desayuno o merienda práctica.",
+      "tiempo_prep_min": 65,
+      "porciones": 9,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          150
+        ],
+        [
+          "51176662",
+          100
+        ],
+        [
+          "c8af7d4f",
+          120
+        ],
+        [
+          "318db297",
+          80
+        ],
+        [
+          "9286a63f",
+          55
+        ],
+        [
+          "f75a3721",
+          2
+        ],
+        [
+          "242a5689",
+          6
+        ],
+        [
+          "71805ea3",
+          4
+        ],
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "dcf63110",
+          70
+        ],
+        [
+          "63c26672",
+          60
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, bate los huevos con el azúcar moreno, la compota de manzana, la leche, el aceite de coco y la vainilla. Espolvorea encima la levadura, la canela y la sal y bate hasta obtener una mezcla homogénea. Añade los copos de avena, los arándanos rojos y las nueces y mezcla con una espátula.\n2. Deja reposar la mezcla 20 minutos para que la avena se hidrate. Mientras tanto, precalienta el horno a 175 °C y engrasa un molde cuadrado de 20x20 cm. Forra el fondo y dos lados con papel de horno.\n3. Extiende la mezcla de avena de forma uniforme en el molde. Hornea de 32 a 37 minutos, o hasta que el centro esté cuajado.\n4. Deja enfriar por completo en el molde antes de cortar y servir.\n5. Guarda las barritas frías en un recipiente hermético en la nevera hasta 4 días.",
+      "consejos": "Deja reposar la mezcla el tiempo indicado para que la avena absorba el líquido y las barritas queden más tiernas.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/oatmeal-breakfast-bars/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 262
+      }
+    },
+    {
+      "nombre": "Tostada francesa vegana",
+      "descripcion": "Una versión vegana de las clásicas tostadas francesas, con una mezcla de leche de almendra, maicena y levadura nutricional que las deja doradas por fuera y tiernas por dentro.",
+      "tiempo_prep_min": 20,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "192e437a",
+          30
+        ],
+        [
+          "34906939",
+          5
+        ],
+        [
+          "589e624a",
+          3
+        ],
+        [
+          "242a5689",
+          2
+        ],
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "9286a63f",
+          14
+        ],
+        [
+          "265ec681",
+          200
+        ]
+      ],
+      "instrucciones": "1. En un bol mediano, mezcla con unas varillas la maicena, la levadura nutricional, la canela, la levadura química y una pizca de sal. Añade la bebida de almendra y el sirope de arce y bate hasta obtener una mezcla homogénea. Vierte en una fuente poco profunda.\n2. Calienta una plancha o sartén antiadherente a fuego medio y pincela con aceite de coco.\n3. Moja cada rebanada de pan en la mezcla de bebida de almendra, girándola para que se impregne por ambos lados. Colócala en la sartén y cocina 2 minutos por cada lado, hasta que esté dorada. Baja el fuego si es necesario para que se cocine bien sin quemarse. Hazlo por tandas si hace falta, pincelando la sartén con más aceite de coco entre tandas.\n4. Sirve con sirope de arce.",
+      "consejos": "Usa pan ligeramente duro para que absorba mejor la mezcla sin deshacerse.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/vegan-french-toast/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 276
+      }
+    }
+  ]
+}

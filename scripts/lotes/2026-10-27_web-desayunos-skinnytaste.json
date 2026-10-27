@@ -1,0 +1,2182 @@
+{
+  "lote": "web-desayunos-skinnytaste-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "47791975": {
+      "nombre": "Escarola Bolsa",
+      "prefijo": "47791975",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2856bf23": {
+      "nombre": "Hummus",
+      "prefijo": "2856bf23",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "ba39ef20": {
+      "nombre": "Aceituna con Hueso Kalamata",
+      "prefijo": "ba39ef20",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c7ad7588": {
+      "nombre": "Espárragos",
+      "prefijo": "c7ad7588",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d89cd8d1": {
+      "nombre": "Puerro",
+      "prefijo": "d89cd8d1",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8469bf72": {
+      "nombre": "Leche semidesnatada",
+      "prefijo": "8469bf72",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "aec3e946": {
+      "nombre": "Nata para cocinar",
+      "prefijo": "aec3e946",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "f68fa954": {
+      "nombre": "Eneldo",
+      "prefijo": "f68fa954",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "32c7062f": {
+      "nombre": "Bacon 1/ 5 M",
+      "prefijo": "32c7062f",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "48dc1844": {
+      "nombre": "Champinones blancos",
+      "prefijo": "48dc1844",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b1ff971a": {
+      "nombre": "Espinacas baby",
+      "prefijo": "b1ff971a",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "48ac8411": {
+      "nombre": "Tortillas trigo integrales",
+      "prefijo": "48ac8411",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "5d78a019": {
+      "nombre": "Salsa Casera Tarro",
+      "prefijo": "5d78a019",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3059b706": {
+      "nombre": "Queso cottage (requesón)",
+      "prefijo": "3059b706",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "564c253f": {
+      "nombre": "Ralladura de limón",
+      "prefijo": "564c253f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "efdb0f46": {
+      "nombre": "Aceite de oliva virgen extra",
+      "prefijo": "efdb0f46",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ae0a0635": {
+      "nombre": "Espagueti",
+      "prefijo": "ae0a0635",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "60d69579": {
+      "nombre": "Queso Rallado Pecorino D.O.P",
+      "prefijo": "60d69579",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "9df73a2d": {
+      "nombre": "Caldo de verduras",
+      "prefijo": "9df73a2d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "af60ae7c": {
+      "nombre": "Barra Pan Masa Madre",
+      "prefijo": "af60ae7c",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "ed784a29": {
+      "nombre": "Queso parmesano rallado",
+      "prefijo": "ed784a29",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "0b223775": {
+      "nombre": "Patata",
+      "prefijo": "0b223775",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8f023610": {
+      "nombre": "Clara de huevo",
+      "prefijo": "8f023610",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "88f3975a": {
+      "nombre": "Leche desnatada",
+      "prefijo": "88f3975a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c8c7806c": {
+      "nombre": "Jamón Cocido Delizias",
+      "prefijo": "c8c7806c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "67e4d52d": {
+      "nombre": "Queso cheddar",
+      "prefijo": "67e4d52d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a010ea17": {
+      "nombre": "Alubia cocida blanca",
+      "prefijo": "a010ea17",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0a9fc13b": {
+      "nombre": "Pollo picado",
+      "prefijo": "0a9fc13b",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20f15ab2": {
+      "nombre": "Albahaca Frasco",
+      "prefijo": "20f15ab2",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1948a73a": {
+      "nombre": "Pan integral",
+      "prefijo": "1948a73a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "c8825eec": {
+      "nombre": "Lechuga Iceberg",
+      "prefijo": "c8825eec",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "810d496b": {
+      "nombre": "Mayonesa ligera",
+      "prefijo": "810d496b",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "f0204a76": {
+      "nombre": "Pavo picado",
+      "prefijo": "f0204a76",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "057baedf": {
+      "nombre": "Pimiento",
+      "prefijo": "057baedf",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "70d24d12": {
+      "nombre": "Tomillo",
+      "prefijo": "70d24d12",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34f7b619": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "2628d64e": {
+      "nombre": "Salsa barbacoa",
+      "prefijo": "2628d64e",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "123d2515": {
+      "nombre": "Kétchup",
+      "prefijo": "123d2515",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "5a2b6b52": {
+      "nombre": "Pimiento verde",
+      "prefijo": "5a2b6b52",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "79f18b49": {
+      "nombre": "Crema agria o yogur griego",
+      "prefijo": "79f18b49",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "40ad87ab": {
+      "nombre": "Queso batido",
+      "prefijo": "40ad87ab",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "4c63757f": {
+      "nombre": "Queso provolone de vaca",
+      "prefijo": "4c63757f",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c661ff5c": {
+      "nombre": "Leche de coco",
+      "prefijo": "c661ff5c",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8810f4f6": {
+      "nombre": "Piña",
+      "prefijo": "8810f4f6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c7de73e8": {
+      "nombre": "Coco rallado",
+      "prefijo": "c7de73e8",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ecc7f788": {
+      "nombre": "Carne picada de ternera",
+      "prefijo": "ecc7f788",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "557a5eec": {
+      "nombre": "Mostaza Amarilla Bote",
+      "prefijo": "557a5eec",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Mostaza"
+      ],
+      "origen": "vegetal"
+    },
+    "7fb4b7ea": {
+      "nombre": "Lechuga",
+      "prefijo": "7fb4b7ea",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2ad25c58": {
+      "nombre": "Pepinillos encurtidos",
+      "prefijo": "2ad25c58",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "5b67c48a": {
+      "nombre": "Salchicha de pavo",
+      "prefijo": "5b67c48a",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "5b7e9a7d": {
+      "nombre": "Champiñones",
+      "prefijo": "5b7e9a7d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "447b825f": {
+      "nombre": "Tortillas de trigo",
+      "prefijo": "447b825f",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "95aa4443": {
+      "nombre": "Salsa picante",
+      "prefijo": "95aa4443",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4c9d38c6": {
+      "nombre": "Media calabaza cacahuete",
+      "prefijo": "4c9d38c6",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "88959dfb": {
+      "nombre": "Comino",
+      "prefijo": "88959dfb",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "94ba864e": {
+      "nombre": "Cúrcuma",
+      "prefijo": "94ba864e",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "97b698dd": {
+      "nombre": "Curry en polvo",
+      "prefijo": "97b698dd",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "71805ea3": {
+      "nombre": "Canela Molida Frasco",
+      "prefijo": "71805ea3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fea7cbe9": {
+      "nombre": "Perejil",
+      "prefijo": "fea7cbe9",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eea44971": {
+      "nombre": "Espinacas frescas",
+      "prefijo": "eea44971",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "86d39197": {
+      "nombre": "Leche entera",
+      "prefijo": "86d39197",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c24e3457": {
+      "nombre": "Mozzarella rallada baja en grasa",
+      "prefijo": "c24e3457",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "653f04af": {
+      "nombre": "Tomate Seco en Aceite",
+      "prefijo": "653f04af",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5d1296cf": {
+      "nombre": "Zumo Piña 100% Free",
+      "prefijo": "5d1296cf",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "da4a24b5": {
+      "nombre": "Piña Entera",
+      "prefijo": "da4a24b5",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "909e07c0": {
+      "nombre": "Arandanos enteros Hacendado ultracongelados",
+      "prefijo": "909e07c0",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f35fc1f1": {
+      "nombre": "Fresas enteras Hacendado ultracongeladas",
+      "prefijo": "f35fc1f1",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2249081f": {
+      "nombre": "Proteína en polvo (vainilla o chocolate)",
+      "prefijo": "2249081f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "572b713a": {
+      "nombre": "Queso crema",
+      "prefijo": "572b713a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "4218ee8b": {
+      "nombre": "Semillas de sésamo",
+      "prefijo": "4218ee8b",
+      "rol": "especias_aromaticos",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eb5939be": {
+      "nombre": "Caldo de Pollo 100%",
+      "prefijo": "eb5939be",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "3285d3b1": {
+      "nombre": "Pasta",
+      "prefijo": "3285d3b1",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c94faa0f": {
+      "nombre": "Cebada",
+      "prefijo": "c94faa0f",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "6c5d82a5": {
+      "nombre": "Boniato",
+      "prefijo": "6c5d82a5",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d0a93278": {
+      "nombre": "Tomillo Frasco",
+      "prefijo": "d0a93278",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "894e649b": {
+      "nombre": "Crema agria",
+      "prefijo": "894e649b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "e601abd9": {
+      "nombre": "Vinagre de vino blanco",
+      "prefijo": "e601abd9",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f7fc3f33": {
+      "nombre": "Gamba cocida",
+      "prefijo": "f7fc3f33",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "06262e59": {
+      "nombre": "Queso",
+      "prefijo": "06262e59",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Dip griego de 7 capas",
+      "descripcion": "Un dip fresco y cremoso en capas con hummus, yogur griego, verduras crujientes, feta y aceitunas. Ideal para compartir como aperitivo.",
+      "tiempo_prep_min": 20,
+      "porciones": 9,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2856bf23",
+          227
+        ],
+        [
+          "585bd18b",
+          240
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "2fedb06b",
+          1
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "08637e90",
+          20
+        ],
+        [
+          "2e8d5d64",
+          150
+        ],
+        [
+          "7f40a393",
+          180
+        ],
+        [
+          "6187036a",
+          38
+        ],
+        [
+          "ba39ef20",
+          34
+        ]
+      ],
+      "instrucciones": "1. En un bol pequeño, mezcla el yogur griego, el ajo picado, el eneldo, el zumo de limón, la sal y la pimienta negra recién molida. Reserva.\n2. En una fuente de vidrio de 20x20 cm o 18x28 cm, extiende el hummus en una capa uniforme.\n3. Cubre con la mezcla de yogur.\n4. Añade la cebolla roja picada, el pepino en dados, el tomate en dados, el queso feta desmenuzado y las aceitunas laminadas.\n5. Sirve con chips de pan de pita integral o totopos de maíz horneados.",
+      "consejos": "Escurre bien el pepino y el tomate antes de añadirlos para evitar que el dip suelte líquido.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/greek-7-layer-dip/",
+        "autor": null,
+        "kcal_web": 93
+      }
+    },
+    {
+      "nombre": "Quiche de verduras sin masa",
+      "descripcion": "Una quiche ligera sin masa, con espárragos, puerro y queso feta, ideal para una comida o cena sencilla.",
+      "tiempo_prep_min": 50,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c7ad7588",
+          268
+        ],
+        [
+          "d89cd8d1",
+          75
+        ],
+        [
+          "6187036a",
+          150
+        ],
+        [
+          "8469bf72",
+          160
+        ],
+        [
+          "aec3e946",
+          60
+        ],
+        [
+          "6cd81fed",
+          250
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "f68fa954",
+          2
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y engrasa un molde para tarta con aceite.\n2. Cocina al vapor los espárragos y el puerro con 1 cucharada de agua en el microondas hasta que estén tiernos pero verdes y no blandos, unos 2,5 a 3 minutos.\n3. Reparte los espárragos y el puerro de forma uniforme en el molde y cúbrelos con el queso feta desmenuzado.\n4. Prepara la mezcla de huevos batiendo la leche, la nata, los huevos, la sal y la pimienta. Vierte la mezcla en el molde, espolvorea el eneldo y el za'atar por encima y hornea de 35 a 40 minutos, hasta que el centro esté cuajado.\n5. Corta la quiche en 6 porciones y sirve.",
+      "consejos": "Puedes sustituir los espárragos por otras verduras de temporada y comprobar el cuajado insertando un palillo en el centro.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/vegetable-crustless-quiche/",
+        "autor": null,
+        "kcal_web": 149
+      }
+    },
+    {
+      "nombre": "Wrap de tortilla con omelet, bacon y espinacas",
+      "descripcion": "Un wrap de desayuno con una tortilla de huevo, champiñones, bacon y espinacas enrollada en tortilla integral baja en carbohidratos.",
+      "tiempo_prep_min": 15,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "32c7062f",
+          30
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "48dc1844",
+          35
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "b1ff971a",
+          20
+        ],
+        [
+          "48ac8411",
+          40
+        ],
+        [
+          "5d78a019",
+          20
+        ]
+      ],
+      "instrucciones": "1. Coloca el bacon en una sartén antiadherente fría del tamaño de la tortilla y cocina a fuego medio hasta que esté dorado y crujiente, unos 5 minutos. Pásalo a un plato con papel absorbente y, cuando se enfríe, córtalo en trozos pequeños.\n2. Mientras tanto, bate los huevos con la sal y la pimienta al gusto en un bol pequeño y reserva.\n3. Añade los champiñones a la sartén con la grasa del bacon y saltea 1 minuto. Agrega el ajo y saltea 30 segundos más.\n4. Extiende el ajo y los champiñones en una capa uniforme y vierte los huevos batidos. Mueve la sartén en círculos para formar una tortilla redonda del tamaño de la tortilla de trigo.\n5. Cubre con las espinacas y el bacon picado, coloca la tortilla integral encima de la omelet y presiona suavemente con las manos, usando la parte de huevo aún líquida como si fuera pegamento. Deja que cuaje unos 10 segundos.\n6. Pasa una espátula plana por el borde de la omelet para despegarla con cuidado y dale la vuelta rápidamente. Cocina con la tortilla hacia abajo unos 1 minuto más, hasta que la tortilla esté dorada y empiece a estar crujiente.\n7. Pasa a un plato y enrolla con cuidado la tortilla. Colócala con la unión hacia abajo y córtala por la mitad. Sirve con salsa fresca o salsa picante al gusto.",
+      "consejos": "Usa una sartén antiadherente del mismo diámetro que la tortilla para que la omelet quede del tamaño justo y sea fácil de enrollar.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/omelet-tortilla-breakfast-wrap/",
+        "autor": null,
+        "kcal_web": 315
+      }
+    },
+    {
+      "nombre": "Dip batido de requesón con verduras",
+      "descripcion": "Un dip cremoso de requesón batido con limón y hierbas frescas, coronado con pepino, tomate cherry, aceitunas y cebolla roja. Ligero y refrescante, ideal para untar.",
+      "tiempo_prep_min": 15,
+      "porciones": 3,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "3059b706",
+          360
+        ],
+        [
+          "564c253f",
+          2
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "2fedb06b",
+          1
+        ],
+        [
+          "c63a423f",
+          1
+        ],
+        [
+          "03f57b8d",
+          1
+        ],
+        [
+          "2e8d5d64",
+          400
+        ],
+        [
+          "a92874a5",
+          180
+        ],
+        [
+          "ba39ef20",
+          60
+        ],
+        [
+          "08637e90",
+          30
+        ],
+        [
+          "efdb0f46",
+          14
+        ]
+      ],
+      "instrucciones": "1. Poner el requesón, la ralladura de limón, el zumo de limón, el ajo y la sal en el vaso de un robot de cocina y triturar hasta obtener una crema completamente lisa, unos 30 segundos.\n2. Pasar la mezcla a un bol y remover con el eneldo, la menta y el cebollino picados.\n3. Extender el dip en una capa uniforme en un bol poco profundo o repartirlo en tres raciones.\n4. Cubrir con el pepino picado fino, los tomates cherry partidos por la mitad, las aceitunas laminadas y la cebolla roja picada fina.\n5. Rociar con el aceite de oliva virgen extra y servir.",
+      "consejos": "Acompaña con pan de pita en triángulos o bastones de verduras para untar.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/whipped-cottage-cheese-dip/",
+        "autor": null,
+        "kcal_web": 151.5
+      }
+    },
+    {
+      "nombre": "Espaguetis cacio e pepe con requesón",
+      "descripcion": "Una versión ligera del clásico cacio e pepe, con una salsa cremosa de requesón, pecorino y parmesano y un toque de pimienta negra.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ae0a0635",
+          227
+        ],
+        [
+          "3059b706",
+          240
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "60d69579",
+          14
+        ],
+        [
+          "b983723d",
+          14
+        ],
+        [
+          "3350c934",
+          2
+        ]
+      ],
+      "instrucciones": "1. Lleva a ebullición una olla grande con agua salada. Cuando hierva, cocina la pasta según las indicaciones del paquete para que quede al dente. Escúrrela y reserva 240 ml del agua de cocción.\n2. Mientras tanto, pon el requesón, el ajo, el pecorino, el parmesano y 120 ml del agua de cocción en un vaso batidor de alta potencia. Tritura hasta obtener una mezcla completamente lisa.\n3. Vierte la salsa en una sartén y caliéntala a fuego medio. Cuando esté templada pero sin burbujear, añade la pimienta y la pasta cocida y remueve para mezclar. Agrega 60 ml del agua de cocción y remueve. Si la salsa queda demasiado espesa, añade más agua reservada, unas cucharadas cada vez, hasta alcanzar la consistencia deseada; debe quedar cremosa y lisa.\n4. Sirve con un poco más de parmesano por encima y abundante pimienta negra.",
+      "consejos": "Reserva siempre agua de cocción de la pasta para ajustar la cremosidad de la salsa sin añadir grasa extra.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/cottage-cheese-cacio-e-pepe/",
+        "autor": null,
+        "kcal_web": 243
+      }
+    },
+    {
+      "nombre": "Sopa de escarola y garbanzos con tostada de ajo",
+      "descripcion": "Una sopa ligera y reconfortante de escarola y garbanzos con caldo de verduras y un toque de parmesano, acompañada de tostadas de pan de masa madre aromatizadas con ajo.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "efdb0f46",
+          5
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "9df73a2d",
+          960
+        ],
+        [
+          "1f1a4cd3",
+          328
+        ],
+        [
+          "47791975",
+          250
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "b983723d",
+          30
+        ],
+        [
+          "af60ae7c",
+          113
+        ],
+        [
+          "ed784a29",
+          20
+        ]
+      ],
+      "instrucciones": "1. Aplasta 3 dientes de ajo con el lado de un cuchillo y corta el cuarto diente por la mitad.\n2. Calienta una olla mediana a fuego medio; cuando esté caliente, añade el aceite.\n3. Añade los 3 ajos aplastados y sofríe hasta que estén dorados, unos 2 minutos.\n4. Agrega el caldo, la corteza de parmesano y los garbanzos y lleva a ebullición. Después añade la escarola y cocina hasta que se ablande, unos 15 minutos.\n5. Mientras tanto, rocía el pan con aceite de oliva y tuéstalo en el grill o tostadora hasta que esté dorado.\n6. Frota los medios dientes de ajo sobre el pan tostado.\n7. Para servir, desecha el ajo y la corteza de queso. Reparte la sopa en 4 cuencos y sirve con parmesano recién rallado y las tostadas de ajo.",
+      "consejos": "Frota el ajo sobre el pan aún caliente para que se impregne bien de su aroma.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/escarole-and-chickpea-soup-with-garlic-toast/",
+        "autor": null,
+        "kcal_web": 222
+      }
+    },
+    {
+      "nombre": "Pieles de patata rellenas de tortilla western",
+      "descripcion": "Pieles de patata al horno rellenas de una tortilla con jamón, cebolla y pimiento, gratinadas con queso cheddar. Un desayuno completo y original.",
+      "tiempo_prep_min": 30,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0b223775",
+          400
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "8f023610",
+          100
+        ],
+        [
+          "88f3975a",
+          30
+        ],
+        [
+          "c8c7806c",
+          30
+        ],
+        [
+          "950afc33",
+          20
+        ],
+        [
+          "d106e3bb",
+          75
+        ],
+        [
+          "67e4d52d",
+          60
+        ],
+        [
+          "bf392211",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pincha las patatas con un tenedor varias veces por toda la superficie.\n2. Cocínalas en el microondas unos 5 minutos por patata, hasta que estén tiernas.\n3. Déjalas templar hasta que se puedan manipular.\n4. Córtalas por la mitad a lo largo.\n5. Vacía el interior dejando una pared de unos 6 mm de grosor.\n6. En un bol grande, bate los huevos, las claras, la leche, la sal y la pimienta.\n7. Añade la cebolla, el pimiento y el jamón y mezcla bien.\n8. Engrasa una sartén antiadherente mediana con aceite de oliva y cuaja los huevos, removiendo a menudo.\n9. Precalienta el horno a 230 °C.\n10. Rocía ligeramente las pieles de patata con aceite por ambos lados.\n11. Sazónalas por ambos lados con sal y pimienta.\n12. Rellénalas con los huevos y cubre cada una con 1 cucharada de queso cheddar.\n13. Colócalas en una bandeja de horno y hornea de 5 a 10 minutos, hasta que el queso se derrita.",
+      "consejos": "Si no tienes microondas, asa las patatas enteras en el horno a 200 °C durante 45-60 minutos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/western-omelet-potato-skins/",
+        "autor": null,
+        "kcal_web": 305.1
+      }
+    },
+    {
+      "nombre": "Albóndigas de pollo con puré de alubias y pesto de albahaca",
+      "descripcion": "Albóndigas jugosas de pollo picado con un puré cremoso de alubias blancas y pesto fresco de albahaca y limón. Un plato completo y ligero, listo en poco más de media hora.",
+      "tiempo_prep_min": 35,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "a010ea17",
+          425
+        ],
+        [
+          "0a9fc13b",
+          454
+        ],
+        [
+          "c17ad017",
+          3
+        ],
+        [
+          "20f15ab2",
+          24
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "b983723d",
+          50
+        ],
+        [
+          "60ad001e",
+          100
+        ]
+      ],
+      "instrucciones": "1. En un bol mediano, aplasta ⅓ taza de las alubias escurridas con el dorso de un tenedor. Reserva el resto para después.\n2. Añade al bol con las alubias aplastadas el pollo picado, la cebolla en polvo y la sal, y mezcla bien.\n3. Tritura la albahaca, el ajo, el parmesano y la ralladura y el zumo del limón en una batidora de alta velocidad hasta obtener un pesto.\n4. Incorpora dos cucharadas del pesto al pollo picado y mezcla. Forma 12 albóndigas de unos 3 cucharadas cada una.\n5. Añade las alubias restantes a la batidora y tritura hasta que quede muy suave; añade el líquido reservado de las alubias en incrementos de una cucharada si hace falta.\n6. Engrasa una sartén grande de paredes altas con aceite en spray. Cocina las albóndigas a fuego medio-bajo hasta que estén hechas por dentro, unos 10 minutos, dorándolas por todos los lados. Retíralas de la sartén y resérvalas. Limpia la sartén con un papel de cocina húmedo.\n7. Baja el fuego al mínimo, pon en la misma sartén el puré de alubias con pesto reservado y ¼ taza del líquido de las alubias, y remueve, añadiendo unas cucharadas de agua si hace falta. Incorpora las albóndigas y deja que hiervan a fuego lento hasta que la salsa espese, unos 2 o 3 minutos.",
+      "consejos": "Si el puré de alubias queda demasiado espeso, añade el líquido de las alubias poco a poco hasta lograr la textura deseada.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/chicken-meatballs-with-pesto-white-bean-puree/",
+        "autor": null,
+        "kcal_web": 283.5
+      }
+    },
+    {
+      "nombre": "Sándwich BLT con huevo",
+      "descripcion": "Un sándwich tostado con mayonesa ligera, huevo, bacon crujiente, lechuga y tomate. Un desayuno completo y rápido, listo en unos 15 minutos.",
+      "tiempo_prep_min": 15,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "32c7062f",
+          45
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "1948a73a",
+          60
+        ],
+        [
+          "c8825eec",
+          30
+        ],
+        [
+          "7f40a393",
+          40
+        ],
+        [
+          "810d496b",
+          15
+        ]
+      ],
+      "instrucciones": "1. Calentar una sartén antiadherente mediana a fuego medio. Añadir el bacon y cocinar 5-6 minutos, dándolo la vuelta a mitad, hasta que esté crujiente. Retirar y reservar sobre papel de cocina; eliminar parte de la grasa dejando un poco para cocinar el huevo.\n2. Cascar el huevo en la sartén, tapar y cocinar hasta que la yema esté cuajada.\n3. Mientras tanto, tostar el pan.\n4. Montar el sándwich: extender la mayonesa en la base, colocar el huevo, la lechuga, el bacon y el tomate. Cortar por la mitad y consumir de inmediato.",
+      "consejos": "Escurre bien el bacon y retira el exceso de grasa de la sartén para que el huevo no quede demasiado grasiento.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/breakfast-blt/",
+        "autor": null,
+        "kcal_web": 288
+      }
+    },
+    {
+      "nombre": "Albóndigas de pavo con bacon y salsa barbacoa picante",
+      "descripcion": "Albóndigas jugosas de pavo con bacon, pimiento y hierbas frescas, glaseadas con salsa barbacoa y ketchup. Horneadas y gratinadas para un acabado dorado.",
+      "tiempo_prep_min": 40,
+      "porciones": 10,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f0204a76",
+          567
+        ],
+        [
+          "32c7062f",
+          113
+        ],
+        [
+          "950afc33",
+          60
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "057baedf",
+          57
+        ],
+        [
+          "20f15ab2",
+          5
+        ],
+        [
+          "70d24d12",
+          1
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "34f7b619",
+          63
+        ],
+        [
+          "2628d64e",
+          30
+        ],
+        [
+          "123d2515",
+          30
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C.\n2. Para el glaseado: mezclar en un bol pequeño la salsa barbacoa y el ketchup. Reservar.\n3. Para las albóndigas: en un procesador de alimentos, triturar el bacon, la cebolla, el ajo, los pimientos cherry, la albahaca y el tomillo hasta obtener una mezcla homogénea, unos 10 pulsos.\n4. En un bol grande, mezclar el pavo picado, el huevo, el pan rallado, la sal y la pimienta.\n5. Añadir la mezcla de bacon y pimientos al bol y mezclar bien. Formar albóndigas redondas del tamaño de una pelota de golf.\n6. Colocar las albóndigas en una bandeja de horno forrada con papel vegetal y pincelarlas ligeramente con la mezcla de barbacoa y ketchup.\n7. Hornear durante 12 minutos, luego cambiar el horno a modo gratinar y gratinar 4-5 minutos más, hasta que las albóndigas estén bien cocidas y doradas.",
+      "consejos": "Puedes usar pan rallado sin gluten si necesitas una versión apta para celíacos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/sweet-n-spicy-turkey-meatballs-with/",
+        "autor": null,
+        "kcal_web": 122
+      }
+    },
+    {
+      "nombre": "Dip caliente de pollo estilo Philly",
+      "descripcion": "Un dip cremoso y caliente con pollo, pimiento verde y cebolla, inspirado en el clásico sándwich Philly cheesesteak. Ideal para compartir como entrante o snack.",
+      "tiempo_prep_min": 45,
+      "porciones": 12,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          227
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "950afc33",
+          160
+        ],
+        [
+          "5a2b6b52",
+          150
+        ],
+        [
+          "810d496b",
+          56
+        ],
+        [
+          "79f18b49",
+          120
+        ],
+        [
+          "40ad87ab",
+          113
+        ],
+        [
+          "4c63757f",
+          113
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C. Sazonar el pollo con sal y pimienta por ambos lados.\n2. Engrasar una sartén grande o plancha con spray antiadherente y cocinar el pollo a fuego alto unos 1 minuto por cada lado, hasta que esté hecho por dentro.\n3. Cortar el pollo en tiras finas y reservar.\n4. Engrasar de nuevo la sartén y saltear la cebolla y el pimiento verde a fuego medio-bajo durante 5-6 minutos, hasta que estén blandos.\n5. En un bol mediano, mezclar todos los ingredientes: pollo, cebolla, pimiento, mayonesa, crema agria, queso crema y queso provolone.\n6. Pasar la mezcla a una fuente apta para horno y hornear durante 20-25 minutos, hasta que esté caliente y el queso se haya derretido.",
+      "consejos": "Sirve el dip caliente acompañado de verduras crudas o pan integral tostado para dipear.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/hot-chicken-philly-cheesesteak-dip/",
+        "autor": null,
+        "kcal_web": 125
+      }
+    },
+    {
+      "nombre": "Batido verde tropical",
+      "descripcion": "Un batido cremoso de piña, plátano y espinacas con yogur griego y leche de coco. Ideal para desayuno o merienda refrescante.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c661ff5c",
+          180
+        ],
+        [
+          "585bd18b",
+          170
+        ],
+        [
+          "8810f4f6",
+          110
+        ],
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "cb57d667",
+          30
+        ],
+        [
+          "c7de73e8",
+          12
+        ]
+      ],
+      "instrucciones": "1. Poner todos los ingredientes en el vaso de la batidora.\n2. Triturar hasta obtener una mezcla homogénea y sin grumos.",
+      "consejos": "Servir bien frío; si queda demasiado espeso, añadir un poco más de leche de coco.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/skinny-green-tropical-smoothie/",
+        "autor": null,
+        "kcal_web": 228
+      }
+    },
+    {
+      "nombre": "Bocados de hamburguesa con bacon al air fryer",
+      "descripcion": "Mini hamburguesas de ternera y bacon con mostaza, servidas en brochetas con lechuga, tomate cherry y pepinillos. Una idea de snack o cena ligera y divertida.",
+      "tiempo_prep_min": 30,
+      "porciones": 15,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ecc7f788",
+          908
+        ],
+        [
+          "32c7062f",
+          113
+        ],
+        [
+          "557a5eec",
+          28
+        ],
+        [
+          "c17ad017",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "7fb4b7ea",
+          200
+        ],
+        [
+          "a92874a5",
+          300
+        ],
+        [
+          "c25964f2",
+          30
+        ],
+        [
+          "2ad25c58",
+          150
+        ],
+        [
+          "123d2515",
+          30
+        ],
+        [
+          "866d6397",
+          30
+        ]
+      ],
+      "instrucciones": "1. Mezclar con las manos la ternera picada, el bacon picado, la mostaza, la sal, la cebolla en polvo y la pimienta hasta integrar bien.\n2. Formar 30 bolas del tamaño de una pelota de golf.\n3. Precalentar el air fryer a 200 °C. Colocar las bolas en una sola capa, en tandas.\n4. Cocinar de 8 a 10 minutos, dando la vuelta a mitad de cocción, hasta el punto deseado (medio en unos 9 minutos).\n5. Ensartar cada hamburguesa en un palillo con lechuga, pepinillo y tomate cherry. Servir con las salsas para mojar al gusto.",
+      "consejos": "No amases en exceso la carne para que los bocados queden jugosos; si no tienes air fryer, puedes hacerlos en el horno a 200 °C unos 12-15 minutos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/air-fryer-burger-bites/",
+        "autor": null,
+        "kcal_web": 125
+      }
+    },
+    {
+      "nombre": "Frittata de salchicha de pavo y espinacas",
+      "descripcion": "Una frittata al horno con salchicha de pavo ahumada, champiñones, espinacas y queso cheddar, ideal para un desayuno o comida rápida y proteica.",
+      "tiempo_prep_min": 27,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          500
+        ],
+        [
+          "67e4d52d",
+          113
+        ],
+        [
+          "b1ff971a",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "5b67c48a",
+          284
+        ],
+        [
+          "5b7e9a7d",
+          113
+        ],
+        [
+          "82930270",
+          25
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C. En un bol mediano, batir los huevos con 1 cucharada de agua, luego incorporar el queso, las espinacas, la sal y la pimienta. Reservar.\n2. Calentar una sartén de hierro fundido de 30 cm u otra sartén apta para horno a fuego medio.\n3. Engrasar con aceite en spray, añadir las rodajas de salchicha y cocinar hasta que se doren por ambos lados, 5-6 minutos. Añadir los champiñones y las cebolletas y seguir cocinando, removiendo, hasta que los champiñones estén tiernos, unos 5 minutos. Retirar del fuego.\n4. Verter la mezcla de huevo de forma uniforme sobre la salchicha y las verduras en la sartén. Hornear 8-12 minutos, según el diámetro de la sartén, o hasta que los huevos cuajen.\n5. Pasar un cuchillo por el borde de la sartén antes de cortar. Cortar en 6 porciones y servir inmediatamente.",
+      "consejos": "Puedes sustituir la salchicha de pavo por pollo cocido o pavo desmenuzado para variar.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/sausage-breakfast-skillet/",
+        "autor": null,
+        "kcal_web": 284
+      }
+    },
+    {
+      "nombre": "Burritos de desayuno con bacon y huevo",
+      "descripcion": "Tortillas de trigo rellenas de huevo revuelto con bacon, pimiento rojo y queso cheddar, ideales para preparar en lote y congelar.",
+      "tiempo_prep_min": 30,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "32c7062f",
+          90
+        ],
+        [
+          "6cd81fed",
+          500
+        ],
+        [
+          "82930270",
+          60
+        ],
+        [
+          "d106e3bb",
+          60
+        ],
+        [
+          "67e4d52d",
+          90
+        ],
+        [
+          "447b825f",
+          240
+        ],
+        [
+          "95aa4443",
+          15
+        ]
+      ],
+      "instrucciones": "1. Tostar ligeramente las tortillas por ambos lados en una plancha caliente o sobre llama abierta y mantenerlas calientes en el horno si se van a consumir al momento.\n2. Calentar una sartén grande antiadherente a fuego medio, cocinar el bacon hasta que esté hecho, unos 4-5 minutos, y escurrir sobre papel de cocina.\n3. Batir los huevos con la sal en un bol grande e incorporar la cebolleta y el pimiento rojo picados.\n4. Descartar la grasa del bacon dejando 1 cucharadita en la sartén, añadir los huevos y cocinar removiendo hasta que cuajen.\n5. Repartir el huevo en el tercio inferior de cada tortilla, añadir una tira de bacon y 2 cucharadas de queso, y enrollar hacia arriba doblando los laterales hacia el centro para formar un cilindro apretado.\n6. Si se consumen al momento, calentar una sartén a fuego medio, rociar con aceite y dorar los burritos con el pliegue hacia abajo, tapados, unos 2 minutos por cada lado.\n7. Para congelar, envolver cada burrito en papel de aluminio, guardarlos en una bolsa de congelación y etiquetar con nombre y fecha.\n8. Para recalentar en horno desde la nevera: hornear envuelto en aluminio a 220 °C durante 20 minutos, girando a mitad; desenvolver y hornear 5 minutos más.\n9. Para recalentar en horno desde congelado: hornear envuelto en aluminio a 220 °C durante 45 minutos, girando a mitad; desenvolver y hornear 5 minutos más.\n10. Para recalentar en microondas desde congelado: retirar el aluminio, colocar en un plato apto para microondas, cubrir con papel de cocina y calentar 1 minuto, girar y calentar 1-1,5 minutos más; dejar reposar 2 minutos.\n11. Para recalentar en freidora de aire desde la nevera: desenvolver, rociar con un poco de aceite y cocinar a 200 °C durante 8-9 minutos, girando a mitad.",
+      "consejos": "Prepara una tanda doble y congela los burritos envueltos en aluminio para tener desayunos listos en minutos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/freezer-breakfast-burritos/",
+        "autor": null,
+        "kcal_web": 261
+      }
+    },
+    {
+      "nombre": "Bol de burrito de desayuno con calabaza asada especiada",
+      "descripcion": "Un bol de desayuno con calabaza asada especiada, pico de gallo fresco, huevo y aguacate. Una opción completa y sabrosa para empezar el día.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4c9d38c6",
+          567
+        ],
+        [
+          "bf392211",
+          21
+        ],
+        [
+          "bbece24a",
+          9
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "e2dd1c2b",
+          1
+        ],
+        [
+          "7f40a393",
+          180
+        ],
+        [
+          "950afc33",
+          40
+        ],
+        [
+          "0e40c366",
+          4
+        ],
+        [
+          "65756599",
+          15
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "91ad5545",
+          113
+        ],
+        [
+          "67e4d52d",
+          28
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 220 °C. Engrasar una bandeja de horno grande con aceite en spray.\n2. En un bol mediano, mezclar la calabaza con el aceite de oliva, el ajo en polvo, el comino, el pimentón ahumado, 2 g de sal y pimienta al gusto. Remover bien para cubrir.\n3. Extender la calabaza en la bandeja y asar durante 20-25 minutos, o hasta que esté dorada y tierna, removiendo a mitad de cocción.\n4. Mientras tanto, en un bol pequeño, mezclar el tomate, la cebolla, el cilantro, el zumo de lima, una pizca de sal y pimienta al gusto. Reservar.\n5. Calentar una sartén pequeña a fuego medio, rociar ligeramente con aceite en spray, añadir los huevos, sazonar con sal, tapar y cocinar al punto deseado.\n6. Para montar los boles: colocar una capa de calabaza asada, el pico de gallo, el aguacate en cubos, un huevo y el queso cheddar rallado. Repetir con el resto de los boles.",
+      "consejos": "Asa la calabaza en trozos uniformes para que se cocine de manera homogénea y remueve a mitad de cocción para que se dore por todos lados.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/breakfast-burrito-bowl-with-spiced_6/",
+        "autor": null,
+        "kcal_web": 227
+      }
+    },
+    {
+      "nombre": "Pollo a la parrilla con especias shawarma y salsa de yogur",
+      "descripcion": "Pechugas de pollo marinadas con especias shawarma y limón, asadas a la parrilla y servidas con una salsa fresca de yogur griego y ajo.",
+      "tiempo_prep_min": 85,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          454
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "60ad001e",
+          40
+        ],
+        [
+          "bdc11c5a",
+          20
+        ],
+        [
+          "88959dfb",
+          2
+        ],
+        [
+          "e2dd1c2b",
+          2
+        ],
+        [
+          "94ba864e",
+          1
+        ],
+        [
+          "97b698dd",
+          1
+        ],
+        [
+          "71805ea3",
+          0.5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "585bd18b",
+          198
+        ],
+        [
+          "fea7cbe9",
+          5
+        ]
+      ],
+      "instrucciones": "1. Coloca las pechugas de pollo en una bolsa de congelación y golpéalas hasta que tengan un grosor uniforme de unos 1,5 cm.\n2. En un bol mediano, mezcla el aceite de oliva y el zumo de limón. Añade el ajo, el comino, el pimentón, la cúrcuma, el curry, la canela, los copos de guindilla, la sal y la pimienta y bate de nuevo.\n3. Vierte el marinado en la bolsa con el pollo y masajea para que se impregne bien. Refrigera y marina durante al menos 1 hora, o toda la noche.\n4. En un bol pequeño, mezcla el yogur, el ajo, el zumo de limón y la sal. Remueve y refrigera hasta el momento de servir.\n5. Asa el pollo a fuego medio-alto durante 3 minutos, dale la vuelta y asa 3-4 minutos más. Deja reposar 5 minutos y córtalo en tiras finas. Sirve cada pechuga con 2 cucharadas de salsa y un poco de perejil picado.\n6. Alternativa en freidora de aire: cocina a 200 °C durante 4-5 minutos por cada lado, hasta que esté hecho por dentro.",
+      "consejos": "Marina el pollo la noche anterior para que las especias penetren mejor y el resultado sea más jugoso.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/shawarma-spiced-grilled-chicken-with-garlic-yogurt/",
+        "autor": null,
+        "kcal_web": 240
+      }
+    },
+    {
+      "nombre": "Pastel de desayuno con salchicha y espinacas",
+      "descripcion": "Un pastel de huevo al horno con salchicha de pavo, espinacas y mozzarella, ideal para desayunos o comidas preparadas con antelación.",
+      "tiempo_prep_min": 50,
+      "porciones": 10,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "5b67c48a",
+          340
+        ],
+        [
+          "eea44971",
+          142
+        ],
+        [
+          "6cd81fed",
+          600
+        ],
+        [
+          "86d39197",
+          360
+        ],
+        [
+          "c24e3457",
+          226
+        ],
+        [
+          "b983723d",
+          25
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "653f04af",
+          30
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C y engrasar una fuente de horno de 23 x 33 cm.\n2. Cocinar la salchicha de pavo en una sartén a fuego medio-alto, desmenuzándola con una cuchara, hasta que esté hecha. Retirar con una espumadera y reservar.\n3. Bajar el fuego a medio, añadir las espinacas a la sartén con los jugos de la salchicha y cocinar 2-3 minutos hasta que se marchiten. Escurrir bien el exceso de líquido y picar groseramente.\n4. En un bol, batir los huevos. Añadir la leche, 1 taza de mozzarella, 2 cucharadas de parmesano, sal y pimienta y mezclar bien.\n5. En la fuente preparada, colocar en capas la salchicha, las espinacas y los tomates secos. Verter la mezcla de huevo por encima y cubrir con la mozzarella y el parmesano restantes.\n6. Hornear durante 35 minutos, girando a mitad de cocción si se desea. Cortar en 10 porciones y servir.",
+      "consejos": "Se puede preparar con antelación y recalentar en porciones individuales.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/breakfast-casserole-with-spinach-and-sausage/",
+        "autor": null,
+        "kcal_web": 245
+      }
+    },
+    {
+      "nombre": "Pudín de chía con piña y requesón",
+      "descripcion": "Un desayuno fresco y proteico de pudín de chía con zumo de piña, coronado con requesón y piña fresca en dados.",
+      "tiempo_prep_min": 125,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b5b5e57f",
+          48
+        ],
+        [
+          "5d1296cf",
+          240
+        ],
+        [
+          "da4a24b5",
+          165
+        ],
+        [
+          "b2c88c97",
+          226
+        ]
+      ],
+      "instrucciones": "1. En 2 tarros pequeños, mezclar 120 ml de zumo de piña con 24 g de semillas de chía en cada uno y remover.\n2. Dejar reposar 30 minutos, remover de nuevo, tapar y refrigerar toda la noche.\n3. Servir con el requesón y la piña fresca en dados por encima.",
+      "consejos": "Remueve de nuevo antes de servir para evitar grumos y reparte la piña justo antes de comer para que mantenga su textura.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/pineapple-chia-with-cottage-cheese/",
+        "autor": null,
+        "kcal_web": 295
+      }
+    },
+    {
+      "nombre": "Bol de smoothie de proteína con cacahuete y frutos rojos",
+      "descripcion": "Un bol cremoso y proteico de smoothie con arándanos y fresas congeladas, mantequilla de cacahuete y proteína en polvo. Listo en 5 minutos, ideal para desayuno o merienda.",
+      "tiempo_prep_min": 5,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "9dc9f005",
+          60
+        ],
+        [
+          "909e07c0",
+          100
+        ],
+        [
+          "f35fc1f1",
+          100
+        ],
+        [
+          "2249081f",
+          30
+        ],
+        [
+          "6328f4b9",
+          32
+        ]
+      ],
+      "instrucciones": "1. Vierte la bebida de almendra en el vaso de la batidora.\n2. Añade los arándanos y las fresas congeladas, la proteína en polvo y 1 cucharada (16 g) de crema de cacahuete. Cierra y tritura hasta obtener una mezcla homogénea.\n3. Vierte la mezcla en un bol.\n4. Si lo usas, funde la cucharada restante de crema de cacahuete (16 g) en el microondas durante 30-45 segundos y rocíala sobre el bol.\n5. Añade los toppings que desees (arándanos, semillas de chía) y come inmediatamente con cuchara.",
+      "consejos": "Usa fruta bien congelada para lograr una textura espesa de bol y añade la bebida de almendra poco a poco si necesitas aligerarla.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/protein-pb-j-smoothie-bowl/",
+        "autor": null,
+        "kcal_web": 268
+      }
+    },
+    {
+      "nombre": "Bolitas de bagel rellenas de queso crema",
+      "descripcion": "Bocaditos tipo bagel horneados, rellenos de queso crema y con un toque crujiente por fuera. Una alternativa más ligera al bagel tradicional, ideal para desayuno o merienda.",
+      "tiempo_prep_min": 35,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "20c74a2a",
+          140
+        ],
+        [
+          "242a5689",
+          8
+        ],
+        [
+          "585bd18b",
+          245
+        ],
+        [
+          "572b713a",
+          113
+        ],
+        [
+          "8f023610",
+          33
+        ],
+        [
+          "4218ee8b",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C. Coloca papel de horno o una lámina de silicona en una bandeja; si usas papel, engrásalo ligeramente.\n2. En un bol mediano mezcla la harina, la levadura química y la sal y bate con unas varillas.\n3. Añade el yogur y mezcla con un tenedor o espátula hasta integrar; quedará como migas pequeñas.\n4. Espolvorea un poco de harina sobre la superficie de trabajo, saca la masa del bol y amasa unas 15 veces hasta que esté pegajosa pero no adherente (no debe quedar masa en la mano al separarla).\n5. Divide la masa en 8 bolas iguales. Aplana cada bola en círculo, coloca 1/2 cucharada de queso crema en el centro, cubre bien y vuelve a formar una bola. Repite con el resto.\n6. Pinta con la clara de huevo batida y espolvorea con las semillas de sésamo si lo deseas.\n7. Hornea en la rejilla superior durante 25 minutos. Deja enfriar al menos 10 minutos antes de comer.\n8. Alternativa en freidora de aire: engrasa la cesta, precalienta a 165 °C, coloca las bolitas sin amontonar y cocina 11-12 minutos hasta que estén doradas. No hace falta darles la vuelta. Deja enfriar al menos 10 minutos antes de comer.",
+      "consejos": "Amasa solo hasta que la masa deje de pegarse a las manos para que las bolitas queden tiernas y no duras.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/stuffed-bagel-balls/",
+        "autor": null,
+        "kcal_web": 173
+      }
+    },
+    {
+      "nombre": "Sopa italiana de albóndigas de pavo y escarola",
+      "descripcion": "Una sopa reconfortante con albóndigas de pavo, escarola y pasta pequeña en un caldo de pollo. Ideal como plato principal ligero.",
+      "tiempo_prep_min": 30,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f0204a76",
+          567
+        ],
+        [
+          "34f7b619",
+          30
+        ],
+        [
+          "b983723d",
+          25
+        ],
+        [
+          "fea7cbe9",
+          15
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "950afc33",
+          100
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "bf392211",
+          7
+        ],
+        [
+          "4dacb910",
+          100
+        ],
+        [
+          "eb5939be",
+          1920
+        ],
+        [
+          "47791975",
+          454
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "3285d3b1",
+          85
+        ]
+      ],
+      "instrucciones": "1. Calienta una olla grande a fuero medio-alto, añade el aceite de oliva, la cebolla y la zanahoria. Sofríe hasta que estén tiernas, unos 5 minutos. Agrega el caldo de pollo y la corteza de parmesano si la tienes, tapa y lleva a ebullición.\n2. Mientras tanto, en un bol grande, mezcla el pavo picado, el pan rallado, el huevo, el perejil, la cebolla, el ajo, la sal y el queso parmesano. Con las manos limpias, mezcla suavemente hasta que todo esté integrado.\n3. Forma albóndigas pequeñas, de aproximadamente 1 cucharada cada una; obtendrás unas 40. Colócalas en una bandeja para horno y ásalas en el grill en la segunda rejilla desde arriba hasta que estén doradas, unos 8-10 minutos.\n4. Cuando el caldo hierva, añade las albóndigas, la pasta y la escarola picada.\n5. Añade pimienta negra recién molida, ajusta la sal si es necesario y cocina según las instrucciones de la pasta, unos 10 minutos o hasta que la pasta y las albóndigas estén bien cocidas. Retira la corteza de parmesano y sirve.",
+      "consejos": "Puedes sustituir la escarola por espinacas frescas u otra verdura de hoja verde oscura.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/escarole-soup-with-turkey-meatballs-52/",
+        "autor": null,
+        "kcal_web": 167
+      }
+    },
+    {
+      "nombre": "Sopa de pollo y cebada",
+      "descripcion": "Una sopa reconfortante de pollo desmenuzado con verduras y cebada perlada, ideal para los días fríos.",
+      "tiempo_prep_min": 65,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "4dacb910",
+          125
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "91f40662",
+          60
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "4ad8714c",
+          680
+        ],
+        [
+          "eb5939be",
+          1680
+        ],
+        [
+          "fea7cbe9",
+          15
+        ],
+        [
+          "c94faa0f",
+          120
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Calentar una olla grande a fuego medio y añadir el aceite, la zanahoria, la cebolla, el apio y el ajo; remover.\n2. Añadir el pollo, el caldo, el perejil y las hojas de laurel; llevar a ebullición, bajar el fuego, tapar y cocer a fuego lento unos 30 minutos hasta que el pollo y las verduras estén tiernos.\n3. Retirar el pollo, desmenuzarlo o cortarlo, desechar los huesos y devolverlo a la olla junto con la cebada; ajustar la sal si es necesario y añadir pimienta negra recién molida. Cocer a fuego lento otros 30 minutos o hasta que la cebada esté hecha.\n4. Desechar las hojas de laurel y servir.",
+      "consejos": "Si la sopa espesa demasiado al reposar, añade un poco más de caldo caliente antes de servir.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/chicken-barley-soup/",
+        "autor": null,
+        "kcal_web": 262
+      }
+    },
+    {
+      "nombre": "Cestas de boniato y huevo al horno",
+      "descripcion": "Cestas de boniato rallado con tomillo y queso pecorino, horneadas con un huevo en su interior. Una opción sabrosa y rica en proteínas para el desayuno o la cena.",
+      "tiempo_prep_min": 35,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6c5d82a5",
+          227
+        ],
+        [
+          "d0a93278",
+          2
+        ],
+        [
+          "c17ad017",
+          2
+        ],
+        [
+          "3350c934",
+          0.5
+        ],
+        [
+          "60d69579",
+          28
+        ],
+        [
+          "6cd81fed",
+          300
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C. Engrasar un molde para muffins de 6 cavidades con spray de aceite de oliva y reservar.\n2. En un bol, mezclar el boniato rallado, el tomillo, 1/4 de cucharadita de sal, 1/8 de cucharadita de pimienta negra, la cebolla en polvo y el queso pecorino (reservando 2 cucharaditas para el final).\n3. Dividir la mezcla de boniato en seis porciones iguales (aproximadamente 1/4 de taza más 1 cucharada) y colocar cada una en las cavidades del molde preparado.\n4. Presionar la mezcla en el fondo y por los lados de cada cavidad para formar un hueco, asegurándose de que no queden huecos abiertos.\n5. Rociar el interior de los huecos de boniato con spray de aceite de oliva. Hornear durante 8 minutos.\n6. Sacar el molde del horno, presionar suavemente el fondo de las cestas de boniato y cascar un huevo en cada una.\n7. Volver a introducir el molde en el horno y hornear hasta que las claras estén cuajadas y las yemas cocidas, 12 minutos para huevos con yema líquida o 14 minutos para yemas más cuajadas.\n8. Dejar reposar un minuto antes de desmoldar con cuidado con una espátula.\n9. Espolvorear con el pecorino reservado y más sal y pimienta al gusto si se desea.",
+      "consejos": "Puedes ajustar el tiempo de horneado según el punto de cocción que prefieras para la yema.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/baked-sweet-potato-egg-cups/",
+        "autor": null,
+        "kcal_web": 132
+      }
+    },
+    {
+      "nombre": "Dip picante de gambas al estilo búfalo",
+      "descripcion": "Un dip cremoso y picante de gambas cocidas con queso crema, nata agria y salsa picante, gratinado con queso. Ideal para compartir como entrante o snack.",
+      "tiempo_prep_min": 40,
+      "porciones": 9,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "572b713a",
+          113
+        ],
+        [
+          "894e649b",
+          120
+        ],
+        [
+          "95aa4443",
+          120
+        ],
+        [
+          "e601abd9",
+          5
+        ],
+        [
+          "f7fc3f33",
+          354
+        ],
+        [
+          "06262e59",
+          90
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C.\n2. Engrasar ligeramente con spray antiadherente una fuente de horno de 20x20 cm o similar.\n3. Mezclar el queso crema, la nata agria, la salsa picante y el vinagre hasta obtener una crema homogénea; añadir 30 g del queso rallado y mezclar.\n4. Incorporar las gambas picadas y mezclar bien; pasar la mezcla a la fuente.\n5. Hornear hasta que esté bien caliente, unos 20-25 minutos.\n6. Sacar del horno, cubrir con el resto del queso rallado y hornear hasta que se derrita, unos 4-5 minutos.",
+      "consejos": "Sirve el dip caliente con verduras crudas o totopos para dipear.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/hot-and-spicy-buffalo-shrimp-dip/",
+        "autor": null,
+        "kcal_web": 120
+      }
+    }
+  ]
+}

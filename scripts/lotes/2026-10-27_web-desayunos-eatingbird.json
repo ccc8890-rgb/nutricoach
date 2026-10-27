@@ -1,0 +1,1485 @@
+{
+  "lote": "web-desayunos-eatingbird-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34906939": {
+      "nombre": "Levadura nutricional",
+      "prefijo": "34906939",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "51176662": {
+      "nombre": "Azúcar moreno",
+      "prefijo": "51176662",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "e3012f44": {
+      "nombre": "Leche de almendras (sin azúcar)",
+      "prefijo": "e3012f44",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "54fee582": {
+      "nombre": "Granola",
+      "prefijo": "54fee582",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten",
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2aba459": {
+      "nombre": "Chocolate negro en pepitas",
+      "prefijo": "b2aba459",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja",
+        "Lácteos"
+      ],
+      "origen": "vegetal"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "63c26672": {
+      "nombre": "Nueces",
+      "prefijo": "63c26672",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "2249081f": {
+      "nombre": "Proteína en polvo (vainilla o chocolate)",
+      "prefijo": "2249081f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "b1ff971a": {
+      "nombre": "Espinacas baby",
+      "prefijo": "b1ff971a",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c661ff5c": {
+      "nombre": "Leche de coco",
+      "prefijo": "c661ff5c",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c8af7d4f": {
+      "nombre": "Compota de manzana",
+      "prefijo": "c8af7d4f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c7de73e8": {
+      "nombre": "Coco rallado",
+      "prefijo": "c7de73e8",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3cbe24f8": {
+      "nombre": "Almendras",
+      "prefijo": "3cbe24f8",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "dc4e36af": {
+      "nombre": "Semillas Molidas de Lino",
+      "prefijo": "dc4e36af",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9286a63f": {
+      "nombre": "Aceite de coco",
+      "prefijo": "9286a63f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e6dd0fa6": {
+      "nombre": "Dátiles medjool",
+      "prefijo": "e6dd0fa6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f2671248": {
+      "nombre": "Zumo de naranja",
+      "prefijo": "f2671248",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "87b0f802": {
+      "nombre": "Nueces o pacanas trituradas",
+      "prefijo": "87b0f802",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "5e122ac4": {
+      "nombre": "Naranja",
+      "prefijo": "5e122ac4",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b17e963f": {
+      "nombre": "Cerezas",
+      "prefijo": "b17e963f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "ae08120b": {
+      "nombre": "Aceite de Aguacate Cristal",
+      "prefijo": "ae08120b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "caa47a33": {
+      "nombre": "Salsa de soja",
+      "prefijo": "caa47a33",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja",
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f0671f02": {
+      "nombre": "Vinagre de manzana",
+      "prefijo": "f0671f02",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "24bff01d": {
+      "nombre": "Jengibre",
+      "prefijo": "24bff01d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4218ee8b": {
+      "nombre": "Semillas de sésamo",
+      "prefijo": "4218ee8b",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "cfd9ca77": {
+      "nombre": "Calabaza",
+      "prefijo": "cfd9ca77",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a75afce8": {
+      "nombre": "Ricotta",
+      "prefijo": "a75afce8",
+      "rol": "lacteo_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ed784a29": {
+      "nombre": "Queso parmesano rallado",
+      "prefijo": "ed784a29",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "67e4d52d": {
+      "nombre": "Queso cheddar",
+      "prefijo": "67e4d52d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "775e7dbb": {
+      "nombre": "Jamón cocido Hacendado lonchas",
+      "prefijo": "775e7dbb",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "8820b293": {
+      "nombre": "Brócoli",
+      "prefijo": "8820b293",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "71805ea3": {
+      "nombre": "Canela Molida Frasco",
+      "prefijo": "71805ea3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "329a9ffa": {
+      "nombre": "Bebida de almendras 0% azúcar",
+      "prefijo": "329a9ffa",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "55c7c890": {
+      "nombre": "Melaza",
+      "prefijo": "55c7c890",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "412d383a": {
+      "nombre": "Puré de açaí congelado",
+      "prefijo": "412d383a",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ebedfe6f": {
+      "nombre": "Frutos rojos congelados",
+      "prefijo": "ebedfe6f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4ffad411": {
+      "nombre": "Queso fresco batido 0%",
+      "prefijo": "4ffad411",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9076c191": {
+      "nombre": "Proteína en polvo sabor vainilla",
+      "prefijo": "9076c191",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "5b7e9a7d": {
+      "nombre": "Champiñones",
+      "prefijo": "5b7e9a7d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c9d05c24": {
+      "nombre": "Claras de huevo",
+      "prefijo": "c9d05c24",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "081fbb40": {
+      "nombre": "Nuez moscada molida",
+      "prefijo": "081fbb40",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "46825bfa": {
+      "nombre": "Cacahuetes",
+      "prefijo": "46825bfa",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Avena nocturna batida con arándanos y granola",
+      "descripcion": "Un desayuno cremoso de avena batida con yogur griego y leche de almendra, dejado reposar toda la noche y servido con arándanos, granola y un hilo de crema de cacahuete.",
+      "tiempo_prep_min": 485,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          45
+        ],
+        [
+          "e3012f44",
+          180
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "34d6fafa",
+          14
+        ],
+        [
+          "b5b5e57f",
+          4
+        ],
+        [
+          "f75a3721",
+          2
+        ],
+        [
+          "54fee582",
+          30
+        ],
+        [
+          "508e2d88",
+          50
+        ],
+        [
+          "6328f4b9",
+          15
+        ]
+      ],
+      "instrucciones": "1. Poner en el vaso de la batidora los copos de avena, la leche de almendra, el yogur griego, el sirope de arce, las semillas de chía, el extracto de vainilla y la sal.\n2. Batir hasta obtener una mezcla homogénea y sin grumos.\n3. Verter en un tarro y dejar reposar en la nevera toda la noche (mínimo 2-4 horas si hay prisa).\n4. A la mañana siguiente, remover la mezcla y servir con los arándanos, la granola y un hilo de crema de cacahuete por encima.",
+      "consejos": "Si la mezcla queda demasiado espesa tras el reposo, añade un poco más de leche de almendra y remueve antes de servir.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/blended-overnight-oats/",
+        "autor": null,
+        "kcal_web": 335
+      }
+    },
+    {
+      "nombre": "Avena horneada con fresa y pepitas de chocolate",
+      "descripcion": "Un desayuno individual de avena horneada con trozos de fresa y pepitas de chocolate, especiado con canela y endulzado con sirope de arce.",
+      "tiempo_prep_min": 45,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          40
+        ],
+        [
+          "9dc9f005",
+          120
+        ],
+        [
+          "b5b5e57f",
+          2
+        ],
+        [
+          "242a5689",
+          2
+        ],
+        [
+          "589e624a",
+          0.5
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "1131a576",
+          30
+        ],
+        [
+          "16665787",
+          30
+        ],
+        [
+          "b2aba459",
+          15
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C.\n2. Mezclar en un bol todos los ingredientes excepto las fresas troceadas y las pepitas de chocolate.\n3. Añadir las fresas troceadas y 1 cucharada de pepitas de chocolate y remover.\n4. Verter la mezcla en un ramekin engrasado y cubrir con más fresa troceada y pepitas de chocolate.\n5. Hornear a 175 °C durante 30-35 minutos o hasta que al insertar un palillo salga limpio.\n6. Dejar templar y añadir los toppings elegidos.",
+      "consejos": "Puedes sustituir la bebida de almendra por otra bebida vegetal sin azúcar y ajustar el endulzante al gusto.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/single-serving-chocolate-chip-baked-oatmeal/",
+        "autor": null,
+        "kcal_web": 296
+      }
+    },
+    {
+      "nombre": "Avena con plátano y nueces",
+      "descripcion": "Un bol de avena cremosa cocida con canela y vainilla, coronado con plátano, nueces tostadas, crema de cacahuete y semillas de chía. Desayuno completo y saciante listo en pocos minutos.",
+      "tiempo_prep_min": 10,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          45
+        ],
+        [
+          "318db297",
+          240
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "f75a3721",
+          1
+        ],
+        [
+          "1131a576",
+          60
+        ],
+        [
+          "63c26672",
+          20
+        ],
+        [
+          "6328f4b9",
+          8
+        ],
+        [
+          "b5b5e57f",
+          3
+        ]
+      ],
+      "instrucciones": "1. Pon en un cazo los copos de avena, la leche, la sal, la canela y la vainilla (si los usas) y calienta a fuego medio-alto.\n2. Cuando empiece a hervir suavemente, baja el fuego y cocina a fuego lento unos 5-7 minutos, removiendo de vez en cuando, hasta que la avena haya absorbido casi todo el líquido y quede cremosa.\n3. Pasa la avena a un bol y coloca encima el plátano en rodajas, las nueces tostadas, la crema de cacahuete y las semillas de chía.",
+      "consejos": "Puedes añadir las rodajas de plátano durante la cocción para que la avena gane dulzor y sabor.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/banana-nut-oatmeal/",
+        "autor": null,
+        "kcal_web": 153
+      }
+    },
+    {
+      "nombre": "Batido verde de proteína",
+      "descripcion": "Un batido cremoso y refrescante con plátano, espinacas y proteína en polvo, ideal para empezar el día o recuperar tras el ejercicio.",
+      "tiempo_prep_min": 5,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "2249081f",
+          30
+        ],
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "b1ff971a",
+          60
+        ],
+        [
+          "b5b5e57f",
+          12
+        ]
+      ],
+      "instrucciones": "1. Poner todos los ingredientes en una batidora de alta potencia y triturar hasta obtener una mezcla homogénea y sin grumos.",
+      "consejos": "Usa plátano congelado para conseguir una textura más espesa y fría sin necesidad de hielo.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/green-protein-smoothie/",
+        "autor": null,
+        "kcal_web": 268
+      }
+    },
+    {
+      "nombre": "Avena horneada estilo Almond Joy",
+      "descripcion": "Avena horneada con leche de coco, chocolate, almendras y coco rallado. Un desayuno dulce y saciante, ideal para preparar con antelación.",
+      "tiempo_prep_min": 55,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "c661ff5c",
+          425
+        ],
+        [
+          "c8af7d4f",
+          120
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "c7de73e8",
+          25
+        ],
+        [
+          "b2aba459",
+          45
+        ],
+        [
+          "3cbe24f8",
+          35
+        ],
+        [
+          "dc4e36af",
+          8
+        ],
+        [
+          "9286a63f",
+          14
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "242a5689",
+          4
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C y engrasa un molde cuadrado de 20×20 cm.\n2. En un bol grande, mezcla todos los ingredientes y remueve hasta combinarlos.\n3. Vierte la mezcla de avena en el molde preparado.\n4. Cubre con un poco más de coco rallado, pepitas de chocolate y almendras.\n5. Hornea durante 40-45 minutos, hasta que al insertar un palillo salga limpio.\n6. Deja enfriar 10-15 minutos, corta en 6 porciones y sirve templado con un chorrito extra de sirope de arce si lo deseas.",
+      "consejos": "Puedes prepararlo con antelación y conservarlo en la nevera hasta 4 días; recalienta en el microondas con un poco de leche.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/almond-joy-baked-oatmeal/",
+        "autor": null,
+        "kcal_web": 362
+      }
+    },
+    {
+      "nombre": "Avena horneada estilo Samoa con caramelo de dátiles",
+      "descripcion": "Avena horneada especiada con leche de coco, manzana y un caramelo natural de dátiles, terminada con chocolate fundido y coco rallado. Un desayuno o merienda dulce y saciante.",
+      "tiempo_prep_min": 55,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "c661ff5c",
+          425
+        ],
+        [
+          "e6dd0fa6",
+          192
+        ],
+        [
+          "c8af7d4f",
+          120
+        ],
+        [
+          "9286a63f",
+          14
+        ],
+        [
+          "c7de73e8",
+          12
+        ],
+        [
+          "b2aba459",
+          42
+        ],
+        [
+          "9dc9f005",
+          180
+        ],
+        [
+          "dc4e36af",
+          7
+        ],
+        [
+          "242a5689",
+          4
+        ],
+        [
+          "f75a3721",
+          5
+        ]
+      ],
+      "instrucciones": "1. Prepara el caramelo de dátiles triturando los dátiles sin hueso, 2 g de sal, la vainilla y la bebida de almendra en un robot de cocina hasta obtener una crema lisa sin trozos. Añade más bebida si hace falta para que se pueda verter en hilo.\n2. Precalienta el horno a 190 °C y engrasa una fuente cuadrada de 20x20 cm.\n3. En un bol grande mezcla los copos de avena, la leche de coco, 60 g del caramelo de dátiles, la levadura, 2 g de sal, el lino molido, el puré de manzana, el aceite de coco derretido y la vainilla.\n4. Incorpora 12 g de coco rallado y 14 g de chips de chocolate y remueve hasta integrar.\n5. Vierte la mezcla en la fuente y espolvorea coco rallado por encima.\n6. Hornea 40 minutos, hasta que cuaje y la superficie esté dorada. Saca y deja templar unos minutos.\n7. Funde los 28 g restantes de chips de chocolate con 3 g de aceite de coco en el microondas en intervalos de 30 segundos.\n8. Riega la avena con el chocolate fundido y el caramelo de dátiles restante y sirve inmediatamente.",
+      "consejos": "Puedes preparar el caramelo de dátiles con antelación y guardarlo en la nevera hasta 5 días.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/samoa-baked-oatmeal/",
+        "autor": null,
+        "kcal_web": 282
+      }
+    },
+    {
+      "nombre": "Avena nocturna de vainilla y naranja",
+      "descripcion": "Avena remojada durante la noche con leche de almendra, proteína de vainilla y un toque de naranja, coronada con nueces pecanas. Un desayuno cremoso y saciante listo para tomar.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "f2671248",
+          240
+        ],
+        [
+          "0f347066",
+          90
+        ],
+        [
+          "2249081f",
+          30
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "87b0f802",
+          15
+        ],
+        [
+          "f75a3721",
+          2
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "5e122ac4",
+          2
+        ]
+      ],
+      "instrucciones": "1. Pon todos los ingredientes en un recipiente, excepto las nueces pecanas picadas y la ralladura de naranja. Remueve hasta que queden bien integrados.\n2. Tapa el recipiente y déjalo en la nevera toda la noche (o al menos un par de horas).\n3. Saca el recipiente de la nevera por la mañana y remueve. Si la avena ha absorbido mucho líquido, añade un poco más de bebida de almendra antes de servir.\n4. Sirve la avena con las nueces pecanas picadas y la ralladura de naranja por encima.",
+      "consejos": "Puedes preparar varias raciones a la vez y guardarlas en la nevera hasta 3 días para tener desayunos listos.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/vanilla-orange-overnight-oats/",
+        "autor": null,
+        "kcal_web": 230
+      }
+    },
+    {
+      "nombre": "Avena horneada con cerezas y plátano",
+      "descripcion": "Un horneado de avena jugoso con plátano machacado, cerezas y un toque de canela y vainilla. Ideal para desayunos o meriendas, se puede preparar con antelación.",
+      "tiempo_prep_min": 55,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          240
+        ],
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "dc4e36af",
+          8
+        ],
+        [
+          "242a5689",
+          4
+        ],
+        [
+          "589e624a",
+          4
+        ],
+        [
+          "9dc9f005",
+          480
+        ],
+        [
+          "f75a3721",
+          10
+        ],
+        [
+          "b17e963f",
+          225
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C y engrasar una fuente cuadrada de 20 cm con spray de cocina.\n2. Machacar los plátanos en la fuente preparada.\n3. Añadir los copos de avena, las semillas de lino molidas, la levadura química, la canela, la sal, la bebida de almendra, el extracto de vainilla y el extracto de almendra; remover hasta combinar.\n4. Incorporar con movimientos suaves 150 g de cerezas y cubrir con los 75 g restantes.\n5. Hornear durante 45-55 minutos o hasta que el centro esté cuajado y la superficie dorada.\n6. Sacar del horno y dejar enfriar unos minutos. Servir por raciones y acompañar con sirope de arce y crema de frutos secos si se desea.",
+      "consejos": "Deja enfriar unos minutos antes de cortar para que las raciones se mantengan firmes; puedes sustituir las cerezas por otra fruta de temporada.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/cherry-baked-oatmeal/",
+        "autor": null,
+        "kcal_web": 207
+      }
+    },
+    {
+      "nombre": "Avena con arce y azúcar moreno",
+      "descripcion": "Un bol de avena cremosa cocida con canela y vainilla, endulzado con sirope de arce y azúcar moreno. Un desayuno caliente y reconfortante listo en pocos minutos.",
+      "tiempo_prep_min": 10,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          45
+        ],
+        [
+          "318db297",
+          270
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "f75a3721",
+          1
+        ],
+        [
+          "34d6fafa",
+          10
+        ],
+        [
+          "51176662",
+          20
+        ]
+      ],
+      "instrucciones": "1. Pon en un cazo los copos de avena, la leche, la sal, la canela y la vainilla (si los usas) y calienta a fuego medio-alto.\n2. Cuando empiece a hervir suavemente, baja el fuego y cocina a fuego lento unos 5-7 minutos, removiendo de vez en cuando, hasta que la avena haya absorbido casi todo el líquido y quede cremosa.\n3. Pasa la avena a un bol y añade por encima el sirope de arce y el azúcar moreno. Remueve para integrarlos y agrega un chorrito de leche si lo deseas.",
+      "consejos": "Si te gusta la avena más espesa, cocina un par de minutos más; si la prefieres más líquida, añade un poco más de leche al final.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/maple-brown-sugar-oatmeal/",
+        "autor": null,
+        "kcal_web": 277
+      }
+    },
+    {
+      "nombre": "Bocados de salmón crujientes al air fryer",
+      "descripcion": "Bocados de salmón marinados en tamari, jengibre y ajo, cocinados al air fryer hasta quedar crujientes por fuera y jugosos por dentro.",
+      "tiempo_prep_min": 48,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2fd7e358",
+          454
+        ],
+        [
+          "ae08120b",
+          14
+        ],
+        [
+          "caa47a33",
+          60
+        ],
+        [
+          "34d6fafa",
+          10
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "f0671f02",
+          5
+        ],
+        [
+          "24bff01d",
+          2
+        ],
+        [
+          "4218ee8b",
+          5
+        ],
+        [
+          "82930270",
+          10
+        ]
+      ],
+      "instrucciones": "1. En un bol mediano, mezcla el aceite, el tamari, el sirope de arce, el ajo picado, el vinagre y el jengibre rallado hasta integrar.\n2. Corta el salmón en trozos del tamaño de un bocado con un cuchillo afilado.\n3. Añade los trozos de salmón a la marinada y refrigera entre 30 minutos y hasta 4 horas.\n4. Precalienta el air fryer si es necesario. Coloca los trozos de salmón marinados en una sola capa y cocina 6-8 minutos a 200 °C, dándoles la vuelta a mitad de cocción. Cocina en tandas si hace falta.\n5. Sirve los bocados de salmón calientes sobre arroz o el cereal que prefieras y termina con semillas de sésamo y cebolleta.",
+      "consejos": "Escurre ligeramente el salmón antes de cocinarlo para que no suelte demasiado líquido en el air fryer.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/air-fryer-salmon-bites/",
+        "autor": null,
+        "kcal_web": 211
+      }
+    },
+    {
+      "nombre": "Calabaza espagueti rellena estilo lasaña",
+      "descripcion": "Mitades de calabaza espagueti horneadas y rellenas de salsa marinara, ricotta vegana y verduras tiernas, gratinadas al horno. Una cena vegetariana reconfortante y baja en hidratos.",
+      "tiempo_prep_min": 70,
+      "porciones": 2,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "cfd9ca77",
+          900
+        ],
+        [
+          "1d197cae",
+          240
+        ],
+        [
+          "a75afce8",
+          120
+        ],
+        [
+          "b1ff971a",
+          30
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "ed784a29",
+          10
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C. Cortar la calabaza espagueti por la mitad a lo largo y retirar las semillas con una cuchara. Untar el interior de cada mitad con un poco de aceite de oliva, sal y pimienta.\n2. Colocar las mitades boca abajo sobre una bandeja de horno y hornear unos 40-50 minutos, hasta que un tenedor atraviese fácilmente la pulpa. Dejar reposar 10 minutos y raspar el interior con un tenedor para separar los hilos.\n3. En un bol, mezclar los hilos de calabaza con la salsa marinara, la ricotta vegana y las espinacas baby.\n4. Subir el horno a la función de gratinar.\n5. Rellenar cada mitad de calabaza con la mezcla y cubrir con un poco de ricotta vegana desmenuzada. Gratinar unos 5-7 minutos, hasta que la ricotta se dore ligeramente.\n6. Sacar del horno, espolvorear con el parmesano de cáñamo y servir.",
+      "consejos": "Si no encuentras ricotta vegana, puedes sustituirla por ricotta de leche de vaca o por tofu firme desmenuzado y escurrido.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/spaghetti-squash-lasagna-bowls/",
+        "autor": null,
+        "kcal_web": 318
+      }
+    },
+    {
+      "nombre": "Batido verde de plátano y crema de cacahuete",
+      "descripcion": "Un batido cremoso y refrescante con plátano congelado, crema de cacahuete, espinacas y leche de almendra. Ideal para desayuno o merienda, listo en 5 minutos.",
+      "tiempo_prep_min": 5,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          60
+        ],
+        [
+          "6328f4b9",
+          24
+        ],
+        [
+          "2249081f",
+          30
+        ],
+        [
+          "e3012f44",
+          180
+        ],
+        [
+          "b1ff971a",
+          60
+        ]
+      ],
+      "instrucciones": "1. Añade todos los ingredientes en un vaso batidor de alta potencia y tritura hasta obtener una mezcla homogénea.\n2. Si el batido queda demasiado espeso, añade un poco más de leche de almendra y vuelve a triturar.\n3. Sirve en un vaso y consume inmediatamente.",
+      "consejos": "Usa plátano congelado para lograr una textura más cremosa y fría sin necesidad de hielo.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/hooked-on-green-smoothies-the-green-elvis/",
+        "autor": null,
+        "kcal_web": 320
+      }
+    },
+    {
+      "nombre": "Tarta de huevo sin masa con jamón y brócoli",
+      "descripcion": "Una quiche sin masa, fácil y rápida, con huevo, jamón cocido, brócoli y queso cheddar. Ideal para una comida o cena ligera y proteica.",
+      "tiempo_prep_min": 50,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "318db297",
+          240
+        ],
+        [
+          "67e4d52d",
+          100
+        ],
+        [
+          "775e7dbb",
+          150
+        ],
+        [
+          "8820b293",
+          75
+        ],
+        [
+          "950afc33",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bbece24a",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C y engrasar ligeramente un molde de tarta de 23 cm con aceite de oliva o spray antiadherente.\n2. En un bol grande, batir los huevos con la leche, la sal, la pimienta y el ajo en polvo hasta que estén bien integrados.\n3. Incorporar el jamón picado, el brócoli, la cebolla y el queso cheddar rallado y mezclar.\n4. Verter la mezcla en el molde preparado y distribuir los ingredientes de forma uniforme.\n5. Hornear durante 35-40 minutos, hasta que el centro esté cuajado y la superficie ligeramente dorada; estará lista cuando un cuchillo insertado en el centro salga limpio.\n6. Dejar enfriar unos 5-10 minutos antes de cortar. Decorar con perejil o cebolleta picada si se desea.",
+      "consejos": "Puedes sustituir el jamón cocido por pavo cocido o verduras al gusto para adaptarla a diferentes gustos.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/crustless-quiche-recipe/",
+        "autor": null,
+        "kcal_web": 293
+      }
+    },
+    {
+      "nombre": "Avena horneada con plátano y chocolate",
+      "descripcion": "Un horneado de avena especiado con plátano, semillas de lino y un toque de chocolate, ideal para el desayuno o la merienda. Se prepara en una sola bandeja y se corta en porciones.",
+      "tiempo_prep_min": 45,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "34906939",
+          30
+        ],
+        [
+          "dc4e36af",
+          30
+        ],
+        [
+          "71805ea3",
+          3
+        ],
+        [
+          "242a5689",
+          4
+        ],
+        [
+          "329a9ffa",
+          480
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "9286a63f",
+          14
+        ],
+        [
+          "55c7c890",
+          20
+        ],
+        [
+          "4218ee8b",
+          9
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "1131a576",
+          240
+        ],
+        [
+          "c7de73e8",
+          12
+        ],
+        [
+          "b2aba459",
+          30
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C y engrasa una fuente cuadrada de 20×20 cm.\n2. En un bol grande, mezcla todos los ingredientes excepto el coco rallado y las pepitas de chocolate.\n3. Incorpora con cuidado el coco rallado y las pepitas de chocolate.\n4. Vierte la mezcla de avena en la fuente preparada y espolvorea por encima un poco más de coco y pepitas de chocolate.\n5. Hornea durante 35-40 minutos, hasta que la superficie esté dorada y un palillo insertado salga limpio. Saca del horno y deja enfriar unos minutos.\n6. Corta en porciones y sirve.",
+      "consejos": "Puedes sustituir el plátano por ½ taza de compota de manzana sin azúcar si lo prefieres.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/lactation-baked-oatmeal/",
+        "autor": null,
+        "kcal_web": 385
+      }
+    },
+    {
+      "nombre": "Bol de acaí con proteína",
+      "descripcion": "Un bol cremoso y frío de acaí, frutos rojos y yogur griego con proteína, ideal para desayunar o merendar.",
+      "tiempo_prep_min": 5,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "412d383a",
+          100
+        ],
+        [
+          "1131a576",
+          60
+        ],
+        [
+          "ebedfe6f",
+          75
+        ],
+        [
+          "585bd18b",
+          120
+        ],
+        [
+          "2249081f",
+          25
+        ],
+        [
+          "318db297",
+          60
+        ]
+      ],
+      "instrucciones": "1. Deja el sobre de acaí congelado a temperatura ambiente un par de minutos hasta que se suelte del envase; retíralo y pártelo en trozos.\n2. Pon en la batidora el acaí, el plátano en trozos, los frutos rojos, el yogur, la proteína en polvo y la leche.\n3. Tapa y bate a velocidad baja, aumentando poco a poco, ayudándote del accesorio para empujar la mezcla; quedará espesa.\n4. Cuando esté todo integrado y suave, sirve la mezcla en un bol y añade los toppings que prefieras.",
+      "consejos": "Si te queda demasiado espeso para batir, añade un chorrito más de leche.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/protein-acai-bowl/",
+        "autor": null,
+        "kcal_web": 376
+      }
+    },
+    {
+      "nombre": "Pudín de chía con matcha",
+      "descripcion": "Un pudín cremoso de semillas de chía aromatizado con matcha y vainilla, endulzado con sirope de arce. Ideal como desayuno o merienda, se prepara la noche anterior.",
+      "tiempo_prep_min": 125,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "b5b5e57f",
+          40
+        ]
+      ],
+      "instrucciones": "1. En un vaso batidor o un tarro, mezcla con unas varillas la bebida de almendra, el matcha en polvo, el sirope de arce y la vainilla hasta que el matcha se disuelva por completo y la mezcla quede lisa.\n2. Añade las semillas de chía y remueve hasta que queden bien integradas.\n3. Tapa y refrigera al menos 2-3 horas, o toda la noche, hasta que el pudín espese.\n4. Antes de servir, remueve bien y reparte en dos tarros; añade los toppings que desees.",
+      "consejos": "Remueve la mezcla a los 10-15 minutos de refrigerar para evitar que las semillas de chía se apelmacen en el fondo.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/matcha-chia-pudding/",
+        "autor": null,
+        "kcal_web": 333
+      }
+    },
+    {
+      "nombre": "Mousse de queso fresco batido y cacao",
+      "descripcion": "Un postre cremoso y proteico de queso fresco batido, cacao y sirope de arce, sin necesidad de cocción. Se sirve bien frío.",
+      "tiempo_prep_min": 125,
+      "porciones": 2,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ffad411",
+          240
+        ],
+        [
+          "edb1e321",
+          12
+        ],
+        [
+          "34d6fafa",
+          40
+        ]
+      ],
+      "instrucciones": "1. Triturar todos los ingredientes en una batidora hasta obtener una mezcla homogénea y sin grumos.\n2. Verter la mezcla en un recipiente y refrigerar al menos 2 horas.\n3. Servir bien frío, solo o con los toppings que se prefieran.",
+      "consejos": "Usa queso fresco batido entero para una textura más cremosa; si queda muy espeso, tritura un poco más.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/cottage-cheese-mousse/",
+        "autor": null,
+        "kcal_web": 187
+      }
+    },
+    {
+      "nombre": "Batido de naranja y plátano",
+      "descripcion": "Un batido cremoso y refrescante de plátano congelado y naranja, endulzado con proteína de vainilla y leche. Ideal para un desayuno rápido o una merienda nutritiva.",
+      "tiempo_prep_min": 5,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "5e122ac4",
+          150
+        ],
+        [
+          "9076c191",
+          30
+        ],
+        [
+          "e3012f44",
+          120
+        ]
+      ],
+      "instrucciones": "1. Añade el plátano, la naranja, la proteína de vainilla y la leche (empezando con 120 ml) en una batidora de alta potencia y tritura hasta obtener una mezcla homogénea.\n2. Prueba la textura: si el batido queda demasiado espeso, añade más leche y vuelve a triturar.\n3. Sirve en un vaso y disfruta.",
+      "consejos": "Congela el plátano en trozos para lograr una textura más cremosa y fría sin necesidad de hielo.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/cinco-de-mayo-smoothie/",
+        "autor": null,
+        "kcal_web": 240
+      }
+    },
+    {
+      "nombre": "Quiche sin masa de kale, champiñones y feta",
+      "descripcion": "Una quiche sin masa, ligera y sabrosa, con kale, champiñones y cebolla salteados, huevo y queso feta. Ideal para desayuno o comida, se corta en cuatro porciones.",
+      "tiempo_prep_min": 75,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          7
+        ],
+        [
+          "950afc33",
+          75
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "5b7e9a7d",
+          70
+        ],
+        [
+          "d946bd47",
+          100
+        ],
+        [
+          "3350c934",
+          0.5
+        ],
+        [
+          "6cd81fed",
+          150
+        ],
+        [
+          "c9d05c24",
+          120
+        ],
+        [
+          "329a9ffa",
+          120
+        ],
+        [
+          "081fbb40",
+          0.5
+        ],
+        [
+          "6187036a",
+          35
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y engrasa un molde de tarta de 23 cm con spray antiadherente.\n2. Calienta el aceite en una sartén grande a fuego medio-alto. Añade la cebolla, el ajo, los champiñones, el kale, las especias italianas, la sal y la pimienta. Cocina removiendo de vez en cuando y añadiendo una o dos cucharadas de agua si la sartén se seca demasiado, hasta que la cebolla esté translúcida y el kale y los champiñones se hayan marchitado.\n3. En un bol pequeño, bate los huevos, las claras, la bebida de almendra y la nuez moscada. Sazona con una pizca adicional de sal y pimienta.\n4. Extiende la mezcla de cebolla, champiñones y kale en el fondo del molde preparado. Espolvorea el queso feta por encima. Vierte la mezcla de huevo sobre todo y empuja hacia abajo los ingredientes que no queden cubiertos por la mezcla de huevo para evitar que se quemen.\n5. Hornea sin cubrir hasta que cuaje y se dore por los bordes, unos 35-40 minutos. Comprueba con un cuchillo que la quiche esté completamente cocida en el centro y no líquida. Deja reposar la quiche a temperatura ambiente unos 10 minutos, luego córtala en cuatro porciones, decora con perejil fresco y sirve.",
+      "consejos": "Puedes sustituir el kale por espinacas y el feta por otro queso desmenuzado, pero ajusta la sal porque el feta ya es salado.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/kale-and-feta-crustless-quiche/",
+        "autor": null,
+        "kcal_web": 168
+      }
+    },
+    {
+      "nombre": "Avena nocturna con crema de cacahuete",
+      "descripcion": "Avena reposada toda la noche con yogur griego, crema de cacahuete y leche de almendra, coronada con arándanos y cacahuetes picados. Un desayuno cremoso y saciante que se prepara la noche anterior.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          90
+        ],
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "6328f4b9",
+          32
+        ],
+        [
+          "34d6fafa",
+          14
+        ],
+        [
+          "b5b5e57f",
+          4
+        ],
+        [
+          "f75a3721",
+          2
+        ],
+        [
+          "508e2d88",
+          60
+        ],
+        [
+          "46825bfa",
+          15
+        ]
+      ],
+      "instrucciones": "1. En un bol mezcla los copos de avena, la bebida de almendra, el yogur griego, la crema de cacahuete, el sirope de arce, las semillas de chía, la vainilla y la sal. Remueve bien hasta que la crema de cacahuete quede repartida de forma uniforme.\n2. Reparte la mezcla en dos recipientes con tapa y guárdalos en la nevera toda la noche.\n3. A la mañana siguiente, saca un recipiente, remueve la mezcla y añade por encima un hilo de crema de cacahuete, los arándanos y los cacahuetes picados.",
+      "consejos": "Se conserva hasta 5 días en la nevera en un recipiente hermético, así que puedes preparar varias raciones de una vez.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/peanut-butter-overnight-oats/",
+        "autor": null,
+        "kcal_web": 354
+      }
+    }
+  ]
+}

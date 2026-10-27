@@ -1,0 +1,2406 @@
+{
+  "lote": "web-healthyfitnessmeals-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "13f26d7a": {
+      "nombre": "Pasta (seca)",
+      "prefijo": "13f26d7a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5b67c48a": {
+      "nombre": "Salchicha de pavo",
+      "prefijo": "5b67c48a",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "1390b7a4": {
+      "nombre": "Tomate triturado",
+      "prefijo": "1390b7a4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0994bd1e": {
+      "nombre": "Frambuesas",
+      "prefijo": "0994bd1e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6f687582": {
+      "nombre": "Tomates cherry pera kumato",
+      "prefijo": "6f687582",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fea7cbe9": {
+      "nombre": "Perejil",
+      "prefijo": "fea7cbe9",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fa56e340": {
+      "nombre": "Quinoa cocida",
+      "prefijo": "fa56e340",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "513d4dc7": {
+      "nombre": "Vinagre de Vino Tinto",
+      "prefijo": "513d4dc7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6e801766": {
+      "nombre": "Tahini",
+      "prefijo": "6e801766",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e3012f44": {
+      "nombre": "Leche de almendras (sin azúcar)",
+      "prefijo": "e3012f44",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "ccd5d912": {
+      "nombre": "Solomillo de ternera",
+      "prefijo": "ccd5d912",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "b5839902": {
+      "nombre": "Arroz integral",
+      "prefijo": "b5839902",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "94ba864e": {
+      "nombre": "Cúrcuma",
+      "prefijo": "94ba864e",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4e8a3263": {
+      "nombre": "Alubia blanca",
+      "prefijo": "4e8a3263",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "219fa68f": {
+      "nombre": "Lechuga romana",
+      "prefijo": "219fa68f",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d89cd8d1": {
+      "nombre": "Puerro",
+      "prefijo": "d89cd8d1",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "44ae0abe": {
+      "nombre": "Guisantes extra",
+      "prefijo": "44ae0abe",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "515b18b8": {
+      "nombre": "Proteína de suero (whey)",
+      "prefijo": "515b18b8",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "92b3c5d9": {
+      "nombre": "Mermelada de fresa",
+      "prefijo": "92b3c5d9",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "54fee582": {
+      "nombre": "Granola",
+      "prefijo": "54fee582",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten",
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d366c027": {
+      "nombre": "Preparado carne picada vacuno",
+      "prefijo": "d366c027",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8d2c1ba2": {
+      "nombre": "Frijoles negros guisados",
+      "prefijo": "8d2c1ba2",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03858a00": {
+      "nombre": "Maíz dulce",
+      "prefijo": "03858a00",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "06262e59": {
+      "nombre": "Queso",
+      "prefijo": "06262e59",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "dc4e36af": {
+      "nombre": "Semillas Molidas de Lino",
+      "prefijo": "dc4e36af",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdba3b82": {
+      "nombre": "Pimientos rojos asados",
+      "prefijo": "bdba3b82",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "becc1fbe": {
+      "nombre": "Piñones",
+      "prefijo": "becc1fbe",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "3980c76f": {
+      "nombre": "Boniato cocido",
+      "prefijo": "3980c76f",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fe35dfdf": {
+      "nombre": "Kéfir o suero de leche (buttermilk)",
+      "prefijo": "fe35dfdf",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "7dbc3a0d": {
+      "nombre": "Aceite vegetal",
+      "prefijo": "7dbc3a0d",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "67e4d52d": {
+      "nombre": "Queso cheddar",
+      "prefijo": "67e4d52d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5e122ac4": {
+      "nombre": "Naranja",
+      "prefijo": "5e122ac4",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "87b0f802": {
+      "nombre": "Nueces o pacanas trituradas",
+      "prefijo": "87b0f802",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "6c5d82a5": {
+      "nombre": "Boniato",
+      "prefijo": "6c5d82a5",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "2628d64e": {
+      "nombre": "Salsa barbacoa",
+      "prefijo": "2628d64e",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "350ffddf": {
+      "nombre": "Maiz dulce mazorca",
+      "prefijo": "350ffddf",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8469bf72": {
+      "nombre": "Leche semidesnatada",
+      "prefijo": "8469bf72",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "87c8c74b": {
+      "nombre": "Pan rallado panko",
+      "prefijo": "87c8c74b",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95aa4443": {
+      "nombre": "Salsa picante",
+      "prefijo": "95aa4443",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "caa47a33": {
+      "nombre": "Salsa de soja",
+      "prefijo": "caa47a33",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "e88e2cb8": {
+      "nombre": "Muslo de pollo",
+      "prefijo": "e88e2cb8",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "ed47620e": {
+      "nombre": "Yogur griego natural (entero)",
+      "prefijo": "ed47620e",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "5a1860a7": {
+      "nombre": "Tomate doble concentrado",
+      "prefijo": "5a1860a7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c14d168a": {
+      "nombre": "Orégano seco",
+      "prefijo": "c14d168a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e05cc90": {
+      "nombre": "Bebida vegetal",
+      "prefijo": "2e05cc90",
+      "rol": "lacteo_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a54e5749": {
+      "nombre": "Chocolate negro 75-80%",
+      "prefijo": "a54e5749",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos",
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "cfd9ca77": {
+      "nombre": "Calabaza",
+      "prefijo": "cfd9ca77",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5699a347": {
+      "nombre": "Jengibre molido",
+      "prefijo": "5699a347",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0123ea99": {
+      "nombre": "Pipas de calabaza tostadas",
+      "prefijo": "0123ea99",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "aa87b67a": {
+      "nombre": "Queso cottage",
+      "prefijo": "aa87b67a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e99e9f9a": {
+      "nombre": "Mini muslo de pollo 98% La Carloteña asado al",
+      "prefijo": "e99e9f9a",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7d5a031f": {
+      "nombre": "Manzana",
+      "prefijo": "7d5a031f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b1cb2f9": {
+      "nombre": "Pistachos",
+      "prefijo": "0b1cb2f9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "a9a8c7f8": {
+      "nombre": "Harina de todo uso",
+      "prefijo": "a9a8c7f8",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "4218ee8b": {
+      "nombre": "Semillas de sésamo",
+      "prefijo": "4218ee8b",
+      "rol": "especias_aromaticos",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "7605da1a": {
+      "nombre": "Café Espresso Molido",
+      "prefijo": "7605da1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9014dcbc": {
+      "nombre": "Azúcar de Coco Bío",
+      "prefijo": "9014dcbc",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c7de73e8": {
+      "nombre": "Coco rallado",
+      "prefijo": "c7de73e8",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c661ff5c": {
+      "nombre": "Leche de coco",
+      "prefijo": "c661ff5c",
+      "rol": "lacteo_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7b6a7f20": {
+      "nombre": "Yogur sabor coco",
+      "prefijo": "7b6a7f20",
+      "rol": "lacteo_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "b2aba459": {
+      "nombre": "Chocolate negro en pepitas",
+      "prefijo": "b2aba459",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja",
+        "Lácteos"
+      ],
+      "origen": "vegetal"
+    },
+    "46825bfa": {
+      "nombre": "Cacahuetes",
+      "prefijo": "46825bfa",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "c8af7d4f": {
+      "nombre": "Compota de manzana",
+      "prefijo": "c8af7d4f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "933f4779": {
+      "nombre": "Melocotón",
+      "prefijo": "933f4779",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5d9fb239": {
+      "nombre": "Copos de avena sin gluten",
+      "prefijo": "5d9fb239",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2249081f": {
+      "nombre": "Proteína en polvo (vainilla o chocolate)",
+      "prefijo": "2249081f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Pasta con salsa cremosa de tomate y requesón",
+      "descripcion": "Una pasta al dente con una salsa suave de tomate triturado, requesón y pimentón ahumado, acompañada de salchicha de pavo. Un plato completo y sabroso listo en media hora.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "13f26d7a",
+          280
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "bdc11c5a",
+          14
+        ],
+        [
+          "5b67c48a",
+          454
+        ],
+        [
+          "1390b7a4",
+          680
+        ],
+        [
+          "e2dd1c2b",
+          7
+        ],
+        [
+          "b2c88c97",
+          120
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "59163485",
+          5
+        ],
+        [
+          "b983723d",
+          10
+        ]
+      ],
+      "instrucciones": "1. Cuece la pasta según las indicaciones del paquete hasta que esté al dente; escúrrela y resérvala.\n2. Calienta el aceite de oliva en una sartén grande a fuego medio. Sofríe el ajo picado durante 30 segundos y añade la salchicha de pavo. Cocina hasta que la carne empiece a dorarse y sazona con una pizca de sal y pimienta.\n3. Mientras se cocina la salchicha, tritura el tomate triturado, el pimentón ahumado y el requesón en un vaso batidor hasta obtener una salsa lisa. Vierte la salsa sobre la carne y deja cocer a fuego lento durante 5 minutos.\n4. Incorpora la pasta cocida, mezcla bien y retira del fuego.\n5. Sirve con perejil fresco picado y, si se desea, un poco de parmesano espolvoreado.",
+      "consejos": "Reserva un poco del agua de cocción de la pasta para ligar la salsa si queda demasiado espesa.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-pasta/",
+        "autor": null,
+        "kcal_web": 488
+      }
+    },
+    {
+      "nombre": "Pudín de chía con yogur griego y frambuesa",
+      "descripcion": "Pudín cremoso de chía y yogur griego con una capa de puré de frambuesa. Un desayuno o merienda fresca que se prepara con antelación.",
+      "tiempo_prep_min": 130,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          500
+        ],
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "b5b5e57f",
+          40
+        ],
+        [
+          "0994bd1e",
+          300
+        ],
+        [
+          "8619b09f",
+          7
+        ]
+      ],
+      "instrucciones": "1. En un bol mediano, mezcla el yogur griego, la bebida de almendra, el sirope de arce y las semillas de chía hasta que queden bien integrados.\n2. Cubre el bol y déjalo reposar en la nevera entre 2 y 4 horas; puedes removerlo a los 30 minutos aproximadamente.\n3. Saca el pudín de chía de la nevera y repártelo en 4 tarros individuales.\n4. Para la capa de frambuesa, pon las frambuesas en un bol y añade la cucharadita de miel. Machaca con un tenedor hasta obtener una textura de puré. Si usas frambuesas congeladas, déjalas descongelar antes.\n5. Para servir, cubre el pudín de chía con el puré de frambuesa. Conserva el resto en la nevera hasta 3 días.",
+      "consejos": "Remueve el pudín a los 30 minutos para evitar que las semillas de chía se apelmacen en el fondo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/greek-yogurt-chia-pudding/",
+        "autor": null,
+        "kcal_web": 257
+      }
+    },
+    {
+      "nombre": "Bol de quinoa con hummus y verduras",
+      "descripcion": "Un bol saludable y colorido con quinoa, verduras frescas, yogur griego y hummus casero de garbanzos.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2e8d5d64",
+          200
+        ],
+        [
+          "6f687582",
+          300
+        ],
+        [
+          "fea7cbe9",
+          20
+        ],
+        [
+          "82930270",
+          60
+        ],
+        [
+          "08637e90",
+          70
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "fa56e340",
+          370
+        ],
+        [
+          "bf392211",
+          84
+        ],
+        [
+          "513d4dc7",
+          45
+        ],
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "6e801766",
+          15
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "e2dd1c2b",
+          1
+        ]
+      ],
+      "instrucciones": "1. Coloca todos los ingredientes del hummus (garbanzos, ajo, 2 cucharadas de aceite de oliva, 2-3 cucharadas de agua, zumo de limón, tahini, comino, pimentón ahumado, sal y pimienta) en un procesador de alimentos y tritura hasta obtener una mezcla suave.\n2. Para montar los bols, divide la quinoa cocida entre 4 bols y añade el pepino picado, los tomates cherry partidos, las cebolletas picadas, el perejil picado, la cebolla roja en rodajas, una cucharada de yogur griego y una porción de hummus.\n3. Espolvorea con pimentón ahumado, sal y pimienta al gusto, y añade un chorrito de aceite de oliva y vinagre de vino tinto repartido entre los bols.",
+      "consejos": "Puedes preparar el hummus con antelación y guardarlo en la nevera para montar los bols más rápido.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/hummus-quinoa-veggie-bowl/",
+        "autor": null,
+        "kcal_web": 487
+      }
+    },
+    {
+      "nombre": "Batido de fresa y plátano",
+      "descripcion": "Un batido cremoso y refrescante de fresa y plátano con yogur griego y un toque de miel. Ideal para desayuno o merienda.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          240
+        ],
+        [
+          "16665787",
+          300
+        ],
+        [
+          "e3012f44",
+          240
+        ],
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "8619b09f",
+          7
+        ]
+      ],
+      "instrucciones": "1. Añade todos los ingredientes en una batidora de alta potencia y tritura hasta obtener una mezcla suave y cremosa.\n2. Sirve en 2 vasos y decora con fresas laminadas o copos de coco al gusto.",
+      "consejos": "Congela el plátano previamente para conseguir una textura más espesa y fría sin necesidad de hielo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/strawberry-banana-smoothie/",
+        "autor": null,
+        "kcal_web": 243
+      }
+    },
+    {
+      "nombre": "Bol de carne asada con arroz y alubias",
+      "descripcion": "Un bol completo con carne de vacuno a la plancha, arroz especiado y una ensalada fresca de alubias, tomate y aguacate.",
+      "tiempo_prep_min": 30,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ccd5d912",
+          227
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "b5839902",
+          100
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "94ba864e",
+          1
+        ],
+        [
+          "bbece24a",
+          1
+        ],
+        [
+          "4e8a3263",
+          130
+        ],
+        [
+          "219fa68f",
+          100
+        ],
+        [
+          "a92874a5",
+          150
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "91ad5545",
+          150
+        ],
+        [
+          "65756599",
+          50
+        ],
+        [
+          "d61c2a0f",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Calienta 1 cucharadita de aceite en una sartén grande a fuego medio-alto. Sazona el solomillo con sal y pimienta por ambos lados.\n2. Cocina unos 5-7 minutos por cada lado o hasta el punto deseado. Pasa la carne a una tabla y déjala reposar 5 minutos. Con un cuchillo bien afilado, córtala en contra de la fibra.\n3. En la misma sartén añade 1 cucharada de aceite. Agrega el arroz integral cocido y las especias, y saltea unos 3-4 minutos. Sazona con sal y pimienta al gusto y reserva.\n4. En un bol mediano, mezcla las alubias, los tomates, la cebolla y el aguacate. Rocía con el aceite restante y el zumo de lima, y espolvorea sal y pimienta.\n5. Reparte la lechuga en 2 boles y cubre con la ensalada de alubias, la carne y el arroz salteado. Decora con gajos de lima y cilantro fresco.",
+      "consejos": "Deja reposar la carne antes de cortarla para que conserve sus jugos y quede más tierna.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/carne-asada-steak-bowl/",
+        "autor": null,
+        "kcal_web": 585
+      }
+    },
+    {
+      "nombre": "Shakshuka verde con huevos y verduras",
+      "descripcion": "Una versión verde de la shakshuka con kale, puerro y guisantes, huevos escalfados en una salsa cremosa de yogur y hierbas frescas. Plato completo y lleno de color, ideal para comer o cenar.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "d946bd47",
+          200
+        ],
+        [
+          "d89cd8d1",
+          150
+        ],
+        [
+          "44ae0abe",
+          225
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "0e40c366",
+          30
+        ],
+        [
+          "c63a423f",
+          20
+        ],
+        [
+          "585bd18b",
+          180
+        ],
+        [
+          "65756599",
+          15
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "6187036a",
+          40
+        ],
+        [
+          "91ad5545",
+          100
+        ],
+        [
+          "c25964f2",
+          20
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite de oliva en una sartén grande a fuego medio. Añade el ajo picado y el comino molido y sofríe hasta que desprendan aroma.\n2. Incorpora el puerro y los guisantes y cocina removiendo con frecuencia durante unos 4 minutos. Añade el kale, el cilantro y la menta picados y sazona con sal y pimienta.\n3. Cocina 3-4 minutos más hasta que el kale se ablande. Baja el fuego y mezcla el yogur griego y el zumo de lima hasta integrar bien.\n4. Con la parte posterior de una cuchara, haz 4 huecos en la mezcla y casca un huevo en cada uno.\n5. Sazona los huevos con una pizca de sal, tapa la sartén y cocina a fuego bajo hasta que los huevos estén al punto deseado.\n6. Cuando los huevos estén listos, decora con las hojas de hierbas reservadas, el aguacate en láminas, el jalapeño y el queso feta desmenuzado. Sirve caliente.",
+      "consejos": "Añade el yogur con el fuego bajo para que no se corte y ajusta el punto de los huevos a tu gusto.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/green-shakshuka/",
+        "autor": null,
+        "kcal_web": 221
+      }
+    },
+    {
+      "nombre": "Parfait de fresa y yogur griego",
+      "descripcion": "Un postre o desayuno en capas de yogur griego con proteína, fresas y granola crujiente. Se prepara en pocos minutos y es fresco y saciante.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          284
+        ],
+        [
+          "515b18b8",
+          30
+        ],
+        [
+          "16665787",
+          225
+        ],
+        [
+          "92b3c5d9",
+          40
+        ],
+        [
+          "54fee582",
+          30
+        ]
+      ],
+      "instrucciones": "1. En un bol pequeño, mezcla el yogur griego con la proteína de suero hasta obtener una crema homogénea.\n2. En otro bol, mezcla las fresas troceadas con la mermelada de fresa.\n3. En dos vasos, monta capas alternas de la mezcla de yogur, la mezcla de fresas y la granola.\n4. Sirve inmediatamente.",
+      "consejos": "Añade la granola justo antes de servir para que mantenga su textura crujiente.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/strawberry-parfaits-recipe/",
+        "autor": null,
+        "kcal_web": 184
+      }
+    },
+    {
+      "nombre": "Calabacines rellenos estilo burrito",
+      "descripcion": "Calabacines asados y rellenos de una mezcla de carne picada, frijoles negros, maíz y tomate, gratinados con queso. Una cena completa y sabrosa.",
+      "tiempo_prep_min": 40,
+      "porciones": 6,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          900
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "d366c027",
+          454
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "21a40eb5",
+          1
+        ],
+        [
+          "8d2c1ba2",
+          85
+        ],
+        [
+          "03858a00",
+          85
+        ],
+        [
+          "1390b7a4",
+          240
+        ],
+        [
+          "06262e59",
+          113
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C.\n2. Con una cuchara pequeña, vaciar el interior de los calabacines, picarlo y reservar.\n3. Colocar las mitades de calabacín con el corte hacia arriba en una bandeja de horno, pincelar ligeramente con aceite de oliva y sazonar con sal y pimienta. Hornear hasta que se ablanden, unos 8-10 minutos.\n4. En una sartén grande antiadherente, calentar el resto del aceite y sofreír la cebolla 3-4 minutos. Añadir el ajo y cocinar 1 minuto más hasta que aromatice.\n5. Añadir la carne picada y cocinar hasta que empiece a dorarse, desmenuzándola con una cuchara de madera.\n6. Escurrir la grasa si es necesario, incorporar las especias, la pulpa de calabacín reservada, los frijoles, el maíz y el tomate triturado. Cocinar a fuego lento hasta que la salsa espese, unos 5-6 minutos.\n7. Rellenar los calabacines con la mezcla de carne y cubrir con el queso rallado. Volver al horno y hornear hasta que el queso burbujee, unos 10 minutos más. Servir con los adornos elegidos.",
+      "consejos": "Escurre bien la pulpa de calabacín si suelta mucha agua para que el relleno no quede líquido.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/burrito-zucchini-boats-recipe/",
+        "autor": null,
+        "kcal_web": 310
+      }
+    },
+    {
+      "nombre": "Pudín de chía con frambuesas",
+      "descripcion": "Un pudín cremoso de semillas de chía batido con frambuesas frescas, leche y un toque de vainilla. Ideal para desayuno o merienda, se prepara la noche anterior.",
+      "tiempo_prep_min": 185,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0994bd1e",
+          125
+        ],
+        [
+          "318db297",
+          240
+        ],
+        [
+          "b5b5e57f",
+          40
+        ],
+        [
+          "34d6fafa",
+          40
+        ],
+        [
+          "f75a3721",
+          5
+        ]
+      ],
+      "instrucciones": "1. En una batidora potente, añade la leche, las frambuesas, el sirope de arce y la vainilla. Bate hasta obtener una mezcla homogénea.\n2. Vierte la mezcla en un bol grande y añade las semillas de chía. Remueve con unas varillas hasta que se integren.\n3. Cubre el bol y déjalo reposar en la nevera 15 minutos. Sácalo y vuelve a remover.\n4. Devuélvelo a la nevera y déjalo al menos 3 horas o toda la noche.\n5. Sirve el pudín en vasos o boles y decora con frambuesas frescas.",
+      "consejos": "Remueve de nuevo pasados los primeros 15 minutos para evitar que las semillas de chía se apelmacen en el fondo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/raspberry-chia-pudding/",
+        "autor": null,
+        "kcal_web": 245
+      }
+    },
+    {
+      "nombre": "Pan de requesón y avena",
+      "descripcion": "Pan casero sin harina, elaborado con avena triturada y requesón, ideal para desayunos o meriendas. Queda tierno y ligeramente húmedo, perfecto para tostadas.",
+      "tiempo_prep_min": 70,
+      "porciones": 12,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          292
+        ],
+        [
+          "b2c88c97",
+          480
+        ],
+        [
+          "dc4e36af",
+          8
+        ],
+        [
+          "6cd81fed",
+          250
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "242a5689",
+          12
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C y forrar un molde de pan de 23 x 13 cm.\n2. Triturar los copos de avena en un robot de cocina hasta que queden casi finos.\n3. Añadir el requesón escurrido, las semillas de lino molidas, los huevos, el aceite de oliva, la levadura química y la sal. Procesar hasta obtener una mezcla homogénea.\n4. Verter la mezcla en el molde preparado y hornear unos 60 minutos, o hasta que al insertar un palillo en el centro salga limpio.\n5. Dejar enfriar completamente el pan sobre una rejilla antes de cortarlo.",
+      "consejos": "Escurre bien el requesón antes de usarlo para evitar que el pan quede demasiado húmedo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-bread/",
+        "autor": null,
+        "kcal_web": 137
+      }
+    },
+    {
+      "nombre": "Hummus de pimiento asado",
+      "descripcion": "Hummus cremoso de garbanzos con pimiento rojo asado, tahini y limón. Ideal como aperitivo o snack para untar con verduras y pan integral.",
+      "tiempo_prep_min": 16,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "6e801766",
+          60
+        ],
+        [
+          "12a8ab46",
+          45
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "bdba3b82",
+          75
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "becc1fbe",
+          10
+        ]
+      ],
+      "instrucciones": "1. Poner todos los ingredientes excepto los adornos en un procesador de alimentos y triturar hasta obtener una textura suave.\n2. Probar y añadir más sal, pimienta o zumo de limón si se desea.\n3. Servir con verduras y pan de pita integral.",
+      "consejos": "Se puede preparar con hasta 3 días de antelación y conservar en la nevera.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/roasted-pepper-hummus/",
+        "autor": null,
+        "kcal_web": 198
+      }
+    },
+    {
+      "nombre": "Gofres salados de boniato y queso",
+      "descripcion": "Gofres salados de boniato asado con queso cheddar y parmesano, especiados con pimentón ahumado. Ideales para un desayuno o brunch diferente.",
+      "tiempo_prep_min": 70,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "3980c76f",
+          245
+        ],
+        [
+          "fe35dfdf",
+          240
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "7dbc3a0d",
+          28
+        ],
+        [
+          "20c74a2a",
+          125
+        ],
+        [
+          "e2dd1c2b",
+          2
+        ],
+        [
+          "242a5689",
+          4
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "67e4d52d",
+          40
+        ],
+        [
+          "b983723d",
+          25
+        ]
+      ],
+      "instrucciones": "1. En un bol, mezclar 245 g de puré de boniato cocido con 240 ml de suero de leche, 2 huevos y 28 g de aceite vegetal. Batir a mano hasta obtener una mezcla homogénea.\n2. En otro bol pequeño, mezclar 125 g de harina de trigo, 2 g de pimentón ahumado, 4 g de levadura química, 2 g de bicarbonato sódico, 3 g de sal y 1 g de pimienta negra molida. Añadir esta mezcla al bol del boniato y batir hasta integrar.\n3. Incorporar con movimientos suaves 40 g de queso cheddar rallado y 25 g de queso parmesano rallado.\n4. Precalentar la gofrera y engrasarla ligeramente con un poco de aceite si es necesario.\n5. Verter la cantidad habitual de masa en la gofrera caliente (unos 30 ml para una gofrera mini) y cocinar hasta que los gofres estén dorados y crujientes por fuera, unos 4-6 minutos.\n6. Servir los gofres templados con aguacate en láminas y una pizca de copos de chile.",
+      "consejos": "Para que los gofres queden crujientes, no abras la gofrera antes de que hayan pasado al menos 4 minutos.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/savory-sweet-potato-waffles/",
+        "autor": null,
+        "kcal_web": 375
+      }
+    },
+    {
+      "nombre": "Avena nocturna de plátano y canela",
+      "descripcion": "Avena remojada durante la noche con plátano machacado, canela y un toque de naranja. Un desayuno cremoso que se prepara la noche anterior.",
+      "tiempo_prep_min": 10,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "318db297",
+          480
+        ],
+        [
+          "1131a576",
+          240
+        ],
+        [
+          "589e624a",
+          3
+        ],
+        [
+          "5e122ac4",
+          4
+        ],
+        [
+          "34d6fafa",
+          40
+        ],
+        [
+          "f75a3721",
+          5
+        ],
+        [
+          "87b0f802",
+          30
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, añade los copos de avena, la leche, los plátanos machacados, la canela, la ralladura de naranja, el sirope de arce, el extracto de vainilla y las nueces pecanas picadas; mezcla bien.\n2. Reparte la mezcla en 4 tarros con tapa y guárdalos en el frigorífico al menos 8 horas o toda la noche.\n3. Justo antes de servir, añade por encima rodajas de plátano y nueces pecanas si lo deseas.",
+      "consejos": "Puedes usar leche sin lactosa o una bebida vegetal si prefieres evitar los lácteos.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/banana-bread-overnight-oats/",
+        "autor": null,
+        "kcal_web": 358
+      }
+    },
+    {
+      "nombre": "Boniato asado relleno de huevo y queso",
+      "descripcion": "Mitades de boniato asado con el interior ahuecado y rellenas de huevo y queso cheddar, un desayuno completo y saciante.",
+      "tiempo_prep_min": 65,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6c5d82a5",
+          900
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "67e4d52d",
+          28
+        ],
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "03f57b8d",
+          10
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C y colocar los boniatos en una bandeja de horno.\n2. Pinchar los boniatos varias veces con un tenedor y untarlos con un poco de aceite. Hornear durante 45-60 minutos, según su tamaño, hasta que estén tiernos al pincharlos con un tenedor.\n3. Sacar del horno y dejar templar un poco. Cortar los boniatos por la mitad a lo largo.\n4. Con un tenedor, ahuecar ligeramente el interior sin romper la piel. Sazonar con sal y pimienta al gusto, añadir la mitad del queso y cascar un huevo en cada mitad.\n5. Cubrir con el queso restante y volver a introducir en el horno precalentado. Hornear unos 15 minutos o hasta que las claras estén cuajadas.\n6. Espolvorear con cebollino picado y servir inmediatamente.",
+      "consejos": "Elige boniatos de tamaño similar para que se horneen de forma uniforme.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/breakfast-baked-sweet-potatoes/",
+        "autor": null,
+        "kcal_web": 221
+      }
+    },
+    {
+      "nombre": "Bol de pollo a la barbacoa con quinoa",
+      "descripcion": "Un bol completo y equilibrado con quinoa, pollo a la parrilla con salsa barbacoa, maíz, calabacín y tomates cherry. Ideal para una comida o cena saludable.",
+      "tiempo_prep_min": 28,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          400
+        ],
+        [
+          "2628d64e",
+          60
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "350ffddf",
+          600
+        ],
+        [
+          "f8586302",
+          400
+        ],
+        [
+          "65756599",
+          30
+        ],
+        [
+          "a92874a5",
+          225
+        ],
+        [
+          "fa56e340",
+          740
+        ],
+        [
+          "0e40c366",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalienta la parrilla o una sartén grill a fuego medio-alto. Rocía las pechugas de pollo con 1 cucharadita de aceite de oliva y sazona al gusto con sal y pimienta.\n2. Coloca el pollo en la parrilla y cocina 4-5 minutos por cada lado o hasta que esté hecho. Pincela 1 cucharada de salsa barbacoa sobre cada pechuga y cocina 2 minutos más.\n3. Corta el pollo en tiras y cúbrelo con papel de aluminio.\n4. Rocía el calabacín y las mazorcas de maíz con 2 cucharaditas de aceite de oliva. Coloca las verduras en la parrilla y cocina 2-3 minutos por cada lado o hasta que estén hechas.\n5. Mezcla la cucharada restante de aceite de oliva y el zumo de lima con la quinoa y sazona al gusto con sal y pimienta.\n6. Reparte la quinoa en 4 boles y coloca encima el pollo y las rodajas de calabacín. Desgrana el maíz y añádelo a los boles junto con los tomates cherry. Decora con cilantro y gajos de lima si lo deseas y sirve.",
+      "consejos": "Puedes cocinar la quinoa con antelación y conservarla en la nevera para montar el bol en menos tiempo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/barbecue-chicken-quinoa-bowl/",
+        "autor": null,
+        "kcal_web": 536
+      }
+    },
+    {
+      "nombre": "Avena nocturna con arándanos",
+      "descripcion": "Desayuno cremoso de avena y chía mezclado con un batido de arándanos y yogur griego, listo tras reposar toda la noche en la nevera.",
+      "tiempo_prep_min": 245,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          188
+        ],
+        [
+          "8469bf72",
+          300
+        ],
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "508e2d88",
+          150
+        ],
+        [
+          "b5b5e57f",
+          24
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "f75a3721",
+          4
+        ]
+      ],
+      "instrucciones": "1. En un vaso batidor, añade 300 ml de leche, 125 g de yogur griego, 42 g de miel, 150 g de arándanos y 4 g de extracto de vainilla. Tritura hasta obtener una mezcla homogénea.\n2. Vierte la mezcla de arándanos en un bol grande.\n3. Añade 188 g de copos de avena y 24 g de semillas de chía sobre la mezcla de arándanos.\n4. Con una espátula, remueve hasta integrar bien todos los ingredientes. Cubre el bol y refrigera al menos 4 horas o toda la noche.\n5. Reparte en 4 tarros y sirve.",
+      "consejos": "Puedes usar leche sin lactosa o una bebida vegetal si prefieres evitar los lácteos.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/blueberry-overnight-oats/",
+        "autor": null,
+        "kcal_web": 255
+      }
+    },
+    {
+      "nombre": "Bocados de salmón al air fryer con salsa de miel y soja",
+      "descripcion": "Bocados de salmón empanados con panko y especias, cocinados en air fryer y glaseados con una salsa de miel, soja y picante. Una cena rápida y sabrosa.",
+      "tiempo_prep_min": 23,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2fd7e358",
+          680
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "87c8c74b",
+          45
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "c17ad017",
+          3
+        ],
+        [
+          "8619b09f",
+          85
+        ],
+        [
+          "95aa4443",
+          30
+        ],
+        [
+          "caa47a33",
+          15
+        ]
+      ],
+      "instrucciones": "1. Cortar el salmón en cubos de unos 2,5 cm y sazonar en un bol grande con la sal, la pimienta y el aceite de oliva; remover bien para que todos los trozos queden cubiertos.\n2. En un plato llano, mezclar el pan panko con las especias italianas, el ajo en polvo, la cebolla en polvo y una pizca de sal y pimienta.\n3. Pasar cada cubo de salmón por la mezcla de panko y colocarlo en una bandeja.\n4. Precalentar el air fryer a 190 °C.\n5. Colocar el salmón empanado en el air fryer en una sola capa sin que se solapen y cocinar 8 minutos, agitando la cesta a mitad de cocción.\n6. Mientras tanto, mezclar en un bol pequeño la miel, la salsa picante y la salsa de soja.\n7. Cuando el salmón esté hecho, rociarlo con la salsa y agitar la cesta para que se reparta.",
+      "consejos": "Corta el salmón en trozos del mismo tamaño para que se cocinen de forma uniforme.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/air-fryer-salmon-bites/",
+        "autor": null,
+        "kcal_web": 422
+      }
+    },
+    {
+      "nombre": "Pollo marinado en yogur y especias",
+      "descripcion": "Pollo troceado marinado en yogur con limón, ajo y especias, luego asado a la parrilla. Una receta sencilla y llena de sabor.",
+      "tiempo_prep_min": 262,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e88e2cb8",
+          908
+        ],
+        [
+          "ed47620e",
+          180
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "5a1860a7",
+          16
+        ],
+        [
+          "3350c934",
+          2
+        ],
+        [
+          "e2dd1c2b",
+          4
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "c14d168a",
+          1
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla 180 g de yogur natural entero, 28 g de aceite de oliva, 30 g de zumo de limón, 12 g de ajo finamente rallado y 16 g de tomate concentrado.\n2. Añade 10 g de sal, 2 g de pimienta negra, 4 g de pimentón ahumado, 2 g de comino molido, 2 g de cilantro molido y 1 g de orégano seco; remueve hasta obtener una mezcla homogénea.\n3. Incorpora 908 g de muslos de pollo deshuesados y sin piel cortados en trozos de unos 4 cm y cúbrelos bien con la marinada. Tapa y refrigera al menos 4 horas, preferiblemente toda la noche.\n4. Ensarta el pollo en brochetas sin apretarlo demasiado para que se cocine de forma uniforme.\n5. Precalienta una parrilla o plancha de parrilla a fuego medio-alto.\n6. Cocina las brochetas entre 10 y 12 minutos, dándoles la vuelta de vez en cuando, hasta que el pollo esté bien cocido.",
+      "consejos": "Deja marinar el pollo toda la noche para que las especias penetren mejor y resulte más jugoso.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/yogurt-marinated-chicken/",
+        "autor": null,
+        "kcal_web": 377
+      }
+    },
+    {
+      "nombre": "Huevos revueltos con requesón",
+      "descripcion": "Huevos revueltos cremosos y proteicos gracias al requesón, listos en pocos minutos. Un desayuno sencillo y saciante.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          250
+        ],
+        [
+          "b2c88c97",
+          110
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Casca los huevos en un bol, añade el requesón y sazona con sal y pimienta. Bate hasta que quede bien integrado.\n2. Calienta el aceite de oliva en una sartén antiadherente grande a fuego medio-bajo.\n3. Vierte la mezcla de huevo y requesón en la sartén y remueve mientras cuaja hasta el punto que prefieras. Sirve templado.",
+      "consejos": "Cocina a fuego medio-bajo y retira del fuego un poco antes de que cuaje del todo para que queden más cremosos.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-scrambled-eggs/",
+        "autor": null,
+        "kcal_web": 292
+      }
+    },
+    {
+      "nombre": "Avena nocturna de chocolate",
+      "descripcion": "Copos de avena mezclados con cacao, leche vegetal y yogur, dejados reposar toda la noche para un desayuno rápido y cremoso.",
+      "tiempo_prep_min": 245,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "edb1e321",
+          18
+        ],
+        [
+          "2e05cc90",
+          480
+        ],
+        [
+          "585bd18b",
+          160
+        ],
+        [
+          "f75a3721",
+          8
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "a54e5749",
+          45
+        ]
+      ],
+      "instrucciones": "1. Poner todos los ingredientes en un bol y remover bien hasta integrarlos.\n2. Repartir la mezcla en tarros o vasos.\n3. Refrigerar al menos 4 horas o toda la noche.\n4. Servir frío.",
+      "consejos": "Se conserva bien en la nevera hasta 5 días.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/chocolate-overnight-oats/",
+        "autor": null,
+        "kcal_web": 257
+      }
+    },
+    {
+      "nombre": "Avena cremosa con calabaza",
+      "descripcion": "Un bol de avena cremosa cocida con puré de calabaza, leche y especias, endulzado con sirope de arce y coronado con pipas de calabaza. Ideal para un desayuno otoñal reconfortante.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "cfd9ca77",
+          245
+        ],
+        [
+          "318db297",
+          480
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "5699a347",
+          2
+        ],
+        [
+          "589e624a",
+          3
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "0123ea99",
+          45
+        ]
+      ],
+      "instrucciones": "1. En una olla de fondo grueso, añade los copos de avena, el puré de calabaza, el agua, la leche, el extracto de vainilla, el jengibre molido y la canela molida.\n2. Pon la olla a fuego medio y lleva a ebullición suave; cuando aparezcan pequeñas burbujas y un poco de espuma en la superficie, baja el fuego.\n3. Cocina a fuego bajo removiendo con frecuencia hasta que la avena esté cremosa, unos 8-10 minutos.\n4. Cuando la avena esté lista, incorpora el sirope de arce. Reparte en cuencos, corona con las pipas de calabaza y sirve caliente.",
+      "consejos": "Remueve con frecuencia durante la cocción para evitar que la avena se pegue al fondo y consigas una textura más cremosa.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/pumpkin-oatmeal/",
+        "autor": null,
+        "kcal_web": 323
+      }
+    },
+    {
+      "nombre": "Ensalada de pollo con queso cottage",
+      "descripcion": "Una ensalada fresca y proteica con pollo, huevo, manzana y pistachos, aliñada con una cremosa salsa de queso cottage y mostaza.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "aa87b67a",
+          240
+        ],
+        [
+          "20367cb0",
+          14
+        ],
+        [
+          "12a8ab46",
+          25
+        ],
+        [
+          "c17ad017",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "e99e9f9a",
+          450
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "7d5a031f",
+          180
+        ],
+        [
+          "0b1cb2f9",
+          60
+        ]
+      ],
+      "instrucciones": "1. Triturar el queso cottage, la mostaza de Dijon, el zumo de limón, la cebolla en polvo, la sal y la pimienta hasta obtener una salsa suave.\n2. En un bol grande, mezclar el pollo asado troceado, los huevos cocidos picados, el apio en dados, la manzana en dados y los pistachos picados.\n3. Añadir el aliño de queso cottage y mezclar bien hasta integrar todos los ingredientes.",
+      "consejos": "Sirve la ensalada bien fría y añade los pistachos justo antes de comer para que mantengan su textura crujiente.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-chicken-salad/",
+        "autor": null,
+        "kcal_web": 197
+      }
+    },
+    {
+      "nombre": "Bagels proteicos de requesón",
+      "descripcion": "Bagels caseros sin levadura, elaborados con requesón y harina, con un alto aporte de proteínas. Ideales para desayuno o merienda.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          240
+        ],
+        [
+          "a9a8c7f8",
+          125
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "4218ee8b",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C y forrar una bandeja con papel de hornear.\n2. Triturar el requesón en una batidora hasta que quede suave.\n3. Pasar el requesón a un bol grande y añadir la harina leudante.\n4. Mezclar con las manos o una espátula hasta integrar bien. La masa puede quedar algo pegajosa; añadir 1-2 cucharadas de harina si es necesario para poder manejarla.\n5. Pasar a una superficie enharinada y amasar unas veces hasta poder formar una bola. Se pueden usar 1-2 cucharadas de harina si hace falta.\n6. Dividir la masa en 4 partes iguales. Formar una bola con cada una, hacer un agujero en el centro con el dedo y estirar con cuidado para dar forma de bagel.\n7. Pincelar cada bagel con huevo batido y espolvorear con semillas de sésamo o mezcla de especias para bagel.\n8. Colocar los bagels en la bandeja preparada y hornear durante 25-28 minutos o hasta que estén dorados.\n9. Dejar enfriar 10 minutos antes de cortar.",
+      "consejos": "Si la masa queda muy pegajosa, añade harina poco a poco hasta que se pueda manejar, pero sin pasarte para no endurecer el bagel.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-bagels/",
+        "autor": null,
+        "kcal_web": 164
+      }
+    },
+    {
+      "nombre": "Pudín de chía estilo tiramisú",
+      "descripcion": "Un pudín cremoso de chía con café espresso, yogur griego y un toque de cacao, inspirado en el tiramisú. Ideal para desayuno o merienda, se prepara la noche anterior.",
+      "tiempo_prep_min": 245,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "318db297",
+          360
+        ],
+        [
+          "b5b5e57f",
+          120
+        ],
+        [
+          "585bd18b",
+          360
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "7605da1a",
+          120
+        ],
+        [
+          "515b18b8",
+          30
+        ],
+        [
+          "edb1e321",
+          12
+        ]
+      ],
+      "instrucciones": "1. Prepara 2 shots de espresso (unos 120 ml) y déjalos enfriar.\n2. En un bol grande, mezcla 360 ml de leche, 120 g de semillas de chía, 240 g de yogur griego natural, 42 g de miel, 4 g de extracto de vainilla, el espresso frío y 30 g de proteína de suero en polvo. Remueve bien hasta integrar.\n3. Cubre el bol y refrigera al menos 3-4 horas o toda la noche.\n4. Reparte el pudín en 2-4 tarros y añade sobre cada uno la misma cantidad del yogur griego restante (120 g).\n5. Espolvorea con 12 g de cacao en polvo y sirve.",
+      "consejos": "Si prefieres un pudín más espeso, reduce la leche a 300 ml.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/tiramisu-chia-pudding/",
+        "autor": null,
+        "kcal_web": 330
+      }
+    },
+    {
+      "nombre": "Avena nocturna con plátano y cacahuete",
+      "descripcion": "Avena reposada durante la noche con leche de coco, yogur de coco, plátano, crema de cacahuete y pepitas de chocolate. Un desayuno cremoso y saciante, listo para llevar.",
+      "tiempo_prep_min": 485,
+      "porciones": 5,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "b5b5e57f",
+          24
+        ],
+        [
+          "9014dcbc",
+          30
+        ],
+        [
+          "c7de73e8",
+          20
+        ],
+        [
+          "c661ff5c",
+          480
+        ],
+        [
+          "7b6a7f20",
+          120
+        ],
+        [
+          "34d6fafa",
+          28
+        ],
+        [
+          "1131a576",
+          240
+        ],
+        [
+          "6328f4b9",
+          64
+        ],
+        [
+          "b2aba459",
+          45
+        ]
+      ],
+      "instrucciones": "1. En un recipiente mediano de cristal, añade los copos de avena, las semillas de chía, el azúcar de coco, el coco rallado, la leche de coco y el yogur de coco; mezcla bien con unas varillas hasta integrar.\n2. Tapa el recipiente y déjalo reposar en la nevera un mínimo de 1 hora, preferiblemente toda la noche.\n3. Cuando la avena esté lista, repártela en 4 o 5 tarros, añade el sirope de arce, el plátano, la crema de cacahuete y las pepitas de chocolate, mezcla ligeramente y sirve.",
+      "consejos": "Remueve bien antes de servir y añade el plátano y las pepitas de chocolate justo en el momento de comer para que mantengan su textura.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/chunky-monkey-overnight-oats/",
+        "autor": null,
+        "kcal_web": 564
+      }
+    },
+    {
+      "nombre": "Pudín de chía con chocolate y proteína",
+      "descripcion": "Un pudín cremoso de semillas de chía con cacao y proteína de suero, ideal para desayuno o merienda. Se prepara en minutos y solo necesita reposo en frío.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "edb1e321",
+          25
+        ],
+        [
+          "b5b5e57f",
+          80
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "515b18b8",
+          30
+        ],
+        [
+          "f75a3721",
+          1
+        ],
+        [
+          "9dc9f005",
+          480
+        ]
+      ],
+      "instrucciones": "1. Pon el cacao en polvo en un bol con un poco de la bebida de almendra y mezcla bien hasta que se integre.\n2. Añade el resto de la bebida de almendra y vuelve a mezclar. Incorpora las semillas de chía, el sirope de arce, la proteína en polvo y el extracto de vainilla.\n3. Bate con unas varillas hasta obtener una mezcla homogénea y sin grumos de cacao, unos 2-3 minutos.\n4. Cubre el bol y déjalo en la nevera al menos 2 horas o hasta que la mezcla espese.\n5. Sirve, con los toppings que prefieras si lo deseas.",
+      "consejos": "Remueve la mezcla a los 30 minutos de reposo para evitar que las semillas de chía se apelmacen en el fondo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/chocolate-chia-protein-pudding/",
+        "autor": null,
+        "kcal_web": 436
+      }
+    },
+    {
+      "nombre": "Avena nocturna con plátano y crema de cacahuete",
+      "descripcion": "Desayuno cremoso de avena reposada toda la noche con plátano, crema de cacahuete y chía. Se sirve frío con plátano fresco y cacahuete picado por encima.",
+      "tiempo_prep_min": 485,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          360
+        ],
+        [
+          "6328f4b9",
+          64
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "f75a3721",
+          8
+        ],
+        [
+          "9dc9f005",
+          600
+        ],
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "b5b5e57f",
+          24
+        ],
+        [
+          "46825bfa",
+          20
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla bien los 2 plátanos machacados con 3 cucharadas de crema de cacahuete, ¼ de taza de sirope de arce, 2 cucharaditas de extracto de vainilla y 2 ½ tazas de bebida de almendra.\n2. Añade 2 tazas de copos de avena y 2 cucharadas de semillas de chía y remueve con una cuchara hasta integrar por completo.\n3. Reparte la mezcla en tarros pequeños, tapa y deja reposar en la nevera toda la noche.\n4. Antes de servir, corona con plátano fresco en rodajas, cacahuetes picados y un hilo de crema de cacahuete.",
+      "consejos": "Usa plátanos bien maduros para endulzar de forma natural y remueve bien antes de servir, ya que la chía y la avena espesan la mezcla.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/peanut-butter-banana-overnight-oats/",
+        "autor": null,
+        "kcal_web": 387
+      }
+    },
+    {
+      "nombre": "Bol de avena con crema de cacahuete y manzana",
+      "descripcion": "Un bol de avena cremosa cocida con canela, puré de manzana y crema de cacahuete, coronado con manzana fresca y nueces pecanas. Un desayuno completo y saciante.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          200
+        ],
+        [
+          "c8af7d4f",
+          125
+        ],
+        [
+          "34d6fafa",
+          85
+        ],
+        [
+          "6328f4b9",
+          65
+        ],
+        [
+          "7d5a031f",
+          300
+        ],
+        [
+          "87b0f802",
+          30
+        ],
+        [
+          "589e624a",
+          3
+        ]
+      ],
+      "instrucciones": "1. Poner 840 ml de agua en un cazo pequeño, añadir 3 g de canela molida y 1 g de sal y llevar a ebullición a fuego fuerte.\n2. Cuando empiece a hervir, añadir 200 g de copos de avena y bajar el fuego a medio. Cocinar unos 10 minutos removiendo con frecuencia.\n3. Incorporar 125 g de puré de manzana, 65 g de crema de cacahuete y 85 g de sirope de arce y cocinar 1-2 minutos más.\n4. Apagar el fuego, tapar el cazo y dejar reposar de 5 a 10 minutos. Repartir la avena en boles y cubrir al gusto con 300 g de manzana troceada y 30 g de nueces pecanas picadas. Se puede añadir un poco más de crema de cacahuete por encima.\n5. Servir inmediatamente.",
+      "consejos": "Si usas miel en lugar de sirope de arce, el plato deja de ser vegano; añádela al final para conservar mejor su aroma.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/oatmeal-breakfast-bowl/",
+        "autor": null,
+        "kcal_web": 373
+      }
+    },
+    {
+      "nombre": "Avena nocturna con melocotón y yogur",
+      "descripcion": "Desayuno cremoso de avena y chía con melocotón, yogur y un toque de vainilla y canela, preparado la noche anterior.",
+      "tiempo_prep_min": 250,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "9dc9f005",
+          480
+        ],
+        [
+          "7b6a7f20",
+          60
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "933f4779",
+          300
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "5d9fb239",
+          180
+        ],
+        [
+          "b5b5e57f",
+          24
+        ]
+      ],
+      "instrucciones": "1. En una batidora, añade uno de los melocotones troceados, la bebida de almendra, la miel, la vainilla y la canela. Bate hasta que quede bien integrado.\n2. Vierte la mezcla de melocotón y leche en un bol. Añade los copos de avena, las semillas de chía y el yogur. Remueve con unas varillas hasta que quede bien combinado. Incorpora el resto del melocotón troceado.\n3. Deja reposar 15 minutos para que la chía y la avena empiecen a hidratarse.\n4. Reparte la mezcla en 2 o 3 tarros con tapa y guárdalos en la nevera al menos 4 horas o toda la noche.\n5. Sirve al día siguiente, frío o templado, con tus toppings favoritos.",
+      "consejos": "Remueve bien antes de servir y añade un poco más de bebida de almendra si la avena ha espesado demasiado.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/peaches-and-cream-overnight-oats/",
+        "autor": null,
+        "kcal_web": 553
+      }
+    },
+    {
+      "nombre": "Batido de aguacate y plátano",
+      "descripcion": "Un batido cremoso y nutritivo con aguacate, plátano congelado y espinacas, endulzado con miel. Ideal para desayuno o merienda.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "91ad5545",
+          200
+        ],
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "cb57d667",
+          15
+        ],
+        [
+          "318db297",
+          360
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "2249081f",
+          30
+        ],
+        [
+          "b5b5e57f",
+          5
+        ]
+      ],
+      "instrucciones": "1. En una batidora, añade el aguacate, el plátano congelado, las espinacas, la leche, el extracto de vainilla, la miel y la proteína en polvo. Bate a velocidad alta durante 1-2 minutos hasta que quede cremoso y suave.\n2. Si está demasiado espeso, añade un poco más de leche y vuelve a batir.\n3. Sirve en un vaso.\n4. Opcional: espolvorea un poco de semillas de chía o cáñamo por encima antes de servir.",
+      "consejos": "Usa plátano congelado para obtener una textura más cremosa y fría sin necesidad de hielo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/avocado-smoothie/",
+        "autor": null,
+        "kcal_web": 363
+      }
+    }
+  ]
+}

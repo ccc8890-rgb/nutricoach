@@ -1,0 +1,1762 @@
+{
+  "lote": "web-desayunos-hfm-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cf31c25a": {
+      "nombre": "Mezcla semillas",
+      "prefijo": "cf31c25a",
+      "rol": "especias_aromaticos",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d89cd8d1": {
+      "nombre": "Puerro",
+      "prefijo": "d89cd8d1",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "44ae0abe": {
+      "nombre": "Guisantes extra",
+      "prefijo": "44ae0abe",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "894e649b": {
+      "nombre": "Crema agria",
+      "prefijo": "894e649b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "515b18b8": {
+      "nombre": "Proteína de suero (whey)",
+      "prefijo": "515b18b8",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "92b3c5d9": {
+      "nombre": "Mermelada de fresa",
+      "prefijo": "92b3c5d9",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "54fee582": {
+      "nombre": "Granola",
+      "prefijo": "54fee582",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten",
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "dc4e36af": {
+      "nombre": "Semillas Molidas de Lino",
+      "prefijo": "dc4e36af",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d3c0b817": {
+      "nombre": "Levadura en Polvo Bote",
+      "prefijo": "d3c0b817",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31108cb4": {
+      "nombre": "Chalotas",
+      "prefijo": "31108cb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e4fdfad8": {
+      "nombre": "Pimentón dulce",
+      "prefijo": "e4fdfad8",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "afa334c2": {
+      "nombre": "Pimienta Cayena Molida Tarro",
+      "prefijo": "afa334c2",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c8a530dc": {
+      "nombre": "Atún (fresco)",
+      "prefijo": "c8a530dc",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f68fa954": {
+      "nombre": "Eneldo",
+      "prefijo": "f68fa954",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "67e4d52d": {
+      "nombre": "Queso cheddar",
+      "prefijo": "67e4d52d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "8469bf72": {
+      "nombre": "Leche semidesnatada",
+      "prefijo": "8469bf72",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e88e2cb8": {
+      "nombre": "Muslo de pollo",
+      "prefijo": "e88e2cb8",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "ed47620e": {
+      "nombre": "Yogur griego natural (entero)",
+      "prefijo": "ed47620e",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "5a1860a7": {
+      "nombre": "Tomate doble concentrado",
+      "prefijo": "5a1860a7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c14d168a": {
+      "nombre": "Orégano seco",
+      "prefijo": "c14d168a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e99e9f9a": {
+      "nombre": "Mini muslo de pollo 98% La Carloteña asado al",
+      "prefijo": "e99e9f9a",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "447c5697": {
+      "nombre": "Huevos cocidos",
+      "prefijo": "447c5697",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "7d5a031f": {
+      "nombre": "Manzana",
+      "prefijo": "7d5a031f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b1cb2f9": {
+      "nombre": "Pistachos",
+      "prefijo": "0b1cb2f9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "c17e7165": {
+      "nombre": "Carne picada de pollo",
+      "prefijo": "c17e7165",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "a43e543e": {
+      "nombre": "Requesón batido",
+      "prefijo": "a43e543e",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "382a08c2": {
+      "nombre": "Queso mozzarella",
+      "prefijo": "382a08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "dd28eac2": {
+      "nombre": "Batatas",
+      "prefijo": "dd28eac2",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d366c027": {
+      "nombre": "Preparado carne picada vacuno",
+      "prefijo": "d366c027",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "464ace19": {
+      "nombre": "Salsa Worcestershire Botella",
+      "prefijo": "464ace19",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "vegetal"
+    },
+    "557a5eec": {
+      "nombre": "Mostaza Amarilla Bote",
+      "prefijo": "557a5eec",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "219fa68f": {
+      "nombre": "Lechuga romana",
+      "prefijo": "219fa68f",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "123d2515": {
+      "nombre": "Kétchup",
+      "prefijo": "123d2515",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0d411f90": {
+      "nombre": "Pepinillos en vinagre",
+      "prefijo": "0d411f90",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2ad25c58": {
+      "nombre": "Pepinillos encurtidos",
+      "prefijo": "2ad25c58",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1b8ce3f3": {
+      "nombre": "Pepperoni",
+      "prefijo": "1b8ce3f3",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "2249081f": {
+      "nombre": "Proteína en polvo (vainilla o chocolate)",
+      "prefijo": "2249081f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "9076c191": {
+      "nombre": "Proteína en polvo sabor vainilla",
+      "prefijo": "9076c191",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "0a9fc13b": {
+      "nombre": "Pollo picado",
+      "prefijo": "0a9fc13b",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "5036194d": {
+      "nombre": "Salsa buffalo",
+      "prefijo": "5036194d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "06262e59": {
+      "nombre": "Queso",
+      "prefijo": "06262e59",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "7605da1a": {
+      "nombre": "Café Espresso Molido",
+      "prefijo": "7605da1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "140b5f32": {
+      "nombre": "Sal de ajo",
+      "prefijo": "140b5f32",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c24e3457": {
+      "nombre": "Mozzarella rallada baja en grasa",
+      "prefijo": "c24e3457",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "a9489dcd": {
+      "nombre": "Pan Brioche",
+      "prefijo": "a9489dcd",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten",
+        "Huevos",
+        "Lácteos"
+      ],
+      "origen": "vegetal"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "763e7644": {
+      "nombre": "Bebida de Coco Sin Azúcar ni Edulcorante",
+      "prefijo": "763e7644",
+      "rol": "lacteo_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9286a63f": {
+      "nombre": "Aceite de coco",
+      "prefijo": "9286a63f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8fd7b466": {
+      "nombre": "Patatas, crudas",
+      "prefijo": "8fd7b466",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b12e5a68": {
+      "nombre": "Pimiento amarillo",
+      "prefijo": "b12e5a68",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Chips de requesón al horno",
+      "descripcion": "Crujientes chips horneadas a base de requesón con cebolla en polvo y mezcla de semillas estilo bagel. Un snack proteico y sabroso, ideal para picar entre horas.",
+      "tiempo_prep_min": 45,
+      "porciones": 2,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          240
+        ],
+        [
+          "c17ad017",
+          3
+        ],
+        [
+          "cf31c25a",
+          6
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y cubre una bandeja con papel de horno.\n2. En un bol mezcla el requesón con la cebolla en polvo.\n3. Coloca cucharadas de la mezcla sobre el papel, separadas unos 2,5 cm.\n4. Aplana ligeramente cada montón con una cuchara para que queden uniformes.\n5. Espolvorea la mezcla de semillas estilo bagel por encima.\n6. Hornea entre 30 y 40 minutos, hasta que los bordes empiecen a dorarse.\n7. Deja enfriar completamente antes de despegar las chips del papel.\n8. Sirve con tu salsa favorita.",
+      "consejos": "Vigila el horneado en los últimos minutos, ya que el punto de dorado depende de cada horno.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-chips/",
+        "autor": null,
+        "kcal_web": 85
+      }
+    },
+    {
+      "nombre": "Shakshuka verde con huevos y guisantes",
+      "descripcion": "Huevos escalfados sobre un salteado de kale, puerro y guisantes con hierbas frescas y un toque de lima. Un plato vegetariano rápido y lleno de verduras.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "d946bd47",
+          200
+        ],
+        [
+          "d89cd8d1",
+          100
+        ],
+        [
+          "44ae0abe",
+          225
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "0e40c366",
+          30
+        ],
+        [
+          "c63a423f",
+          20
+        ],
+        [
+          "894e649b",
+          180
+        ],
+        [
+          "65756599",
+          15
+        ],
+        [
+          "6be23d9d",
+          2
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite en una sartén grande. Añade el ajo y el comino y sofríe hasta que desprendan aroma.\n2. Incorpora el puerro y los guisantes y cocina removiendo con frecuencia unos 4 minutos. Añade el kale, el cilantro y la menta, y sazona con sal y pimienta.\n3. Cocina 3-4 minutos más hasta que el kale se ablande. Baja el fuego y mezcla la nata agria.\n4. Remueve bien para cubrir las verduras. Con el dorso de una cuchara haz 4 huecos en la mezcla y casca un huevo en cada uno.\n5. Sazona los huevos con una pizca de sal. Tapa la sartén y cocina a fuego bajo hasta que los huevos estén al punto deseado.\n6. Cuando los huevos estén listos, decora con las hierbas frescas reservadas y sirve.",
+      "consejos": "Añade el zumo de lima al final para realzar el sabor de las verduras.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/green-shakshuka/",
+        "autor": null,
+        "kcal_web": 221
+      }
+    },
+    {
+      "nombre": "Parfait de fresa y yogur griego",
+      "descripcion": "Un postre o desayuno en capas con yogur griego batido con proteína de suero, fresas mezcladas con mermelada y granola crujiente.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          280
+        ],
+        [
+          "515b18b8",
+          30
+        ],
+        [
+          "16665787",
+          225
+        ],
+        [
+          "92b3c5d9",
+          40
+        ],
+        [
+          "54fee582",
+          30
+        ]
+      ],
+      "instrucciones": "1. En un bol pequeño, mezcla el yogur griego con la proteína de suero hasta que quede homogéneo.\n2. En otro bol, mezcla las fresas troceadas con la mermelada de fresa.\n3. En dos vasos, monta capas alternas de la mezcla de yogur, la mezcla de fresas y la granola.\n4. Sirve inmediatamente.",
+      "consejos": "Monta el parfait justo antes de comer para que la granola conserve su textura crujiente.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/strawberry-parfaits-recipe/",
+        "autor": null,
+        "kcal_web": 184
+      }
+    },
+    {
+      "nombre": "Pan de requesón y avena",
+      "descripcion": "Un pan casero sin harina, elaborado con avena triturada y requesón, ideal para desayunos o meriendas. Queda tierno y ligeramente húmedo, perfecto para tostadas.",
+      "tiempo_prep_min": 70,
+      "porciones": 12,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          292
+        ],
+        [
+          "b2c88c97",
+          480
+        ],
+        [
+          "dc4e36af",
+          10
+        ],
+        [
+          "6cd81fed",
+          250
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "d3c0b817",
+          12
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y forra un molde de pan de 23 x 13 cm con papel de horno.\n2. Tritura los copos de avena en un procesador de alimentos hasta que queden casi finos.\n3. Añade el requesón escurrido, las semillas de lino molidas, los huevos, el aceite de oliva, la levadura en polvo y la sal. Procesa hasta obtener una mezcla homogénea.\n4. Vierte la mezcla en el molde preparado y hornea durante unos 60 minutos, o hasta que al insertar un palillo en el centro salga limpio.\n5. Deja enfriar completamente el pan sobre una rejilla antes de cortarlo en rebanadas.",
+      "consejos": "Escurre bien el requesón para evitar que el pan quede demasiado húmedo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-bread/",
+        "autor": null,
+        "kcal_web": 137
+      }
+    },
+    {
+      "nombre": "Shakshuka con feta al horno",
+      "descripcion": "Huevos escalfados en una salsa de tomate y pimiento rojo especiada, gratinados con feta en el horno. Un plato único de inspiración mediterránea, ideal para comer o cenar.",
+      "tiempo_prep_min": 27,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "31108cb4",
+          80
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "e4fdfad8",
+          2
+        ],
+        [
+          "afa334c2",
+          0.5
+        ],
+        [
+          "1d197cae",
+          794
+        ],
+        [
+          "3350c934",
+          0.5
+        ],
+        [
+          "6187036a",
+          142
+        ],
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "d61c2a0f",
+          10
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C.\n2. Corta la chalota en láminas, el pimiento rojo en tiras finas y el ajo en láminas. Trocea groseramente los tomates escurridos y pica fino el cilantro.\n3. Calienta el aceite de oliva en una sartén grande a fuego medio-bajo. Añade la chalota y el pimiento y cocina, removiendo de vez en cuando, hasta que empiecen a ablandarse.\n4. Incorpora el ajo y cocina 2 minutos más. Añade los tomates troceados y todas las especias.\n5. Mezcla bien y cocina hasta que el tomate se ablande; aplasta con una cuchara de madera para formar una salsa espesa y deja cocer a fuego lento unos 10 minutos. Prueba y ajusta de sal y pimienta.\n6. Con una cuchara grande, haz pequeños huecos en la salsa y casca un huevo en cada uno. Sazona los huevos con sal y pimienta y espolvorea el feta desmenuzado por encima.\n7. Pasa la sartén al horno precalentado y hornea de 7 a 10 minutos, hasta que los huevos estén al punto deseado.\n8. Adorna con el cilantro picado y sirve.",
+      "consejos": "Usa una sartén apta para horno o pasa la salsa a una fuente antes de hornear para que los huevos cuajen de forma uniforme.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/shakshuka-recipe/",
+        "autor": null,
+        "kcal_web": 370
+      }
+    },
+    {
+      "nombre": "Barcas de calabacín con atún y queso",
+      "descripcion": "Calabacines asados rellenos de una mezcla cremosa de atún, yogur griego y mostaza, gratinados con queso cheddar. Una cena ligera y baja en carbohidratos.",
+      "tiempo_prep_min": 35,
+      "porciones": 2,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          400
+        ],
+        [
+          "c8a530dc",
+          140
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "f68fa954",
+          6
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "c25964f2",
+          15
+        ],
+        [
+          "67e4d52d",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C y forrar una bandeja con papel de horno.\n2. Cortar el calabacín por la mitad a lo largo, vaciar el interior con una cuchara y reservar para otro uso.\n3. Colocar las mitades en la bandeja, rociar con aceite de cocina y sazonar con sal y pimienta. Hornear en la rejilla central 12-15 minutos, hasta que estén tiernas.\n4. En un bol, mezclar el atún escurrido, el apio picado, la cebolla roja, el yogur griego, el eneldo, la mostaza, el zumo de limón y el jalapeño. Remover hasta integrar y sazonar con sal y pimienta al gusto.\n5. Rellenar los calabacines con la mezcla de atún y espolvorear el cheddar rallado por encima.\n6. Volver a hornear unos 10 minutos, hasta que el queso se derrita.\n7. Servir y, si se desea, adornar con maíz, tomate picado, chile rojo o cebolleta.",
+      "consejos": "Escurre bien el atún y el yogur para que el relleno no suelte líquido durante el horneado.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/tuna-melt-zucchini-boats/",
+        "autor": null,
+        "kcal_web": 84
+      }
+    },
+    {
+      "nombre": "Avena nocturna con arándanos",
+      "descripcion": "Desayuno cremoso de avena y chía mezclado con un batido de arándanos y yogur griego, ideal para preparar la noche anterior.",
+      "tiempo_prep_min": 245,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          188
+        ],
+        [
+          "8469bf72",
+          300
+        ],
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "508e2d88",
+          148
+        ],
+        [
+          "b5b5e57f",
+          24
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "f75a3721",
+          4
+        ]
+      ],
+      "instrucciones": "1. En un vaso batidor, añade 300 ml de leche, 125 g de yogur griego, 42 g de miel, 148 g de arándanos y 4 g de extracto de vainilla. Tritura hasta obtener una mezcla homogénea.\n2. Vierte la mezcla de arándanos en un bol grande.\n3. Añade 188 g de copos de avena y 24 g de semillas de chía sobre la mezcla de arándanos.\n4. Con una espátula, remueve hasta integrar bien todos los ingredientes. Cubre el bol y refrigera al menos 4 horas o toda la noche.\n5. Reparte en 4 tarros (o en 2 raciones más grandes) y sirve.",
+      "consejos": "Puedes usar avena sin gluten si necesitas evitar el gluten y endulzar con sirope de arce en lugar de miel.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/blueberry-overnight-oats/",
+        "autor": null,
+        "kcal_web": 255
+      }
+    },
+    {
+      "nombre": "Pollo marinado en yogur",
+      "descripcion": "Pollo tierno marinado en yogur con especias y limón, cocinado a la plancha. Una receta sencilla y llena de sabor.",
+      "tiempo_prep_min": 262,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e88e2cb8",
+          908
+        ],
+        [
+          "ed47620e",
+          180
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "5a1860a7",
+          16
+        ],
+        [
+          "3350c934",
+          2
+        ],
+        [
+          "e2dd1c2b",
+          4
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "c14d168a",
+          1
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla el yogur natural entero, el aceite de oliva, el zumo de limón, el ajo finamente rallado y el concentrado de tomate.\n2. Añade la sal, la pimienta negra, el pimentón ahumado, el comino molido, el cilantro molido y el orégano seco, y remueve hasta obtener una mezcla homogénea.\n3. Incorpora los muslos de pollo cortados en trozos de unos 4 cm y úntalos bien con la marinada.\n4. Cubre el bol y refrigera al menos 4 horas, preferiblemente toda la noche.\n5. Ensarta el pollo en brochetas sin apretarlo demasiado para que se cocine de forma uniforme.\n6. Precalienta una parrilla o plancha a fuego medio-alto.\n7. Cocina las brochetas de 10 a 12 minutos, girándolas de vez en cuando, hasta que el pollo esté hecho.",
+      "consejos": "Deja marinar el pollo toda la noche para que quede más jugoso y sabroso.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/yogurt-marinated-chicken/",
+        "autor": null,
+        "kcal_web": 377
+      }
+    },
+    {
+      "nombre": "Ensalada de pollo con aderezo de requesón",
+      "descripcion": "Ensalada fresca de pollo desmenuzado con huevo, apio, manzana y pistachos, aliñada con un aderezo cremoso de requesón y mostaza.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          240
+        ],
+        [
+          "20367cb0",
+          14
+        ],
+        [
+          "12a8ab46",
+          25
+        ],
+        [
+          "c17ad017",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "e99e9f9a",
+          450
+        ],
+        [
+          "447c5697",
+          200
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "7d5a031f",
+          180
+        ],
+        [
+          "0b1cb2f9",
+          60
+        ]
+      ],
+      "instrucciones": "1. Triturar el requesón, la mostaza de Dijon, el zumo de medio limón, la cebolla en polvo, la sal y la pimienta en un procesador de alimentos hasta obtener una crema homogénea.\n2. En un bol grande, mezclar el pollo asado desmenuzado, los huevos cocidos picados, el apio en dados, la manzana en dados y los pistachos picados.\n3. Añadir el aderezo de requesón y remover hasta que todo quede bien integrado.",
+      "consejos": "Sirve la ensalada bien fría, tras reposar al menos 15 minutos en la nevera, para que los sabores se asienten.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-chicken-salad/",
+        "autor": null,
+        "kcal_web": 197
+      }
+    },
+    {
+      "nombre": "Calabacines rellenos de lasaña",
+      "descripcion": "Barcas de calabacín rellenas de una mezcla cremosa de ricota y huevo, cubiertas con salsa de carne de pavo y queso gratinado. Una versión baja en carbohidratos de la lasaña clásica.",
+      "tiempo_prep_min": 55,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          600
+        ],
+        [
+          "c17e7165",
+          227
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "1d197cae",
+          360
+        ],
+        [
+          "a43e543e",
+          360
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "59163485",
+          8
+        ],
+        [
+          "382a08c2",
+          100
+        ],
+        [
+          "b983723d",
+          50
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C. Cortar los calabacines por la mitad a lo largo y vaciar el interior con una cuchara.\n2. Colocarlos en una fuente de horno con el corte hacia arriba y rociar con spray antiadherente.\n3. Sazonar con sal y pimienta al gusto y hornear de 10 a 12 minutos hasta que el calabacín se ablande un poco.\n4. Calentar 1 cucharada de aceite de oliva en una sartén a fuego medio-alto. Añadir la carne picada de pavo, las especias italianas y el ajo, y cocinar removiendo de vez en cuando y desmenuzando la carne con una cuchara de madera.\n5. Cuando la carne esté dorada y bien cocida, incorporar la salsa marinara y cocer a fuego lento 1 o 2 minutos más. Reservar.\n6. Mientras tanto, en un bol mezclar la ricota, el huevo, el perejil, la mozzarella y la mitad del parmesano. Mezclar bien.\n7. Rellenar los calabacines con esta mezcla de queso, cubrir con la salsa de carne y espolvorear con el parmesano restante.\n8. Cubrir las fuentes con papel de aluminio y hornear en el horno precalentado unos 25-30 minutos.\n9. Decorar con perejil fresco picado y servir.",
+      "consejos": "Escurre bien el interior del calabacín tras vaciarlo para evitar que suelte demasiado líquido durante el horneado.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/zucchini-lasagna-boats/",
+        "autor": null,
+        "kcal_web": 355
+      }
+    },
+    {
+      "nombre": "Bol de hamburguesa con queso",
+      "descripcion": "Un bol saludable con carne de vacuno especiada, batata asada, lechuga y verduras frescas, aliñado con una salsa cremosa tipo hamburguesa.",
+      "tiempo_prep_min": 35,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "dd28eac2",
+          300
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "21a40eb5",
+          2
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "d366c027",
+          454
+        ],
+        [
+          "08637e90",
+          75
+        ],
+        [
+          "bdc11c5a",
+          14
+        ],
+        [
+          "464ace19",
+          5
+        ],
+        [
+          "557a5eec",
+          5
+        ],
+        [
+          "e2dd1c2b",
+          1
+        ],
+        [
+          "219fa68f",
+          300
+        ],
+        [
+          "585bd18b",
+          120
+        ],
+        [
+          "866d6397",
+          30
+        ],
+        [
+          "123d2515",
+          30
+        ],
+        [
+          "20367cb0",
+          15
+        ],
+        [
+          "0d411f90",
+          30
+        ],
+        [
+          "a92874a5",
+          150
+        ],
+        [
+          "2ad25c58",
+          75
+        ],
+        [
+          "03f57b8d",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalentar la freidora de aire a 200 °C. Mezclar la batata cortada en gajos con el aceite de oliva, el pimentón, el ajo en polvo, la sal y la pimienta negra. Colocar en una sola capa en la cesta y cocinar de 18 a 20 minutos, agitando a mitad de cocción, hasta que estén doradas por fuera y tiernas por dentro.\n2. Mientras tanto, calentar una sartén grande a fuego medio-alto. Añadir la carne picada y cocinar unos 4 minutos, desmenuzándola. Incorporar la cebolla roja picada y seguir cocinando hasta que la cebolla esté blanda y la carne dorada. Añadir el ajo picado, la salsa Worcestershire, la mostaza amarilla, el pimentón ahumado, la sal y la pimienta negra, y cocinar un minuto más hasta que aromatice.\n3. En un bol pequeño, batir el yogur griego, la mayonesa, el kétchup, la mostaza de Dijon, el medio diente de ajo picado, la salmuera de pepinillos, el ajo en polvo y la pimienta negra hasta obtener una salsa homogénea.\n4. Colocar la lechuga romana picada en un bol grande y mezclar con unos dos tercios del aliño, asegurando que todas las hojas queden ligeramente cubiertas.\n5. Repartir la lechuga aliñada en cuatro boles. Cubrir cada uno con la carne caliente, unos gajos de batata, los pepinillos encurtidos, los tomates cherry y la cebolla roja.\n6. Terminar con un chorrito del aliño restante y servir inmediatamente. Decorar con cebollino picado si se desea.",
+      "consejos": "Puedes asar la batata en el horno a 200 °C durante 25-30 minutos si no tienes freidora de aire.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cheeseburger-bowl/",
+        "autor": null,
+        "kcal_web": 411
+      }
+    },
+    {
+      "nombre": "Bocados de calabacín tipo pizza",
+      "descripcion": "Rodajas de calabacín horneadas con salsa de tomate, mozzarella y pepperoni, un aperitivo rápido y sabroso.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          600
+        ],
+        [
+          "1d197cae",
+          120
+        ],
+        [
+          "382a08c2",
+          140
+        ],
+        [
+          "1b8ce3f3",
+          60
+        ],
+        [
+          "59163485",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C y forrar una bandeja grande con papel de horno.\n2. Cortar los calabacines en rodajas de 2,5 cm de grosor y vaciar un poco el centro con una cuchara para formar pequeñas copas.\n3. Colocar las rodajas en la bandeja y rellenar con la salsa de tomate, la mozzarella y el pepperoni.\n4. Hornear durante 8-10 minutos, hasta que el queso se derrita y burbujee.\n5. Espolvorear con perejil fresco picado antes de servir.",
+      "consejos": "Usa pepperoni de pavo para una versión más ligera.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/zucchini-pizza-bites/",
+        "autor": null,
+        "kcal_web": 140
+      }
+    },
+    {
+      "nombre": "Batido de aguacate y espinacas",
+      "descripcion": "Un batido cremoso y nutritivo con aguacate, plátano congelado y espinacas, endulzado con miel y aromatizado con vainilla. Ideal para desayuno o merienda.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "91ad5545",
+          200
+        ],
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "cb57d667",
+          15
+        ],
+        [
+          "318db297",
+          360
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "2249081f",
+          30
+        ],
+        [
+          "b5b5e57f",
+          5
+        ]
+      ],
+      "instrucciones": "1. Añade todos los ingredientes en el vaso de la batidora: 1 aguacate maduro, 1 plátano congelado en rodajas, 15 g de espinacas frescas, 360 ml de leche, 4 g de extracto de vainilla, 42 g de miel y 30 g de proteína en polvo.\n2. Bate a velocidad alta durante 1-2 minutos hasta obtener una textura cremosa y homogénea.\n3. Si queda demasiado espeso, añade un poco más de leche y vuelve a batir.\n4. Sirve en un vaso.\n5. Opcional: espolvorea un poco de semillas de chía o cáñamo por encima antes de servir.",
+      "consejos": "Usa plátano congelado para lograr una textura más cremosa y fría sin necesidad de añadir hielo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/avocado-smoothie/",
+        "autor": null,
+        "kcal_web": 363
+      }
+    },
+    {
+      "nombre": "Avena nocturna con fresas y proteína",
+      "descripcion": "Un desayuno cremoso de avena y chía con yogur griego, proteína de vainilla y fresas trituradas, ideal para preparar la noche anterior.",
+      "tiempo_prep_min": 185,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "16665787",
+          152
+        ],
+        [
+          "0f347066",
+          90
+        ],
+        [
+          "b5b5e57f",
+          24
+        ],
+        [
+          "318db297",
+          240
+        ],
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "9076c191",
+          32
+        ],
+        [
+          "8619b09f",
+          21
+        ]
+      ],
+      "instrucciones": "1. Triturar las fresas en una batidora hasta obtener un puré y reservar. También se pueden picar muy finas.\n2. En un bol grande, mezclar los copos de avena, las semillas de chía, la leche, el yogur griego, la miel y la proteína en polvo hasta integrar bien.\n3. Cubrir y dejar reposar la mezcla en la nevera entre 30 y 60 minutos.\n4. Repartir la mezcla de avena y el puré de fresas en 2 tarros, formando capas si se desea.\n5. Añadir por encima más fresas laminadas si se quiere, cubrir y conservar en la nevera otras 3-4 horas o toda la noche. Servir.",
+      "consejos": "Se puede preparar la noche anterior y conservar en la nevera hasta 3 días en tarros herméticos.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/strawberries-and-cream-protein-overnight-oats/",
+        "autor": null,
+        "kcal_web": 449
+      }
+    },
+    {
+      "nombre": "Calabacines rellenos de pollo búfalo",
+      "descripcion": "Barcas de calabacín horneadas y rellenas de pollo picado con salsa búfalo y queso fundido. Una cena sabrosa, baja en carbohidratos y fácil de preparar.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          600
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "bdc11c5a",
+          14
+        ],
+        [
+          "0a9fc13b",
+          454
+        ],
+        [
+          "5036194d",
+          120
+        ],
+        [
+          "06262e59",
+          75
+        ],
+        [
+          "59163485",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C.\n2. Cortar los calabacines por la mitad a lo largo y vaciar el interior con una cuchara, dejando un borde de 1 cm. Reservar la pulpa extraída.\n3. Colocar las mitades de calabacín con la parte cortada hacia arriba en una bandeja de horno con papel vegetal, sazonar con sal y pimienta y hornear 10 minutos.\n4. Mientras tanto, calentar el aceite de oliva en una sartén a fuego medio-alto.\n5. Añadir el ajo picado y sofreír 1 minuto; agregar el pollo picado, sazonar con sal y pimienta y cocinar 6-7 minutos hasta que esté hecho, removiendo y desmenuzando con una cuchara de madera.\n6. Incorporar la pulpa de calabacín reservada y la salsa búfalo y cocinar 2-3 minutos más.\n7. Repartir el relleno de pollo entre las barcas de calabacín, espolvorear con el queso rallado y hornear 15 minutos, hasta que el queso esté fundido y dorado.\n8. Decorar con perejil fresco picado y servir caliente.",
+      "consejos": "Escurre bien la pulpa de calabacín antes de añadirla al relleno para evitar que suelte demasiado líquido.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/stuffed-zucchini-boats/",
+        "autor": null,
+        "kcal_web": 277
+      }
+    },
+    {
+      "nombre": "Avena nocturna estilo tiramisú",
+      "descripcion": "Avena reposada durante la noche con café espresso, chía y yogur griego, cubierta con una capa de yogur y cacao. Un desayuno cremoso con sabor a tiramisú.",
+      "tiempo_prep_min": 245,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          113
+        ],
+        [
+          "b5b5e57f",
+          24
+        ],
+        [
+          "7605da1a",
+          120
+        ],
+        [
+          "9dc9f005",
+          180
+        ],
+        [
+          "585bd18b",
+          140
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "34d6fafa",
+          48
+        ],
+        [
+          "edb1e321",
+          5
+        ]
+      ],
+      "instrucciones": "1. Prepara los 2 cafés espresso con antelación y deja que se enfríen.\n2. En un bol grande, mezcla los 113 g de copos de avena, los 24 g de semillas de chía, los 60 g de yogur griego, los 4 g de extracto de vainilla, los 41 g de sirope de arce, el café espresso frío y los 180 g de bebida de almendra.\n3. Remueve hasta que todo quede bien integrado.\n4. Cubre el bol y déjalo reposar en la nevera al menos 4 horas o toda la noche. Si la avena queda demasiado espesa, añade un poco más de líquido.\n5. En un bol pequeño, mezcla los 80 g de yogur griego con los 7 g de sirope de arce si lo usas.\n6. Saca la avena de la nevera, destapa y remueve.\n7. Reparte la avena en 2-3 tarros y cubre con una capa lisa de yogur griego.\n8. Espolvorea los 5 g de cacao en polvo por encima, repartidos entre los tarros, y sirve.",
+      "consejos": "Puedes ajustar la cantidad de líquido al día siguiente según la textura que prefieras.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/tiramisu-overnight-oats/",
+        "autor": null,
+        "kcal_web": 387
+      }
+    },
+    {
+      "nombre": "Barcas de calabacín con pepperoni y mozzarella",
+      "descripcion": "Calabacines asados rellenos de salsa de tomate, mozzarella y pepperoni, una cena baja en carbohidratos y muy sencilla.",
+      "tiempo_prep_min": 28,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          600
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "140b5f32",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "1d197cae",
+          120
+        ],
+        [
+          "c24e3457",
+          100
+        ],
+        [
+          "1b8ce3f3",
+          40
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C y forrar una bandeja con papel de horno.\n2. Cortar los calabacines por la mitad a lo largo y vaciar el interior con una cuchara pequeña. Colocarlos con la parte cortada hacia arriba en la bandeja.\n3. Rociar con el aceite de oliva y sazonar con la sal de ajo y la pimienta.\n4. Repartir la salsa de tomate en cada calabacín y cubrir con la mozzarella rallada y el pepperoni.\n5. Hornear durante 15-18 minutos, hasta que el calabacín esté tierno y el queso burbujee.\n6. Decorar con perejil fresco picado si se desea y servir.",
+      "consejos": "Elige calabacines pequeños y firmes para que queden tiernos y no suelten demasiada agua al hornear.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/zucchini-pizza-boats/",
+        "autor": null,
+        "kcal_web": 202
+      }
+    },
+    {
+      "nombre": "Tostada francesa rellena de crema de cacahuete y mermelada",
+      "descripcion": "Sándwiches de pan brioche rellenos de crema de cacahuete y mermelada de fresa, empapados en huevo y cocinados a la plancha. Se sirven con fresas frescas.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "a9489dcd",
+          320
+        ],
+        [
+          "92b3c5d9",
+          80
+        ],
+        [
+          "6328f4b9",
+          64
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "763e7644",
+          30
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "9286a63f",
+          28
+        ],
+        [
+          "16665787",
+          150
+        ],
+        [
+          "34d6fafa",
+          20
+        ]
+      ],
+      "instrucciones": "1. En un plato llano, bate los 2 huevos con 1 cucharada de aceite de coco derretido y la vainilla.\n2. Unta una cucharada de crema de cacahuete en 4 de las 8 rebanadas de pan. Reparte la mermelada de fresa sobre ellas y cierra con las otras 4 rebanadas para formar sándwiches.\n3. Calienta una sartén antiadherente a fuego medio con el resto del aceite de coco.\n4. En dos tandas, sumerge los sándwiches en la mezcla de huevo unos 10 segundos por cada lado.\n5. Cocínalos en la sartén hasta que estén dorados por ambos lados, unos 2-3 minutos por lado.\n6. Repite con la segunda tanda y sirve con las fresas frescas y un chorrito de sirope de arce si se desea.",
+      "consejos": "No dejes los sándwiches demasiado tiempo en el huevo para que el pan no se ablande en exceso.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/stuffed-french-toast/",
+        "autor": null,
+        "kcal_web": 262
+      }
+    },
+    {
+      "nombre": "Desayuno de huevos y verduras",
+      "descripcion": "Un desayuno completo y saciante con patatas nuevas, calabacín y pimientos salteados, coronado con huevos cocidos al vapor y un toque de cebolleta y guindilla.",
+      "tiempo_prep_min": 35,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "8fd7b466",
+          280
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "f8586302",
+          200
+        ],
+        [
+          "b12e5a68",
+          150
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. En una olla grande con agua salada, cocer las patatas durante 6-8 minutos y escurrir.\n2. Calentar el aceite en una sartén grande a fuego medio-alto. Añadir las patatas, el calabacín, los pimientos y el ajo, y sazonar con sal y pimienta.\n3. Saltear durante 8-10 minutos, o hasta que las verduras estén tiernas pero firmes. Hacer cuatro huecos en la sartén y cascar con cuidado un huevo en cada uno.\n4. Tapar y cocinar durante 4-5 minutos, o hasta que los huevos cuajen.\n5. Decorar con la cebolleta y los copos de guindilla.",
+      "consejos": "Para que las patatas queden más crujientes, escúrrelas bien y sécalas con un paño antes de saltearlas.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/egg-and-veggie-breakfast/",
+        "autor": null,
+        "kcal_web": 228
+      }
+    },
+    {
+      "nombre": "Envoltorio proteico de requesón al horno",
+      "descripcion": "Una base fina y flexible rica en proteínas, elaborada con requesón y huevo, ideal para rellenar con tus ingredientes favoritos.",
+      "tiempo_prep_min": 45,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          240
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "c17ad017",
+          2
+        ],
+        [
+          "bbece24a",
+          3
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C.\n2. En un vaso batidor pequeño, añade 240 g de requesón, 2 huevos y las especias (2 g de cebolla en polvo, 3 g de ajo en polvo y 2 g de especias italianas).\n3. Tritura durante 1-2 minutos hasta obtener una mezcla homogénea.\n4. Vierte la mezcla sobre una bandeja de horno forrada con papel de hornear.\n5. Hornea durante 35-40 minutos. Deja enfriar.\n6. Corta por la mitad si no vas a usar el envoltorio entero, para obtener 2 envoltorios. Rellena con lo que más te guste y disfruta.",
+      "consejos": "Deja enfriar bien la base antes de manipularla para que sea más flexible y no se rompa al enrollarla.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-wrap/",
+        "autor": null,
+        "kcal_web": 155
+      }
+    }
+  ]
+}
