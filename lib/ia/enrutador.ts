@@ -6,7 +6,7 @@ import { llamarClaude } from './anthropic'
 import { extraerJsonPlan } from '@/lib/entrenos/evidencia-plan'
 
 export type Proveedor = 'anthropic' | 'openai' | 'deepseek'
-export type TareaIA = 'plan_entreno' | 'plan_dieta' | 'auditoria' | 'analisis_rendimiento' | 'texto_barato'
+export type TareaIA = 'plan_entreno' | 'plan_dieta' | 'auditoria' | 'analisis_rendimiento' | 'revision_receta' | 'texto_barato'
 
 /** `minMs`: tiempo que suele necesitar este modelo para una tarea larga; si queda menos, se salta (no tiene sentido empezar algo que no termina). */
 export interface RutaModelo { proveedor: Proveedor; modelo: string; minMs?: number }
@@ -26,6 +26,8 @@ export const RUTAS_POR_DEFECTO: Record<TareaIA, RutaModelo[]> = {
   plan_dieta: [CLAUDE_OPUS, GPT, DEEPSEEK],
   auditoria: [GPT, CLAUDE_SONNET, DEEPSEEK],
   analisis_rendimiento: [CLAUDE_OPUS, GPT, DEEPSEEK],
+  // Revisor del recetario: calidad/coste (Opus solo bajo petición con IA_RUTA_REVISION_RECETA)
+  revision_receta: [CLAUDE_SONNET, GPT, DEEPSEEK],
   texto_barato: [DEEPSEEK, DEEPSEEK_PRO],
 }
 
