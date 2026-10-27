@@ -245,6 +245,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [proteinasSel, setProteinasSel] = useState<string[]>([])
   const [familiaSel, setFamiliaSel] = useState<string | null>(null)
   const [variedad, setVariedad] = useState<Record<string, number>>({})
+  const [avanzar, setAvanzar] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [ocupado, setOcupado] = useState<string | null>(null)
   const [resultado, setResultado] = useState<ResultadoSemana | null>(null)
@@ -380,6 +381,15 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     return data
   }
 
+  // Siguiente hueco vacío después del actual (día a día, franja a franja) de la misma semana; null si no queda ninguno
+  function siguienteHueco(actual: Hueco): Hueco | null {
+    const lista = actual.semana == null ? dias : futuras.find(f => f.semana === actual.semana)?.dias ?? []
+    const huecos = lista.flatMap(d => seleccion.map(franja => ({ dia: d.dia, franja, vacio: !d.comidas.some(c => c.nombre === franja && c.receta) })))
+    const idx = huecos.findIndex(h => h.dia === actual.dia && h.franja === actual.franja)
+    const sig = huecos.slice(idx + 1).find(h => h.vacio)
+    return sig ? { dia: sig.dia, franja: sig.franja, semana: actual.semana } : null
+  }
+
   async function asignar(recetaId: string) {
     if (!hueco) return
     setGuardando(true)
@@ -389,7 +399,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
       : await llamar(base, 'POST', { dia: hueco.dia, franja: hueco.franja, receta_id: recetaId })
     setGuardando(false)
     if (!data) return
-    setHueco(null); setBusqueda(''); await Promise.all([cargar(), cargarFuturas(vista)])
+    const siguiente = avanzar ? siguienteHueco(hueco) : null
+    setHueco(siguiente); setBusqueda(''); await Promise.all([cargar(), cargarFuturas(vista)])
   }
 
   async function quitar(c: Comida, semana: number | null, sinConfirmar = false) {
@@ -743,11 +754,22 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           <div className="w-full sm:max-w-3xl max-h-[85vh] flex flex-col rounded-t-2xl sm:rounded-2xl p-4" style={{ background: 'var(--surface)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
               <p className="font-semibold" style={{ color: 'var(--text)' }}>{hueco.franja} · {hueco.dia}{hueco.semana ? ` · semana +${hueco.semana}` : ''}</p>
-              <button onClick={() => setHueco(null)} style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1.5 text-[12px] cursor-pointer" style={{ color: 'var(--text-muted)' }}>
+                  <input type="checkbox" checked={avanzar} onChange={e => setAvanzar(e.target.checked)} /> Pasar al siguiente hueco vacío
+                </label>
+                <button onClick={() => setHueco(null)} style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
+              </div>
             </div>
             <div className="relative mb-3">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-              <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !guardando && opcionesFiltradas[0]) asignar(opcionesFiltradas[0].id); if (e.key === 'Escape') setHueco(null) }} placeholder="Buscar receta…  (Enter asigna la primera)" className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
+              <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} onKeyDown={e => {
+                if (guardando) return
+                if (e.key === 'Escape') setHueco(null)
+                else if (e.key === 'Enter' && opcionesFiltradas[0]) asignar(opcionesFiltradas[0].id)
+                // Con el buscador vacío, 1-4 eligen una propuesta
+                else if (!busqueda && /^[1-4]$/.test(e.key) && sugerencias[Number(e.key) - 1]) { e.preventDefault(); asignar(sugerencias[Number(e.key) - 1].receta.id) }
+              }} placeholder="Buscar receta…  (Enter: la primera · 1-4: propuestas)" className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
             </div>
             {chipsProteina.length > 0 && (
               <div className="flex gap-1.5 mb-1.5 overflow-x-auto sm:flex-wrap sm:overflow-visible pb-1" style={{ scrollbarWidth: 'none' }}>
@@ -797,12 +819,12 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
                   <div className="mb-3">
                     <p className="text-[12px] uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>Propuestas</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                      {sugerencias.map(({ etiqueta, receta }) => (
+                      {sugerencias.map(({ etiqueta, receta }, n) => (
                         <button key={receta.id} disabled={guardando} onClick={() => asignar(receta.id)}
                           className="text-left rounded-xl overflow-hidden disabled:opacity-50" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                           {receta.imagen_url && <Image loader={cloudinaryLoader} src={receta.imagen_url} alt="" width={384} height={240} className="w-full aspect-[16/10] object-cover" />}
                           <div className="p-2">
-                            <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--accent, var(--primary))' }}>{etiqueta}</p>
+                            <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--accent, var(--primary))' }}><span style={{ opacity: 0.6 }}>{n + 1} · </span>{etiqueta}</p>
                             <p className="text-[13px] font-medium leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
                             <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{Math.round(receta.kcal_hueco ?? receta.kcal)} kcal · P {Math.round(receta.proteinas_hueco ?? receta.proteinas)} g</p>
                           </div>
