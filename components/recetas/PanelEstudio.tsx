@@ -17,12 +17,14 @@ function Fila({ etiqueta, children }: { etiqueta: string; children: React.ReactN
 const minutos = (m: number) => (m >= 120 ? `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`)
 
 /** Capa «Estudio» de la ficha (cocina profesional). Solo para el coach. El rendimiento sigue el selector de raciones. */
-export default function PanelEstudio({ estudio, factor, editarHref }: { estudio: unknown; factor: number; editarHref: string }) {
+export default function PanelEstudio({ estudio, factor, editarHref }: { estudio: unknown; factor: number; editarHref?: string }) {
   const e = validarEstudio(estudio)
   if (estudioVacio(e)) {
     return (
       <div className="coach-recipe-detail__section mb-6 p-5 text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-        Sin datos de estudio todavía (rendimiento, mise en place, conservación…). <Link href={editarHref} className="underline decoration-dotted underline-offset-4" style={{ color: 'var(--text)' }}>Añadirlos en Editar</Link>
+        {editarHref
+          ? <>Sin datos de estudio todavía (rendimiento, mise en place, conservación…). <Link href={editarHref} className="underline decoration-dotted underline-offset-4" style={{ color: 'var(--text)' }}>Añadirlos en Editar</Link></>
+          : 'Esta receta aún no tiene datos de estudio.'}
       </div>
     )
   }

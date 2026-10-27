@@ -485,6 +485,7 @@ export default function ClienteDetallePage() {
   })
   const [guardandoMembresia, setGuardandoMembresia] = useState(false)
   const [verVideoRecetas, setVerVideoRecetas] = useState(false)
+  const [accesoProfesional, setAccesoProfesional] = useState(false)
   const [resumenDia, setResumenDia] = useState<ResumenDia | null>(null)
 
   async function alternarVerVideo(valor: boolean) {
@@ -493,6 +494,14 @@ export default function ClienteDetallePage() {
     const { error } = await supabase.from('clientes').update({ ver_video_recetas: valor }).eq('id', id as string)
     if (error) { setVerVideoRecetas(!valor); addToast({ type: 'error', title: 'Error', message: 'No se pudo guardar el ajuste' }) }
     else addToast({ type: 'success', title: valor ? 'Vídeo activado' : 'Vídeo desactivado', message: valor ? 'El cliente verá el vídeo original en sus recetas' : 'El cliente ya no verá el vídeo original' })
+  }
+
+  async function alternarAccesoProfesional(valor: boolean) {
+    if (!id) return
+    setAccesoProfesional(valor)
+    const { error } = await supabase.from('clientes').update({ acceso_profesional: valor }).eq('id', id as string)
+    if (error) { setAccesoProfesional(!valor); addToast({ type: 'error', title: 'Error', message: 'No se pudo guardar el ajuste' }) }
+    else addToast({ type: 'success', title: valor ? 'Acceso profesional activado' : 'Acceso profesional desactivado', message: valor ? 'El cliente verá Estudio y técnicas en las recetas' : 'El cliente ya no verá Estudio ni técnicas' })
   }
 
   async function guardarMembresia() {
@@ -583,6 +592,7 @@ export default function ClienteDetallePage() {
     ])
     setCliente(clienteRes.data)
     setVerVideoRecetas(!!(clienteRes.data as Record<string, unknown> | null)?.ver_video_recetas)
+    setAccesoProfesional(!!(clienteRes.data as Record<string, unknown> | null)?.acceso_profesional)
     if (clienteRes.data) {
       setMembresiaEdit({
         tipo: (clienteRes.data as Record<string, string | null>).tipo_membresia ?? '',
@@ -1171,6 +1181,13 @@ export default function ClienteDetallePage() {
                   <span>
                     <span className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Mostrar el vídeo original de las recetas</span>
                     <span className="block text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Botón «Ver vídeo original» en el portal del cliente.</span>
+                  </span>
+                </label>
+                <label className="coach-profile-setting flex items-start gap-3 p-4 cursor-pointer" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                  <input type="checkbox" className="mt-0.5" checked={accesoProfesional} onChange={e => alternarAccesoProfesional(e.target.checked)} />
+                  <span>
+                    <span className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Acceso profesional a las recetas</span>
+                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Pestaña «Estudio» (rendimiento, conservación, mise en place) y técnicas enlazadas en el portal del cliente.</span>
                   </span>
                 </label>
                 {(cliente.notas || cliente.restricciones_alimentarias) && (

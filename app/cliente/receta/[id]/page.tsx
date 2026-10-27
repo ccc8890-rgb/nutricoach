@@ -18,8 +18,10 @@ import CompartirSesion from '@/components/training/CompartirSesion'
 import { dibujarPlatoTernario } from '@/lib/entrenos/tarjeta-story'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 import { resumenAptitud } from '@/lib/recetas-constants'
+import EstudioCliente, { type TecnicaCliente } from '@/components/PortalCliente/EstudioCliente'
 
 interface RecetaDetalle {
+  estudio?: unknown   // solo llega con acceso profesional
   id: string
   nombre: string
   imagen_url?: string | null
@@ -63,7 +65,7 @@ export default function RecetaClientePage() {
 
   const [cocinarPara, setCocinarPara] = useState(1)
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
-  const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion'>('ingredientes')
+  const [seccion, setSeccion] = useState<'ingredientes' | 'preparacion' | 'estudio'>('ingredientes')
   // Caché compartida con el portal (persistente): al reabrir una receta el detalle y la foto salen al instante.
   // `montado` evita desajuste de hidratación: la caché solo existe en el cliente.
   const [montado, setMontado] = useState(false)
@@ -73,11 +75,15 @@ export default function RecetaClientePage() {
     ingredientes?: IngredienteConAlimento[]
     racion?: Racion | null
     salsas?: { id: string; nombre: string; kcal: number | null }[]
+    profesional?: boolean
+    tecnicas?: TecnicaCliente[]
   }>(codigo ? claveReceta(codigo, id, searchParams.get('comida')) : null, fetchJson)
   const receta = data?.receta ?? null
   const ingredientes = data?.ingredientes ?? []
   const racion = data?.racion ?? null
   const salsas = data?.salsas ?? []
+  const profesional = Boolean(data?.profesional)
+  const tecnicas = data?.tecnicas ?? []
   const loading = !montado || (Boolean(codigo) && isLoading && !data)
   const error = !codigo ? 'Falta el código del plan.' : errorSwr ? 'No se pudo cargar la receta.' : ''
 
@@ -257,13 +263,14 @@ export default function RecetaClientePage() {
             )}
             {racion && datosFicha}
 
-            {(ingredientesFormato.length > 0 || pasos.length > 0) && (
+            {(ingredientesFormato.length > 0 || pasos.length > 0 || profesional) && (
               <div className="flex flex-col gap-3">
                 {/* Una sola lista a la vez: la receta no se hace larguísima con scroll */}
                 <div className="flex overflow-hidden" role="tablist" aria-label="Ingredientes o preparación" style={{ border: '1px solid var(--border)' }}>
                   {([
                     ['ingredientes', 'Ingredientes', ingredientesFormato.length],
                     ['preparacion', 'Preparación', pasos.length],
+                    ['estudio', 'Estudio', profesional ? 1 : 0],
                   ] as const).filter(([, , n]) => n > 0).map(([clave, etiqueta]) => (
                     <button key={clave} role="tab" aria-selected={seccion === clave} onClick={() => setSeccion(clave)}
                       className="flex-1 px-3 py-2.5 text-xs font-semibold"
@@ -273,13 +280,15 @@ export default function RecetaClientePage() {
                   ))}
                 </div>
 
+                {seccion === 'estudio' && profesional && <EstudioCliente estudio={receta.estudio} factor={factorVista} tecnicas={tecnicas} />}
+
                 {seccion === 'ingredientes' && ingredientesFormato.length > 0 && (
                   <div>
                     <IngredientChecklist ingredientes={ingredientesFormato} sinCabecera />
                   </div>
                 )}
 
-                {(seccion === 'preparacion' || ingredientesFormato.length === 0) && pasos.length > 0 && (
+                {seccion !== 'estudio' && (seccion === 'preparacion' || ingredientesFormato.length === 0) && pasos.length > 0 && (
                   <>
                     {cantidadesDistintas && (
                       <p className="text-xs rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
@@ -308,7 +317,7 @@ export default function RecetaClientePage() {
               </div>
             )}
 
-            {receta.consejos && (seccion === 'preparacion' || ingredientesFormato.length === 0) && (
+            {receta.consejos && seccion !== 'estudio' && (seccion === 'preparacion' || ingredientesFormato.length === 0) && (
               <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <p className="text-sm font-bold mb-1" style={{ color: 'var(--text)' }}>Consejos</p>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{receta.consejos}</p>
