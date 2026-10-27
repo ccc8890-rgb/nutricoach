@@ -42,7 +42,7 @@ function Campo({ etiqueta, children }: { etiqueta: string; children: React.React
 
 export default function AjustesPanel() {
   const router = useRouter()
-  const { theme, setTheme, escala, setEscala } = useTheme()
+  const { theme, setTheme, escalas, setEscala } = useTheme()
 
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [errorCarga, setErrorCarga] = useState(false)
@@ -213,22 +213,35 @@ export default function AjustesPanel() {
               </button>
             ))}
           </div>
-          <div className="mt-4">
-            <p className="mb-2 text-sm" style={{ color: 'var(--text-secondary)' }}>Tamaño de letra del panel (títulos, textos y tablas)</p>
-            <div className="inline-flex flex-wrap items-end rounded-xl border p-1" style={{ borderColor: 'var(--border)' }} role="group" aria-label="Tamaño de letra">
-              {([[0.9, 'Pequeña'], [1, 'Normal'], [1.15, 'Grande'], [1.3, 'Muy grande'], [1.5, 'Enorme']] as const).map(([valor, texto], i) => (
-                <button
-                  key={valor}
-                  type="button"
-                  onClick={() => setEscala(valor)}
-                  aria-pressed={escala === valor}
-                  className="rounded-lg px-3 py-2 font-medium"
-                  style={{ fontSize: `${12 + i * 2}px`, ...(escala === valor ? buttonStyle : { color: 'var(--text-secondary)' }) }}
-                >
-                  {texto}
-                </button>
-              ))}
-            </div>
+          <div className="mt-4 space-y-4">
+            {([
+              ['general', 'General', 'Todo el panel a la vez'],
+              ['titulos', 'Títulos', 'Cabeceras de cada pantalla y de cada bloque'],
+              ['textos', 'Textos pequeños', 'Subtítulos, etiquetas, tablas y letra fina'],
+            ] as const).map(([clave, titulo, ayuda]) => (
+              <div key={clave}>
+                <p className="mb-2 text-sm font-medium" style={{ color: 'var(--text)' }}>
+                  {titulo} <span className="font-normal" style={{ color: 'var(--text-muted)' }}>· {ayuda}</span>
+                </p>
+                <div className="inline-flex flex-wrap items-end rounded-xl border p-1" style={{ borderColor: 'var(--border)' }} role="group" aria-label={`Tamaño: ${titulo}`}>
+                  {([[0.9, 'Pequeña'], [1, 'Normal'], [1.15, 'Grande'], [1.3, 'Muy grande'], [1.5, 'Enorme']] as const).map(([valor, texto], i) => (
+                    <button
+                      key={valor}
+                      type="button"
+                      onClick={() => setEscala(clave, valor)}
+                      aria-pressed={escalas[clave] === valor}
+                      className="rounded-lg px-3 py-2 font-medium"
+                      style={{ fontSize: `${12 + i * 2}px`, ...(escalas[clave] === valor ? buttonStyle : { color: 'var(--text-secondary)' }) }}
+                    >
+                      {texto}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={() => (['general', 'titulos', 'textos'] as const).forEach(k => setEscala(k, 1))} className="text-sm underline" style={{ color: 'var(--text-secondary)' }}>
+              Restablecer tamaños
+            </button>
           </div>
         </Seccion>
 

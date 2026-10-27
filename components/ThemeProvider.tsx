@@ -4,19 +4,24 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 
 type Theme = 'light' | 'dark'
 
+export type ClaveEscala = 'general' | 'titulos' | 'textos'
+export type Escalas = Record<ClaveEscala, number>
+
+const ESCALAS_BASE: Escalas = { general: 1, titulos: 1, textos: 1 }
+
 interface ThemeContextValue {
     theme: Theme
     toggleTheme: () => void
     setTheme: (t: Theme) => void
-    escala: number
-    setEscala: (e: number) => void
+    escalas: Escalas
+    setEscala: (clave: ClaveEscala, valor: number) => void
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
     theme: 'light',
     toggleTheme: () => { },
     setTheme: () => { },
-    escala: 1,
+    escalas: ESCALAS_BASE,
     setEscala: () => { },
 })
 
@@ -33,23 +38,25 @@ function getInitialTheme(): Theme {
 
 const ESCALAS = [0.9, 1, 1.15, 1.3, 1.5]
 
-function getEscalaInicial(): number {
+function getEscalasIniciales(): Escalas {
+    const res = { ...ESCALAS_BASE }
     try {
-        const n = Number(localStorage.getItem('nutricoach-escala'))
-        return ESCALAS.includes(n) ? n : 1
-    } catch {
-        return 1
-    }
+        for (const k of Object.keys(res) as ClaveEscala[]) {
+            const n = Number(localStorage.getItem(`nutricoach-escala-${k}`) ?? (k === 'general' ? localStorage.getItem('nutricoach-escala') : null))
+            if (ESCALAS.includes(n)) res[k] = n
+        }
+    } catch { /* sin almacenamiento */ }
+    return res
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setThemeState] = useState<Theme>('dark')
     const [mounted, setMounted] = useState(false)
-    const [escala, setEscalaState] = useState(1)
+    const [escalas, setEscalas] = useState<Escalas>(ESCALAS_BASE)
 
     useEffect(() => {
         setThemeState(getInitialTheme())
-        setEscalaState(getEscalaInicial())
+        setEscalas(getEscalasIniciales())
         setMounted(true)
     }, [])
 
@@ -66,11 +73,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!mounted) return
-        document.documentElement.style.setProperty('--coach-escala', String(escala))
-        try { localStorage.setItem('nutricoach-escala', String(escala)) } catch { /* sin almacenamiento */ }
-    }, [escala, mounted])
+        const root = document.documentElement
+        for (const k of Object.keys(escalas) as ClaveEscala[]) {
+            root.style.setProperty(`--coach-escala${k === 'general' ? '' : `-${k}`}`, String(escalas[k]))
+            try { localStorage.setItem(`nutricoach-escala-${k}`, String(escalas[k])) } catch { /* sin almacenamiento */ }
+        }
+    }, [escalas, mounted])
 
-    const setEscala = useCallback((e: number) => setEscalaState(e), [])
+    const setEscala = useCallback((clave: ClaveEscala, valor: number) => {
+        setEscalas(prev => ({ ...prev, [clave]: valor }))
+    }, [])
 
     const toggleTheme = useCallback(() => {
         setThemeState(prev => (prev === 'light' ? 'dark' : 'light'))
@@ -81,7 +93,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }, [])
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, escala, setEscala }}>
+        <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, escalas, setEscala }}>
             {children}
         </ThemeContext.Provider>
     )

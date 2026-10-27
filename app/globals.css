@@ -3390,6 +3390,28 @@ html:has(.coach-atelier-shell) {
   font-size: calc(100% * var(--coach-escala, 1));
 }
 
+/* Ajustes → Tamaño de letra: «Títulos» y «Textos pequeños» escalan aparte del general con zoom
+   (los textos de px fijos no siguen el rem). Con valor 1 no hacen nada. */
+.coach-atelier-shell h1,
+.coach-atelier-shell h2,
+.coach-atelier-shell h3 {
+  zoom: var(--coach-escala-titulos, 1);
+}
+
+.coach-atelier-shell :is(
+  [class*="text-[8px]"], [class*="text-[9px]"], [class*="text-[10px]"], [class*="text-[11px]"],
+  [class*="text-[12px]"], [class*="text-[13px]"], .text-xs, .text-sm, .coach-micro
+) {
+  zoom: var(--coach-escala-textos, 1);
+}
+
+/* Un texto pequeño dentro de otro no se amplía dos veces. */
+.coach-atelier-shell :is([class*="text-[8px]"], [class*="text-[9px]"], [class*="text-[10px]"], [class*="text-[11px]"],
+  [class*="text-[12px]"], [class*="text-[13px]"], .text-xs, .text-sm, .coach-micro) :is([class*="text-[8px]"], [class*="text-[9px]"], [class*="text-[10px]"], [class*="text-[11px]"],
+  [class*="text-[12px]"], [class*="text-[13px]"], .text-xs, .text-sm, .coach-micro) {
+  zoom: 1;
+}
+
 @media (min-width: 1024px) {
   html:has(.coach-atelier-shell) {
     font-size: calc(110% * var(--coach-escala, 1));
