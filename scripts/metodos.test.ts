@@ -116,3 +116,15 @@ const base = (extra: Record<string, unknown> = {}) => ({ tipo: 'sesion', titulo:
   assert.equal(filtrarMetodos(lista, { nivel: 'intermedio' }).length, 1)
   assert.equal(filtrarMetodos([], { q: 'x' }).length, 0)
 }
+
+// ── la migración usa los mismos vocabularios que el código ──
+{
+  const { readFileSync } = require('node:fs') as typeof import('node:fs')
+  const c = require('../lib/metodos/constantes') as typeof import('../lib/metodos/constantes')
+  const sql = readFileSync('supabase/migrations/20261027120000_biblioteca_metodos.sql', 'utf8')
+  const lista = (vals: readonly string[]) => `in (${vals.map(v => `'${v}'`).join(', ')})`
+  for (const [nombre, vals] of [['tipo', c.TIPOS_METODO], ['modalidad', c.MODALIDADES], ['objetivo', c.OBJETIVOS], ['nivel', c.NIVELES], ['confianza', c.CONFIANZAS], ['estado', c.ESTADOS_METODO]] as const) {
+    assert.ok(sql.includes(`${nombre} ${lista(vals)}`), `la migración no coincide con el vocabulario de ${nombre}`)
+  }
+  assert.ok(sql.includes(lista(c.TIPOS_EVENTO_METODO)), 'la migración no coincide con los tipos de evento')
+}
