@@ -1,0 +1,31 @@
+{
+  "lote": "web-prueba-dietdoctor-2026-10-27",
+  "tipo_plato": "Cena",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "criterios": { "kcal_min": 150, "kcal_max": 400, "proteina_pct_min": 0.25 },
+  "alimentos": {
+    "pollo":   { "nombre": "Pechuga de pollo", "prefijo": "4ad8714c", "rol": "proteina_principal", "alergenos": [], "origen": "carne" },
+    "soja":    { "nombre": "Salsa de soja", "prefijo": "caa47a33", "rol": "salsa_condimento", "alergenos": ["Gluten", "Soja"], "origen": "vegetal" },
+    "lima":    { "nombre": "Jugo de lima", "prefijo": "3d357e79", "rol": "salsa_condimento", "alergenos": [], "origen": "vegetal" },
+    "sesamoac":{ "nombre": "Aceite de Sésamo Botella", "prefijo": "63a96dba", "rol": "grasa_saludable", "alergenos": ["Sésamo"], "origen": "vegetal" },
+    "jengibre":{ "nombre": "Jengibre", "prefijo": "24bff01d", "rol": "especias_aromaticos", "alergenos": [], "origen": "vegetal" },
+    "chile":   { "nombre": "Hojuelas de chile (chili flakes)", "prefijo": "2a7ea4dc", "rol": "especias_aromaticos", "alergenos": [], "origen": "vegetal" },
+    "sesamo":  { "nombre": "Semillas De Sésamo Tostado", "prefijo": "1374e5bc", "rol": "grasa_saludable", "alergenos": ["Sésamo"], "origen": "vegetal" },
+    "cilantro":{ "nombre": "Cilantro", "prefijo": "dfd57056", "rol": "especias_aromaticos", "alergenos": [], "origen": "vegetal" }
+  },
+  "recetas": [
+    {
+      "nombre": "Pollo al limón con jengibre",
+      "descripcion": "Pechuga marinada en soja, lima y jengibre, dorada en sartén. Alta en proteína, lista en 30 minutos más el marinado.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [["pollo", 650], ["soja", 65], ["lima", 30], ["sesamoac", 9], ["jengibre", 5], ["chile", 1], ["sesamo", 3], ["cilantro", 3]],
+      "instrucciones": "1. Pon las pechugas en un recipiente grande y poco profundo y pínchalas con un tenedor para que absorban mejor la marinada.\n2. Mezcla en un bol pequeño la salsa de soja, el jugo de lima, el aceite de sésamo, el jengibre rallado y las hojuelas de chile.\n3. Vierte la mezcla sobre el pollo y déjalo marinar en la nevera entre 3 y 24 horas.\n4. Calienta una sartén grande a fuego medio-alto, añade el pollo y el resto de la marinada y dóralo unos 5-10 minutos, dándole la vuelta a mitad de cocinado, hasta que esté caramelizado por fuera y hecho por dentro.\n5. Sirve con sésamo tostado, cilantro y unas hojuelas de chile.",
+      "consejos": "Prepara el doble y usa el pollo sobrante en ensaladas durante la semana.",
+      "origen_web": { "url": "https://www.dietdoctor.com/es/recetas/low-carb-pollo-con-jengibre-al-limon", "autor": "Kyndra Holley (Diet Doctor)", "kcal_web": 237 }
+    }
+  ]
+}
