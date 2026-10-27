@@ -218,3 +218,39 @@ export const IconoPanel = (p: MarcaIconoProps) => (
     <Punto cx={6} cy={8} />
   </Base>
 )
+
+// Barra de navegación del portal cliente: formas geométricas de marca
+// (círculo, triángulo, cuadrado) en vez de dibujos literales.
+export const NavHoy = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <circle cx={12} cy={12} r={8} />
+    <Punto cx={12} cy={12} />
+  </Base>
+)
+
+export const NavDieta = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <circle cx={12} cy={12} r={8} />
+    <path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor" />
+  </Base>
+)
+
+export const NavRecetas = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M5 3.5h14v17H5z" />
+    <path d="M8.5 8h7M8.5 12h7M8.5 16h4" />
+  </Base>
+)
+
+export const NavEntreno = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M12 3.5 21 19.5H3z" />
+    <Punto cx={12} cy={14.5} />
+  </Base>
+)
+
+export const NavDatos = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M6 20v-8M12 20V4M18 20V9" strokeWidth={2.6} />
+  </Base>
+)

@@ -13,7 +13,7 @@ import {
   CaretLeft,
   SquaresFour, Rows,
 } from '@phosphor-icons/react'
-import { IconoHoy, IconoDieta, IconoRecetas, IconoFuerza, IconoDatos, IconoCompra, IconoChat, IconoCheckin, IconoDispositivo, IconoSol, IconoLuna, IconoSalir } from '@/components/icons/MarcaIconos'
+import { NavHoy, NavDieta, NavRecetas, NavEntreno, NavDatos, IconoDieta, IconoFuerza, IconoCompra, IconoChat, IconoCheckin, IconoDispositivo, IconoSol, IconoLuna, IconoSalir } from '@/components/icons/MarcaIconos'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
@@ -414,11 +414,11 @@ function PortalClientePageContent() {
   const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '').replace(/,\s*/, ' · ')
 
   const TABS: LiquidDockItem<Tab>[] = [
-    { key: 'hoy',     label: 'Hoy',      icon: IconoHoy },
-    { key: 'dieta',   label: 'Dieta',    icon: IconoDieta },
-    { key: 'recetas', label: 'Recetas',  icon: IconoRecetas },
-    { key: 'entreno', label: 'Entreno',  icon: IconoFuerza },
-    { key: 'datos',   label: 'Datos',    icon: IconoDatos },
+    { key: 'hoy',     label: 'Hoy',      icon: NavHoy },
+    { key: 'dieta',   label: 'Dieta',    icon: NavDieta },
+    { key: 'recetas', label: 'Recetas',  icon: NavRecetas },
+    { key: 'entreno', label: 'Entreno',  icon: NavEntreno },
+    { key: 'datos',   label: 'Datos',    icon: NavDatos },
   ]
 
   return (
