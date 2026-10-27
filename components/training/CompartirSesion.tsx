@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Export, ImageSquare, InstagramLogo, X } from '@/components/icons/phosphor'
+import { Export, ImageSquare, InstagramLogo, X } from '@/components/icons/portal-phosphor'
 import type { TemaTarjeta } from '@/lib/entrenos/tarjeta-story'
 
 const W_STORY = 1080

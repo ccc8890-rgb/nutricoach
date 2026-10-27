@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Check, ClockCounterClockwise, X } from '@/components/icons/phosphor'
+import { Check, ClockCounterClockwise, X } from '@/components/icons/portal-phosphor'
 import type { SetData } from './SesionCardMobile'
 
 type Modo = 'fuerza' | 'cardio'

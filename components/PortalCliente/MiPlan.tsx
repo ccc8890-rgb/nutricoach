@@ -14,7 +14,7 @@ import {
     DownloadSimple as Download,
     ForkKnife as UtensilsCrossed,
     PencilLine,
-} from '@/components/icons/phosphor'
+} from '@/components/icons/portal-phosphor'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'

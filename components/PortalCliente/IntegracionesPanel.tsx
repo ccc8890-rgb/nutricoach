@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Smartphone, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff, RefreshCw, Route, Clock } from '@/components/icons/lucide'
+import { Smartphone, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff, RefreshCw, Route, Clock } from '@/components/icons/portal-lucide'
 import type { SaludFuente } from '@/lib/integraciones/salud-fuente'
 
 // ─── Brand icons ─────────────────────────────────────────────────────────────

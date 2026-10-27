@@ -12,7 +12,7 @@ import {
     type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { CalendarBlank, DotsSixVertical, ForkKnife, SpinnerGap } from '@/components/icons/phosphor'
+import { CalendarBlank, DotsSixVertical, ForkKnife, SpinnerGap } from '@/components/icons/portal-phosphor'
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 

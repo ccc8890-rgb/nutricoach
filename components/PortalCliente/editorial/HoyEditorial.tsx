@@ -1,6 +1,6 @@
 'use client'
 
-import { IconoFuerza, IconoDatos, IconoDieta, IconoCheckin, IconoCompra, IconoChat } from '@/components/icons/MarcaIconos'
+import { IconoFuerza, IconoDatos, IconoDieta, IconoCheckin, IconoCompra, IconoChat } from '@/components/icons/portal-marca'
 import EditorialMasthead from './EditorialMasthead'
 import ProgressInstrument from './ProgressInstrument'
 import TechnicalReadout from './TechnicalReadout'

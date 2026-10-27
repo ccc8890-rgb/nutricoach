@@ -12,8 +12,8 @@ import {
   BookOpenText,
   CaretLeft,
   SquaresFour, Rows,
-} from '@/components/icons/phosphor'
-import { NavHoy, NavDieta, NavRecetas, NavEntreno, NavDatos, IconoDieta, IconoFuerza, IconoCompra, IconoChat, IconoCheckin, IconoDispositivo, IconoSol, IconoLuna, IconoSalir } from '@/components/icons/MarcaIconos'
+} from '@/components/icons/portal-phosphor'
+import { NavHoy, NavDieta, NavRecetas, NavEntreno, NavDatos, IconoDieta, IconoFuerza, IconoCompra, IconoChat, IconoCheckin, IconoDispositivo, IconoSol, IconoLuna, IconoSalir } from '@/components/icons/portal-marca'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'

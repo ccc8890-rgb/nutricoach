@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Activity, AlertTriangle, CheckCircle2, Loader2 } from '@/components/icons/lucide'
+import { Activity, AlertTriangle, CheckCircle2, Loader2 } from '@/components/icons/portal-lucide'
 import type { NutrienteGap, TotalesMicronutrientes } from '@/lib/micronutrientes/gap-report'
 
 interface MicronutrientesPortalProps {

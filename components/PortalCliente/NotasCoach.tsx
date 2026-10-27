@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MessageSquareText, Loader2 } from '@/components/icons/lucide'
+import { MessageSquareText, Loader2 } from '@/components/icons/portal-lucide'
 
 interface Nota {
     id: string
