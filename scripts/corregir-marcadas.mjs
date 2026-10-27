@@ -78,7 +78,7 @@ const subir = (buf, id) => new Promise((ok, ko) => {
 })
 
 const { data: marcadas, error } = await db.from('recetas')
-  .select('id, nombre, estado, tags, notas_coach, imagen_url, imagen_tipo, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos)')
+  .select('id, nombre, estado, tags, notas_coach, imagen_url, imagen_tipo, url_origen, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos)')
   .contains('tags', ['Corregir']).in('estado', ['en_revision', 'borrador'])
 if (error) { console.error(error.message); process.exit(1) }
 
@@ -87,6 +87,8 @@ let { data: forzadas } = FORZAR && ID ? await db.from('recetas')
 const lista = FORZAR && ID ? (forzadas ?? []).map(r => ({ r, aspectos: ['foto', 'otro'], hechos: '' }))
   : (marcadas ?? []).map(r => ({ r, ...pendientes(r.notas_coach) }))
     .filter(x => x.aspectos.includes('foto') && !x.hechos.includes('foto regenerada'))
+    // Con reel/TikTok la foto buena es un fotograma del vídeo (foto-desde-reel.mjs), nunca una de IA: esas las atiende Claude
+    .filter(x => !x.r.url_origen)
 console.log(`Marcadas «Corregir» con foto pendiente: ${lista.length} · a procesar: ${Math.min(lista.length, LIMITE)} · coste ~${(Math.min(lista.length, LIMITE) * 0.034).toFixed(2)} $`)
 if (!APLICA) { lista.forEach(({ r }, i) => console.log(`  ${i + 1}. ${r.nombre}`)); console.log('\nSimulación. Añade --aplica.'); process.exit(0) }
 
