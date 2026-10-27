@@ -16,6 +16,7 @@ import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
 import { listaRecordada } from '@/lib/useEstadoUrl'
 import BarraRevision from '@/components/recetas/BarraRevision'
 import { formatoCantidad } from '@/lib/recetas/equivalencia'
+import { cantidadEstimada } from '@/lib/recetas/estimadas'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import type { Alimento } from '@/types'
@@ -321,6 +322,8 @@ export default function DetalleRecetaPage() {
       ing.alimento.calorias, ing.alimento.proteinas, ing.alimento.carbohidratos, ing.alimento.grasas, ing.alimento.fibra ?? 0, ing.cantidad_gramos
     ).calorias * factorVista) : (ing.elaboracion_id && kcalElaboracion[ing.elaboracion_id] !== undefined
       ? Math.round(kcalElaboracion[ing.elaboracion_id] * ing.cantidad_gramos / 100 * factorVista) : undefined),
+    // Solo el coach ve qué cantidades inventó el sistema
+    estimada: !isClientView && cantidadEstimada(ing, receta),
     href: ing.elaboracion_id ? `/recetas/${ing.elaboracion_id}?returnTo=${encodeURIComponent(`/recetas/${id}`)}` : undefined,
   })), parsePasos(r.instrucciones ?? receta.instrucciones))
 

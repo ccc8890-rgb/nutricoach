@@ -13,6 +13,8 @@ interface IngredientItem {
     opcional?: boolean
     /** Elaboración enlazada (masa, salsa…): el nombre abre su ficha */
     href?: string
+    /** Cantidad estimada por el sistema (el vídeo no la daba): solo se marca en la ficha del coach */
+    estimada?: boolean
     kcal?: number
     proteinas?: number
     carbohidratos?: number
@@ -60,7 +62,7 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
                     <li key={ing.id} className="grid grid-cols-[4.5rem_minmax(0,1fr)_4.5rem] items-baseline gap-x-4 px-1 py-2.5">
                         {/* Cantidad a la izquierda, alineada como en un libro de recetas */}
                         <span className={`text-right tabular-nums ${ing.opcional ? 'text-sm' : 'text-base font-semibold'}`} style={{ color: ing.opcional ? 'var(--text-muted)' : 'var(--text)' }}>
-                            {ing.opcional ? 'al gusto' : ing.cantidad}
+                            {ing.estimada && <span title="Cantidad estimada por el sistema: el vídeo no la daba" style={{ color: 'var(--warning)' }}>≈ </span>}{ing.opcional ? 'al gusto' : ing.cantidad}
                         </span>
                         <span className="text-lg font-medium leading-snug" style={{ color: ing.opcional ? 'var(--text-muted)' : 'var(--text)' }}>
                             {ing.nombre}{ing.opcional && <span className="ml-2 text-sm font-normal">(opcional)</span>}
@@ -80,6 +82,12 @@ export function IngredientChecklist({ ingredientes, className = '', sinCabecera 
             </ul>
             </div>
             ))}
+
+            {ingredientes.some(i => i.estimada) && (
+                <p className="mx-auto mt-3 w-full max-w-xl px-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    <span style={{ color: 'var(--warning)' }}>≈</span> cantidad estimada por el sistema (el vídeo no la daba): revísala.
+                </p>
+            )}
 
             {ingredientes.length === 0 && (
                 <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>

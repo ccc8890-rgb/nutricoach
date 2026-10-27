@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { validarRevision, correccionesAplicables, hashFicha, transicionPermitida, type FichaParaRevisar, type RevisionAgente } from '../lib/recetas/revisor/esquema'
 import { construirPrompt } from '../lib/recetas/revisor/prompt'
 import { normalizarFase } from '../lib/recetas/revision'
+import { cantidadEstimada } from '../lib/recetas/estimadas'
 import { FAMILIAS_PLATO, FAMILIAS_ELABORACION } from '../lib/recetas-constants'
 
 const ficha = (extra: Partial<FichaParaRevisar> = {}): FichaParaRevisar => ({
@@ -98,6 +99,17 @@ const rev = (extra: Partial<RevisionAgente> = {}): RevisionAgente => ({ tipo_con
   assert.ok(p.usuario.includes('"cantidad_dicha": "300 gramos"') && p.usuario.includes('"cantidad_dicha": null'))
   const a = ficha(), b = ficha({ ingredientes: [{ ...a.ingredientes[0] }, { ...a.ingredientes[1], cantidad_dicha: '150 g' }] })
   assert.notEqual(hashFicha(a), hashFicha(b))
+}
+
+// ── cantidades estimadas por el sistema (marca en la ficha del coach) ──
+{
+  const importada = { estado: 'en_revision', url_origen: 'https://www.instagram.com/reel/abc' }
+  assert.equal(cantidadEstimada({ cantidad_gramos: 100, cantidad_original: null }, importada), true)        // el vídeo no la dio
+  assert.equal(cantidadEstimada({ cantidad_gramos: 100, cantidad_original: 2 }, importada), false)           // la dijo el vídeo
+  assert.equal(cantidadEstimada({ cantidad_gramos: 0, cantidad_original: null }, importada), false)          // «al gusto»
+  assert.equal(cantidadEstimada({ cantidad_gramos: 5, cantidad_original: null, es_opcional: true }, importada), false)
+  assert.equal(cantidadEstimada({ cantidad_gramos: 100, cantidad_original: null }, { estado: 'en_revision', url_origen: null }), false)  // hecha a mano: los gramos son de Carlos
+  assert.equal(cantidadEstimada({ cantidad_gramos: 100, cantidad_original: null }, { estado: 'aprobada', url_origen: 'https://x' }), false)  // ya revisada y aprobada
 }
 
 // ── transiciones de fase (las que Carlos puede hacer desde la API) ──
