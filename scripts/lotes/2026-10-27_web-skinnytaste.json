@@ -1,0 +1,995 @@
+{
+  "lote": "web-skinnytaste-2026-10-27",
+  "tipo_plato": "Cena",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "criterios": {
+    "kcal_min": 140,
+    "kcal_max": 420,
+    "proteina_pct_min": 0.08
+  },
+  "alimentos": {
+    "pollo": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "limon": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "oregano": {
+      "nombre": "Orégano seco",
+      "prefijo": "c14d168a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ajo": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "pepino": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "tomate": {
+      "nombre": "Tomate fresco",
+      "prefijo": "3050f459",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cherry": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "pimiento": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cebollar": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cebolla": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cebolleta": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "aceituna": {
+      "nombre": "Aceitunas negras sin hueso",
+      "prefijo": "0401d093",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "vinagre": {
+      "nombre": "Vinagre",
+      "prefijo": "46e4dee0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "vmanzana": {
+      "nombre": "Vinagre de manzana",
+      "prefijo": "f0671f02",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "aceite": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eneldo": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "perejil": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "lechuga": {
+      "nombre": "Lechuga romana",
+      "prefijo": "219fa68f",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "feta": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "gambas": {
+      "nombre": "Gambas",
+      "prefijo": "e5b7ba6b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "vino": {
+      "nombre": "Vino blanco",
+      "prefijo": "41cb2b97",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "mantequilla": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "chile": {
+      "nombre": "Hojuelas de chile (chili flakes)",
+      "prefijo": "2a7ea4dc",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "sal": {
+      "nombre": "Sal",
+      "prefijo": "0adc820b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "pavo": {
+      "nombre": "Pavo picado",
+      "prefijo": "f0204a76",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "calabacin": {
+      "nombre": "Calabacín crudo",
+      "prefijo": "9442d4e9",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "panrallado": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "pimasado": {
+      "nombre": "Pimientos asados en tiras",
+      "prefijo": "3bc9d77b",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "huevo": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "claras": {
+      "nombre": "Claras de huevo",
+      "prefijo": "c9d05c24",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "parmesano": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "harina": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "levadura": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "yogur": {
+      "nombre": "Yogur griego natural (0%)",
+      "prefijo": "7fcfe0b8",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "qcrema": {
+      "nombre": "Queso crema light",
+      "prefijo": "6f64e109",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "salmon": {
+      "nombre": "Salmón ahumado",
+      "prefijo": "de0eb774",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "alcaparras": {
+      "nombre": "Alcaparras",
+      "prefijo": "d641c84f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "pan": {
+      "nombre": "Pan integral",
+      "prefijo": "1948a73a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "qrallado": {
+      "nombre": "Queso rallado",
+      "prefijo": "57641694",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "chia": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "lalmendra": {
+      "nombre": "Leche de almendras (sin azúcar)",
+      "prefijo": "e3012f44",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "stevia": {
+      "nombre": "Edulcorante granulado stevia",
+      "prefijo": "cab90efd",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "kiwi": {
+      "nombre": "Kiwi",
+      "prefijo": "97fdee99",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "mango": {
+      "nombre": "Mango",
+      "prefijo": "4166da6e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "coco": {
+      "nombre": "Coco rallado",
+      "prefijo": "4355406b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "quinoa": {
+      "nombre": "Quinoa",
+      "prefijo": "53587262",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "canela": {
+      "nombre": "Canela Molida Frasco",
+      "prefijo": "71805ea3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "vainilla": {
+      "nombre": "Aroma de vainilla",
+      "prefijo": "563f3423",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "miel": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "platano": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fresas": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "arandanos": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "pepitas": {
+      "nombre": "Semillas de calabaza",
+      "prefijo": "6ca75761",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "garbanzos": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "aguacate": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "azucar": {
+      "nombre": "Azúcar o edulcorante",
+      "prefijo": "c4c40d15",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cottage": {
+      "nombre": "Queso cottage (requesón)",
+      "prefijo": "3059b706",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "lechedes": {
+      "nombre": "Leche desnatada",
+      "prefijo": "88f3975a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Ensalada de pollo a la parrilla estilo mediterráneo",
+      "descripcion": "Brochetas de pollo marinado en limón y orégano sobre ensalada de pepino, tomate, aceitunas y feta.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "pollo",
+          454
+        ],
+        [
+          "limon",
+          38
+        ],
+        [
+          "oregano",
+          2
+        ],
+        [
+          "ajo",
+          3
+        ],
+        [
+          "pepino",
+          160
+        ],
+        [
+          "tomate",
+          190
+        ],
+        [
+          "pimiento",
+          35
+        ],
+        [
+          "cebollar",
+          20
+        ],
+        [
+          "aceituna",
+          30
+        ],
+        [
+          "vinagre",
+          8
+        ],
+        [
+          "aceite",
+          9
+        ],
+        [
+          "eneldo",
+          1
+        ],
+        [
+          "perejil",
+          1
+        ],
+        [
+          "lechuga",
+          140
+        ],
+        [
+          "feta",
+          60
+        ]
+      ],
+      "instrucciones": "1. Corta la pechuga en dados de 2-3 cm y marínala con la mitad del zumo de limón, el orégano, el ajo, sal y pimienta al menos 2-3 horas o toda la noche.\n2. Si usas brochetas de madera, ponlas en remojo 30 minutos.\n3. Mezcla el pepino, el tomate, el pimiento, la cebolla roja, las aceitunas, el vinagre, el resto del limón, el aceite, el eneldo y el perejil. Reserva en la nevera para que se integren los sabores.\n4. Ensarta el pollo en 4 brochetas y cocínalo en una plancha o parrilla bien caliente 10-12 minutos hasta que esté hecho por dentro.\n5. Reparte la lechuga en 4 platos, añade la ensalada, el queso feta desmenuzado y las brochetas.\n6. Sirve con gajos de limón.",
+      "consejos": "Marinar toda la noche mejora mucho el sabor. Sin feta queda apta para lácteos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/mediterranean-chicken-kebab-salad/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 240
+      }
+    },
+    {
+      "nombre": "Gambas al ajillo en papillote",
+      "descripcion": "Gambas con ajo, vino blanco, limón y mantequilla cocinadas en paquetes de papel de aluminio. Listas en 20 minutos.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "gambas",
+          454
+        ],
+        [
+          "ajo",
+          12
+        ],
+        [
+          "aceite",
+          14
+        ],
+        [
+          "vino",
+          60
+        ],
+        [
+          "limon",
+          15
+        ],
+        [
+          "chile",
+          1
+        ],
+        [
+          "mantequilla",
+          28
+        ],
+        [
+          "perejil",
+          10
+        ],
+        [
+          "sal",
+          2
+        ]
+      ],
+      "instrucciones": "1. Mezcla la mitad del ajo rallado con la sal y el aceite en un bol. Añade las gambas, mézclalas y déjalas en la nevera entre 30 y 60 minutos.\n2. Corta 4 hojas de papel de aluminio de unos 40 cm.\n3. Reparte las gambas en el centro de cada hoja (unas 10 por paquete) y añade el ajo laminado, una cucharada de vino, el zumo de limón, una pizca de hojuelas de chile y la mantequilla derretida.\n4. Cierra cada paquete uniendo los lados largos y doblando dos veces los bordes, dejando aire dentro. Sella también los extremos.\n5. Cocina en la parrilla a fuego fuerte 8 minutos, o al horno a 220 °C unos 10 minutos.\n6. Abre con cuidado, espolvorea el perejil y sirve con gajos de limón.",
+      "consejos": "Acompáñalas con pan integral para mojar en la salsa.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/shrimp-scampi-foil-packets/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 224
+      }
+    },
+    {
+      "nombre": "Hamburguesas de pavo con feta y calabacín",
+      "descripcion": "Hamburguesas jugosas de pavo con calabacín rallado y feta, servidas con ensalada griega.",
+      "tiempo_prep_min": 30,
+      "porciones": 5,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "calabacin",
+          113
+        ],
+        [
+          "pavo",
+          454
+        ],
+        [
+          "panrallado",
+          30
+        ],
+        [
+          "ajo",
+          3
+        ],
+        [
+          "cebollar",
+          50
+        ],
+        [
+          "oregano",
+          2
+        ],
+        [
+          "sal",
+          4
+        ],
+        [
+          "feta",
+          38
+        ],
+        [
+          "pepino",
+          200
+        ],
+        [
+          "cherry",
+          110
+        ],
+        [
+          "aceituna",
+          50
+        ],
+        [
+          "pimasado",
+          40
+        ],
+        [
+          "vinagre",
+          10
+        ],
+        [
+          "aceite",
+          5
+        ]
+      ],
+      "instrucciones": "1. Ralla el calabacín y escúrrelo bien con papel de cocina hasta quitarle toda la humedad.\n2. En un bol grande mezcla el pavo, el calabacín, el pan rallado, el ajo, un poco de cebolla rallada, el orégano, la sal y la pimienta. Añade parte del feta y forma 5 hamburguesas no muy gruesas para que se hagan por dentro.\n3. Reserva en la nevera hasta cocinar.\n4. Para la ensalada, mezcla el pepino, el tomate cherry, la cebolla roja restante, las aceitunas, los pimientos asados, el vinagre, el aceite, sal y el resto del feta.\n5. Cocina las hamburguesas en una sartén antiadherente a fuego fuerte con un poco de aceite; baja el fuego y dales la vuelta varias veces hasta que estén doradas y hechas por dentro (o 5 minutos por lado a la parrilla).\n6. Sirve cada hamburguesa con un poco de ensalada.",
+      "consejos": "Escurrir bien el calabacín es lo que evita que se deshagan.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/naked-greek-feta-zucchini-turkey-burgers/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 221
+      }
+    },
+    {
+      "nombre": "Frittata de tomate y calabacín",
+      "descripcion": "Frittata ligera de huevos y claras con cebolla, calabacín y tomate en rodajas, hecha en sartén y horno.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "aceite",
+          9
+        ],
+        [
+          "cebolla",
+          110
+        ],
+        [
+          "calabacin",
+          200
+        ],
+        [
+          "huevo",
+          250
+        ],
+        [
+          "claras",
+          66
+        ],
+        [
+          "parmesano",
+          25
+        ],
+        [
+          "tomate",
+          240
+        ],
+        [
+          "sal",
+          2
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 200 °C.\n2. Calienta el aceite en una sartén de 25 cm a fuego medio-bajo y cocina la cebolla 8-10 minutos hasta que dore ligeramente.\n3. Añade el calabacín, sube el fuego, sazona y cocina 2-3 minutos hasta que se evapore el agua.\n4. Bate los huevos con las claras, el queso rallado, sal y pimienta.\n5. Vierte los huevos sobre las verduras, coloca las rodajas de tomate solapadas por encima y sazona. Cuando los bordes empiecen a cuajar (unos 2 minutos) pasa la sartén al horno.\n6. Hornea 16-18 minutos hasta que esté cuajada. Sirve templada en 4 porciones.",
+      "consejos": "También sirve para desayuno o para llevar en tupper.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/tomato-and-zucchini-frittata/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 172
+      }
+    },
+    {
+      "nombre": "Pan plano con salmón ahumado",
+      "descripcion": "Pan plano casero de yogur griego con queso crema, tomate, salmón ahumado y alcaparras.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "harina",
+          142
+        ],
+        [
+          "levadura",
+          6
+        ],
+        [
+          "sal",
+          2
+        ],
+        [
+          "yogur",
+          245
+        ],
+        [
+          "aceite",
+          19
+        ],
+        [
+          "cebollar",
+          60
+        ],
+        [
+          "qcrema",
+          57
+        ],
+        [
+          "tomate",
+          150
+        ],
+        [
+          "salmon",
+          113
+        ],
+        [
+          "alcaparras",
+          16
+        ],
+        [
+          "eneldo",
+          2
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 230 °C y cubre una bandeja con papel de horno.\n2. Mezcla en un bol la harina, la levadura química y la sal.\n3. Añade el yogur griego y mezcla con un tenedor hasta que quede en migas.\n4. Pasa la masa a una superficie enharinada y amasa unas 20 vueltas hasta que quede ligeramente pegajosa pero sin pegarse a las manos.\n5. Divide en 4 bolas iguales y estíralas en óvalos finos de unos 18-20 cm. Colócalas en la bandeja y pinta con un poco de aceite.\n6. Mezcla la mitad de la cebolla roja en tiras con parte del aceite y repártela por el centro.\n7. Hornea 10-14 minutos hasta que estén doradas y crujientes.\n8. Saca del horno, añade el queso crema en el centro, el tomate, el salmón ahumado, las alcaparras y el eneldo.",
+      "consejos": "Con harina sin gluten se puede hacer apto para celíacos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/smoked-salmon-breakfast-flatbread/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 247
+      }
+    },
+    {
+      "nombre": "Tostadas de claras con tomate y queso gratinado",
+      "descripcion": "Medio muffin integral con claras revueltas, cebolleta, tomate y queso fundido. Desayuno rápido y proteico.",
+      "tiempo_prep_min": 10,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "pan",
+          120
+        ],
+        [
+          "aceite",
+          5
+        ],
+        [
+          "claras",
+          264
+        ],
+        [
+          "cebolleta",
+          30
+        ],
+        [
+          "sal",
+          1
+        ],
+        [
+          "qrallado",
+          56
+        ],
+        [
+          "cherry",
+          75
+        ]
+      ],
+      "instrucciones": "1. Precalienta el grill del horno a máxima potencia.\n2. Abre los muffins integrales, colócalos con el corte hacia arriba en una bandeja y tuéstalos 2 minutos.\n3. Calienta una sartén mediana a fuego medio con el aceite y saltea 3/4 de la cebolleta 2-3 minutos.\n4. Añade las claras, sazona con sal y pimienta y remueve hasta que estén hechas.\n5. Reparte los huevos sobre las tostadas y cubre con los tomates cherry cortados en cuartos, el queso rallado y el resto de la cebolleta.\n6. Gratina 1-1,5 minutos hasta que se funda el queso, sin dejar que se queme.",
+      "consejos": "Se pueden preparar con antelación y recalentar en la tostadora.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/eggs-and-tomato-breakfast-melts/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 160
+      }
+    },
+    {
+      "nombre": "Bol de pudin de chía tropical",
+      "descripcion": "Pudin de chía con yogur griego y leche de almendras, con kiwi, mango y coco tostado.",
+      "tiempo_prep_min": 15,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "chia",
+          40
+        ],
+        [
+          "lalmendra",
+          240
+        ],
+        [
+          "yogur",
+          250
+        ],
+        [
+          "stevia",
+          5
+        ],
+        [
+          "kiwi",
+          75
+        ],
+        [
+          "mango",
+          165
+        ],
+        [
+          "coco",
+          14
+        ]
+      ],
+      "instrucciones": "1. En un frasco o recipiente grande mezcla las semillas de chía, la leche de almendras, el yogur griego y el edulcorante.\n2. Bate bien raspando los lados para integrar toda la chía.\n3. Refrigera al menos 2 horas, o toda la noche.\n4. Mientras tanto, tuesta el coco rallado en una sartén a fuego medio-bajo unos 4 minutos hasta que dore. Deja enfriar.\n5. Reparte el pudin en 2 boles, de aproximadamente 1 taza cada uno.\n6. Cubre con el kiwi en rodajas, el mango en cubos y el coco tostado.",
+      "consejos": "Prepara varios frascos el domingo para toda la semana.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/tropical-chia-pudding-breakfast-bowl-high-protein/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 305
+      }
+    },
+    {
+      "nombre": "Bol de quinoa con frutos rojos",
+      "descripcion": "Quinoa cocida en leche de almendras con canela y vainilla, plátano, fresas, arándanos y semillas de calabaza.",
+      "tiempo_prep_min": 30,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "quinoa",
+          45
+        ],
+        [
+          "lalmendra",
+          180
+        ],
+        [
+          "canela",
+          1
+        ],
+        [
+          "vainilla",
+          3
+        ],
+        [
+          "miel",
+          14
+        ],
+        [
+          "platano",
+          118
+        ],
+        [
+          "fresas",
+          100
+        ],
+        [
+          "arandanos",
+          75
+        ],
+        [
+          "pepitas",
+          10
+        ]
+      ],
+      "instrucciones": "1. En un cazo pequeño calienta 120 ml de la leche de almendras con la canela y la vainilla hasta que hierva. Baja el fuego, añade la quinoa lavada, tapa y cocina a fuego bajo 20-25 minutos hasta que se evapore el líquido.\n2. Esponja la quinoa con un tenedor.\n3. Reparte la quinoa caliente en 2 boles y cubre con el plátano, las fresas, los arándanos y las semillas de calabaza.\n4. Rocía con la miel y añade el resto de la leche templada si quieres.",
+      "consejos": "Si quieres más proteína, añade una cucharada de yogur griego.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/berry-quinoa-breakfast-bowls/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 240
+      }
+    },
+    {
+      "nombre": "Ensalada de garbanzos y aguacate",
+      "descripcion": "Ensalada rápida de lechuga, garbanzos, pepino, tomate cherry y aguacate aliñada con aceite y vinagre.",
+      "tiempo_prep_min": 15,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "lechuga",
+          94
+        ],
+        [
+          "garbanzos",
+          165
+        ],
+        [
+          "pepino",
+          100
+        ],
+        [
+          "cherry",
+          100
+        ],
+        [
+          "aguacate",
+          57
+        ],
+        [
+          "aceite",
+          9
+        ],
+        [
+          "vmanzana",
+          15
+        ],
+        [
+          "sal",
+          1
+        ]
+      ],
+      "instrucciones": "1. Reparte la lechuga troceada, los garbanzos escurridos y enjuagados, el pepino, los tomates cherry cortados por la mitad y el aguacate en láminas en 2 bols.\n2. Sazona con sal y pimienta.\n3. Aliña cada bol con aceite de oliva y vinagre de manzana o zumo de limón.",
+      "consejos": "Añade atún o pollo desmenuzado para subir la proteína.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/chickpea-avocado-salad/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 243
+      }
+    },
+    {
+      "nombre": "Batido proteico de fresas asadas",
+      "descripcion": "Batido de fresas asadas con queso cottage, leche desnatada y chía. Cremoso y saciante.",
+      "tiempo_prep_min": 15,
+      "porciones": 1,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "fresas",
+          255
+        ],
+        [
+          "azucar",
+          6
+        ],
+        [
+          "cottage",
+          75
+        ],
+        [
+          "lechedes",
+          122
+        ],
+        [
+          "chia",
+          4
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 220 °C.\n2. Mezcla las fresas en cuartos con el azúcar en un bol y extiéndelas sobre una bandeja con papel de horno.\n3. Hornea 12-15 minutos, hasta que suelten su jugo pero sigan firmes.\n4. Pasa las fresas con su jugo a la batidora junto con el queso cottage, la leche, la chía y un poco de hielo.\n5. Bate hasta que quede suave y bébelo al momento.",
+      "consejos": "Puedes asar las fresas con antelación y guardarlas en la nevera.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/roasted-strawberry-protein-smoothie-and/",
+        "autor": "Skinnytaste (Gina Homolka)",
+        "kcal_web": 213
+      }
+    }
+  ]
+}
