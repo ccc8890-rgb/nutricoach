@@ -1,6 +1,6 @@
 'use client'
 
-import { Barbell, ChartLineUp, ChatCircleDots, ClipboardText, ForkKnife, ShoppingCart } from '@phosphor-icons/react'
+import { IconoFuerza, IconoDatos, IconoDieta, IconoCheckin, IconoCompra, IconoChat } from '@/components/icons/MarcaIconos'
 import EditorialMasthead from './EditorialMasthead'
 import ProgressInstrument from './ProgressInstrument'
 import TechnicalReadout from './TechnicalReadout'
@@ -21,7 +21,7 @@ export type HoyEditorialProps = {
   onNavigate: (destination: HoyDestination) => void
 }
 
-function Action({ label, icon: Icon, onClick, tile = false }: { label: string; icon: typeof ClipboardText; onClick: () => void; tile?: boolean }) {
+function Action({ label, icon: Icon, onClick, tile = false }: { label: string; icon: React.ElementType; onClick: () => void; tile?: boolean }) {
   return (
     <button type="button" className={`editorial-action ${tile ? 'editorial-action--tile' : ''}`.trim()} onClick={onClick}>
       <Icon size={tile ? 22 : 15} />
@@ -38,23 +38,23 @@ export default function HoyEditorial({ firstName, calories, meals, weeklySession
     {
       id: 'nutrition', index: '01', label: 'Alimentación', title: `${meals} tomas programadas`, meta: `${Math.round(calories)} KCAL`,
       detail: 'Consulta cantidades, ingredientes y alternativas del plan.',
-      action: <Action label="Abrir dieta" icon={ForkKnife} onClick={() => onNavigate('dieta')} />,
+      action: <Action label="Abrir dieta" icon={IconoDieta} onClick={() => onNavigate('dieta')} />,
       active: true,
     },
     {
       id: 'training', index: '02', label: 'Entrenamiento', title: trainingName || 'Recuperación programada', meta: trainingName ? `${weeklySessions} SES / SEM` : 'REST',
       detail: trainingName ? 'Revisa la sesión técnica y registra cada bloque.' : 'Hoy no hay una sesión asignada.',
-      action: trainingName ? <Action label="Abrir entreno" icon={Barbell} onClick={() => onNavigate('entreno')} /> : undefined,
+      action: trainingName ? <Action label="Abrir entreno" icon={IconoFuerza} onClick={() => onNavigate('entreno')} /> : undefined,
     },
     {
       id: 'progress', index: '03', label: 'Seguimiento', title: weight ? `${weight} kg registrados` : 'Registrar referencia', meta: weightDelta == null ? 'BASE' : `${weightDelta > 0 ? '+' : ''}${weightDelta.toFixed(1)} KG`,
       detail: 'Peso, fotografías y evolución en una única lectura.',
-      action: <Action label="Ver progreso" icon={ChartLineUp} onClick={() => onNavigate('progreso')} />,
+      action: <Action label="Ver progreso" icon={IconoDatos} onClick={() => onNavigate('progreso')} />,
     },
     {
       id: 'checkin', index: '04', label: 'Revisión', title: 'Check-in semanal', meta: 'STATUS / OPEN',
       detail: 'Registra adherencia, sensaciones y contexto para tu coach.',
-      action: <Action label="Completar check-in" icon={ClipboardText} onClick={() => onNavigate('checkin')} />,
+      action: <Action label="Completar check-in" icon={IconoCheckin} onClick={() => onNavigate('checkin')} />,
     },
   ]
 
@@ -73,8 +73,8 @@ export default function HoyEditorial({ firstName, calories, meals, weeklySession
       </section>
       <div className="hoy-editorial__section-label"><span>Accesos rápidos</span><samp>TOOLS</samp></div>
       <nav className="hoy-editorial__utilities" aria-label="Accesos rápidos">
-        <Action tile label="Lista de compra" icon={ShoppingCart} onClick={() => onNavigate('compra')} />
-        <Action tile label="Chat con coach" icon={ChatCircleDots} onClick={() => onNavigate('chat')} />
+        <Action tile label="Lista de compra" icon={IconoCompra} onClick={() => onNavigate('compra')} />
+        <Action tile label="Chat con coach" icon={IconoChat} onClick={() => onNavigate('chat')} />
       </nav>
       <div className="hoy-editorial__section-label"><span>Secuencia del día</span><samp>04 UNITS</samp></div>
       <TimelineSequence items={sequence} />

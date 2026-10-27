@@ -9,12 +9,11 @@ import { useReducedMotion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } from '@/lib/cliente/cache-swr'
 import {
-  BookOpenText, ClipboardText, SignOut,
-  ForkKnife, Barbell, Sun, Moon,
+  BookOpenText,
   CaretLeft,
-  ShoppingCart, ChatCircleDots, DeviceMobile,
-  Pulse, BowlFood, PersonSimpleRun, ChartLineUp, SquaresFour, Rows,
+  SquaresFour, Rows,
 } from '@phosphor-icons/react'
+import { IconoHoy, IconoDieta, IconoRecetas, IconoFuerza, IconoDatos, IconoCompra, IconoChat, IconoCheckin, IconoDispositivo, IconoSol, IconoLuna, IconoSalir } from '@/components/icons/MarcaIconos'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
@@ -415,11 +414,11 @@ function PortalClientePageContent() {
   const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '').replace(/,\s*/, ' · ')
 
   const TABS: LiquidDockItem<Tab>[] = [
-    { key: 'hoy',     label: 'Hoy',      icon: Pulse },
-    { key: 'dieta',   label: 'Dieta',    icon: BowlFood },
-    { key: 'recetas', label: 'Recetas',  icon: BookOpenText },
-    { key: 'entreno', label: 'Entreno',  icon: PersonSimpleRun },
-    { key: 'datos',   label: 'Datos',    icon: ChartLineUp },
+    { key: 'hoy',     label: 'Hoy',      icon: IconoHoy },
+    { key: 'dieta',   label: 'Dieta',    icon: IconoDieta },
+    { key: 'recetas', label: 'Recetas',  icon: IconoRecetas },
+    { key: 'entreno', label: 'Entreno',  icon: IconoFuerza },
+    { key: 'datos',   label: 'Datos',    icon: IconoDatos },
   ]
 
   return (
@@ -454,7 +453,7 @@ function PortalClientePageContent() {
               style={{ color: 'var(--text-secondary)' }}
               aria-label="Cambiar tema"
             >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === 'dark' ? <IconoSol size={16} /> : <IconoLuna size={16} />}
             </button>
             <button
               onClick={handleLogout}
@@ -462,7 +461,7 @@ function PortalClientePageContent() {
               style={{ color: 'var(--text-muted)' }}
               aria-label="Cerrar sesión"
             >
-              <SignOut size={16} />
+              <IconoSalir size={16} />
             </button>
           </div>
         </div>
@@ -492,7 +491,7 @@ function PortalClientePageContent() {
                 onNavigate={setTab}
               />
             ) : (
-              <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
+              <EmptyState icon={IconoDieta} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
 
             {codigo && <NotasCoach codigo={codigo} />}
@@ -507,7 +506,7 @@ function PortalClientePageContent() {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <MiPlan codigo={codigo} plan={dieta as any} />
             ) : (
-              <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
+              <EmptyState icon={IconoDieta} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
             <SuplementacionPortal />
           </div>
@@ -519,7 +518,7 @@ function PortalClientePageContent() {
             {entreno ? (
               <EntrenoSubTabs planId={entreno.id} planNombre={entreno.nombre} />
             ) : (
-              <EmptyState icon={Barbell} text="Tu coach aún no ha asignado un plan de entrenamiento" />
+              <EmptyState icon={IconoFuerza} text="Tu coach aún no ha asignado un plan de entrenamiento" />
             )}
           </div>
         )}
@@ -534,7 +533,7 @@ function PortalClientePageContent() {
                 <HistorialCheckins key={checkinKey} codigo={codigo} />
               </>
             ) : (
-              <EmptyState icon={ClipboardText} text="Necesitas tener un plan activo para hacer check-ins" />
+              <EmptyState icon={IconoCheckin} text="Necesitas tener un plan activo para hacer check-ins" />
             )}
           </div>
         )}
@@ -557,7 +556,7 @@ function PortalClientePageContent() {
                 )}
               </div>
             ) : (
-              <EmptyState icon={ClipboardText} text="Aún no hay pesos registrados" />
+              <EmptyState icon={IconoCheckin} text="Aún no hay pesos registrados" />
             )}
 
             {historialPeso.length >= 2 && (
@@ -585,7 +584,7 @@ function PortalClientePageContent() {
             {codigo ? (
               <ListaCompraPortal codigo={codigo} />
             ) : (
-              <EmptyState icon={ShoppingCart} text="Activa un plan de dieta para ver tu lista de la compra" />
+              <EmptyState icon={IconoCompra} text="Activa un plan de dieta para ver tu lista de la compra" />
             )}
           </div>
         )}
@@ -709,7 +708,7 @@ function PortalClientePageContent() {
             {codigo ? (
               <ChatPanel codigo={codigo} />
             ) : (
-              <EmptyState icon={ChatCircleDots} text="Activa un plan para poder escribir a tu coach" />
+              <EmptyState icon={IconoChat} text="Activa un plan para poder escribir a tu coach" />
             )}
           </div>
         )}
@@ -726,7 +725,7 @@ function PortalClientePageContent() {
                 onAjustes={() => setTab('perfil')}
               />
             ) : (
-              <EmptyState icon={DeviceMobile} text="Activa un plan para ver tus datos" />
+              <EmptyState icon={IconoDispositivo} text="Activa un plan para ver tus datos" />
             )}
           </div>
         )}
@@ -737,7 +736,7 @@ function PortalClientePageContent() {
             {cliente ? (
               <AjustesTabs codigo={codigo} clienteId={cliente.id} profile={profile} cliente={cliente} />
             ) : (
-              <EmptyState icon={DeviceMobile} text="Activa un plan para ver tus ajustes" />
+              <EmptyState icon={IconoDispositivo} text="Activa un plan para ver tus ajustes" />
             )}
           </div>
         )}

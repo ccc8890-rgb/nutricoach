@@ -2,7 +2,8 @@
 import { textoKm } from '@/lib/entrenos/km-sesion'
 import { useEffect, useMemo, useState } from 'react'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
-import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, PersonSimpleRun, Warning } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, CircleDashed, CircleNotch, Warning } from '@phosphor-icons/react'
+import { IconoFuerza, IconoCarrera } from '@/components/icons/MarcaIconos'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import CompartirSesion from './CompartirSesion'
@@ -223,7 +224,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                                 <span className="training-calendar__day-icons">
                                   {sesionesDe(dia).map((x, _, todas) => {
                                     const tam = todas.length >= 3 ? 11 : 14
-                                    return x.tipo_sesion === 'carrera' ? <PersonSimpleRun key={x.id} size={tam} weight="regular" /> : <Barbell key={x.id} size={tam} weight="regular" />
+                                    return x.tipo_sesion === 'carrera' ? <IconoCarrera key={x.id} size={tam} weight="regular" /> : <IconoFuerza key={x.id} size={tam} weight="regular" />
                                   })}
                                 </span>
                               ) : modo === 'semana' ? (
@@ -255,8 +256,8 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                   <div className="mt-2 flex items-center gap-3">
                     <div className="training-calendar__session-icon">
                       {sesion.tipo_sesion === 'carrera'
-                        ? <PersonSimpleRun size={19} weight="regular" />
-                        : <Barbell size={19} weight="regular" />}
+                        ? <IconoCarrera size={19} weight="regular" />
+                        : <IconoFuerza size={19} weight="regular" />}
                     </div>
                     <div className="min-w-0 flex-1">
                       {sesionesDia.length > 1 && (

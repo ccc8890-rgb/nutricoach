@@ -1,0 +1,150 @@
+import type { CSSProperties, ReactNode } from 'react'
+
+// Set propio de la app: rejilla de 24 px, trazo fino con esquinas secas y un
+// punto de acento por icono (el mismo punto luminoso del icono de la PWA).
+// Acepta las mismas props que los iconos de Phosphor que sustituye.
+export type MarcaIconoProps = {
+  size?: number | string
+  weight?: 'fill' | 'regular' | 'bold' | 'duotone' | 'light' | 'thin'
+  className?: string
+  style?: CSSProperties
+}
+
+function Base({ size = 24, weight = 'regular', className, style, children }: MarcaIconoProps & { children: ReactNode }) {
+  const trazo = weight === 'bold' ? 2 : weight === 'light' || weight === 'thin' ? 1.2 : 1.5
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={trazo}
+      strokeLinecap="square"
+      strokeLinejoin="miter"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  )
+}
+
+const Punto = ({ cx, cy }: { cx: number; cy: number }) => <circle cx={cx} cy={cy} r={1.6} fill="currentColor" stroke="none" />
+
+/** Hoy: amanecer sobre la línea del día, el punto es el sol. */
+export const IconoHoy = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 17h18" />
+    <path d="M6.5 17a5.5 5.5 0 0 1 11 0" />
+    <path d="M12 3.5v3M4.5 8l2 2M19.5 8l-2 2" />
+    <Punto cx={12} cy={17} />
+  </Base>
+)
+
+/** Dieta: cuenco con un bocado encima. */
+export const IconoDieta = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 11h18" />
+    <path d="M4.5 11a7.5 7.5 0 0 0 15 0" />
+    <path d="M9 20.5h6" />
+    <Punto cx={12} cy={6.5} />
+  </Base>
+)
+
+/** Recetas: libro abierto de lomo recto. */
+export const IconoRecetas = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M12 6.5V19M12 6.5 10.5 5H3v12.5h7.5L12 19l1.5-1.5H21V5h-7.5z" />
+    <Punto cx={17} cy={11} />
+  </Base>
+)
+
+/** Fuerza: barra con discos planos, el punto marca el centro de la barra. */
+export const IconoFuerza = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M2 12h20" />
+    <rect x={4.5} y={6.5} width={3} height={11} />
+    <rect x={16.5} y={6.5} width={3} height={11} />
+    <Punto cx={12} cy={12} />
+  </Base>
+)
+
+/** Carrera: pista de atletismo con el corredor como punto. */
+export const IconoCarrera = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M8 6h8a6 6 0 0 1 0 12H8a6 6 0 0 1 0-12z" />
+    <path d="M8 10h8a2 2 0 0 1 0 4H8a2 2 0 0 1 0-4z" />
+    <Punto cx={12} cy={8} />
+  </Base>
+)
+
+/** Datos: ejes y línea que termina en un punto. */
+export const IconoDatos = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M4 4v16h16" />
+    <path d="M7.5 15 11 11l3 2.5 3.5-5" />
+    <Punto cx={17.5} cy={8.5} />
+  </Base>
+)
+
+/** Compra: cesta de asas rectas. */
+export const IconoCompra = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 9h18l-2 11H5z" />
+    <path d="M8 9l3-5M16 9l-3-5" />
+    <Punto cx={12} cy={14.5} />
+  </Base>
+)
+
+/** Chat: bocadillo cuadrado. */
+export const IconoChat = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 4h18v13H10l-4 3.5V17H3z" />
+    <Punto cx={12} cy={10.5} />
+  </Base>
+)
+
+/** Check-in: tablilla con dos líneas marcadas. */
+export const IconoCheckin = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M5 4h14v17H5z" />
+    <path d="M9 2.5h6v3H9z" />
+    <path d="M12 11h4M12 16h4" />
+    <Punto cx={8.5} cy={11} />
+    <Punto cx={8.5} cy={16} />
+  </Base>
+)
+
+/** Dispositivo: móvil con el punto como botón. */
+export const IconoDispositivo = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M7 2.5h10v19H7z" />
+    <Punto cx={12} cy={18} />
+  </Base>
+)
+
+/** Tema claro. */
+export const IconoSol = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <circle cx={12} cy={12} r={3.5} />
+    <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2 2M16.4 16.4l2 2M18.4 5.6l-2 2M7.6 16.4l-2 2" />
+  </Base>
+)
+
+/** Tema oscuro. */
+export const IconoLuna = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+    <Punto cx={16.5} cy={6.5} />
+  </Base>
+)
+
+/** Salir: puerta con flecha. */
+export const IconoSalir = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M10 4H4v16h6" />
+    <path d="M9 12h11M16 8l4 4-4 4" />
+  </Base>
+)

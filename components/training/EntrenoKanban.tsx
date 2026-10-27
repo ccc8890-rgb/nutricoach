@@ -15,7 +15,8 @@ import {
     type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Barbell, CaretDown, CheckCircle, PersonSimpleRun, SpinnerGap } from '@phosphor-icons/react'
+import { CaretDown, CheckCircle, SpinnerGap } from '@phosphor-icons/react'
+import { IconoFuerza, IconoCarrera } from '@/components/icons/MarcaIconos'
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import { textoKm } from '@/lib/entrenos/km-sesion'
@@ -60,7 +61,7 @@ function actualizarDiaEnCache(datos: SemanaEntrenoCache | undefined, sesionId: s
 }
 
 function iconoTipo(tipo: SesionKanban['tipo_sesion'], size = 14) {
-    return tipo === 'carrera' ? <PersonSimpleRun size={size} /> : <Barbell size={size} />
+    return tipo === 'carrera' ? <IconoCarrera size={size} /> : <IconoFuerza size={size} />
 }
 
 function SesionCard({ sesion, orden, seleccionada, moviendo, soloLectura, onSeleccionar, onAbrirMover }: {
