@@ -11,6 +11,8 @@ Carlos quería iconos menos genéricos («los que usan otras apps hechas con IA�
 
 Motivo: a Carlos le gustó mucho la barra lateral del coach con Hugeicons (casa, clientes, película, tablilla, libro, bolsa). En el portal cliente, Hugeicons le pareció redondeado y «poco serio» frente al estilo editorial (Sora, rótulos mono, esquinas casi rectas), así que ahí se prueba la familia de esquinas secas. **Es una prueba: Carlos aún no la ha visto en el iPhone.**
 
+**Excepción común a las dos familias (27-10):** Dieta (tenedor y cuchillo finos, Phosphor Light) y Entreno/pesas (barra horizontal fina, Phosphor Thin) se usan igual en el coach (en `hugeicons-core.tsx`: `H_rice_bowl_01`, `H_restaurant_02`, `H_dumbbell_01`, y en `MarcaIconos.tsx`: `IconoDieta`, `IconoFuerza`) y en el portal (en `sharp-core.tsx`). Para devolver el coach a Hugeicons puro en esos tres, regenerar `hugeicons-core.tsx` con `gen.py` y restaurar los dos de `MarcaIconos.tsx` desde el commit anterior (`git show 703c9831:nutricoach/components/icons/MarcaIconos.tsx`).
+
 ## Cómo cambiar de familia (una línea)
 
 Cada superficie tiene un fichero «interruptor» de una línea.
