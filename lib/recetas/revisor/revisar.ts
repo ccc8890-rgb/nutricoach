@@ -68,12 +68,14 @@ export async function revisarFicha(db: Db, recetaId: string, o: Opciones = {}): 
 
   const { sistema, usuario } = construirPrompt(ficha, nota)
   let tEntrada = 0, tSalida = 0, modelo = '', revision: RevisionAgente | null = null, motivo = ''
+  const fallos: string[] = []
   for (let intento = 0; intento < 2 && !revision; intento++) {
     try {
-      const r = await llamarIA('revision_receta', { sistema, usuario, json: true, maxTokens: 2500, presupuestoMs: 120_000 }, { adaptador: o.adaptador, env: o.env })
+      const r = await llamarIA('revision_receta', { sistema, usuario, json: true, maxTokens: 3000, presupuestoMs: 120_000, esfuerzo: 'low' }, { adaptador: o.adaptador, env: o.env })
       tEntrada += r.uso.entrada ?? 0
       tSalida += r.uso.salida ?? 0
       modelo = `${r.proveedor}:${r.modelo}`
+      for (const i of r.intentos) if (!i.ok) fallos.push(`${i.modelo}: ${i.error ?? 'fallo'}`)
       const v = validarRevision(extraerJsonPlan(r.texto))
       if (v.ok) revision = v.revision; else motivo = v.motivo
     } catch (e) {
@@ -94,7 +96,7 @@ export async function revisarFicha(db: Db, recetaId: string, o: Opciones = {}): 
   const despues = await cargarFicha(db, recetaId)
   const hashFinal = despues ? hashFicha(despues, nota) : hash
   await db.from('recetas_revision_eventos').insert({
-    receta_id: recetaId, tipo: 'agente', actor: 'agente', veredicto: revision.veredicto, confianza: revision.confianza, resumen: revision.resumen,
+    receta_id: recetaId, tipo: 'agente', actor: 'agente', nota: fallos.length ? `Intentos fallidos: ${fallos.join(' | ')}`.slice(0, 400) : null, veredicto: revision.veredicto, confianza: revision.confianza, resumen: revision.resumen,
     hallazgos: revision.hallazgos, correcciones: revision.correcciones, aplicadas, modelo, tokens_entrada: tEntrada, tokens_salida: tSalida, hash_ficha: hashFinal,
   })
   return { estado: 'revisada', veredicto: revision.veredicto, aplicadas, tokens: tEntrada + tSalida }

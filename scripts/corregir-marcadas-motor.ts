@@ -126,7 +126,7 @@ Devuelve JSON: {"nombre_estandar":"nombre genérico en español, singular, sin m
   if (!APLICA) return { al: { id: 'simulado', nombre: nombreFinal, es_generico: true }, creado: true }
   const { data, error } = await db.from('alimentos').insert({
     nombre: nombreFinal[0].toUpperCase() + nombreFinal.slice(1), categoria: out.categoria || 'Otros', calorias: k, proteinas: pr, carbohidratos: ch, grasas: gr, fibra: fi,
-    custom: false, es_generico: true, es_comestible: true, fuente: 'coach', fuente_nutricional: 'deepseek',
+    custom: false, es_generico: true, es_comestible: true, fuente: 'ia', fuente_nutricional: 'deepseek', // 'ia' = estimación: se distingue de lo curado por el coach
   }).select('id, nombre, es_generico').single()
   if (error || !data) return null
   return { al: data as Al, creado: true }

@@ -70,6 +70,9 @@ const rev = (extra: Partial<RevisionAgente> = {}): RevisionAgente => ({ tipo_con
   assert.ok(p.sistema.includes('JSON'))
   assert.ok(p.usuario.includes('Pollo al curry con arroz') && p.usuario.includes('Mira el curry: parece mucho'))
   assert.ok(!p.usuario.includes('notas_coach'))
+  // Tras la medición con fichas reales: ve cómo la usa el planificador, y se le pide brevedad (los hallazgos largos duplicaban el gasto)
+  assert.ok(p.usuario.includes('tipo_receta'))
+  assert.ok(p.sistema.includes('Máximo 6 hallazgos') && p.sistema.includes('NO incluyas hallazgos'))
 }
 
 // ── transiciones de fase (las que Carlos puede hacer desde la API) ──
