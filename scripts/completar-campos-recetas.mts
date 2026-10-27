@@ -16,7 +16,8 @@ const env = Object.fromEntries(fs.readFileSync('.env.local','utf8').split('\n').
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
 const APLICA = process.argv.includes('--aplica')
 const norm=(s:string|null|undefined)=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
-const LISTA_CAT=['Desayuno','Comida','Cena','Merienda','Snack','Postre','Salsa','Acompañamiento']
+// 'Elaboración' es la categoría de masas, salsas, fondos… (tipo_contenido='elaboracion'): sin ella en la lista oficial, esta pasada la machacaba con el tipo de plato
+const LISTA_CAT=['Desayuno','Comida','Cena','Merienda','Snack','Postre','Salsa','Acompañamiento','Elaboración']
 const TIPOS=['Desayuno','Comida','Cena','Merienda','Snack','Postre','Salsa','Acompañamiento']
 const TAG_LEGADO:Record<string,string>={Ensaladas:'Ensalada',Burritos:'Burrito','Fajitas/Tacos':'Tacos',Mealpreps:'Meal prep','Bowls fruta':'Bowl',Tostas:'Tostada',Gofres:'Gofre',Entrante:'Entrante'}
 

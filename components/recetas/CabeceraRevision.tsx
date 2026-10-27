@@ -5,9 +5,9 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 
-type Cuentas = { porRevisar: number | null }
+type Cuentas = { nueva: number | null; en_agente: number | null; segunda: number | null }
 
-type Vista = { href: string; label: string; clave?: keyof Cuentas; activa: (pathname: string, tarea: string | null) => boolean }
+type Vista = { href: string; label: string; clave?: keyof Cuentas; activa: (pathname: string, fase: string) => boolean }
 
 const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
   {
@@ -16,8 +16,12 @@ const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
   },
   {
     titulo: 'Revisar',
-    // Una sola cola: reportadas, fotos y calidad son filtros dentro de ella, no listas aparte
-    vistas: [{ href: '/recetas/revisar', label: 'Por revisar', clave: 'porRevisar', activa: p => p === '/recetas/revisar' }],
+    // Circuito: Carlos revisa lo nuevo → el agente lo revisa → Carlos hace la 2ª revisión. Reportadas, fotos y calidad son filtros dentro de cada lista.
+    vistas: [
+      { href: '/recetas/revisar?fase=nueva', label: 'Por revisar', clave: 'nueva', activa: (p, f) => p === '/recetas/revisar' && f === 'nueva' },
+      { href: '/recetas/revisar?fase=en_agente', label: 'Con el agente', clave: 'en_agente', activa: (p, f) => p === '/recetas/revisar' && f === 'en_agente' },
+      { href: '/recetas/revisar?fase=segunda', label: '2ª revisión', clave: 'segunda', activa: (p, f) => p === '/recetas/revisar' && f === 'segunda' },
+    ],
   },
   {
     titulo: 'Ampliar',
@@ -33,20 +37,21 @@ const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
  */
 export default function CabeceraRevision() {
   const pathname = usePathname()
-  const tarea = useSearchParams().get('tarea')
-  const [cuentas, setCuentas] = useState<Cuentas>({ porRevisar: null })
+  const faseUrl = useSearchParams().get('fase')
+  const fase = faseUrl === 'en_agente' || faseUrl === 'segunda' ? faseUrl : 'nueva'
+  const [cuentas, setCuentas] = useState<Cuentas>({ nueva: null, en_agente: null, segunda: null })
 
   useEffect(() => {
     let vivo = true
     const cargar = () => {
       fetch('/api/recetas/revisar?tarea=cola&page=1&pageSize=1', { cache: 'no-store' })
-        .then(r => r.json()).then(j => { if (vivo && j.counts) setCuentas({ porRevisar: j.counts.cola ?? 0 }) }).catch(() => null)
+        .then(r => r.json()).then(j => { if (vivo && j.counts?.fases) setCuentas({ nueva: j.counts.fases.nueva ?? 0, en_agente: j.counts.fases.en_agente ?? 0, segunda: j.counts.fases.segunda ?? 0 }) }).catch(() => null)
     }
     cargar()
     const alVolver = () => { if (document.visibilityState === 'visible') cargar() }
     document.addEventListener('visibilitychange', alVolver)
     return () => { vivo = false; document.removeEventListener('visibilitychange', alVolver) }
-  }, [pathname, tarea])
+  }, [pathname, fase])
 
   return (
     <div className="coach-review-header border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
@@ -56,7 +61,7 @@ export default function CabeceraRevision() {
             <span className="px-3 pt-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{g.titulo}</span>
             <div className="flex gap-1">
               {g.vistas.map(v => {
-                const activa = v.activa(pathname, tarea)
+                const activa = v.activa(pathname, fase)
                 const n = v.clave ? cuentas[v.clave] : null
                 return (
                   <Link key={v.href} href={v.href} className="-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-medium transition-colors" style={{ borderColor: activa ? 'var(--primary)' : 'transparent', color: activa ? 'var(--text)' : 'var(--text-muted)' }}>

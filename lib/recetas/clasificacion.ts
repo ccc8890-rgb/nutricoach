@@ -50,7 +50,7 @@ const PASTAS = set('pasta', 'noquis', 'noodles', 'tallarines', 'espaguetis', 'ma
 const HUEVOS = set('huevo', 'huevos', 'tortilla', 'revuelto')
 const DESAYUNOS = set('avena', 'gachas', 'porridge', 'overnight', 'yogur', 'tortita', 'tortitas', 'pancake', 'pancakes', 'crepe', 'crepes', 'muffin', 'muffins', 'granola', 'batido', 'smoothie', 'gofre', 'gofres', 'waffle', 'cereales', 'bol')
 const PESCADOS = set('pescado', 'salmon', 'atun', 'merluza', 'bacalao', 'gambas', 'dorada', 'lubina', 'sardinas', 'pulpo', 'calamar')
-const CARNES = set('pollo', 'ternera', 'cerdo', 'carne', 'beef', 'chicken', 'pork', 'cordero', 'filete', 'carrillera', 'carrilleras', 'pavo', 'butifarra')
+const CARNES = set('pollo', 'ternera', 'cerdo', 'carne', 'beef', 'chicken', 'pork', 'cordero', 'filete', 'carrillera', 'carrilleras', 'pavo', 'butifarra', 'costilla', 'costillas', 'chuleta', 'chuletas', 'lomo', 'solomillo', 'entrecot', 'albondigas', 'pechuga', 'muslo', 'muslos', 'conejo', 'pato', 'cochinillo')
 const VERDURAS = set('ensalada', 'verdura', 'verduras', 'calabacin', 'berenjena', 'brocoli', 'coliflor', 'calabaza', 'zanahoria', 'espinacas', 'champinones')
 const ENTRANTES = set('croqueta', 'croquetas', 'bunuelo', 'bunuelos', 'palitos', 'nachos')
 const TAG_A_FAMILIA: Record<string, FamiliaPlato> = {
@@ -58,23 +58,32 @@ const TAG_A_FAMILIA: Record<string, FamiliaPlato> = {
   ensalada: 'Verduras y ensaladas', bowl: 'Bocadillos y bowls', wrap: 'Bocadillos y bowls', sandwich: 'Bocadillos y bowls', tostada: 'Bocadillos y bowls',
 }
 
-export function familiaPlato(r: EntradaPlato): FamiliaPlato | null {
-  const p = palabras(r.nombre)
+// Reglas por prioridad sobre un conjunto de palabras (sin tener en cuenta el orden)
+function familiaPorPalabras(p: string[], r: EntradaPlato): FamiliaPlato | null {
   const tiene = (s: Set<string>) => p.some(w => s.has(w))
   const cat = (r.categoria || '').toLowerCase()
-  if (cat === 'postre' || tiene(POSTRES)) return 'Postres'
+  if (tiene(POSTRES)) return 'Postres'
   if (tiene(SOPAS) || p.some((w, i) => w === 'crema' && p[i + 1] === 'de')) return 'Sopas y cremas'
   if (tiene(BOCADILLOS)) return 'Bocadillos y bowls'
   if (tiene(ARROCES)) return 'Arroces y cereales'
   if (tiene(PASTAS)) return 'Pastas'
   if (tiene(HUEVOS)) return 'Huevos'
   if (tiene(DESAYUNOS)) return 'Desayunos y meriendas'
-  if (r.tipo_receta === 'guarnicion' || p.includes('pure')) return 'Guarniciones'
+  if (r.tipo_receta === 'guarnicion' || p[0] === 'pure') return 'Guarniciones'
   if (tiene(PESCADOS)) return 'Pescados'
   if (tiene(CARNES)) return 'Carnes'
   if (cat === 'entrante' || tiene(ENTRANTES)) return 'Entrantes'
   if (tiene(VERDURAS)) return 'Verduras y ensaladas'
-  for (const t of r.tags ?? []) { const f = TAG_A_FAMILIA[t.toLowerCase()]; if (f) return f }
+  return null
+}
+
+/** Manda lo principal del nombre (sus tres primeras palabras): «Costilla con salsa…, puré de maíz» es carne, no guarnición. */
+export function familiaPlato(r: EntradaPlato): FamiliaPlato | null {
+  const p = palabras(r.nombre)
+  if ((r.categoria || '').toLowerCase() === 'postre') return 'Postres'
+  const f = familiaPorPalabras(p.slice(0, 3), r) ?? familiaPorPalabras(p, r)
+  if (f) return f
+  for (const t of r.tags ?? []) { const x = TAG_A_FAMILIA[t.toLowerCase()]; if (x) return x }
   return null
 }
 

@@ -2,6 +2,13 @@ export const TAREAS_REVISION = ['pendientes', 'corregir', 'nuevas_hoy', 'bloqueo
 
 export type TareaRevision = (typeof TAREAS_REVISION)[number]
 
+// Circuito de revisión: Carlos (nuevas) → agente → Carlos (2ª revisión)
+export const FASES_REVISION = ['nueva', 'en_agente', 'segunda'] as const
+export type FaseRevision = (typeof FASES_REVISION)[number]
+export function normalizarFase(value: string | null): FaseRevision | null {
+  return FASES_REVISION.includes(value as FaseRevision) ? value as FaseRevision : null
+}
+
 export type QualityIssues = {
   bloqueantes?: string[] | null
   avisos?: string[] | null

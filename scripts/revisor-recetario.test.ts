@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { validarRevision, correccionesAplicables, hashFicha, transicionPermitida, type FichaParaRevisar, type RevisionAgente } from '../lib/recetas/revisor/esquema'
 import { construirPrompt } from '../lib/recetas/revisor/prompt'
+import { normalizarFase } from '../lib/recetas/revision'
 import { FAMILIAS_PLATO, FAMILIAS_ELABORACION } from '../lib/recetas-constants'
 
 const ficha = (extra: Partial<FichaParaRevisar> = {}): FichaParaRevisar => ({
@@ -80,5 +81,12 @@ assert.equal(transicionPermitida('nueva', 'segunda').ok, false)       // solo el
 assert.equal(transicionPermitida('en_agente', 'segunda').ok, false)
 assert.equal(transicionPermitida('en_agente', 'en_agente').ok, false)
 assert.equal(transicionPermitida('nueva', 'nueva').ok, false)
+
+// ── fase de la URL ──
+assert.equal(normalizarFase('nueva'), 'nueva')
+assert.equal(normalizarFase('en_agente'), 'en_agente')
+assert.equal(normalizarFase('segunda'), 'segunda')
+assert.equal(normalizarFase(null), null)
+assert.equal(normalizarFase('xx'), null)
 
 console.log('revisor-recetario.test OK')

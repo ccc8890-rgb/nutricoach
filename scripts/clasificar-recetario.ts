@@ -10,6 +10,8 @@ import { familiaElaboracion, familiaPlato } from '../lib/recetas/clasificacion'
 const env = Object.fromEntries(fs.readFileSync('.env.local', 'utf8').split('\n').filter(l => l.includes('=') && !l.startsWith('#')).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, '')] }))
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 const apply = process.argv.includes('--apply')
+// --rehacer-familias: vuelve a calcular la familia de los PLATOS en revisión (tras mejorar las reglas); las aprobadas no se tocan
+const rehacer = process.argv.includes('--rehacer-familias')
 // --elaboraciones="Nombre A|Nombre B": decisión de Carlos, fichas aprobadas que se pasan a elaboración (por nombre exacto)
 const forzadas = new Set((process.argv.find(a => a.startsWith('--elaboraciones='))?.slice('--elaboraciones='.length) ?? '').split('|').map(x => x.trim()).filter(Boolean))
 
@@ -35,9 +37,9 @@ async function main() {
       if (f.tipo_contenido !== 'elaboracion' || f.familia !== familia || f.categoria !== 'Elaboración' || f.tipo_receta !== 'salsa_base') cambios.push({ fila: f, nuevo, motivo: esElab ? 'elaboración marcada' : forzadas.has(f.nombre) ? 'decidida por Carlos' : 'en revisión: parece elaboración' })
     } else {
       if (elab && f.estado === 'aprobada') candidatas.push(f)
-      if (!f.familia) {
+      if (!f.familia || (rehacer && f.estado === 'en_revision')) {
         const fam = familiaPlato(f)
-        if (fam) cambios.push({ fila: f, nuevo: { familia: fam }, motivo: 'familia de plato' })
+        if (fam && fam !== f.familia) cambios.push({ fila: f, nuevo: { familia: fam }, motivo: 'familia de plato' })
       }
     }
   }

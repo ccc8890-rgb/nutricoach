@@ -44,6 +44,11 @@ assert.equal(familiaPlato({ nombre: 'Yogur Griego con Frutos Rojos y Semillas' }
 assert.equal(familiaPlato({ nombre: 'Muffins de Avena y Pepitas de Chocolate' }), 'Desayunos y meriendas')
 assert.equal(familiaPlato({ nombre: 'Palitos de Zanahoria con Hummus Casero' }), 'Entrantes')
 assert.equal(familiaPlato({ nombre: 'Zanahoria Baby con Feta' }), 'Verduras y ensaladas')
+// Manda lo principal del nombre (sus primeras palabras), no un acompañamiento que aparece después
+assert.equal(familiaPlato({ nombre: 'Lasaña abierta de tomates cherry confitados, crema de pistacho, burrata, bacon crujiente y calabacín a la plancha' }), 'Pastas')
+assert.equal(familiaPlato({ nombre: 'Costilla con salsa barbacoa, puré de maíz y cebolla encurtida' }), 'Carnes')
+assert.equal(familiaPlato({ nombre: 'Salmón con puré de patata' }), 'Pescados')
+assert.equal(familiaPlato({ nombre: 'Puré de zanahoria con mantequilla avellana', tipo_receta: 'guarnicion' }), 'Guarniciones')
 assert.equal(familiaElaboracion('Buñuelo relleno crujiente'), null)
 assert.equal(familiaPlato({ nombre: 'Plato misterioso', tags: ['Pollo'] }), 'Carnes')       // las etiquetas deciden si el nombre no
 for (const f of ['Carnes', 'Arroces y cereales', 'Desayunos y meriendas', 'Guarniciones', 'Postres', 'Bocadillos y bowls', 'Pastas', 'Huevos', 'Sopas y cremas', 'Verduras y ensaladas', 'Pescados', 'Entrantes']) assert.ok((FAMILIAS_PLATO as readonly string[]).includes(f), f)
@@ -97,5 +102,10 @@ assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: 'Todos', fam: 'Carnes'
 assert.deepEqual(filtrosRecetarioDeUrl({ tipo: 'todo', cat: 'Todos', fam: 'Carnes', buscando: true }), { tipo: 'todo', categoria: 'Todos', familia: null })
 assert.deepEqual(filtrosRecetarioDeUrl({ tipo: null, cat: 'Salsa', fam: 'Fondos y caldos', buscando: false }), { tipo: 'elaboraciones', categoria: 'Todos', familia: 'Fondos y caldos' })
 assert.deepEqual([...CATEGORIAS_PLATO], ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre'])
+
+// Guarda: la pasada automática de 6 h (completar-campos-recetas) normaliza `categoria` a su lista oficial; si «Elaboración» falta en ella,
+// machaca la categoría de todas las elaboraciones con el tipo de plato (ocurrió el 27-10-2026)
+import { readFileSync } from 'node:fs'
+assert.match(readFileSync(new URL('./completar-campos-recetas.mts', import.meta.url), 'utf8'), /const LISTA_CAT=\[[^\]]*'Elaboración'/)
 
 console.log('clasificacion.test OK')

@@ -3,7 +3,7 @@ import { verificarRecetasCompletas } from '@/lib/recetas/verificacion-auto'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 import { marcarFotoRevisada } from '@/lib/recetas/imagen-revision'
-import { inicioFinDiaMadridUtc, normalizarTareaRevision, type TareaRevision } from '@/lib/recetas/revision'
+import { inicioFinDiaMadridUtc, normalizarFase, normalizarTareaRevision, type TareaRevision } from '@/lib/recetas/revision'
 import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 export const dynamic = 'force-dynamic'
@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
     const pageSize = Math.min(Math.max(parseInt(searchParams.get('pageSize') || '50'), 1), 100)
     const tarea = normalizarTareaRevision(searchParams.get('tarea'))
     const filtros = filtrosTexto(searchParams)
+    // Circuito de revisión: nuevas (sin fase) · con el agente · 2ª revisión. Sin parámetro, no se filtra por fase.
+    const fase = normalizarFase(searchParams.get('fase'))
     const offset = (page - 1) * pageSize
     const { inicio, fin } = inicioFinDiaMadridUtc()
     const supabase = createServiceSupabase()
@@ -65,8 +67,11 @@ export async function GET(request: NextRequest) {
       ilike: (column: string, value: string) => T
       or: (filters: string) => T
       eq: (column: string, value: string) => T
+      is: (column: string, value: null) => T
     }>(query: T): T => {
       let result = query
+      if (fase === 'nueva') result = result.is('fase_revision', null)
+      else if (fase) result = result.eq('fase_revision', fase)
       if (filtros.q) result = aplicarBusquedaNombre(result, filtros.q)
       if (filtros.nivel) result = result.eq('nivel_fit', filtros.nivel)
       if (filtros.uso) result = result.eq('tipo_uso', filtros.uso)
@@ -77,7 +82,7 @@ export async function GET(request: NextRequest) {
     let query = supabase.from('recetas').select(`
       id, nombre, categoria, tipo_contenido, familia, tipo_plato, porciones,
       kcal, proteinas, carbohidratos, grasas,
-      imagen_url, imagen_estado, estado, score_calidad, nivel_fit, tipo_uso, apta_cliente, tags, notas_coach,
+      imagen_url, imagen_estado, estado, fase_revision, score_calidad, nivel_fit, tipo_uso, apta_cliente, tags, notas_coach,
       quality_estado_sugerido, quality_issues, quality_actualizado_at, created_at
     `, { count: 'exact' })
     query = aplicarAvanzados(aplicarTarea(query, tarea))
@@ -109,7 +114,20 @@ export async function GET(request: NextRequest) {
     const { data: aprobables, error: aprobablesError } = await aprobablesQuery.order('created_at', { ascending: false }).limit(250)
     if (aprobablesError) return NextResponse.json({ error: aprobablesError.message }, { status: 500 })
 
+    const contarFase = async (f: 'nueva' | 'en_agente' | 'segunda') => {
+      const q = supabase.from('recetas').select('id', { count: 'exact', head: true }).in('estado', ['en_revision', 'borrador'])
+      const { count: total } = await (f === 'nueva' ? q.is('fase_revision', null) : q.eq('fase_revision', f))
+      return total ?? 0
+    }
+    const [fNueva, fAgente, fSegunda] = await Promise.all([contarFase('nueva'), contarFase('en_agente'), contarFase('segunda')])
+
     const recetaIds = (recetas ?? []).map(r => r.id)
+    // Último veredicto del agente de cada ficha de la página (una sola consulta)
+    const agentePorReceta = new Map<string, { veredicto: string | null; confianza: number | null; resumen: string | null; hallazgos: unknown; aplicadas: unknown; created_at: string }>()
+    if (recetaIds.length > 0) {
+      const { data: evs } = await supabase.from('recetas_revision_eventos').select('receta_id, veredicto, confianza, resumen, hallazgos, aplicadas, created_at').eq('tipo', 'agente').in('receta_id', recetaIds).order('created_at', { ascending: false })
+      for (const e of evs ?? []) if (!agentePorReceta.has(e.receta_id)) agentePorReceta.set(e.receta_id, e)
+    }
     let ingredientesCount: Record<string, number> = {}
     if (recetaIds.length > 0) {
       const { data: ingredientes } = await supabase.from('receta_ingredientes').select('receta_id, id').in('receta_id', recetaIds)
@@ -120,12 +138,12 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      data: (recetas ?? []).map(r => ({ ...r, num_ingredientes: ingredientesCount[r.id] ?? 0 })),
+      data: (recetas ?? []).map(r => ({ ...r, num_ingredientes: ingredientesCount[r.id] ?? 0, agente: agentePorReceta.get(r.id) ?? null })),
       total: count ?? 0,
       page,
       pageSize,
       totalPages: count ? Math.ceil(count / pageSize) : 0,
-      counts: { pendientes, corregir, nuevas_hoy: nuevasHoy, bloqueos, sin_foto: sinFoto, todas, cola, listas, foto },
+      counts: { pendientes, corregir, nuevas_hoy: nuevasHoy, bloqueos, sin_foto: sinFoto, todas, cola, listas, foto, fases: { nueva: fNueva, en_agente: fAgente, segunda: fSegunda } },
       aprobablesIds: (aprobables ?? []).map(r => r.id),
     })
   } catch (err) {
