@@ -33,18 +33,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const franja = url.searchParams.get('franja') as SlotComida | null
   if (franja) {
     // Selector de recetas para una franja: verificadas primero, con búsqueda opcional
-    let q = admin.from('recetas')
-      .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tipo_receta, tiempo_prep_min, verificacion, contenido_estado, familia, proteinas_principales, tipo_contenido')
-      .eq('estado', 'aprobada').gt('kcal', 0).limit(1000)
     const texto = url.searchParams.get('q')?.trim()
-    if (texto) q = aplicarBusquedaNombre(q, texto)
     // Modo postres: recetas dulces o de picoteo para añadir como complemento de una comida
     const soloPostres = url.searchParams.get('postres') === '1'
     // Modo platos: cualquier receta aprobada (guarniciones primero) para sumar varios platos a una misma comida
     const todas = url.searchParams.get('todas') === '1'
-    if (soloPostres) q = q.or('tipo_plato.eq.Postre,tipo_receta.eq.snack_postre')
-    const { data, error } = await q
-    if (error) return NextResponse.json({ error: 'Error cargando recetas' }, { status: 500 })
+    const columnas = 'id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tipo_receta, tiempo_prep_min, verificacion, contenido_estado, familia, tipo_contenido'
+    const consulta = (extra: string) => {
+      let q = admin.from('recetas').select(columnas + extra).eq('estado', 'aprobada').gt('kcal', 0).limit(1000)
+      if (texto) q = aplicarBusquedaNombre(q, texto)
+      if (soloPostres) q = q.or('tipo_plato.eq.Postre,tipo_receta.eq.snack_postre')
+      return q
+    }
+    // `proteinas_principales` viene de una migración: si aún no está aplicada, el selector funciona sin esos botones
+    let res = await consulta(', proteinas_principales')
+    if (res.error) res = await consulta('')
+    if (res.error) return NextResponse.json({ error: 'Error cargando recetas' }, { status: 500 })
+    const data = res.data as unknown as (Record<string, unknown> & { id: string; kcal: number; proteinas: number; carbohidratos: number; grasas: number; tipo_plato: string | null; tipo_receta: string | null; tipo_contenido: string | null; verificacion: string | null; proteinas_principales?: string[] | null })[] | null
     // Las cantidades se reescalan al asignar, así que importa la PROPORCIÓN de macros, no las kcal
     const kcalObj = plan.kcal_objetivo || 0
     const reparto = (v: number | null) => (kcalObj > 0 && v ? v / kcalObj : null)
@@ -72,7 +77,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     for (const u of usadas ?? []) usos.set(u.receta_id, (usos.get(u.receta_id) ?? 0) + 1)
     // Variedad del plan: cuántas comidas hay de cada proteína principal
     const idsUsados = [...usos.keys()]
-    const { data: protUsadas } = idsUsados.length ? await admin.from('recetas').select('id, proteinas_principales').in('id', idsUsados) : { data: [] as { id: string; proteinas_principales: string[] | null }[] }
+    const { data: protUsadas } = idsUsados.length ? await admin.from('recetas').select('id, proteinas_principales').in('id', idsUsados) : { data: [] as { id: string; proteinas_principales: string[] | null }[] } // sin la migración devuelve error y data null: variedad queda vacía
     const variedad: Record<string, number> = {}
     for (const r of protUsadas ?? []) for (const p of r.proteinas_principales ?? []) variedad[p] = (variedad[p] ?? 0) + (usos.get(r.id) ?? 0)
     const favoritas = new Set((favs ?? []).map(f => f.receta_id))
