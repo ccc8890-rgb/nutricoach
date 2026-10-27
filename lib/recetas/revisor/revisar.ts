@@ -8,7 +8,7 @@ import { correccionesAplicables, hashFicha, validarRevision, type FichaParaRevis
 
 export const ETIQUETA_REVISADA = 'Revisada por el agente'
 export const LIMITE_POR_EJECUCION = 10
-export const TOKENS_POR_DIA = 600_000
+export const TOKENS_POR_DIA = 150_000
 
 type Db = SupabaseClient
 type Opciones = { adaptador?: Adaptador; env?: Record<string, string | undefined>; forzar?: boolean }
