@@ -77,7 +77,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     for (const u of usadas ?? []) usos.set(u.receta_id, (usos.get(u.receta_id) ?? 0) + 1)
     // Variedad del plan: cuántas comidas hay de cada proteína principal
     const idsUsados = [...usos.keys()]
-    const { data: protUsadas } = idsUsados.length ? await admin.from('recetas').select('id, proteinas_principales').in('id', idsUsados) : { data: [] as { id: string; proteinas_principales: string[] | null }[] } // sin la migración devuelve error y data null: variedad queda vacía
+    const { data: protUsadas } = idsUsados.length ? await admin.from('recetas').select('id, proteinas_principales').eq('estado', 'aprobada').in('id', idsUsados) : { data: [] as { id: string; proteinas_principales: string[] | null }[] } // sin la migración devuelve error y data null: variedad queda vacía
     const variedad: Record<string, number> = {}
     for (const r of protUsadas ?? []) for (const p of r.proteinas_principales ?? []) variedad[p] = (variedad[p] ?? 0) + (usos.get(r.id) ?? 0)
     const favoritas = new Set((favs ?? []).map(f => f.receta_id))
