@@ -1,0 +1,1655 @@
+{
+  "lote": "web-cenas-mediterraneandish-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "37936737": {
+      "nombre": "Rábano",
+      "prefijo": "37936737",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "53587262": {
+      "nombre": "Quinoa",
+      "prefijo": "53587262",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c14d168a": {
+      "nombre": "Orégano seco",
+      "prefijo": "c14d168a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6f687582": {
+      "nombre": "Tomates cherry pera kumato",
+      "prefijo": "6f687582",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "057baedf": {
+      "nombre": "Pimiento",
+      "prefijo": "057baedf",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5b7e9a7d": {
+      "nombre": "Champiñones",
+      "prefijo": "5b7e9a7d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d0a93278": {
+      "nombre": "Tomillo Frasco",
+      "prefijo": "d0a93278",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "efdb0f46": {
+      "nombre": "Aceite de oliva virgen extra",
+      "prefijo": "efdb0f46",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "31108cb4": {
+      "nombre": "Chalotas",
+      "prefijo": "31108cb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d641c84f": {
+      "nombre": "Alcaparras",
+      "prefijo": "d641c84f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a92d72d6": {
+      "nombre": "Lenguado limpiar",
+      "prefijo": "a92d72d6",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eb5939be": {
+      "nombre": "Caldo de Pollo 100%",
+      "prefijo": "eb5939be",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "3285d3b1": {
+      "nombre": "Pasta",
+      "prefijo": "3285d3b1",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fea7cbe9": {
+      "nombre": "Perejil",
+      "prefijo": "fea7cbe9",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e152c2f2": {
+      "nombre": "Berenjena",
+      "prefijo": "e152c2f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1bea6eb5": {
+      "nombre": "Rigatoni Paquete",
+      "prefijo": "1bea6eb5",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "ecc7f788": {
+      "nombre": "Carne picada de ternera",
+      "prefijo": "ecc7f788",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "081fbb40": {
+      "nombre": "Nuez moscada molida",
+      "prefijo": "081fbb40",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c8e0f469": {
+      "nombre": "Romero seco",
+      "prefijo": "c8e0f469",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1390b7a4": {
+      "nombre": "Tomate triturado",
+      "prefijo": "1390b7a4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "84fa9879": {
+      "nombre": "Queso Mozzarella Fresca",
+      "prefijo": "84fa9879",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "49230ad1": {
+      "nombre": "Albahaca fresca",
+      "prefijo": "49230ad1",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "219fa68f": {
+      "nombre": "Lechuga romana",
+      "prefijo": "219fa68f",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ba39ef20": {
+      "nombre": "Aceituna con Hueso Kalamata",
+      "prefijo": "ba39ef20",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e4fdfad8": {
+      "nombre": "Pimentón dulce",
+      "prefijo": "e4fdfad8",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ff64faff": {
+      "nombre": "Lentejas",
+      "prefijo": "ff64faff",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b223775": {
+      "nombre": "Patata",
+      "prefijo": "0b223775",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "94ba864e": {
+      "nombre": "Cúrcuma",
+      "prefijo": "94ba864e",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "afa334c2": {
+      "nombre": "Pimienta Cayena Molida Tarro",
+      "prefijo": "afa334c2",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "22c82082": {
+      "nombre": "Pan",
+      "prefijo": "22c82082",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "88959dfb": {
+      "nombre": "Comino",
+      "prefijo": "88959dfb",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5a54b72c": {
+      "nombre": "Repollo",
+      "prefijo": "5a54b72c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e601abd9": {
+      "nombre": "Vinagre de vino blanco",
+      "prefijo": "e601abd9",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "3ad56bfc": {
+      "nombre": "Queso ricotta mezcla",
+      "prefijo": "3ad56bfc",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "382a08c2": {
+      "nombre": "Queso mozzarella",
+      "prefijo": "382a08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "75fc5465": {
+      "nombre": "Salsa Pesto albahaca",
+      "prefijo": "75fc5465",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "34f7b619": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "c5d97775": {
+      "nombre": "Pesto bajo en grasa",
+      "prefijo": "c5d97775",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdba3b82": {
+      "nombre": "Pimientos rojos asados",
+      "prefijo": "bdba3b82",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9a1002ce": {
+      "nombre": "Aceitunas verdes hueso",
+      "prefijo": "9a1002ce",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bfa6bc51": {
+      "nombre": "Lenguado rubio",
+      "prefijo": "bfa6bc51",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "41cb2b97": {
+      "nombre": "Vino blanco",
+      "prefijo": "41cb2b97",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2f6b30f6": {
+      "nombre": "Azafran",
+      "prefijo": "2f6b30f6",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "89e73ca5": {
+      "nombre": "Caldo de Marisco Paella y Fideuá con Sofrito",
+      "prefijo": "89e73ca5",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Pescado",
+        "Crustáceos",
+        "Moluscos"
+      ],
+      "origen": "pescado"
+    },
+    "e5b7ba6b": {
+      "nombre": "Gambas",
+      "prefijo": "e5b7ba6b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "73d75f5e": {
+      "nombre": "Linguine",
+      "prefijo": "73d75f5e",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "5be0dbc7": {
+      "nombre": "Almejas",
+      "prefijo": "5be0dbc7",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "origen": "marisco"
+    },
+    "92c4eb12": {
+      "nombre": "Mejillones",
+      "prefijo": "92c4eb12",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "origen": "marisco"
+    },
+    "49b53001": {
+      "nombre": "Calamar",
+      "prefijo": "49b53001",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "origen": "marisco"
+    },
+    "0b6a6c68": {
+      "nombre": "Guindillas picantes",
+      "prefijo": "0b6a6c68",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c125af5a": {
+      "nombre": "Agua",
+      "prefijo": "c125af5a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f0671f02": {
+      "nombre": "Vinagre de manzana",
+      "prefijo": "f0671f02",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2c6f1573": {
+      "nombre": "Azúcar",
+      "prefijo": "2c6f1573",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34d9eb86": {
+      "nombre": "Muslo de pollo sin piel",
+      "prefijo": "34d9eb86",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "cfd9ca77": {
+      "nombre": "Calabaza",
+      "prefijo": "cfd9ca77",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "39bdbb82": {
+      "nombre": "Almendra laminada",
+      "prefijo": "39bdbb82",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "212aa875": {
+      "nombre": "Pimienta",
+      "prefijo": "212aa875",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Salmón al horno con verduras y feta",
+      "descripcion": "Salmón al horno con tomates cherry, pimiento, champiñones y feta, aromatizado con orégano, sumac y comino. Una cena mediterránea completa y rápida.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c14d168a",
+          2
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "6f687582",
+          150
+        ],
+        [
+          "057baedf",
+          150
+        ],
+        [
+          "5b7e9a7d",
+          140
+        ],
+        [
+          "bdc11c5a",
+          18
+        ],
+        [
+          "6187036a",
+          155
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "d0a93278",
+          5
+        ],
+        [
+          "efdb0f46",
+          28
+        ],
+        [
+          "2fd7e358",
+          680
+        ],
+        [
+          "60ad001e",
+          150
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 220 °C. En un bol pequeño, mezclar el orégano, el sumac y el comino.\n2. Colocar los tomates cherry, los champiñones, el pimiento y los ajos pelados en una bandeja de horno grande. Espolvorear con media cucharada de la mezcla de especias (reservar el resto para el pescado), una pizca de sal y pimienta. Rociar con 1-2 cucharadas de aceite de oliva, mezclar y extender en una sola capa.\n3. Encajar trozos de feta entre las verduras y colocar unas ramitas de tomillo fresco por encima. Hornear hasta que las verduras empiecen a ablandarse, unos 10 minutos.\n4. Mientras tanto, secar el salmón con papel de cocina y sazonar por ambos lados con sal, pimienta y el resto de la mezcla de especias.\n5. Sacar la bandeja del horno con cuidado y colocar el salmón entre las verduras y el feta. Rociar el salmón con un poco de aceite de oliva y cubrir la bandeja con papel de aluminio para retener el vapor. Volver a hornear en la rejilla central hasta que el pescado esté hecho y se desmenuce con facilidad, unos 10 minutos.\n6. Sacar del horno, retirar el papel de aluminio con cuidado y exprimir inmediatamente zumo de limón sobre el pescado. Servir con gajos de limón al lado.",
+      "consejos": "Cubrir la bandeja con papel de aluminio durante el horneado del salmón ayuda a que quede jugoso y se cocine de forma uniforme.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/baked-salmon-with-vegetables/",
+        "autor": null,
+        "kcal_web": 377.2
+      }
+    },
+    {
+      "nombre": "Filetes de lenguado al horno a la mediterránea",
+      "descripcion": "Lenguado al horno con un aliño de lima, aceite de oliva, mantequilla, chalota, ajo y alcaparras, aromatizado con comino y eneldo fresco. Una cena ligera y rápida.",
+      "tiempo_prep_min": 30,
+      "porciones": 6,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "65756599",
+          60
+        ],
+        [
+          "bf392211",
+          108
+        ],
+        [
+          "668919bc",
+          42
+        ],
+        [
+          "31108cb4",
+          80
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "d641c84f",
+          30
+        ],
+        [
+          "3350c934",
+          2
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "a92d72d6",
+          680
+        ],
+        [
+          "82930270",
+          60
+        ],
+        [
+          "2fedb06b",
+          20
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C.\n2. En un bol pequeño, bate el zumo de lima, el aceite de oliva y la mantequilla derretida con una pizca de sal sazonada. Añade la chalota, el ajo y las alcaparras y mezcla.\n3. En otro bol pequeño, mezcla la sal sazonada, la pimienta, el comino y el ajo en polvo. Sazona los filetes de lenguado por ambos lados con esta mezcla.\n4. Coloca los filetes en una bandeja de horno ligeramente engrasada. Cúbrelos con la mezcla de lima y mantequilla preparada. Reparte por encima las mitades de cebolleta y las rodajas de lima.\n5. Hornea a 190 °C durante 10-15 minutos, sin pasarse de cocción.\n6. Saca del horno y espolvorea el eneldo fresco picado por encima.\n7. Sirve acompañado de arroz blanco o patatas griegas asadas y una ensalada mediterránea sencilla.",
+      "consejos": "No sobrecuezas el pescado: con 10-12 minutos suele bastar para que quede jugoso.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/baked-sole-fillet-mediterranean-way/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 350
+      }
+    },
+    {
+      "nombre": "Sopa de pastina con verduras",
+      "descripcion": "Una sopa reconfortante de caldo de pollo con verduras trituradas y pasta pequeña, terminada con perejil y queso parmesano.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "eb5939be",
+          1440
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "4dacb910",
+          120
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "b983723d",
+          50
+        ],
+        [
+          "3285d3b1",
+          180
+        ],
+        [
+          "fea7cbe9",
+          15
+        ]
+      ],
+      "instrucciones": "1. En una olla grande con tapa, combina el caldo de pollo, la cebolla, las zanahorias, el apio, la corteza de parmesano y una pizca de sal. Lleva a ebullición a fuego alto, luego reduce el fuego y tapa. Cocina a fuego lento hasta que las verduras estén muy tiernas, de 20 a 30 minutos.\n2. Retira y desecha la corteza de parmesano. Con una espumadera, transfiere las verduras a un procesador de alimentos. Añade un par de cucharones de caldo y tritura hasta que quede completamente suave. Vuelve a incorporar el puré de verduras a la olla y remueve para combinar.\n3. Sube el fuego a alto y lleva el caldo a ebullición. Añade la pastina y cocina según las instrucciones del paquete hasta que esté tierna. Retira la sopa del fuego.\n4. Prueba y añade más sal si es necesario. Sirve la sopa en cuencos y termina con perejil picado y parmesano rallado. Sirve caliente.",
+      "consejos": "Si no tienes corteza de parmesano, puedes omitirla, pero aporta un sabor profundo al caldo.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/pastina-soup/",
+        "autor": null,
+        "kcal_web": 307.8
+      }
+    },
+    {
+      "nombre": "Rigatoni al horno con carne y berenjena",
+      "descripcion": "Una cazuela de rigatoni al horno con salsa de carne, berenjena asada, tomate y mozzarella fundida. Un plato completo y sabroso ideal para compartir.",
+      "tiempo_prep_min": 65,
+      "porciones": 12,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e152c2f2",
+          454
+        ],
+        [
+          "1bea6eb5",
+          454
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "ecc7f788",
+          454
+        ],
+        [
+          "21a40eb5",
+          2
+        ],
+        [
+          "081fbb40",
+          2
+        ],
+        [
+          "c8e0f469",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "1390b7a4",
+          737
+        ],
+        [
+          "1d197cae",
+          425
+        ],
+        [
+          "7f40a393",
+          150
+        ],
+        [
+          "84fa9879",
+          198
+        ],
+        [
+          "49230ad1",
+          10
+        ]
+      ],
+      "instrucciones": "1. Coloca las láminas de berenjena en una bandeja, espolvorea con sal y deja reposar 20 minutos. Seca con papel de cocina y retira el exceso de sal.\n2. Pincela o rocía la berenjena con aceite de oliva y ásala en el horno en modo grill unos 4-5 minutos, vigilando, hasta que se ablande y se dore. Retira y reserva; cambia el horno a modo horneado.\n3. Cuece la pasta en abundante agua con sal según las instrucciones del paquete hasta que esté al dente (unos 11 minutos). Escurre reservando un poco del agua de cocción.\n4. Mientras se cuece la pasta, calienta 2 cucharadas de aceite de oliva en una sartén grande y honda. Pocha la cebolla a fuego medio-alto unos 3 minutos, removiendo. Añade el ajo y cocina 1 minuto más. Incorpora la carne y las especias, salpimenta y desmenuza con una cuchara de madera hasta que la carne esté bien cocida y dorada (7-10 minutos). Añade el tomate triturado y la salsa de tomate, lleva a ebullición y deja cocer a fuego lento unos 15 minutos. Prueba y ajusta de sal.\n5. Precalienta el horno a 190 °C con una rejilla en el centro.\n6. En una fuente de horno profunda de 35 x 25 x 7 cm, extiende una capa fina de salsa de carne. Añade la mitad de la pasta, coloca encima la berenjena asada y la mitad de la salsa de carne. Añade el resto de la pasta y cubre con la salsa restante. Por último, coloca las rodajas de tomate y de mozzarella por encima.\n7. Hornea en la rejilla central 20-25 minutos. Si es necesario, gratina brevemente hasta que la superficie coja color y la pasta se dore en algunos puntos.",
+      "consejos": "Deja reposar la cazuela 5 minutos antes de servir para que la salsa asiente y sea más fácil cortarla en porciones.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/baked-rigatoni-with-tomatoes-and-eggplant/",
+        "autor": null,
+        "kcal_web": 293
+      }
+    },
+    {
+      "nombre": "Ensalada griega de salmón",
+      "descripcion": "Una ensalada fresca de inspiración griega con salmón al horno, verduras crujientes, aceitunas y feta, aliñada con una vinagreta de limón y menta.",
+      "tiempo_prep_min": 17,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2fd7e358",
+          454
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "c14d168a",
+          3
+        ],
+        [
+          "219fa68f",
+          227
+        ],
+        [
+          "6f687582",
+          283
+        ],
+        [
+          "057baedf",
+          150
+        ],
+        [
+          "2e8d5d64",
+          200
+        ],
+        [
+          "31108cb4",
+          80
+        ],
+        [
+          "ba39ef20",
+          50
+        ],
+        [
+          "6187036a",
+          100
+        ],
+        [
+          "efdb0f46",
+          108
+        ],
+        [
+          "60ad001e",
+          200
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "c63a423f",
+          7
+        ],
+        [
+          "e4fdfad8",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 220 °C con la rejilla en el centro.\n2. Seca el salmón con papel de cocina y sazónalo por ambos lados con sal, pimienta y orégano seco. Colócalo en una bandeja de horno ligeramente engrasada y pincela la superficie con aceite de oliva virgen extra.\n3. Hornea el salmón durante 8-12 minutos, hasta que esté hecho y se desmenuce con facilidad. Mientras tanto, prepara la ensalada y la vinagreta.\n4. En un bol grande, mezcla la lechuga, los tomates, el pimiento, el pepino, la chalota y las aceitunas kalamata (sin añadir el feta todavía).\n5. Para la vinagreta, en el vaso pequeño de un robot de cocina, añade el aceite de oliva, el zumo de limón, el ajo, la menta fresca, el orégano y el pimentón. Añade una pizca de sal y pimienta y tritura hasta que quede bien integrado.\n6. Vierte aproximadamente la mitad de la vinagreta sobre la ensalada y mezcla. Añade el feta en bloques por encima. Reserva el resto de la vinagreta para aliñar el salmón.\n7. Reparte la ensalada en 4 boles, coloca encima un filete de salmón por ración y rocía con la vinagreta restante.",
+      "consejos": "Si el salmón es grueso, comprueba el punto a los 8 minutos para que no se seque.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/greek-style-salmon-salad/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 474.3
+      }
+    },
+    {
+      "nombre": "Guiso de lentejas con verduras",
+      "descripcion": "Un guiso completo de lentejas verdes con verduras, tomate y especias cálidas, terminado con perejil y limón. Ideal como plato único reconfortante.",
+      "tiempo_prep_min": 40,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ff64faff",
+          288
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "4dacb910",
+          100
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "0b223775",
+          150
+        ],
+        [
+          "bdc11c5a",
+          14
+        ],
+        [
+          "f8586302",
+          150
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "94ba864e",
+          3
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "afa334c2",
+          1
+        ],
+        [
+          "1390b7a4",
+          794
+        ],
+        [
+          "59163485",
+          60
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "22c82082",
+          180
+        ]
+      ],
+      "instrucciones": "1. Lavar las lentejas y dejarlas en remojo en un bol con agua unos 10 minutos. Escurrir bien.\n2. En una olla grande a fuego medio-alto, calentar 2 cucharadas de aceite de oliva. Añadir la cebolla, la zanahoria, el apio y la patata picados y cocinar 4-5 minutos, removiendo con frecuencia.\n3. Añadir el ajo y el calabacín y saltear otros 5 minutos, removiendo.\n4. Incorporar las lentejas, la sal, la pimienta, el cilantro, el comino, la cúrcuma, la canela y la cayena. Mezclar y añadir el tomate triturado y 2 ½ tazas de agua.\n5. Llevar a ebullición durante 5 minutos, bajar el fuego, tapar y cocer a fuego lento unos 20 minutos hasta que las verduras estén tiernas y las lentejas cocidas, removiendo de vez en cuando y añadiendo agua si es necesario.\n6. Retirar del fuego y mezclar el perejil picado y el zumo de limón. Servir caliente con un chorrito de aceite de oliva y pan.",
+      "consejos": "Añade el zumo de limón al final para conservar su aroma y ajusta el agua según la textura deseada.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/vegan-lentil-soup-recipe/",
+        "autor": null,
+        "kcal_web": 247.4
+      }
+    },
+    {
+      "nombre": "Salteado de ternera y col",
+      "descripcion": "Un salteado rápido y sabroso de carne picada de ternera con col, zanahoria y especias aromáticas, ideal para una comida completa.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "ecc7f788",
+          454
+        ],
+        [
+          "88959dfb",
+          2
+        ],
+        [
+          "31f12840",
+          1
+        ],
+        [
+          "21a40eb5",
+          0.5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "5a54b72c",
+          500
+        ],
+        [
+          "4dacb910",
+          180
+        ],
+        [
+          "e601abd9",
+          5
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "fea7cbe9",
+          15
+        ]
+      ],
+      "instrucciones": "1. Pelar y cortar la cebolla por la mitad. Picar finamente una mitad y reservar para la carne. Cortar en láminas finas la otra mitad y reservar por separado.\n2. En una sartén grande y pesada con tapa, calentar 2 cucharadas de aceite de oliva a fuego medio-alto hasta que brille. Añadir la cebolla picada y cocinar de 3 a 5 minutos, removiendo de vez en cuando, hasta que esté blanda y aromática pero sin dorarse. Añadir el ajo y cocinar 30 segundos más.\n3. Añadir la carne picada y desmenuzarla con una cuchara de madera. Cocinar, removiendo de vez en cuando, hasta que esté completamente dorada (unos 7-10 minutos). Escurrir el exceso de agua o grasa si lo hay, y sazonar con la mitad del comino, el baharat, el cilantro, el pimentón y una pizca generosa de sal y pimienta negra. Pasar la carne cocida a un plato y reservar.\n4. Volver a poner la sartén al fuego y calentar 2 cucharadas de aceite de oliva a fuego medio-alto hasta que brille. Añadir la cebolla en láminas, la col rallada, las zanahorias, el comino restante y una pizca generosa de sal y pimienta. Remover para mezclar.\n5. Tapar la sartén y cocinar al vapor de 3 a 5 minutos para que la col suelte su agua y se ablande rápidamente. Destapar y continuar cocinando, removiendo de vez en cuando, hasta que las verduras estén tiernas y la col caramelizada en algunos puntos, unos 15 minutos.\n6. Devolver la carne dorada a la sartén y mezclar. Cocinar 1-2 minutos, solo hasta que la carne esté caliente. Retirar del fuego y añadir el vinagre, la cebolleta y el perejil. Probar y terminar con un chorrito final de aceite de oliva si se desea.",
+      "consejos": "Sirve este salteado con arroz integral o pan de pita para completar el plato.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/ground-beef-and-cabbage-skillet/",
+        "autor": null,
+        "kcal_web": 418.5
+      }
+    },
+    {
+      "nombre": "Rollitos de berenjena rellenos de ricotta",
+      "descripcion": "Láminas de berenjena asadas y enrolladas con un relleno cremoso de ricotta, mozzarella, parmesano y pesto, gratinadas con salsa de tomate.",
+      "tiempo_prep_min": 58,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e152c2f2",
+          900
+        ],
+        [
+          "1d197cae",
+          480
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "3ad56bfc",
+          250
+        ],
+        [
+          "382a08c2",
+          60
+        ],
+        [
+          "b983723d",
+          15
+        ],
+        [
+          "75fc5465",
+          30
+        ],
+        [
+          "59163485",
+          60
+        ],
+        [
+          "efdb0f46",
+          28
+        ]
+      ],
+      "instrucciones": "1. Cortar las berenjenas en láminas longitudinales de 0,5 cm de grosor (unas 12 láminas).\n2. Espolvorear las láminas con sal y dejarlas sobre papel de cocina 20 minutos; secar, aclarar con agua y volver a secar.\n3. Precalentar el horno a 190 °C.\n4. Pincelar una bandeja con aceite de oliva, colocar las láminas en una capa, pincelar la superficie con más aceite y hornear unos 8 minutos hasta que estén blandas y se puedan enrollar. Sacar y dejar templar (mantener el horno encendido).\n5. Mientras tanto, mezclar en un bol los huevos batidos, la ricotta, la mozzarella, el parmesano, el pesto y el perejil picado.\n6. Extender 180 ml de salsa de tomate en el fondo de una fuente de horno de 24 x 33 cm.\n7. Poner unos 30 g de relleno en un extremo de cada lámina, extender y enrollar apretando; colocar los rollitos en la fuente.\n8. Cubrir con el resto de la salsa de tomate, un poco más de pesto y mozzarella espolvoreada; hornear 30 minutos hasta que estén tiernos y bien cocidos.\n9. Sacar del horno y dejar reposar unos 10 minutos antes de servir.",
+      "consejos": "Escurre bien la ricotta si tiene suero para que el relleno quede más firme y no suelte líquido al hornear.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/eggplant-rollatini-recipe/",
+        "autor": null,
+        "kcal_web": 193
+      }
+    },
+    {
+      "nombre": "Salmón al pesto con costra crujiente de pan rallado",
+      "descripcion": "Filetes de salmón cubiertos de pesto y una costra crujiente de pan rallado, horneados y servidos con un aliño de pesto y limón. Una cena rápida y sabrosa.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2fd7e358",
+          454
+        ],
+        [
+          "34f7b619",
+          60
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "c5d97775",
+          60
+        ],
+        [
+          "12a8ab46",
+          10
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 200 °C. Forra una bandeja de horno con papel de aluminio y métela dentro del horno mientras se precalienta. Seca bien los filetes de salmón con papel de cocina.\n2. En un bol pequeño, mezcla el pan rallado con 1 cucharada (14 g) de aceite de oliva hasta que se distribuya bien.\n3. Saca la bandeja caliente del horno y rocía el papel de aluminio con un poco de aceite de oliva. Coloca los filetes de salmón con la piel hacia abajo. Con un pincel de cocina o el dorso de una cuchara, extiende 3 cucharadas (45 g) de pesto en una capa uniforme sobre el salmón.\n4. Reparte el pan rallado sobre los filetes, presionando ligeramente para que quede bien adherido.\n5. Hornea durante 8-10 minutos, hasta que los filetes estén firmes y apenas hechos por dentro y el pan rallado esté tostado y ligeramente dorado.\n6. Mientras se hornea el salmón, bate en un bol pequeño la cucharada restante de pesto (15 g) con la cucharada restante de aceite de oliva (14 g). Sazona con el zumo de limón y una pizca de sal.\n7. Cuando el salmón se separe fácilmente con un tenedor, sácalo del horno y pásalo a una fuente o a platos individuales. Rocía con la salsa de pesto y limón y sirve.",
+      "consejos": "Si usas pan rallado sin gluten, comprueba que el pesto también lo sea para mantener la receta apta para celíacos.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/pesto-salmon/",
+        "autor": null,
+        "kcal_web": 311.1
+      }
+    },
+    {
+      "nombre": "Lenguado relleno de tomate, pimiento asado y aceitunas",
+      "descripcion": "Filetes de lenguado enrollados con un relleno de tomate, pimiento asado y aceitunas, horneados con un caldo de vino blanco y azafrán. Un plato ligero y mediterráneo.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "31108cb4",
+          60
+        ],
+        [
+          "a92874a5",
+          110
+        ],
+        [
+          "bdba3b82",
+          75
+        ],
+        [
+          "9a1002ce",
+          35
+        ],
+        [
+          "2fedb06b",
+          3
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bfa6bc51",
+          680
+        ],
+        [
+          "eb5939be",
+          60
+        ],
+        [
+          "41cb2b97",
+          60
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "2f6b30f6",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C con la rejilla en el centro.\n2. Calentar el aceite de oliva en una sartén a fuego medio-alto. Añadir la chalota, los tomates cherry y el pimiento asado y cocinar unos 5 minutos, removiendo de vez en cuando, hasta que los tomates empiecen a reventar y la chalota esté blanda. Retirar del fuego y mezclar las aceitunas y el eneldo fresco. Salpimentar al gusto.\n3. Extender los filetes de lenguado en una superficie limpia y salpimentarlos por ambos lados. Poner 3-4 cucharadas del relleno sobre cada filete (sobrará relleno). Enrollar cada filete alrededor del relleno y colocarlo con la unión hacia abajo en una fuente de horno de 23x23 cm o 28x18 cm.\n4. Añadir a la fuente el caldo de pollo, el vino blanco, el ajo y el azafrán. Hornear 15-20 minutos o hasta que el pescado se desmenuce y esté hecho por dentro.\n5. Servir el lenguado relleno con el relleno sobrante, rociar con la salsa de la fuente y adornar con más eneldo fresco picado.",
+      "consejos": "Reparte el relleno sobrante por encima al servir para aprovechar todo el sabor de la salsa.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/stuffed-flounder/",
+        "autor": null,
+        "kcal_web": 191.9
+      }
+    },
+    {
+      "nombre": "Linguine con gambas al vino blanco",
+      "descripcion": "Pasta linguine con gambas pochadas en una salsa ligera de vino blanco, ajo, limón y caldo de marisco. Un plato mediterráneo rápido y lleno de sabor.",
+      "tiempo_prep_min": 40,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "41cb2b97",
+          120
+        ],
+        [
+          "89e73ca5",
+          180
+        ],
+        [
+          "60ad001e",
+          60
+        ],
+        [
+          "e5b7ba6b",
+          454
+        ],
+        [
+          "73d75f5e",
+          454
+        ],
+        [
+          "59163485",
+          12
+        ]
+      ],
+      "instrucciones": "1. Poner a hervir agua en una olla grande. Cuando hierva, añadir 2 cucharaditas de sal.\n2. Mientras tanto, en una sartén amplia, calentar el aceite de oliva con el ajo a fuego medio-bajo y cocinar removiendo unos 3 minutos, hasta que el ajo esté tierno y aromático. Añadir los copos de guindilla y remover.\n3. Subir el fuego a medio-alto, verter el vino blanco y dejar que burbujee 3-4 minutos hasta reducir ligeramente. Añadir 180 ml de caldo de marisco y cocer a fuego lento otros 3-4 minutos. Sazonar con 1/2 cucharadita de sal y seguir cociendo 1 minuto más.\n4. Cocer la pasta en el agua hirviendo con sal según las instrucciones del paquete, hasta que esté muy al dente. Reservar una taza del agua de cocción antes de escurrir.\n5. Mientras se cuece la pasta, añadir las gambas a la sartén con el caldo y pocharlas a fuego medio 2 minutos por cada lado. Añadir la ralladura y el zumo de limón, remover y cocinar 1 minuto más, hasta que las gambas estén rosadas y hechas.\n6. Pasar las gambas a un bol y tapar para mantenerlas calientes. Subir el fuego de la sartén a medio-alto y cocer la salsa 1-2 minutos más hasta que espese ligeramente, manteniéndola caldosa.\n7. Pasar la pasta escurrida a la sartén y remover con pinzas o tenedor de pasta durante 3-4 minutos, hasta que esté al dente y bien impregnada de salsa. Si es necesario, añadir 60 ml más de caldo de marisco o un poco del agua de cocción reservada. Incorporar 2 cucharadas de perejil picado y mezclar.\n8. Repartir la pasta en cuencos, colocar las gambas encima y espolvorear con el perejil restante. Servir.",
+      "consejos": "Reserva siempre agua de cocción de la pasta para ajustar la salsa si espesa demasiado.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/shrimp-linguine/",
+        "autor": null,
+        "kcal_web": 416.2
+      }
+    },
+    {
+      "nombre": "Ensalada de marisco a la italiana",
+      "descripcion": "Una refrescante ensalada fría de almejas, mejillones, gambas y calamar marinados en una vinagreta de limón y aceite de oliva, con verduras encurtidas.",
+      "tiempo_prep_min": 190,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "41cb2b97",
+          120
+        ],
+        [
+          "5be0dbc7",
+          908
+        ],
+        [
+          "92c4eb12",
+          454
+        ],
+        [
+          "e5b7ba6b",
+          340
+        ],
+        [
+          "49b53001",
+          340
+        ],
+        [
+          "60ad001e",
+          100
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "fea7cbe9",
+          8
+        ],
+        [
+          "0b6a6c68",
+          1
+        ],
+        [
+          "efdb0f46",
+          90
+        ],
+        [
+          "d641c84f",
+          10
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "4dacb910",
+          80
+        ],
+        [
+          "37936737",
+          75
+        ],
+        [
+          "c125af5a",
+          120
+        ],
+        [
+          "f0671f02",
+          120
+        ],
+        [
+          "2c6f1573",
+          38
+        ]
+      ],
+      "instrucciones": "1. Cocer al vapor las almejas: en una sartén grande, añadir 60 ml de vino blanco y las almejas. Tapar y cocinar a fuego medio-alto unos 8 minutos, hasta que se abran. Descartar las que no se abran tras 10 minutos. Pasar las almejas a un bol, dejando los jugos en la sartén.\n2. Cocer al vapor los mejillones: añadir los 60 ml de vino restantes y los mejillones a la sartén, tapar y cocinar a fuego medio-alto 5 minutos, hasta que se abran. Descartar los que no se abran tras 10 minutos. Pasar los mejillones al bol con las almejas y dejar templar.\n3. Colar los jugos de cocción: forrar un colador fino con papel de cocina húmedo y colocar sobre un bol. Verter los jugos de almejas y mejillones y dejar que se filtren. Tapar y refrigerar hasta hacer el aliño.\n4. Desconchar las almejas y mejillones: extraer la carne de las conchas y pasar a un bol limpio. Añadir un poco de los jugos reservados para mantenerlos húmedos. Tapar y refrigerar.\n5. Cocer al vapor las gambas: colocar una cesta de vapor dentro de un cazo mediano con un dedo de agua, sin que el fondo de la cesta toque el agua. Llevar a ebullición, añadir las gambas a la cesta, tapar y cocer al vapor 5 minutos, hasta que estén justo hechas. Pasar a un bol.\n6. Escalfar el calamar: retirar la cesta del cazo y añadir más agua si hace falta para cubrir el calamar. Añadir una hoja de laurel y una pizca generosa de sal. Llevar a ebullición, añadir el calamar y remover para separar las piezas. Cocer a fuego lento 5-7 minutos, hasta que las piezas estén opacas pero tiernas. No cocer en exceso. Pasar el calamar al bol con las gambas.\n7. Preparar el aliño: con un pelador, sacar 4 tiras de piel de limón (solo la parte amarilla) y reservar. Exprimir el zumo del limón en un bol pequeño (unos 60 ml). Añadir 45 ml de los jugos de marisco reservados y batir. Incorporar 1/2 cucharadita de sal, el ajo, el perejil y la guindilla. Batir con 90-135 ml de aceite de oliva virgen extra. Añadir las alcaparras y remover. Probar y ajustar de sal.\n8. Marinar el marisco: poner las gambas, el calamar, las almejas y los mejillones en un bol grande y verter el aliño por encima. Añadir las tiras de piel de limón reservadas y mezclar suavemente con una cuchara. Añadir la hoja de laurel restante, tapar y refrigerar al menos 2 horas.\n9. Preparar las verduras encurtidas: en un bol, mezclar el apio, la zanahoria y los rábanos. En un cazo pequeño, combinar el vinagre, el agua, el azúcar y la sal y calentar a fuego medio, removiendo, hasta que el azúcar y la sal se disuelvan y la mezcla esté caliente pero sin hervir. Verter la salmuera sobre las verduras y remover. Tapar y refrigerar al menos 1 hora.\n10. Montar y servir: unos 30 minutos antes de servir, escurrir las verduras encurtidas y añadirlas al marisco marinado. Mezclar bien. Tapar y volver a refrigerar 30 minutos más. Servir frío. Conservar las sobras tapadas en la nevera hasta 24 horas.",
+      "consejos": "Desecha cualquier almeja o mejillón que no se abra durante la cocción para evitar riesgos.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/italian-seafood-salad-insalata-di-mare/",
+        "autor": null,
+        "kcal_web": 275.9
+      }
+    },
+    {
+      "nombre": "Pollo al pimentón ahumado con garbanzos al horno",
+      "descripcion": "Muslos de pollo marinados en una mezcla de tomate, limón y pimentón ahumado, asados junto con garbanzos, zanahoria y cebolla en una sola bandeja.",
+      "tiempo_prep_min": 40,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "efdb0f46",
+          126
+        ],
+        [
+          "12a8ab46",
+          120
+        ],
+        [
+          "3285d3b1",
+          75
+        ],
+        [
+          "bdc11c5a",
+          20
+        ],
+        [
+          "6be23d9d",
+          4
+        ],
+        [
+          "e2dd1c2b",
+          4
+        ],
+        [
+          "4dacb910",
+          360
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "1f1a4cd3",
+          255
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "34d9eb86",
+          1000
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 220 °C, con una rejilla en el centro y otra a 10-12 cm del grill superior.\n2. Prepara la pasta de tomate: en un bol pequeño, mezcla el aceite de oliva, el zumo de limón, la pasta de tomate, el ajo, el comino, el pimentón y los copos de guindilla. Bate bien.\n3. Prepara las verduras: pincela ligeramente una bandeja grande con un poco de aceite de oliva. En un bol grande, mezcla las zanahorias, las cebollas y los garbanzos. Sazona con sal y pimienta negra (unos 3 g de sal y 1 g de pimienta). Añade 4 cucharadas de la pasta de tomate y un chorrito de aceite de oliva (unos 5 ml) y mezcla bien para cubrirlo todo. Pasa la mezcla a la bandeja.\n4. Seca el pollo con papel de cocina y sazona con sal y pimienta por ambos lados. Pon el pollo en el bol y añade el resto de la mezcla de tomate, removiendo hasta que quede bien cubierto.\n5. Coloca el pollo en la bandeja junto con los garbanzos y las verduras. Asa en la rejilla central hasta que el pollo esté hecho, 25-30 minutos. Luego sube la bandeja a la rejilla superior, justo debajo del grill, y gratina hasta que el pollo tome color, 3-4 minutos, vigilando con atención. Las cebollas y las zanahorias también pueden dorarse.\n6. Sirve con pan rústico.",
+      "consejos": "Vigila atentamente durante el gratinado final para que el pollo y las verduras no se quemen.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/sheet-pan-chicken-with-chickpeas/",
+        "autor": null,
+        "kcal_web": 390.7
+      }
+    },
+    {
+      "nombre": "Ensalada templada de calabaza, lentejas y quinoa",
+      "descripcion": "Un plato único vegetal y saciante con calabaza asada especiada, lentejas negras y quinoa, aliñado con limón y aceite de oliva. Se sirve templado o a temperatura ambiente.",
+      "tiempo_prep_min": 45,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "cfd9ca77",
+          1000
+        ],
+        [
+          "ff64faff",
+          200
+        ],
+        [
+          "53587262",
+          170
+        ],
+        [
+          "bf392211",
+          60
+        ],
+        [
+          "39bdbb82",
+          50
+        ],
+        [
+          "bdc11c5a",
+          24
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "59163485",
+          15
+        ],
+        [
+          "60ad001e",
+          10
+        ],
+        [
+          "589e624a",
+          4.6
+        ],
+        [
+          "212aa875",
+          3.8
+        ],
+        [
+          "31f12840",
+          2.3
+        ],
+        [
+          "21a40eb5",
+          2.1
+        ],
+        [
+          "6be23d9d",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 220 °C.\n2. Calentar la calabaza en el microondas 2-3 minutos para facilitar el pelado y corte; manipular con cuidado.\n3. Pelar la calabaza, cortarla por la mitad, retirar las semillas y cortarla en cubos.\n4. Colocar los cubos de calabaza en una bandeja de horno, salar y espolvorear 1 cucharadita de canela, 1 cucharadita de pimienta de Jamaica, 1/2 cucharadita de cilantro, 1/2 cucharadita de pimentón y 1/4 cucharadita de comino (reservar el resto de las especias). Rociar generosamente con aceite de oliva y mezclar.\n5. Extender la calabaza en una sola capa y hornear en la rejilla central. A los 15 minutos, sacar la bandeja, añadir los dientes de ajo y un poco de aceite de oliva, remover y volver al horno 10 minutos más.\n6. Mientras se asa la calabaza, cocer las lentejas: ponerlas en un cazo con 3 tazas (720 ml) de agua y sal, llevar a ebullición, bajar el fuego y cocer a fuego lento con la tapa entreabierta 20-25 minutos. Escurrir.\n7. Cocer la quinoa: ponerla en otro cazo con 2 tazas (480 ml) de agua y sal, llevar a ebullición, bajar el fuego a medio-bajo, tapar y cocer 15-20 minutos o hasta que el líquido se haya absorbido por completo.\n8. En un bol grande, mezclar las lentejas y la quinoa cocidas con el resto de las especias y un poco más de sal. Añadir la calabaza asada, el ajo asado picado, la cebolleta y el perejil fresco.\n9. Aliñar con zumo de limón al gusto (empezar con 2 cucharaditas), un chorro generoso de aceite de oliva y mezclar bien. Probar y ajustar de sal o especias.\n10. Coronar con la almendra laminada tostada y servir templado o a temperatura ambiente.",
+      "consejos": "Se puede preparar con antelación y conservar en la nevera de un día para otro; añade la almendra tostada justo antes de servir para que mantenga el crujiente.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/easy-butternut-squash-recipe-with-lentils-and-quinoa/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 245
+      }
+    },
+    {
+      "nombre": "Salmón piccata",
+      "descripcion": "Salmón a la plancha con una salsa piccata de limón, alcaparras y vino blanco. Un plato rápido y lleno de sabor.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2fd7e358",
+          680
+        ],
+        [
+          "e4fdfad8",
+          2
+        ],
+        [
+          "c14d168a",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "668919bc",
+          42
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "20c74a2a",
+          6
+        ],
+        [
+          "eb5939be",
+          120
+        ],
+        [
+          "41cb2b97",
+          120
+        ],
+        [
+          "60ad001e",
+          100
+        ],
+        [
+          "d641c84f",
+          57
+        ],
+        [
+          "59163485",
+          12
+        ]
+      ],
+      "instrucciones": "1. Seca los filetes de salmón con papel de cocina y sazónalos con el pimentón dulce, el orégano, sal y pimienta al gusto (aproximadamente 1/2 cucharadita de cada uno).\n2. Calienta 2 cucharadas de aceite de oliva en una sartén grande antiadherente a fuego medio hasta que brille. Sube el fuego a medio-alto y coloca el salmón con la piel hacia abajo. Presiona con una espátula durante unos 10 segundos y deja que se dore sin mover durante unos 4 minutos o hasta que esté dorado y crujiente. Debe estar cocinado en un 75% y despegarse fácilmente de la sartén. Dale la vuelta y cocina 1 minuto más, presionando brevemente. Retira el salmón a un plato con papel absorbente. Aún no debe estar completamente hecho, ya que volverá a la sartén con la salsa.\n3. En la misma sartén a fuego medio, añade 1 cucharada de aceite de oliva y 1 cucharada de mantequilla. Cuando la mantequilla se derrita, añade el ajo laminado y sofríe unos 30 segundos hasta que aromatice. Incorpora la harina y luego el caldo de pollo, el vino blanco, la ralladura y el zumo de limón y las alcaparras. Cocina a fuego lento unos 4 minutos, removiendo constantemente con unas varillas. Añade el resto de la mantequilla y bate brevemente hasta que se integre y la salsa espese ligeramente. Prueba y ajusta de sal y pimienta.\n4. Devuelve el salmón a la sartén con la piel hacia abajo y rocía con la salsa. Espolvorea el perejil fresco picado y sirve con gajos de limón si se desea.",
+      "consejos": "Para una salsa más ligera, puedes sustituir la mantequilla por aceite de oliva, aunque el sabor será menos untuoso.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/salmon-piccata/",
+        "autor": null,
+        "kcal_web": 367.2
+      }
+    }
+  ]
+}

@@ -1,0 +1,1311 @@
+{
+  "lote": "web-snacks-eatingbird-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "34906939": {
+      "nombre": "Levadura nutricional",
+      "prefijo": "34906939",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "bd85d62b": {
+      "nombre": "Arándanos enteros Hacendado ultracongelados",
+      "prefijo": "bd85d62b",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cc7ee1f2": {
+      "nombre": "Almendra cruda",
+      "prefijo": "cc7ee1f2",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "aab45b38": {
+      "nombre": "Anacardos Crudos",
+      "prefijo": "aab45b38",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "c7de73e8": {
+      "nombre": "Coco rallado",
+      "prefijo": "c7de73e8",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e6dd0fa6": {
+      "nombre": "Dátiles medjool",
+      "prefijo": "e6dd0fa6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0cb7484b": {
+      "nombre": "Cerezas o arándanos deshidratados",
+      "prefijo": "0cb7484b",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3cbe24f8": {
+      "nombre": "Almendras",
+      "prefijo": "3cbe24f8",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f0671f02": {
+      "nombre": "Vinagre de manzana",
+      "prefijo": "f0671f02",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "49230ad1": {
+      "nombre": "Albahaca fresca",
+      "prefijo": "49230ad1",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "caa47a33": {
+      "nombre": "Salsa de soja",
+      "prefijo": "caa47a33",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "88ce9e3c": {
+      "nombre": "Corazones de alcachofa",
+      "prefijo": "88ce9e3c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b6381c1c": {
+      "nombre": "Espinacas congeladas (cocidas)",
+      "prefijo": "b6381c1c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "382a08c2": {
+      "nombre": "Queso mozzarella",
+      "prefijo": "382a08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "e3012f44": {
+      "nombre": "Leche de almendras (sin azúcar)",
+      "prefijo": "e3012f44",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9014dcbc": {
+      "nombre": "Azúcar de Coco Bío",
+      "prefijo": "9014dcbc",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ac11d640": {
+      "nombre": "Cayena molida",
+      "prefijo": "ac11d640",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "88959dfb": {
+      "nombre": "Comino",
+      "prefijo": "88959dfb",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f68fa954": {
+      "nombre": "Eneldo",
+      "prefijo": "f68fa954",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fea7cbe9": {
+      "nombre": "Perejil",
+      "prefijo": "fea7cbe9",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "f8693a9d": {
+      "nombre": "Azucar blanco",
+      "prefijo": "f8693a9d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "957b6d12": {
+      "nombre": "Proteína vegetal (polvo)",
+      "prefijo": "957b6d12",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7605da1a": {
+      "nombre": "Café Espresso Molido",
+      "prefijo": "7605da1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "38fe1a4e": {
+      "nombre": "Yogur natural",
+      "prefijo": "38fe1a4e",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8767a425": {
+      "nombre": "Harina integral de trigo",
+      "prefijo": "8767a425",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "9286a63f": {
+      "nombre": "Aceite de coco",
+      "prefijo": "9286a63f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7d5a031f": {
+      "nombre": "Manzana",
+      "prefijo": "7d5a031f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "63c26672": {
+      "nombre": "Nueces",
+      "prefijo": "63c26672",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "515b18b8": {
+      "nombre": "Proteína de suero (whey)",
+      "prefijo": "515b18b8",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "169c60f7": {
+      "nombre": "Cacahuete tostado con sal",
+      "prefijo": "169c60f7",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "a54e5749": {
+      "nombre": "Chocolate negro 75-80%",
+      "prefijo": "a54e5749",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "0d971edf": {
+      "nombre": "Pepinillo encurtido",
+      "prefijo": "0d971edf",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ced19ed4": {
+      "nombre": "Vinagre sidra FEMUA, botella",
+      "prefijo": "ced19ed4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "71805ea3": {
+      "nombre": "Canela Molida Frasco",
+      "prefijo": "71805ea3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95db3d38": {
+      "nombre": "Harina de avena",
+      "prefijo": "95db3d38",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "70b4da1a": {
+      "nombre": "Azúcar glas",
+      "prefijo": "70b4da1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "87b0f802": {
+      "nombre": "Nueces o pacanas trituradas",
+      "prefijo": "87b0f802",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "6ca75761": {
+      "nombre": "Semillas de calabaza",
+      "prefijo": "6ca75761",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "46825bfa": {
+      "nombre": "Cacahuetes",
+      "prefijo": "46825bfa",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "ad30a656": {
+      "nombre": "Pasas",
+      "prefijo": "ad30a656",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c48c652a": {
+      "nombre": "Lacasitos",
+      "prefijo": "c48c652a",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Soja"
+      ],
+      "origen": "lacteo"
+    },
+    "c98f36fc": {
+      "nombre": "Anacardos",
+      "prefijo": "c98f36fc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "dcf63110": {
+      "nombre": "Arándanos secos",
+      "prefijo": "dcf63110",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3f5226bf": {
+      "nombre": "Palomitas Sal Bolsa",
+      "prefijo": "3f5226bf",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Yogur helado de arándanos",
+      "descripcion": "Un postre o merienda muy sencillo de tres ingredientes: yogur griego, arándanos congelados y un toque de sirope. Se puede tomar al momento o congelar para servirlo en bolas.",
+      "tiempo_prep_min": 65,
+      "porciones": 2,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          240
+        ],
+        [
+          "bd85d62b",
+          225
+        ],
+        [
+          "34d6fafa",
+          21
+        ]
+      ],
+      "instrucciones": "1. Triturar todos los ingredientes en un robot de cocina hasta obtener una mezcla homogénea.\n2. Servir inmediatamente o, si se prefiere con textura para tomar en bolas, pasar la mezcla a un molde y congelar durante unos 60 minutos.\n3. Sacar del congelador y dejar atemperar unos minutos antes de servir.",
+      "consejos": "Si usas miel en lugar de sirope de arce, añade 21 g para mantener el dulzor.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/blueberry-frozen-yogurt/",
+        "autor": null,
+        "kcal_web": 139
+      }
+    },
+    {
+      "nombre": "Bolitas energéticas de cereza y frutos secos",
+      "descripcion": "Bolitas sin hornear de almendra, anacardo, coco, dátil y cereza deshidratada, ideales como snack energético.",
+      "tiempo_prep_min": 10,
+      "porciones": 24,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "cc7ee1f2",
+          140
+        ],
+        [
+          "aab45b38",
+          130
+        ],
+        [
+          "c7de73e8",
+          40
+        ],
+        [
+          "e6dd0fa6",
+          180
+        ],
+        [
+          "0cb7484b",
+          120
+        ]
+      ],
+      "instrucciones": "1. Triturar las almendras, los anacardos y el coco en un procesador de alimentos con pulsaciones hasta obtener trozos pequeños. Pasar la mezcla de frutos secos a un bol y reservar.\n2. Poner los dátiles en el procesador y triturar con pulsaciones hasta formar una pasta (probablemente se forme una bola pegajosa).\n3. Añadir de nuevo los frutos secos al procesador junto con los dátiles y agregar las cerezas. Triturar con pulsaciones hasta que todo esté bien integrado.\n4. Formar bolitas con las manos o con una cuchara de helado pequeña o mediana, usando aproximadamente 1 cucharada de masa por bolita (unos 25 g).\n5. Guardar las bolitas en un recipiente hermético en la nevera durante 1-2 semanas o en el congelador durante 3 meses.",
+      "consejos": "Si la masa queda demasiado seca, tritura un poco más los dátiles para que ligue mejor.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/cherry-larabar-balls/",
+        "autor": null,
+        "kcal_web": 114
+      }
+    },
+    {
+      "nombre": "Salsa o dip de almendras y albahaca",
+      "descripcion": "Una salsa cremosa y vegana de almendras con albahaca, limón y levadura nutricional, ideal como dip o para acompañar verduras y tostadas.",
+      "tiempo_prep_min": 10,
+      "porciones": 8,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "3cbe24f8",
+          140
+        ],
+        [
+          "12a8ab46",
+          60
+        ],
+        [
+          "f0671f02",
+          30
+        ],
+        [
+          "49230ad1",
+          20
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "34906939",
+          15
+        ],
+        [
+          "caa47a33",
+          15
+        ]
+      ],
+      "instrucciones": "1. Añade todos los ingredientes a una batidora de alta potencia o robot de cocina y tritura hasta obtener una mezcla homogénea.\n2. Procesa durante 1-2 minutos, ya que las almendras son duras, hasta que la mezcla se vuelva más líquida y alcance la consistencia de una salsa o dip.\n3. Si la quieres más líquida, añade más agua cucharada a cucharada hasta lograr la textura deseada.",
+      "consejos": "Sirve la salsa recién hecha o guárdala en la nevera hasta 4 días en un recipiente hermético.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/almond-pesto-dip/",
+        "autor": null,
+        "kcal_web": 117
+      }
+    },
+    {
+      "nombre": "Dip saludable de espinacas y alcachofas",
+      "descripcion": "Un dip cremoso y gratinado de espinacas y alcachofas, con yogur griego, requesón y queso, ideal para untar.",
+      "tiempo_prep_min": 30,
+      "porciones": 8,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          180
+        ],
+        [
+          "b2c88c97",
+          180
+        ],
+        [
+          "866d6397",
+          75
+        ],
+        [
+          "88ce9e3c",
+          400
+        ],
+        [
+          "b6381c1c",
+          170
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "b983723d",
+          25
+        ],
+        [
+          "c17ad017",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "382a08c2",
+          100
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C y engrasar una fuente pequeña de horno.\n2. Triturar el yogur y el requesón en una batidora hasta obtener una crema. Añadir la mayonesa, las alcachofas escurridas, las espinacas escurridas y el ajo picado y pulsar hasta integrar.\n3. Pasar la mezcla a un bol y remover con el parmesano, 75 g de mozzarella, la cebolla en polvo, la pimienta y la sal.\n4. Verter la mezcla en la fuente preparada y cubrir con los 25 g de mozzarella restantes.\n5. Hornear hasta que el queso se derrita y burbujee, unos 20-25 minutos. Gratinar 1-2 minutos más si se desea dorar más.\n6. Sacar del horno y servir templado.",
+      "consejos": "Escurrir muy bien las alcachofas y las espinacas para que el dip no quede aguado.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/healthy-spinach-artichoke-dip/",
+        "autor": null,
+        "kcal_web": 146
+      }
+    },
+    {
+      "nombre": "Pudín de chía con arándanos",
+      "descripcion": "Un pudín cremoso de semillas de chía con leche de almendra y arándanos, endulzado con sirope de arce. Ideal para desayuno o merienda, se prepara en minutos y se deja cuajar en la nevera.",
+      "tiempo_prep_min": 35,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e3012f44",
+          240
+        ],
+        [
+          "508e2d88",
+          75
+        ],
+        [
+          "34d6fafa",
+          14
+        ],
+        [
+          "f75a3721",
+          2
+        ],
+        [
+          "b5b5e57f",
+          36
+        ]
+      ],
+      "instrucciones": "1. Añade la leche de almendra, los arándanos, el sirope de arce y la vainilla a un vaso de batidora y tritura hasta obtener una mezcla homogénea.\n2. Vierte la mezcla en un tarro y remueve con las semillas de chía. Deja reposar 5 minutos y vuelve a remover para eliminar los grumos que se hayan formado.\n3. Tapa y guarda en la nevera para que cuaje, al menos 30 minutos o hasta 12 horas.\n4. Antes de consumir, añade por encima más arándanos frescos y granola al gusto.",
+      "consejos": "Remueve de nuevo pasados 5 minutos para evitar que las semillas de chía se apelmacen en el fondo.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/blueberry-chia-pudding/",
+        "autor": null,
+        "kcal_web": 135
+      }
+    },
+    {
+      "nombre": "Garbanzos crujientes en air fryer",
+      "descripcion": "Garbanzos especiados y crujientes hechos en freidora de aire, con cinco variantes de sabor. Un snack rápido y saludable.",
+      "tiempo_prep_min": 17,
+      "porciones": 3,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "9014dcbc",
+          8
+        ],
+        [
+          "e2dd1c2b",
+          4
+        ],
+        [
+          "bbece24a",
+          6
+        ],
+        [
+          "c17ad017",
+          6
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "ac11d640",
+          1
+        ],
+        [
+          "88959dfb",
+          2
+        ],
+        [
+          "65756599",
+          10
+        ],
+        [
+          "34906939",
+          5
+        ],
+        [
+          "f68fa954",
+          1
+        ],
+        [
+          "fea7cbe9",
+          1
+        ],
+        [
+          "03f57b8d",
+          1
+        ],
+        [
+          "8619b09f",
+          21
+        ],
+        [
+          "f8693a9d",
+          12
+        ]
+      ],
+      "instrucciones": "1. Escurre, enjuaga y seca bien los garbanzos con papel de cocina.\n2. Coloca los garbanzos en un bol grande con el aceite y la sal y mezcla bien. Si haces la versión básica de sal marina, pasa al paso 3. Para las otras versiones, añade los condimentos adicionales y mezcla bien.\n3. Precalienta la freidora de aire si es necesario. Coloca los garbanzos en la cesta en una sola capa y cocina a 200 °C durante 12-14 minutos, agitando una vez a mitad de cocción, hasta que estén dorados y crujientes. Vigila los garbanzos al final para que los condimentos no se quemen.\n4. Cuando los garbanzos estén a tu gusto, sácalos de la freidora y sazona al gusto. Sirve inmediatamente o deja enfriar completamente y guarda en un bol sin tapar.",
+      "consejos": "Vigila los garbanzos en los últimos minutos para evitar que las especias se quemen.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/air-fryer-chickpeas/",
+        "autor": null,
+        "kcal_web": 180
+      }
+    },
+    {
+      "nombre": "Pudín de chía estilo tiramisú",
+      "descripcion": "Un pudín de chía con café espresso y proteína vegetal de vainilla, cubierto con yogur y un toque de cacao. Un desayuno o merienda cremoso y saciante.",
+      "tiempo_prep_min": 125,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b5b5e57f",
+          24
+        ],
+        [
+          "9dc9f005",
+          120
+        ],
+        [
+          "957b6d12",
+          14
+        ],
+        [
+          "7605da1a",
+          45
+        ],
+        [
+          "38fe1a4e",
+          150
+        ],
+        [
+          "edb1e321",
+          2
+        ]
+      ],
+      "instrucciones": "1. Mezcla en un bol pequeño las semillas de chía, la bebida de almendra, la proteína en polvo y el espresso. Remueve hasta que la proteína esté bien integrada.\n2. Deja reposar la mezcla unos 5 minutos y vuelve a remover para deshacer los grumos.\n3. Tapa el bol y refrigera durante varias horas o toda la noche.\n4. Saca del frigorífico, remueve y cubre con una capa de yogur. Espolvorea cacao en polvo por encima y sirve.",
+      "consejos": "Remueve de nuevo justo antes de servir para que la textura quede cremosa y homogénea.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/tiramisu-chia-pudding/",
+        "autor": null,
+        "kcal_web": 297
+      }
+    },
+    {
+      "nombre": "Muffins de manzana y yogur",
+      "descripcion": "Muffins esponjosos de harina integral con manzana, yogur griego y un toque de canela. Una opción dulce y saciante para desayuno o merienda.",
+      "tiempo_prep_min": 28,
+      "porciones": 12,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "8767a425",
+          219
+        ],
+        [
+          "242a5689",
+          4
+        ],
+        [
+          "589e624a",
+          4
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "585bd18b",
+          245
+        ],
+        [
+          "9286a63f",
+          56
+        ],
+        [
+          "34d6fafa",
+          160
+        ],
+        [
+          "9dc9f005",
+          60
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "7d5a031f",
+          150
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C y colocar 12 cápsulas de papel o silicona en un molde para muffins.\n2. En un bol grande, mezclar la harina, la levadura química, el bicarbonato, la sal y la canela.\n3. En otro bol mediano, batir los huevos con el yogur griego, el aceite de coco derretido, el sirope de arce, la bebida de almendra y el extracto de vainilla.\n4. Verter la mezcla líquida sobre los ingredientes secos y remover solo hasta que se integren; no mezclar en exceso, pueden quedar algunos hilos de harina.\n5. Incorporar con movimientos suaves los trozos de manzana.\n6. Repartir la masa de forma uniforme en las cápsulas del molde.\n7. Hornear durante 16-18 minutos o hasta que al insertar un palillo en el centro de un muffin salga limpio.\n8. Dejar enfriar los muffins unos minutos en el molde y después pasarlos a una rejilla para que se enfríen por completo.\n9. Conservar en un recipiente hermético a temperatura ambiente 3-4 días, en la nevera hasta 1 semana o congelados hasta 3 meses.",
+      "consejos": "Usa manzana en trozos pequeños y no mezcles la masa en exceso para que los muffins queden tiernos y esponjosos.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/apple-yogurt-muffins/",
+        "autor": null,
+        "kcal_web": 209
+      }
+    },
+    {
+      "nombre": "Avena con plátano y nueces",
+      "descripcion": "Un bol de avena cremosa cocida con canela y vainilla, coronado con plátano, nueces tostadas, crema de cacahuete y semillas de chía. Desayuno completo y saciante listo en pocos minutos.",
+      "tiempo_prep_min": 10,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          45
+        ],
+        [
+          "318db297",
+          240
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "f75a3721",
+          1
+        ],
+        [
+          "1131a576",
+          60
+        ],
+        [
+          "63c26672",
+          14
+        ],
+        [
+          "6328f4b9",
+          8
+        ],
+        [
+          "b5b5e57f",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pon en un cazo los copos de avena, la leche, la sal, la canela y la vainilla (si los usas) y calienta a fuego medio-alto.\n2. Cuando empiece a hervir suavemente, baja el fuego y cocina a fuego lento unos 5-7 minutos, removiendo de vez en cuando, hasta que la avena haya absorbido casi todo el líquido y quede cremosa.\n3. Pasa la avena a un bol y añade por encima el plátano en rodajas, las nueces tostadas, la crema de cacahuete y las semillas de chía. También puedes añadir el plátano durante la cocción para que aporte más sabor y dulzor.",
+      "consejos": "Si usas agua en lugar de leche, la avena quedará menos cremosa; puedes añadir el plátano durante la cocción para endulzar de forma natural.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/banana-nut-oatmeal/",
+        "autor": null,
+        "kcal_web": 153
+      }
+    },
+    {
+      "nombre": "Huevos revueltos con requesón",
+      "descripcion": "Huevos revueltos cremosos y proteicos gracias al requesón, listos en pocos minutos y perfectos para un desayuno o una comida ligera.",
+      "tiempo_prep_min": 10,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "b2c88c97",
+          60
+        ],
+        [
+          "bf392211",
+          4
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "03f57b8d",
+          5
+        ]
+      ],
+      "instrucciones": "1. Bate los huevos con el requesón en un bol pequeño. Añade una pizca de pimienta negra y otra de sal.\n2. Calienta el aceite en una sartén antiadherente pequeña a fuego medio-bajo. Cuando esté caliente, vierte con cuidado la mezcla de huevo.\n3. Cuando los bordes empiecen a cuajar, usa una espátula de goma para llevar los huevos hacia el centro de la sartén, repitiendo el movimiento hasta que cuajen y dejen de estar líquidos, unos 3-5 minutos.\n4. Retira del fuego, sirve y espolvorea con cebollino fresco picado.",
+      "consejos": "Cocina a fuego medio-bajo y retira la sartén del fuego un poco antes de que cuajen del todo para que queden más cremosos.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/cottage-cheese-eggs/",
+        "autor": null,
+        "kcal_web": 223
+      }
+    },
+    {
+      "nombre": "Bolitas proteicas estilo Snickers",
+      "descripcion": "Bolitas energéticas de dátiles, cacahuete y avena bañadas en chocolate negro, con un toque crujiente de cacahuete. Un snack saciante y fácil de preparar.",
+      "tiempo_prep_min": 40,
+      "porciones": 26,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e6dd0fa6",
+          240
+        ],
+        [
+          "0f347066",
+          45
+        ],
+        [
+          "6328f4b9",
+          256
+        ],
+        [
+          "515b18b8",
+          55
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "169c60f7",
+          56
+        ],
+        [
+          "a54e5749",
+          170
+        ],
+        [
+          "9286a63f",
+          9
+        ]
+      ],
+      "instrucciones": "1. Tritura los dátiles en un robot de cocina hasta que queden finamente picados y pegajosos. Si están duros o secos, remójalos 10 minutos en agua tibia, escúrrelos y sécalos antes de triturar.\n2. Añade los copos de avena y pulsa hasta picarlos finos e integrarlos con los dátiles. Agrega la crema de cacahuete, la proteína en polvo, la vainilla y la sal; procesa hasta obtener una masa espesa, parando para bajar los restos de las paredes.\n3. Aprieta un poco de masa entre los dedos; si se desmiga, añade agua cucharada a cucharada (hasta 3 cucharadas) y pulsa hasta que ligue.\n4. Incorpora los cacahuetes picados removiendo o amasando para que queden trozos crujientes.\n5. Con una cuchara pequeña, forma 26 porciones iguales y bolea. Colócalas en una bandeja con papel de horno y congela 20-30 minutos hasta que estén firmes.\n6. Derrite el chocolate negro con el aceite de coco en un bol apto para microondas en intervalos de 30 segundos, removiendo entre cada uno, hasta que quede liso.\n7. Con un tenedor, baña cada bolita en el chocolate, deja escurrir el exceso, devuélvela a la bandeja y espolvorea inmediatamente con los cacahuetes picados.\n8. Refrigera 10-15 minutos hasta que el chocolate cuaje.",
+      "consejos": "Guarda las bolitas en un recipiente hermético en la nevera hasta 5 días o congélalas para disfrutarlas más tiempo.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/snickers-protein-balls/",
+        "autor": null,
+        "kcal_web": 160
+      }
+    },
+    {
+      "nombre": "Huevos rellenos saludables",
+      "descripcion": "Huevos cocidos rellenos de una mezcla cremosa de yema, yogur griego, mostaza y encurtido. Una versión más ligera del clásico huevo relleno.",
+      "tiempo_prep_min": 20,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "0d971edf",
+          15
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "ced19ed4",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "e2dd1c2b",
+          1
+        ]
+      ],
+      "instrucciones": "1. Coloca los huevos en una cazuela grande y cúbrelos con agua al menos 2,5 cm por encima. Lleva el agua a ebullición a fuego fuerte y deja que hierva enérgicamente durante 30 segundos. Tapa y retira del fuego. Deja reposar 10-12 minutos.\n2. Pasado ese tiempo, escurre el agua o saca los huevos con una espumadera. Pásalos a un bol con agua y hielo o colócalos en un escurridor y déjales correr agua fría por encima. Así se detiene la cocción y se enfrían.\n3. Pela los huevos golpeándolos suavemente por toda la superficie para romper la cáscara. Retira la cáscara empezando por el lado más ancho (donde está la bolsa de aire) y córtalos por la mitad a lo largo. Saca las yemas y ponlas en un bol pequeño.\n4. Añade el yogur griego, el encurtido, la mostaza de Dijon, el vinagre de sidra, la sal y la pimienta. Machaca todo con un tenedor. Prueba la mezcla y ajusta de sal y pimienta si lo deseas.\n5. Con una cuchara, rellena el centro de cada clara con la mezcla de yema. También puedes poner la mezcla en una bolsa de plástico, cortarle una esquina y usarla como manga pastelera. Cuando vayas a servir, rellena los huevos.\n6. Espolvorea con pimentón ahumado y sirve.",
+      "consejos": "Puedes preparar los huevos rellenos con antelación y guardarlos en la nevera hasta el momento de servir.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/healthy-deviled-eggs/",
+        "autor": null,
+        "kcal_web": 85
+      }
+    },
+    {
+      "nombre": "Tortita holandesa de manzana",
+      "descripcion": "Una tortita al horno tipo dutch baby con manzanas caramelizadas, canela y un toque de sirope de arce. Ideal para desayuno o merienda.",
+      "tiempo_prep_min": 30,
+      "porciones": 8,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "7d5a031f",
+          300
+        ],
+        [
+          "34d6fafa",
+          56
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "71805ea3",
+          7
+        ],
+        [
+          "6cd81fed",
+          150
+        ],
+        [
+          "9dc9f005",
+          120
+        ],
+        [
+          "95db3d38",
+          60
+        ],
+        [
+          "668919bc",
+          42
+        ],
+        [
+          "70b4da1a",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 220 °C.\n2. En un bol mediano, mezclar las manzanas laminadas con el sirope de arce, el zumo de limón y la canela hasta que queden bien cubiertas. Reservar.\n3. En otro bol, batir los huevos, la bebida de almendra, la harina de avena, el sirope de arce, la canela y la sal hasta obtener una mezcla homogénea.\n4. Calentar una sartén de hierro fundido de 23-25 cm a fuego medio-alto y añadir la mantequilla. Cuando se derrita, añadir la mezcla de manzana y cocinar 5-7 minutos, removiendo de vez en cuando, hasta que las manzanas se ablanden y se caramelicen ligeramente.\n5. Verter la mezcla de huevo sobre las manzanas y trasladar inmediatamente la sartén al horno precalentado.\n6. Hornear 15-20 minutos, hasta que la tortita esté inflada y dorada.\n7. Servir caliente, espolvoreada con azúcar glas y/o un chorrito de sirope de arce si se desea.",
+      "consejos": "Usa una sartén de hierro fundido bien caliente para que la tortita suba y quede esponjosa.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/apple-dutch-baby/",
+        "autor": null,
+        "kcal_web": 147
+      }
+    },
+    {
+      "nombre": "Bocados energéticos de avena y dátiles",
+      "descripcion": "Bocados sin horno a base de avena, dátiles y crema de cacahuete, ideales como snack energético.",
+      "tiempo_prep_min": 10,
+      "porciones": 21,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          90
+        ],
+        [
+          "e6dd0fa6",
+          180
+        ],
+        [
+          "34906939",
+          30
+        ],
+        [
+          "6328f4b9",
+          128
+        ],
+        [
+          "9dc9f005",
+          60
+        ],
+        [
+          "8619b09f",
+          85
+        ],
+        [
+          "a54e5749",
+          60
+        ]
+      ],
+      "instrucciones": "1. Tritura los dátiles en un robot de cocina hasta obtener una pasta espesa. Añade los copos de avena y pulsa unas cuantas veces más hasta que se integren.\n2. Pasa la mezcla de dátiles y avena a un bol. Incorpora la levadura de cerveza y la crema de cacahuete. Añade la bebida de almendra y la miel y mezcla bien. Si la mezcla parece seca, añade un chorrito extra de bebida de almendra. Incorpora las pepitas de chocolate y forma bolitas del tamaño de una cucharada sopera con las manos.\n3. Guarda en un recipiente hermético en la nevera durante 1-2 semanas o en el congelador hasta 3 meses.",
+      "consejos": "Si la masa está demasiado pegajosa, refrigérala 15 minutos antes de formar las bolitas.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/lactation-bites/",
+        "autor": null,
+        "kcal_web": 112
+      }
+    },
+    {
+      "nombre": "Mezcla energética de frutos secos y fruta desecada",
+      "descripcion": "Una mezcla crujiente de frutos secos, semillas, fruta desecada y chocolate, ideal para llevar y tomar entre horas. Se prepara en cinco minutos y se conserva en un tarro hermético.",
+      "tiempo_prep_min": 5,
+      "porciones": 8,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "3cbe24f8",
+          105
+        ],
+        [
+          "87b0f802",
+          30
+        ],
+        [
+          "63c26672",
+          30
+        ],
+        [
+          "6ca75761",
+          60
+        ],
+        [
+          "0cb7484b",
+          95
+        ],
+        [
+          "a54e5749",
+          60
+        ],
+        [
+          "46825bfa",
+          140
+        ],
+        [
+          "ad30a656",
+          95
+        ],
+        [
+          "c48c652a",
+          40
+        ],
+        [
+          "c98f36fc",
+          70
+        ],
+        [
+          "dcf63110",
+          95
+        ],
+        [
+          "3f5226bf",
+          10
+        ]
+      ],
+      "instrucciones": "1. Mezcla todos los ingredientes en un bol grande hasta que queden bien distribuidos.\n2. Guarda la mezcla sobrante en un tarro hermético o en una bolsa reutilizable.",
+      "consejos": "La mezcla con frutos secos y chocolate se conserva 1-2 semanas en un tarro hermético; si añades palomitas, consúmela en 1-2 días para que mantengan el crujiente.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/healthy-trail-mix-recipes/",
+        "autor": null,
+        "kcal_web": 237
+      }
+    }
+  ]
+}

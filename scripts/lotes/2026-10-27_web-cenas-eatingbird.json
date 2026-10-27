@@ -1,0 +1,1524 @@
+{
+  "lote": "web-cenas-eatingbird-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34906939": {
+      "nombre": "Levadura nutricional",
+      "prefijo": "34906939",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "83505726": {
+      "nombre": "Atún en lata al natural",
+      "prefijo": "83505726",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "84fa9879": {
+      "nombre": "Queso Mozzarella Fresca",
+      "prefijo": "84fa9879",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "49230ad1": {
+      "nombre": "Albahaca fresca",
+      "prefijo": "49230ad1",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5aa40d0": {
+      "nombre": "Vinagre balsámico",
+      "prefijo": "b5aa40d0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e5b7ba6b": {
+      "nombre": "Gambas",
+      "prefijo": "e5b7ba6b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e88e2cb8": {
+      "nombre": "Muslo de pollo",
+      "prefijo": "e88e2cb8",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "f349ccc8": {
+      "nombre": "Coles de Bruselas",
+      "prefijo": "f349ccc8",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cfd9ca77": {
+      "nombre": "Calabaza",
+      "prefijo": "cfd9ca77",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2525c236": {
+      "nombre": "Tomillo seco",
+      "prefijo": "2525c236",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5e122ac4": {
+      "nombre": "Naranja",
+      "prefijo": "5e122ac4",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "11d56939": {
+      "nombre": "Cuscús",
+      "prefijo": "11d56939",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "efdb0f46": {
+      "nombre": "Aceite de oliva virgen extra",
+      "prefijo": "efdb0f46",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "88b07129": {
+      "nombre": "Salmón (fresco)",
+      "prefijo": "88b07129",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "c7ad7588": {
+      "nombre": "Espárragos",
+      "prefijo": "c7ad7588",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "675965d4": {
+      "nombre": "Queso fresco de cabra",
+      "prefijo": "675965d4",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "b1ff971a": {
+      "nombre": "Espinacas baby",
+      "prefijo": "b1ff971a",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "39bdbb82": {
+      "nombre": "Almendra laminada",
+      "prefijo": "39bdbb82",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "a03293f5": {
+      "nombre": "Pomelo",
+      "prefijo": "a03293f5",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "31108cb4": {
+      "nombre": "Chalotas",
+      "prefijo": "31108cb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c5d97775": {
+      "nombre": "Pesto bajo en grasa",
+      "prefijo": "c5d97775",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "6c5d82a5": {
+      "nombre": "Boniato",
+      "prefijo": "6c5d82a5",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c94bf938": {
+      "nombre": "Queso curado cheddar",
+      "prefijo": "c94bf938",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "21aeb6ee": {
+      "nombre": "Mezcla de hojas verdes variadas",
+      "prefijo": "21aeb6ee",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a010ea17": {
+      "nombre": "Alubia cocida blanca",
+      "prefijo": "a010ea17",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95aa4443": {
+      "nombre": "Salsa picante",
+      "prefijo": "95aa4443",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "ae08120b": {
+      "nombre": "Aceite de Aguacate Cristal",
+      "prefijo": "ae08120b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2856bf23": {
+      "nombre": "Hummus",
+      "prefijo": "2856bf23",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "f0204a76": {
+      "nombre": "Pavo picado",
+      "prefijo": "f0204a76",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "368b99df": {
+      "nombre": "Perejil seco",
+      "prefijo": "368b99df",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e152c2f2": {
+      "nombre": "Berenjena",
+      "prefijo": "e152c2f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1390b7a4": {
+      "nombre": "Tomate triturado",
+      "prefijo": "1390b7a4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5a1860a7": {
+      "nombre": "Tomate doble concentrado",
+      "prefijo": "5a1860a7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7312fdee": {
+      "nombre": "Pechuga de pavo",
+      "prefijo": "7312fdee",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "d0a93278": {
+      "nombre": "Tomillo Frasco",
+      "prefijo": "d0a93278",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "41f3bf76": {
+      "nombre": "Romero",
+      "prefijo": "41f3bf76",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "dcf63110": {
+      "nombre": "Arándanos secos",
+      "prefijo": "dcf63110",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b0820d49": {
+      "nombre": "Pepitas de Chocolate Negro",
+      "prefijo": "b0820d49",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f0671f02": {
+      "nombre": "Vinagre de manzana",
+      "prefijo": "f0671f02",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f2671248": {
+      "nombre": "Zumo de naranja",
+      "prefijo": "f2671248",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "71805ea3": {
+      "nombre": "Canela Molida Frasco",
+      "prefijo": "71805ea3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c0736451": {
+      "nombre": "Tofu firme",
+      "prefijo": "c0736451",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "95db3d38": {
+      "nombre": "Harina de avena",
+      "prefijo": "95db3d38",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "34f7b619": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "c7de73e8": {
+      "nombre": "Coco rallado",
+      "prefijo": "c7de73e8",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "665f786f": {
+      "nombre": "Langostino cocido",
+      "prefijo": "665f786f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4166da6e": {
+      "nombre": "Mango",
+      "prefijo": "4166da6e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ac9a1077": {
+      "nombre": "Salsa Sweet Chili Salsa Chile Dulce",
+      "prefijo": "ac9a1077",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "24bff01d": {
+      "nombre": "Jengibre",
+      "prefijo": "24bff01d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Ensalada caprese de tomate y mozzarella",
+      "descripcion": "Una ensalada fresca y sencilla con capas de tomate y mozzarella, albahaca, aceite de oliva y vinagre balsámico. Ideal como entrante o acompañamiento en verano.",
+      "tiempo_prep_min": 10,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "84fa9879",
+          227
+        ],
+        [
+          "7f40a393",
+          400
+        ],
+        [
+          "49230ad1",
+          10
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "b5aa40d0",
+          15
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. En un plato o fuente, coloca las lonchas de mozzarella y de tomate en capas alternas, intercalando una hoja de albahaca entre cada capa.\n2. Pica el resto de la albahaca y espárcela por encima. Sazona con pimienta negra recién molida y sal marina.\n3. Rocía con aceite de oliva de buena calidad y vinagre balsámico o reducción de balsámico.\n4. Sirve inmediatamente o tapa y enfría en la nevera durante 30 minutos antes de servir.",
+      "consejos": "Mejor consumirla recién preparada, aunque se conserva en la nevera 2-3 días.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/summertime-caprese-salad/",
+        "autor": null,
+        "kcal_web": 184
+      }
+    },
+    {
+      "nombre": "Gambas al ajillo con calabacín al horno",
+      "descripcion": "Una bandeja de horno rápida con gambas, calabacín, ajo y limón, terminada con parmesano y perejil. Lista en 15 minutos y perfecta para una cena ligera.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          680
+        ],
+        [
+          "f8586302",
+          400
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "b983723d",
+          25
+        ],
+        [
+          "59163485",
+          15
+        ],
+        [
+          "60ad001e",
+          30
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno en modo grill a 230 °C y forra una bandeja de horno con papel vegetal o engrásala ligeramente.\n2. Coloca las gambas y el calabacín en la bandeja y mézclalos con el zumo de limón, el aceite de oliva, la sal, la pimienta y el ajo picado hasta que todo quede bien impregnado.\n3. Introduce la bandeja en el horno y cocina al grill durante 5-6 minutos, o hasta que las gambas se vuelvan rosadas y el calabacín esté tierno.\n4. Reparte la mezcla de gambas y calabacín en cuatro platos, espolvorea con el queso parmesano y el perejil picado. Sirve con rodajas de limón.",
+      "consejos": "Puedes servir este plato sobre arroz de coliflor o arroz blanco al vapor para completar la comida.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/shrimp-scampi-sheet-pan-meal/",
+        "autor": null,
+        "kcal_web": 244
+      }
+    },
+    {
+      "nombre": "Pollo asado con glaseado de arándanos y balsámico",
+      "descripcion": "Una bandeja de horno con muslos de pollo glaseados con arándanos y balsámico, acompañados de coles de Bruselas, calabaza delicata y cebolla roja. Una comida completa y sabrosa en una sola bandeja.",
+      "tiempo_prep_min": 50,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e88e2cb8",
+          680
+        ],
+        [
+          "f349ccc8",
+          454
+        ],
+        [
+          "cfd9ca77",
+          300
+        ],
+        [
+          "08637e90",
+          150
+        ],
+        [
+          "bf392211",
+          21
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "c17ad017",
+          3
+        ],
+        [
+          "2525c236",
+          1
+        ],
+        [
+          "508e2d88",
+          50
+        ],
+        [
+          "b5aa40d0",
+          45
+        ],
+        [
+          "34d6fafa",
+          40
+        ],
+        [
+          "20367cb0",
+          15
+        ],
+        [
+          "5e122ac4",
+          4
+        ],
+        [
+          "bdc11c5a",
+          8
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 220 °C y forrar una bandeja grande con papel de horno.\n2. En un cazo pequeño a fuego medio-alto, combinar los arándanos, el vinagre balsámico, el sirope de arce, la mostaza de Dijon, la piel de naranja, el ajo picado y la sal. Cocinar 6-8 minutos, removiendo a menudo, hasta que los arándanos revienten y la salsa espese ligeramente. Retirar del fuego.\n3. En la bandeja, mezclar las coles de Bruselas, la calabaza delicata y la cebolla roja con el aceite de oliva, 3 g de sal, la pimienta, el ajo en polvo, la cebolla en polvo y el tomillo. Extender en una capa uniforme, dejando espacio para el pollo.\n4. Secar los muslos de pollo con papel de cocina y sazonar con el resto de la sal y la pimienta. Colocarlos en la bandeja entre las verduras.\n5. Untar aproximadamente la mitad del glaseado de arándanos y balsámico sobre los muslos de pollo. Hornear 20 minutos.\n6. Sacar la bandeja del horno, untar el pollo con más glaseado y remover las verduras. Volver a hornear 15-20 minutos más, hasta que el pollo alcance 74 °C en el centro y las verduras estén caramelizadas.\n7. Rociar el glaseado restante sobre el pollo y las verduras antes de servir.",
+      "consejos": "Si no encuentras calabaza delicata, puedes sustituirla por calabaza butternut cortada en medias lunas.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/cranberry-balsamic-chicken-sheet-pan-meal/",
+        "autor": null,
+        "kcal_web": 475
+      }
+    },
+    {
+      "nombre": "Ensalada de cuscús con verduras y feta",
+      "descripcion": "Ensalada fresca de cuscús con tomate, pepino, cebolla roja y perejil, aliñada con limón y aceite de oliva y coronada con queso feta.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "11d56939",
+          180
+        ],
+        [
+          "a92874a5",
+          150
+        ],
+        [
+          "2e8d5d64",
+          150
+        ],
+        [
+          "08637e90",
+          75
+        ],
+        [
+          "59163485",
+          30
+        ],
+        [
+          "efdb0f46",
+          72
+        ],
+        [
+          "12a8ab46",
+          45
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "6187036a",
+          75
+        ]
+      ],
+      "instrucciones": "1. Llevar el agua a ebullición en un cazo mediano. Al hervir, añadir el cuscús, tapar y dejar reposar 5-10 minutos hasta que se absorba el agua y el cuscús esté tierno.\n2. Separar el cuscús con un tenedor, pasarlo a un bol grande y añadir el tomate, el pepino, la cebolla roja y el perejil.\n3. En un bol pequeño, batir el aceite de oliva, el zumo de limón, la sal y la pimienta.\n4. Verter el aliño sobre la mezcla de cuscús y remover para integrar.\n5. Probar y ajustar la sazón. Servir inmediatamente o refrigerar hasta el momento de servir. Añadir el queso feta desmenuzado justo antes de servir.",
+      "consejos": "Añade el feta justo antes de servir para que no se ablande y mantén la ensalada en frío si la preparas con antelación.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/couscous-salad/",
+        "autor": null,
+        "kcal_web": 461
+      }
+    },
+    {
+      "nombre": "Ensalada de salmón",
+      "descripcion": "Una ensalada fresca y cremosa de salmón en lata con yogur griego, apio, cebolla roja y eneldo. Ideal como snack, sándwich o sobre hojas verdes.",
+      "tiempo_prep_min": 15,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "88b07129",
+          340
+        ],
+        [
+          "585bd18b",
+          80
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "2fedb06b",
+          3
+        ],
+        [
+          "20367cb0",
+          15
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Escurrir el salmón en lata y ponerlo en un bol grande junto con el yogur griego, el apio picado, la cebolla roja picada, el eneldo fresco, la mostaza de Dijon, el zumo de limón, la pimienta negra y la sal.\n2. Mezclar todo bien con una cuchara, deshaciendo los trozos grandes de salmón hasta obtener una mezcla homogénea.\n3. Servir inmediatamente o enfriar en la nevera antes de consumir. Se puede acompañar de galletas saladas como snack, sobre pan o en un wrap como sándwich, o sobre una base de hojas verdes.",
+      "consejos": "Escurre bien el salmón para que la ensalada no quede aguada y ajusta la sal al final según el punto del pescado en lata.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/easy-salmon-salad/",
+        "autor": null,
+        "kcal_web": 241
+      }
+    },
+    {
+      "nombre": "Ensalada en tarro de espinacas y fresas con aliño de cítricos y amapola",
+      "descripcion": "Ensalada fresca en capas con espinacas, fresas, pepino, espárragos y pollo, aliñada con una vinagreta cítrica de pomelo y semillas de amapola.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          454
+        ],
+        [
+          "08637e90",
+          80
+        ],
+        [
+          "2e8d5d64",
+          120
+        ],
+        [
+          "16665787",
+          144
+        ],
+        [
+          "c7ad7588",
+          134
+        ],
+        [
+          "675965d4",
+          150
+        ],
+        [
+          "b1ff971a",
+          284
+        ],
+        [
+          "39bdbb82",
+          30
+        ],
+        [
+          "a03293f5",
+          120
+        ],
+        [
+          "34d6fafa",
+          10
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "bf392211",
+          21
+        ]
+      ],
+      "instrucciones": "1. Prepara los ingredientes: asa los espárragos, haz el pollo a la plancha o al horno y pica todas las verduras.\n2. Prepara el aliño batiendo con unas varillas el zumo de pomelo, el sirope de arce, la sal, la pimienta, la mostaza de Dijon, el ajo picado, las semillas de amapola y el aceite de oliva.\n3. Coge cuatro tarros de cristal de boca ancha de 32 oz (unos 950 ml) y ve colocando las capas: pon 3 cucharadas de aliño en cada tarro y reparte el resto de ingredientes en cuatro partes, añadiéndolos en este orden: cebolla, pepino, fresas, espárragos, pollo, queso de cabra, almendras y espinacas.\n4. En el momento de servir, agita cada tarro y viértelo en un bol.",
+      "consejos": "Puedes preparar los tarros con antelación y guardarlos en la nevera; añade las espinacas al final para que no se ablanden.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/strawberry-spinach-salad-in-a-jar-with-citrus-poppy-seed-dresssing/",
+        "autor": null,
+        "kcal_web": 481
+      }
+    },
+    {
+      "nombre": "Salmón al pesto con tomates asados",
+      "descripcion": "Filetes de salmón horneados con una capa de pesto y acompañados de tomates cherry y chalota asados. Una cena rápida y sabrosa lista en 20 minutos.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2fd7e358",
+          454
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "a92874a5",
+          468
+        ],
+        [
+          "31108cb4",
+          40
+        ],
+        [
+          "bf392211",
+          7
+        ],
+        [
+          "c5d97775",
+          60
+        ],
+        [
+          "b983723d",
+          8
+        ],
+        [
+          "49230ad1",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C.\n2. Secar bien el salmón con papel de cocina y sazonar con ¼ de cucharadita de sal y una pizca de pimienta.\n3. En un bol pequeño, mezclar los tomates cherry, la chalota picada, el aceite de oliva, ½ cucharadita de sal y una pizca de pimienta. Extender la mezcla en una fuente de horno de 23x33 cm.\n4. Colocar los filetes de salmón entre los tomates. Cubrir cada filete con aproximadamente 1 cucharada de pesto, extendiéndolo bien, y espolvorear un poco de parmesano rallado por encima.\n5. Hornear durante 12-15 minutos o hasta que el pescado esté hecho y se desmenuce fácilmente con un tenedor.\n6. Servir el salmón y los tomates con albahaca fresca por encima, si se desea, y acompañar de pasta, arroz o verduras asadas.",
+      "consejos": "Acompaña con pasta, arroz o verduras asadas para completar el plato.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/pesto-salmon/",
+        "autor": null,
+        "kcal_web": 348
+      }
+    },
+    {
+      "nombre": "Bol de ensalada con chips de boniato y alubias",
+      "descripcion": "Un bol colorido con chips de boniato al horno gratinados con queso cheddar, verduras frescas, alubias y aguacate, aliñado con una salsa cremosa de aguacate y lima.",
+      "tiempo_prep_min": 30,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6c5d82a5",
+          300
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bbece24a",
+          2
+        ],
+        [
+          "c94bf938",
+          28
+        ],
+        [
+          "21aeb6ee",
+          90
+        ],
+        [
+          "a010ea17",
+          170
+        ],
+        [
+          "91ad5545",
+          150
+        ],
+        [
+          "c25964f2",
+          15
+        ],
+        [
+          "82930270",
+          15
+        ],
+        [
+          "0e40c366",
+          20
+        ],
+        [
+          "95aa4443",
+          5
+        ],
+        [
+          "b983723d",
+          5
+        ],
+        [
+          "866d6397",
+          60
+        ],
+        [
+          "ae08120b",
+          28
+        ],
+        [
+          "65756599",
+          15
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 200 °C. Forra una bandeja de horno con papel de aluminio o engrásala bien.\n2. Mezcla las láminas de boniato con el aceite de oliva, la sal, la pimienta y el ajo en polvo. Colócalas en la bandeja y reparte el queso cheddar en láminas por encima. Hornea 20 minutos, o hasta que el queso se derrita y los bordes del boniato estén crujientes. Gratina los últimos minutos para que queden más crujientes. Saca y deja templar.\n3. Para la salsa cremosa de aguacate, si la usas, pon todos los ingredientes en una batidora y tritura hasta obtener una crema.\n4. Reparte los chips de boniato entre dos boles. Añade las verduras de hoja verde, las alubias y el aguacate. Corona cada bol con el jalapeño, la cebolleta y el cilantro. Sazona con sal y pimienta al gusto. Rocía con la salsa de aguacate, si lo deseas, y con la salsa picante. Espolvorea el parmesano y los copos de guindilla, si lo deseas.",
+      "consejos": "Corta el boniato en láminas muy finas y uniformes para que queden crujientes y se hagan al mismo tiempo.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/loaded-sweet-potato-nacho-salad-bowls/",
+        "autor": null,
+        "kcal_web": 358
+      }
+    },
+    {
+      "nombre": "Ensalada de atún y boniato sin mayonesa",
+      "descripcion": "Una ensalada fresca de atún con boniato asado, tomate, apio y cebolleta, aliñada con hummus y mostaza de Dijon en lugar de mayonesa.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "83505726",
+          170
+        ],
+        [
+          "6c5d82a5",
+          100
+        ],
+        [
+          "a92874a5",
+          40
+        ],
+        [
+          "91f40662",
+          30
+        ],
+        [
+          "82930270",
+          15
+        ],
+        [
+          "2856bf23",
+          40
+        ],
+        [
+          "20367cb0",
+          15
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Asa el boniato previamente y deja que se enfríe para poder cortarlo en trozos.\n2. Escurre el atún y colócalo en un bol pequeño; desmenúzalo con un tenedor.\n3. Añade el boniato en trozos, el tomate cherry, el apio y la cebolleta picados y mezcla.\n4. Incorpora el hummus y la mostaza de Dijon hasta humedecer el atún a tu gusto.\n5. Sazona con sal marina y pimienta negra recién molida.\n6. Sirve la ensalada de atún sobre una base de lechuga romana, pepino y champiñones, o entre dos rebanadas de pan integral.",
+      "consejos": "Asa el boniato con antelación y guárdalo en la nevera para que la ensalada se prepare en pocos minutos.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/sweet-potato-tuna-salad-no-mayo/",
+        "autor": null,
+        "kcal_web": 172
+      }
+    },
+    {
+      "nombre": "Salteado italiano de pavo y verduras",
+      "descripcion": "Un salteado rápido y sabroso de pavo picado con calabacín, calabaza amarilla, pimiento y berenjena en una salsa de tomate con albahaca fresca.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f0204a76",
+          454
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "368b99df",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "f8586302",
+          200
+        ],
+        [
+          "cfd9ca77",
+          200
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "e152c2f2",
+          250
+        ],
+        [
+          "1390b7a4",
+          411
+        ],
+        [
+          "5a1860a7",
+          16
+        ],
+        [
+          "b5aa40d0",
+          5
+        ],
+        [
+          "49230ad1",
+          20
+        ],
+        [
+          "b983723d",
+          25
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite de oliva en una sartén grande a fuego medio. Añade la cebolla y el ajo y sofríe hasta que estén aromáticos, unos 4-5 minutos.\n2. Añade el pavo picado y cocina hasta que se dore, desmenuzándolo mientras se cocina. Sazona con la mezcla de especias italianas, el perejil, la sal y la pimienta.\n3. Incorpora el calabacín, la calabaza amarilla, el pimiento rojo y la berenjena. Cocina 4-5 minutos, hasta que las verduras estén ligeramente tiernas.\n4. Remueve el tomate triturado, el concentrado de tomate y el vinagre balsámico. Deja cocer a fuego lento sin tapar 5-10 minutos, hasta que la salsa espese ligeramente.\n5. Prueba y ajusta la sazón. Espolvorea con albahaca fresca y queso parmesano si se desea. Sirve tal cual o sobre arroz, pasta, quinoa o arroz de coliflor.",
+      "consejos": "Sirve este salteado sobre arroz de coliflor para una opción baja en carbohidratos.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/italian-ground-turkey-skillet/",
+        "autor": null,
+        "kcal_web": 245
+      }
+    },
+    {
+      "nombre": "Pechuga de pavo asada en air fryer con hierbas",
+      "descripcion": "Pechuga de pavo jugosa con una mezcla de mantequilla, ajo y hierbas frescas, cocinada en air fryer. Una receta sencilla y sabrosa, ideal para una comida principal.",
+      "tiempo_prep_min": 60,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "7312fdee",
+          1362
+        ],
+        [
+          "668919bc",
+          28
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "d0a93278",
+          3
+        ],
+        [
+          "41f3bf76",
+          3
+        ]
+      ],
+      "instrucciones": "1. Mezcla la mantequilla ablandada con la sal, la pimienta, el ajo picado y las hierbas frescas picadas.\n2. Seca la pechuga de pavo con papel de cocina. Con una cucharilla o los dedos, afloja la piel y unta la mezcla de mantequilla con hierbas por debajo de la piel y por toda la pechuga.\n3. Precalienta la air fryer a 175 °C durante 3-4 minutos. Si tu air fryer tiene función de asado, úsala.\n4. Coloca la pechuga en la air fryer con la piel hacia arriba y cocina 20 minutos. Dale la vuelta y cocina otros 20 minutos, o hasta que esté bien hecha y alcance una temperatura interna de 74 °C.\n5. Pasa la pechuga a una tabla de cortar y déjala reposar 10 minutos. Corta en lonchas y sirve.",
+      "consejos": "Usa un termómetro de cocina para asegurarte de que la pechuga alcanza 74 °C en el centro y queda jugosa.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/air-fryer-turkey-breast/",
+        "autor": null,
+        "kcal_web": 337
+      }
+    },
+    {
+      "nombre": "Ensalada otoñal de calabaza kabocha y kale",
+      "descripcion": "Una ensalada templada de temporada con kale tierno, calabaza kabocha asada, arándanos secos, pepitas y queso feta, aliñada con un vinagreta de mostaza y naranja.",
+      "tiempo_prep_min": 40,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "d946bd47",
+          280
+        ],
+        [
+          "cfd9ca77",
+          600
+        ],
+        [
+          "bf392211",
+          60
+        ],
+        [
+          "dcf63110",
+          20
+        ],
+        [
+          "b0820d49",
+          30
+        ],
+        [
+          "6187036a",
+          40
+        ],
+        [
+          "f0671f02",
+          30
+        ],
+        [
+          "f2671248",
+          15
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "71805ea3",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C. Lavar la calabaza kabocha con agua tibia, cortarla por la mitad, retirar las semillas y cortarla en medias lunas de unos 2,5 cm.\n2. Mezclar los trozos de calabaza con 1 cucharadita de aceite de oliva y espolvorear con sal. Extenderlos en una bandeja de horno.\n3. Asar la calabaza durante 15 minutos, sacar del horno y remover, y volver a asar otros 10-15 minutos, hasta que esté tierna y dorada.\n4. Mientras se asa la calabaza, preparar el aliño: batir en un bol pequeño todos los ingredientes excepto el aceite de oliva. Añadir poco a poco el aceite de oliva sin dejar de batir. Reservar.\n5. Para montar las ensaladas, poner una porción de kale en un plato, añadir una porción de arándanos secos, pepitas y queso feta desmenuzado. Añadir las láminas de calabaza asada, rociar con el aliño al gusto y servir.",
+      "consejos": "Si el kale resulta muy duro, masajéalo unos minutos con un poco de aceite y sal antes de montar la ensalada para que quede más tierno.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/baby-kale-salad/",
+        "autor": null,
+        "kcal_web": 472
+      }
+    },
+    {
+      "nombre": "Ensalada de gambas con eneldo",
+      "descripcion": "Una ensalada fresca y cremosa de gambas cocidas con yogur griego, mayonesa, mostaza de Dijon, limón y eneldo. Ideal como entrante o comida ligera.",
+      "tiempo_prep_min": 13,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          454
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "2fedb06b",
+          9
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "866d6397",
+          110
+        ],
+        [
+          "20367cb0",
+          3
+        ],
+        [
+          "12a8ab46",
+          60
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Llena una olla grande con agua y 1 cucharadita de sal. Lleva a ebullición a fuego fuerte. Añade las gambas y baja a fuego medio. Cocina sin tapar unos 2-3 minutos hasta que estén rosadas y opacas. Prepara un baño de agua con hielo mientras se cocinan.\n2. Retira las gambas con una espumadera y pásalas al baño de hielo para detener la cocción. Escurre y sécalas bien con papel de cocina.\n3. En un bol grande, bate el yogur, la mayonesa, la mostaza, el zumo de limón, la sal y la pimienta.\n4. Añade las gambas, la cebolla roja, el apio y el eneldo y mezcla. Prueba y ajusta de sal y pimienta si es necesario.\n5. Sirve inmediatamente o refrigera unas horas antes de servir. Decora con eneldo fresco adicional. Sirve sobre lechuga, en hojas de lechuga o con crackers.",
+      "consejos": "Seca bien las gambas después de cocerlas para que la ensalada no quede aguada.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/shrimp-salad/",
+        "autor": null,
+        "kcal_web": 241
+      }
+    },
+    {
+      "nombre": "Tofu crujiente al horno",
+      "descripcion": "Cubos de tofu firme rebozados con levadura nutricional y harina de avena, horneados hasta quedar dorados y crujientes. Un acompañamiento versátil para ensaladas, bocadillos o salteados.",
+      "tiempo_prep_min": 45,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c0736451",
+          454
+        ],
+        [
+          "34906939",
+          10
+        ],
+        [
+          "95db3d38",
+          18
+        ],
+        [
+          "bf392211",
+          9
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C y forrar una bandeja grande con papel de horno.\n2. Escurrir y prensar el tofu, cortarlo en cubos de 0,5-1 cm y ponerlos en un recipiente grande. Rociar con el aceite de oliva.\n3. Mezclar en un bol pequeño la levadura nutricional, la harina de avena, el ajo en polvo, la sal y la pimienta. Añadir a los cubos de tofu y remover o agitar bien para que se cubran.\n4. Colocar el tofu en la bandeja en una sola capa y hornear de 30 a 40 minutos, girando los cubos cada 10 minutos, hasta que estén dorados y crujientes al gusto.\n5. Servir el tofu sobre ensalada, dentro de un bocadillo, en un salteado o solo como si fueran nuggets.",
+      "consejos": "Prensa bien el tofu antes de cortarlo para que suelte el exceso de agua y quede más crujiente.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/easy-crispy-baked-tofu/",
+        "autor": null,
+        "kcal_web": 161
+      }
+    },
+    {
+      "nombre": "Langostinos crujientes de coco con salsa de mango",
+      "descripcion": "Langostinos rebozados en coco y pan rallado, cocinados al aire con una salsa agridulce de mango, lima y jengibre.",
+      "tiempo_prep_min": 16,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "20c74a2a",
+          62
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "34f7b619",
+          50
+        ],
+        [
+          "c7de73e8",
+          80
+        ],
+        [
+          "665f786f",
+          454
+        ],
+        [
+          "d61c2a0f",
+          5
+        ],
+        [
+          "4166da6e",
+          75
+        ],
+        [
+          "65756599",
+          15
+        ],
+        [
+          "ac9a1077",
+          60
+        ],
+        [
+          "24bff01d",
+          10
+        ]
+      ],
+      "instrucciones": "1. Prepara la salsa: tritura el mango descongelado, el zumo de lima, la salsa chili dulce y el jengibre en un vaso batidor hasta obtener una mezcla homogénea. Reserva.\n2. En un bol pequeño mezcla la harina, la sal, la pimienta y el ajo en polvo.\n3. En otro bol bate los huevos.\n4. En un tercer bol mezcla el pan rallado y el coco rallado.\n5. Pasa cada langostino primero por la mezcla de harina, luego por el huevo escurriendo el exceso y finalmente por la mezcla de coco y pan rallado, presionando para que se adhiera bien. Colócalos en una bandeja forrada con papel de horno hasta completar todos.\n6. Precalienta la freidora de aire a 200 °C. Coloca los langostinos en una sola capa, pulveriza ligeramente con aceite en spray y cocina 6 minutos, dándoles la vuelta a mitad, hasta que estén dorados y crujientes. Hazlo en varias tandas para no sobrecargar la cubeta.\n7. Sirve caliente con cilantro fresco picado y la salsa de mango.",
+      "consejos": "Si no tienes freidora de aire, hornea los langostinos a 200 °C unos 10-12 minutos dándoles la vuelta a mitad.",
+      "origen_web": {
+        "url": "https://www.eatingbirdfood.com/air-fryer-coconut-shrimp/",
+        "autor": null,
+        "kcal_web": 441
+      }
+    }
+  ]
+}

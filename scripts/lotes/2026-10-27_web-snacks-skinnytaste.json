@@ -1,0 +1,1254 @@
+{
+  "lote": "web-snacks-skinnytaste-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "51176662": {
+      "nombre": "Azúcar moreno",
+      "prefijo": "51176662",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "79744190": {
+      "nombre": "Pasta integral (cocida)",
+      "prefijo": "79744190",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "83505726": {
+      "nombre": "Atún en lata al natural",
+      "prefijo": "83505726",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "385eb0e5": {
+      "nombre": "Mantequilla de cacahuete",
+      "prefijo": "385eb0e5",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "2249081f": {
+      "nombre": "Proteína en polvo (vainilla o chocolate)",
+      "prefijo": "2249081f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "ac0c0a04": {
+      "nombre": "Remolacha",
+      "prefijo": "ac0c0a04",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6e801766": {
+      "nombre": "Tahini",
+      "prefijo": "6e801766",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "efdb0f46": {
+      "nombre": "Aceite de oliva virgen extra",
+      "prefijo": "efdb0f46",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "564c253f": {
+      "nombre": "Ralladura de limón",
+      "prefijo": "564c253f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "32c7062f": {
+      "nombre": "Bacon 1/ 5 M",
+      "prefijo": "32c7062f",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6f64e109": {
+      "nombre": "Queso crema light",
+      "prefijo": "6f64e109",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "53d9263f": {
+      "nombre": "Queso Cheddar Rallado",
+      "prefijo": "53d9263f",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "fd38e2b4": {
+      "nombre": "Yema de huevo",
+      "prefijo": "fd38e2b4",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "081fbb40": {
+      "nombre": "Nuez moscada molida",
+      "prefijo": "081fbb40",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "49230ad1": {
+      "nombre": "Albahaca fresca",
+      "prefijo": "49230ad1",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2856bf23": {
+      "nombre": "Hummus",
+      "prefijo": "2856bf23",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "b6499d25": {
+      "nombre": "Zanahoria rallada",
+      "prefijo": "b6499d25",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d38e02f3": {
+      "nombre": "Brotes germinados",
+      "prefijo": "d38e02f3",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "97b698dd": {
+      "nombre": "Curry en polvo",
+      "prefijo": "97b698dd",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "c14d168a": {
+      "nombre": "Orégano seco",
+      "prefijo": "c14d168a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d641c84f": {
+      "nombre": "Alcaparras",
+      "prefijo": "d641c84f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "513d4dc7": {
+      "nombre": "Vinagre de Vino Tinto",
+      "prefijo": "513d4dc7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d23e1bdd": {
+      "nombre": "Rúcula",
+      "prefijo": "d23e1bdd",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2c6f1573": {
+      "nombre": "Azúcar",
+      "prefijo": "2c6f1573",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "70b4da1a": {
+      "nombre": "Azúcar glas",
+      "prefijo": "70b4da1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a54e5749": {
+      "nombre": "Chocolate negro 75-80%",
+      "prefijo": "a54e5749",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja",
+        "Lácteos"
+      ],
+      "origen": "vegetal"
+    },
+    "bdb20c11": {
+      "nombre": "Nubes Bicolor",
+      "prefijo": "bdb20c11",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3cbe24f8": {
+      "nombre": "Almendras",
+      "prefijo": "3cbe24f8",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "8767a425": {
+      "nombre": "Harina integral de trigo",
+      "prefijo": "8767a425",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "9ea83b94": {
+      "nombre": "Mantequilla sin sal",
+      "prefijo": "9ea83b94",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c4c40d15": {
+      "nombre": "Azúcar o edulcorante",
+      "prefijo": "c4c40d15",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8f023610": {
+      "nombre": "Clara de huevo",
+      "prefijo": "8f023610",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c8af7d4f": {
+      "nombre": "Compota de manzana",
+      "prefijo": "c8af7d4f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "87b0f802": {
+      "nombre": "Nueces o pacanas trituradas",
+      "prefijo": "87b0f802",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "87c8c74b": {
+      "nombre": "Pan rallado panko",
+      "prefijo": "87c8c74b",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "810d496b": {
+      "nombre": "Mayonesa ligera",
+      "prefijo": "810d496b",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "e4ffd0ee": {
+      "nombre": "Plátano (maduro)",
+      "prefijo": "e4ffd0ee",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4c99a423": {
+      "nombre": "Harina de almendra",
+      "prefijo": "4c99a423",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "ef13e557": {
+      "nombre": "Harina de coco",
+      "prefijo": "ef13e557",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Huevos revueltos con requesón",
+      "descripcion": "Huevos revueltos cremosos y ricos en proteínas gracias al requesón, listos en pocos minutos.",
+      "tiempo_prep_min": 6,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "b2c88c97",
+          110
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. En un bol mediano, batir los huevos con el requesón, la sal y la pimienta negra al gusto con un tenedor.\n2. Calentar una sartén antiadherente mediana a fuego medio-bajo y rociar con aceite en espray. Cuando esté caliente, verter los huevos.\n3. Con una espátula de goma, ir arrastrando suavemente las secciones de huevo hacia el centro de la sartén a medida que cuaje la base, formando pliegues suaves durante 1,5 a 2 minutos en total, hasta que estén cuajados.\n4. Retirar del fuego y servir.",
+      "consejos": "Retira la sartén del fuego un poco antes de que los huevos estén completamente cuajados para que queden más cremosos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/high-protein-scrambled-eggs-with-cottage-cheese/",
+        "autor": null,
+        "kcal_web": 173
+      }
+    },
+    {
+      "nombre": "Batido de mantequilla de cacahuete y frutos rojos",
+      "descripcion": "Un batido cremoso y refrescante con arándanos congelados, fresas y mantequilla de cacahuete, ideal para desayuno o merienda.",
+      "tiempo_prep_min": 5,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "508e2d88",
+          110
+        ],
+        [
+          "16665787",
+          115
+        ],
+        [
+          "9dc9f005",
+          180
+        ],
+        [
+          "385eb0e5",
+          16
+        ],
+        [
+          "2249081f",
+          30
+        ]
+      ],
+      "instrucciones": "1. Poner todos los ingredientes en el vaso de la batidora.\n2. Triturar hasta obtener una mezcla homogénea y sin grumos.\n3. Servir inmediatamente.",
+      "consejos": "Congela los arándanos previamente para que el batido quede más espeso y frío sin necesidad de añadir más hielo.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/peanut-butter-jelly-smoothie/",
+        "autor": null,
+        "kcal_web": 222
+      }
+    },
+    {
+      "nombre": "Hummus de remolacha",
+      "descripcion": "Un hummus vibrante y cremoso elaborado con remolacha asada, garbanzos y tahini. Ideal como aperitivo o snack saludable para untar.",
+      "tiempo_prep_min": 85,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ac0c0a04",
+          150
+        ],
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "6e801766",
+          60
+        ],
+        [
+          "efdb0f46",
+          28
+        ],
+        [
+          "564c253f",
+          2
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "31f12840",
+          1
+        ],
+        [
+          "6be23d9d",
+          0.5
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C.\n2. Envolver la remolacha en papel de aluminio y asar hasta que esté tierna, unos 50-75 minutos. Dejar enfriar, pelar y trocear.\n3. Mientras se asa la remolacha, cocer los garbanzos con el bicarbonato en agua hirviendo durante 20 minutos. Escurrir y enjuagar.\n4. En un procesador de alimentos, triturar la remolacha y el ajo. Añadir los garbanzos, el tahini, el aceite de oliva, la ralladura y el zumo de limón, el cilantro, el comino y la sal. Procesar hasta obtener una textura suave.\n5. Servir en un bol con un chorrito de aceite de oliva, ralladura de limón y microgreens si se desea.",
+      "consejos": "Se puede usar remolacha cocida comprada para ahorrar tiempo.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/beet-hummus/",
+        "autor": null,
+        "kcal_web": 206.5
+      }
+    },
+    {
+      "nombre": "Dip de jalapeño estilo popper",
+      "descripcion": "Un dip cremoso al horno con queso crema, yogur griego, jalapeños, cebolleta y bacon crujiente. Ideal para compartir como aperitivo.",
+      "tiempo_prep_min": 32,
+      "porciones": 10,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "32c7062f",
+          45
+        ],
+        [
+          "c25964f2",
+          120
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "6f64e109",
+          227
+        ],
+        [
+          "585bd18b",
+          240
+        ],
+        [
+          "53d9263f",
+          70
+        ],
+        [
+          "c17ad017",
+          2
+        ],
+        [
+          "bbece24a",
+          3
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C.\n2. En una sartén fría a fuego medio, cocinar el bacon picado hasta que esté crujiente. Retirar el bacon y escurrir la mayor parte de la grasa.\n3. En la misma sartén, añadir el jalapeño picado y la parte blanca de la cebolleta; cocinar hasta que estén ligeramente blandos, unos 4-5 minutos. Retirar del fuego.\n4. En un bol mediano, mezclar el queso crema, el yogur griego, ½ taza de queso cheddar rallado, la cebolla en polvo, el ajo en polvo y ½ cucharadita de sal. Añadir el jalapeño y la cebolleta cocidos y remover hasta integrar.\n5. Pasar la mezcla a una fuente de horno de 20x20 cm y cubrir con el resto del queso cheddar (2 cucharadas).\n6. Hornear hasta que se derrita y burbujee, unos 12-15 minutos. Sacar del horno y cubrir con el bacon, la parte verde de la cebolleta y rodajas de jalapeño crudo.",
+      "consejos": "Si preparas el dip con antelación y lo guardas en la nevera, necesitará más tiempo de horno para calentarse por completo.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/jalapeno-popper-dip/",
+        "autor": null,
+        "kcal_web": 106
+      }
+    },
+    {
+      "nombre": "Ñoquis de requesón con salsa de tomate",
+      "descripcion": "Ñoquis ligeros elaborados con requesón, parmesano y un toque de nuez moscada, servidos con salsa de tomate y albahaca fresca.",
+      "tiempo_prep_min": 69,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          300
+        ],
+        [
+          "b983723d",
+          25
+        ],
+        [
+          "fd38e2b4",
+          20
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "20c74a2a",
+          110
+        ],
+        [
+          "1d197cae",
+          800
+        ],
+        [
+          "49230ad1",
+          5
+        ]
+      ],
+      "instrucciones": "1. Enhariñar ligeramente una bandeja de horno con borde y reservar.\n2. Triturar el requesón en un procesador de alimentos hasta que quede suave. Pasarlo a un bol y mezclar con el parmesano, la yema de huevo, la sal, la pimienta y la nuez moscada. Añadir 3/4 taza de harina (90 g) y mezclar con una espátula hasta formar una bola; si no liga, añadir más harina cucharada a cucharada (hasta 20 g más). La masa quedará pegajosa.\n3. Enhariñarse las manos y formar unas 36 bolitas del tamaño de una moneda, colocándolas en la bandeja. Refrigerar 30 minutos.\n4. Calentar la salsa de tomate a fuego bajo hasta que hierva y mantener tapada. Mientras tanto, llevar a ebullición una olla grande con agua salada.\n5. Cuando el agua hierva, añadir los ñoquis y cocer 3-4 minutos, hasta que floten. Retirarlos con una espumadera y pasarlos a la olla con la salsa; remover para que se impregnen.\n6. Servir en cuatro boles, repartiendo los ñoquis y la salsa, y coronar con albahaca fresca y parmesano rallado. Servir inmediatamente.",
+      "consejos": "Si la masa está demasiado pegajosa, añade harina poco a poco hasta que puedas formar las bolitas sin que se deshagan.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/cottage-cheese-gnudi/",
+        "autor": null,
+        "kcal_web": 290.5
+      }
+    },
+    {
+      "nombre": "Barcas de pepino con hummus y verduras",
+      "descripcion": "Pepino vaciado y relleno de hummus, zanahoria rallada, brotes, tomate, cebolla roja y aguacate, con un toque de limón. Un snack fresco y ligero listo en 5 minutos.",
+      "tiempo_prep_min": 5,
+      "porciones": 2,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2e8d5d64",
+          300
+        ],
+        [
+          "2856bf23",
+          90
+        ],
+        [
+          "b6499d25",
+          30
+        ],
+        [
+          "d38e02f3",
+          15
+        ],
+        [
+          "7f40a393",
+          40
+        ],
+        [
+          "08637e90",
+          30
+        ],
+        [
+          "91ad5545",
+          85
+        ],
+        [
+          "60ad001e",
+          15
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Vaciar las semillas del pepino con una cuchara medidora metálica y cortarlo por la mitad a lo largo.\n2. Rellenar cada mitad con 3 cucharadas de hummus.\n3. Cubrir con la zanahoria rallada, los brotes, el tomate, la cebolla roja y el aguacate en láminas.\n4. Terminar con sal, pimienta y el zumo de un gajo de limón.",
+      "consejos": "Añade el aguacate y el limón justo antes de servir para que no se oxiden.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/veggie-hummus-cucumber-boats/",
+        "autor": null,
+        "kcal_web": 183
+      }
+    },
+    {
+      "nombre": "Huevos rellenos de guacamole",
+      "descripcion": "Huevos cocidos rellenos de una crema de aguacate con lima, cebolla roja, jalapeño y tomate. Un aperitivo fresco y original.",
+      "tiempo_prep_min": 30,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "91ad5545",
+          140
+        ],
+        [
+          "65756599",
+          12
+        ],
+        [
+          "08637e90",
+          5
+        ],
+        [
+          "c25964f2",
+          15
+        ],
+        [
+          "0e40c366",
+          3
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "7f40a393",
+          15
+        ]
+      ],
+      "instrucciones": "1. Pelar los huevos cocidos y enfriados.\n2. Cortarlos por la mitad en horizontal y reservar las yemas.\n3. En un bol, machacar el aguacate con 2 yemas enteras; desechar el resto.\n4. Mezclar el zumo de lima, la cebolla roja, el jalapeño, el cilantro, la sal y la pimienta, y ajustar al gusto. Incorporar con cuidado el tomate.\n5. Repartir cucharadas generosas de la mezcla de guacamole en las 12 mitades de huevo.\n6. Espolvorear un poco de chile en polvo para dar color y colocar en una fuente.",
+      "consejos": "Usa aguacate bien maduro para que la mezcla quede cremosa y añade la lima justo antes de servir para que no se oxide.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/guacamole-deviled-eggs/",
+        "autor": null,
+        "kcal_web": 88
+      }
+    },
+    {
+      "nombre": "Garbanzos asados especiados",
+      "descripcion": "Un snack crujiente y saludable de garbanzos asados al horno con una mezcla de especias. Ideal para picar entre horas.",
+      "tiempo_prep_min": 45,
+      "porciones": 3,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "bf392211",
+          5
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "21a40eb5",
+          1
+        ],
+        [
+          "31f12840",
+          1
+        ],
+        [
+          "97b698dd",
+          1
+        ],
+        [
+          "bbece24a",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C. Escurre los garbanzos en un colador y déjalos secar por completo; si es necesario, sécalos con papel de cocina.\n2. Colócalos en una bandeja de horno en una sola capa y ásalos durante 35-45 minutos, agitando la bandeja cada 10 minutos. Deben quedar dorados y crujientes por dentro, no húmedos.\n3. En un bol mediano, mezcla todas las especias. Saca los garbanzos del horno y rocíalos con aceite de oliva. Mézclalos inmediatamente con las especias mientras están calientes. Consúmelos a temperatura ambiente.",
+      "consejos": "Asegúrate de que los garbanzos estén bien secos antes de asarlos para que queden crujientes.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/roasted-chickpea-snack-2-pts/",
+        "autor": null,
+        "kcal_web": 144
+      }
+    },
+    {
+      "nombre": "Pollo a la salsa en olla a presión",
+      "descripcion": "Pechuga de pollo especiada y cocinada en salsa, desmenuzada y lista para servir. Una receta rápida y sencilla con solo cinco ingredientes.",
+      "tiempo_prep_min": 30,
+      "porciones": 5,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          454
+        ],
+        [
+          "1d197cae",
+          240
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "c14d168a",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Sazona la pechuga de pollo por ambos lados con la sal, el comino, la pimienta negra y el orégano.\n2. Coloca el pollo en la olla a presión y cúbrelo con la salsa.\n3. Tapa la olla y cocina a presión durante 20 minutos; deja que la presión se libere de forma natural.\n4. Cuando la olla haya liberado la presión, saca el pollo a un plato y desmenúzalo con dos tenedores.",
+      "consejos": "Sirve el pollo desmenuzado con la salsa sobre arroz, en tacos o en ensalada.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/instant-pot-pressure-cooker-easy-salsa/",
+        "autor": null,
+        "kcal_web": 125
+      }
+    },
+    {
+      "nombre": "Ensalada de pasta con atún y rúcula",
+      "descripcion": "Una ensalada fresca y rápida de pasta integral con atún, rúcula, alcaparras y lascas de parmesano, aliñada con aceite de oliva y vinagre de vino tinto.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "83505726",
+          140
+        ],
+        [
+          "d641c84f",
+          15
+        ],
+        [
+          "efdb0f46",
+          14
+        ],
+        [
+          "513d4dc7",
+          15
+        ],
+        [
+          "d23e1bdd",
+          40
+        ],
+        [
+          "79744190",
+          140
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "b983723d",
+          14
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla el atún escurrido con las alcaparras escurridas, el aceite de oliva, el vinagre de vino tinto, la rúcula, la pasta cocida y la pimienta negra.\n2. Reparte la ensalada en dos platos y cubre con las lascas de parmesano.",
+      "consejos": "Escurre bien el atún y las alcaparras para que la ensalada no quede aguada.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/mayo-less-tuna-salad/",
+        "autor": null,
+        "kcal_web": 271.5
+      }
+    },
+    {
+      "nombre": "Buñuelos de plátano ligeros",
+      "descripcion": "Buñuelos dulces y esponjosos elaborados con plátano muy maduro, huevo y un toque de canela. Una merienda sencilla y ligera, lista en pocos minutos.",
+      "tiempo_prep_min": 20,
+      "porciones": 6,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          360
+        ],
+        [
+          "2c6f1573",
+          25
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "20c74a2a",
+          24
+        ],
+        [
+          "f75a3721",
+          2
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "70b4da1a",
+          3
+        ]
+      ],
+      "instrucciones": "1. Tritura los plátanos con un tenedor hasta obtener un puré.\n2. Añade el azúcar, los huevos batidos, la harina y el extracto de vainilla; mezcla hasta integrar.\n3. Calienta una sartén grande a fuego bajo y engrasa ligeramente con spray antiadherente.\n4. Vierte cucharadas de la masa (unos 15 ml por buñuelo) en la sartén caliente.\n5. Cocina 1-2 minutos por un lado, dale la vuelta y cocina el otro lado hasta que estén dorados.\n6. Retira a un plato y mantén calientes en el horno mientras cocinas el resto de la masa.\n7. Antes de servir, espolvorea con un poco de azúcar glas y canela molida.",
+      "consejos": "Usa plátanos muy maduros para que la masa quede más dulce y no necesite más azúcar.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/low-fat-banana-fritters/",
+        "autor": null,
+        "kcal_web": 124.8
+      }
+    },
+    {
+      "nombre": "Plátanos asados en papel de aluminio con chocolate y almendras",
+      "descripcion": "Plátanos dulces asados a la parrilla con chocolate fundido, nubes y almendras crujientes, envueltos en papel de aluminio. Un postre o merienda sencilla y rápida.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          240
+        ],
+        [
+          "a54e5749",
+          28
+        ],
+        [
+          "bdb20c11",
+          14
+        ],
+        [
+          "3cbe24f8",
+          14
+        ]
+      ],
+      "instrucciones": "1. Con un cuchillo de punta, haz un corte de 0,6 cm de profundidad a lo largo de la curva del plátano. Haz dos cortes pequeños en cada extremo del corte para separar mejor la piel. Abre ligeramente el plátano con las manos.\n2. Corta 2 trozos de papel de aluminio de 30 cm y coloca un plátano sobre cada uno. Añade una cucharada de pepitas de chocolate a cada plátano, presionando ligeramente algunas dentro del corte. Reparte las nubes y las almendras picadas entre los dos plátanos.\n3. Levanta el papel de aluminio y envuelve el plátano, cerrando bien todos los bordes.\n4. Precalienta la parrilla a 200 °C a fuego bajo. Coloca los plátanos envueltos en la parrilla y cierra la tapa. Cocina unos 10 minutos, o hasta que los plátanos estén blandos y el chocolate fundido. Retira de la parrilla y deja reposar 2 minutos.\n5. Abre con cuidado el papel de aluminio y sirve los plátanos.",
+      "consejos": "Usa plátanos bien maduros para que queden más dulces y tiernos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/grilled-bananas/",
+        "autor": null,
+        "kcal_web": 189
+      }
+    },
+    {
+      "nombre": "Muffins de plátano, arce y nueces pacanas",
+      "descripcion": "Muffins esponjosos de plátano maduro endulzados con sirope de arce y azúcar de arce, coronados con nueces pacanas trituradas. Una opción de desayuno o merienda casera.",
+      "tiempo_prep_min": 45,
+      "porciones": 12,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          360
+        ],
+        [
+          "8767a425",
+          156
+        ],
+        [
+          "9ea83b94",
+          28
+        ],
+        [
+          "c4c40d15",
+          50
+        ],
+        [
+          "8f023610",
+          66
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "c8af7d4f",
+          30
+        ],
+        [
+          "f75a3721",
+          2
+        ],
+        [
+          "87b0f802",
+          40
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 165 °C y colocar cápsulas de papel en un molde para muffins.\n2. Triturar los plátanos en un bol y reservar.\n3. En un bol mediano, mezclar con varillas la harina, el bicarbonato sódico y la sal. Reservar.\n4. En un bol grande, batir la mantequilla con el azúcar de arce con una batidora eléctrica.\n5. Añadir las claras de huevo, los plátanos triturados, el sirope de arce, la compota de manzana y la vainilla; batir a velocidad media hasta integrar bien, raspando los bordes del bol.\n6. Incorporar la mezcla de harina y batir a velocidad baja hasta que justo se combine.\n7. Repartir la masa en el molde preparado y distribuir las nueces pacanas trituradas de forma uniforme por encima.\n8. Hornear en la rejilla central durante 30-35 minutos, o hasta que al insertar un palillo en el centro salga limpio.",
+      "consejos": "Usa plátanos muy maduros para un dulzor natural y deja enfriar los muffins 5 minutos en el molde antes de pasarlos a una rejilla.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/maple-pecan-banana-muffins/",
+        "autor": null,
+        "kcal_web": 142
+      }
+    },
+    {
+      "nombre": "Aguacate rebozado con salsa de lima",
+      "descripcion": "Bastones de aguacate rebozados en panko y cocinados al aire, servidos con una salsa cremosa de lima y yogur.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "91ad5545",
+          227
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "87c8c74b",
+          94
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "810d496b",
+          42
+        ],
+        [
+          "65756599",
+          10
+        ]
+      ],
+      "instrucciones": "1. Precalentar la freidora de aire a 200 °C.\n2. Batir el huevo en un bol poco profundo. En otro plato, mezclar el panko con 1 cucharadita de sal con chile y lima.\n3. Sazonar los bastones de aguacate con 1/4 de cucharadita de sal con chile y lima. Pasar cada trozo primero por huevo y luego por panko.\n4. Rocíar ambos lados con aceite en spray, pasar a la freidora de aire y cocinar 7-8 minutos, girando a mitad. Servir caliente con la salsa.\n5. Para horno: precalentar a 220 °C, seguir los pasos anteriores y hornear en bandeja hasta que estén dorados y crujientes, 10-15 minutos.\n6. Para la salsa, mezclar el yogur griego, la mayonesa ligera, el zumo de lima, 1/2 cucharadita de sal con chile y lima y la sal.\n7. Servir los bastones de aguacate con la salsa de lima.",
+      "consejos": "Cocina los bastones en tandas para que queden crujientes y no se amontonen en la freidora.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/avocado-fries-with-lime-dipping-sauce/",
+        "autor": null,
+        "kcal_web": 197
+      }
+    },
+    {
+      "nombre": "Muffins de plátano con relleno de queso crema sin gluten",
+      "descripcion": "Muffins esponjosos de plátano y harina de almendra con un corazón de queso crema endulzado. Sin gluten y perfectos para desayuno o merienda.",
+      "tiempo_prep_min": 60,
+      "porciones": 12,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e4ffd0ee",
+          400
+        ],
+        [
+          "4c99a423",
+          120
+        ],
+        [
+          "ef13e557",
+          40
+        ],
+        [
+          "242a5689",
+          8
+        ],
+        [
+          "668919bc",
+          28
+        ],
+        [
+          "51176662",
+          67
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "6f64e109",
+          113
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 163 °C y colocar cápsulas de papel en un molde de 12 cavidades.\n2. Triturar los plátanos en un bol y reservar.\n3. En un bol mediano, mezclar con varillas la harina de almendra, la harina de coco, la levadura química, el bicarbonato y la sal. Reservar.\n4. En un bol grande, batir la mantequilla con 33 g del azúcar moreno con batidora eléctrica.\n5. Añadir los huevos, los plátanos triturados y la vainilla; batir a velocidad media hasta que la mezcla espese. Bajar los restos de las paredes del bol.\n6. Incorporar la mezcla de harinas y batir a velocidad baja hasta que se integre.\n7. Mezclar el queso crema con el azúcar moreno restante (34 g).\n8. Verter la mitad de la masa en el molde, añadir unos 10 g de la mezcla de queso crema en el centro de cada muffin y cubrir con el resto de la masa.\n9. Hornear en la rejilla central durante 35-45 minutos, o hasta que al insertar un palillo en el centro salga limpio.",
+      "consejos": "Usa plátanos muy maduros para un dulzor natural y deja enfriar los muffins 10 minutos antes de desmoldarlos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/cream-cheese-almond-flour-banana-muffins/",
+        "autor": null,
+        "kcal_web": 149
+      }
+    }
+  ]
+}

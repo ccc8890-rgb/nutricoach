@@ -1,0 +1,1248 @@
+{
+  "lote": "web-snacks-fitfoodiefinds-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "51176662": {
+      "nombre": "Azúcar moreno",
+      "prefijo": "51176662",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "83505726": {
+      "nombre": "Atún en lata al natural",
+      "prefijo": "83505726",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "086e8640": {
+      "nombre": "Manzana Joya",
+      "prefijo": "086e8640",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c7de73e8": {
+      "nombre": "Coco rallado",
+      "prefijo": "c7de73e8",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3a88a7b8": {
+      "nombre": "Dátiles",
+      "prefijo": "3a88a7b8",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2aba459": {
+      "nombre": "Chocolate negro en pepitas",
+      "prefijo": "b2aba459",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "572b713a": {
+      "nombre": "Queso crema",
+      "prefijo": "572b713a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "70b4da1a": {
+      "nombre": "Azúcar glas",
+      "prefijo": "70b4da1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "4834cee3": {
+      "nombre": "Nata para montar",
+      "prefijo": "4834cee3",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f35fc1f1": {
+      "nombre": "Fresas enteras Hacendado ultracongeladas",
+      "prefijo": "f35fc1f1",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7d5a031f": {
+      "nombre": "Manzana",
+      "prefijo": "7d5a031f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8767a425": {
+      "nombre": "Harina integral de trigo",
+      "prefijo": "8767a425",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "f2671248": {
+      "nombre": "Zumo de naranja",
+      "prefijo": "f2671248",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9ea83b94": {
+      "nombre": "Mantequilla sin sal",
+      "prefijo": "9ea83b94",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "675965d4": {
+      "nombre": "Queso fresco de cabra",
+      "prefijo": "675965d4",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "78f4535e": {
+      "nombre": "Mermelada de frambuesa",
+      "prefijo": "78f4535e",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "37d5c3d0": {
+      "nombre": "Hierbas frescas",
+      "prefijo": "37d5c3d0",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0a8c87df": {
+      "nombre": "Crema de Almendras Lata",
+      "prefijo": "0a8c87df",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "1948a73a": {
+      "nombre": "Pan integral",
+      "prefijo": "1948a73a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "aa87b67a": {
+      "nombre": "Queso cottage",
+      "prefijo": "aa87b67a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "95aa4443": {
+      "nombre": "Salsa picante",
+      "prefijo": "95aa4443",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "382a08c2": {
+      "nombre": "Queso mozzarella",
+      "prefijo": "382a08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "30ed35cf": {
+      "nombre": "Queso Azul D'Auvergne DOP",
+      "prefijo": "30ed35cf",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "123d2515": {
+      "nombre": "Kétchup",
+      "prefijo": "123d2515",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c0e08eab": {
+      "nombre": "Pechuga de pavo en lonchas",
+      "prefijo": "c0e08eab",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "a67b08c2": {
+      "nombre": "Queso Havarti Lonchas",
+      "prefijo": "a67b08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0d971edf": {
+      "nombre": "Pepinillo encurtido",
+      "prefijo": "0d971edf",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d23e1bdd": {
+      "nombre": "Rúcula",
+      "prefijo": "d23e1bdd",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bfda87c0": {
+      "nombre": "Alubias negras cocidas",
+      "prefijo": "bfda87c0",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03858a00": {
+      "nombre": "Maíz dulce",
+      "prefijo": "03858a00",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7fcfe0b8": {
+      "nombre": "Yogur griego natural (0%)",
+      "prefijo": "7fcfe0b8",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "ae08120b": {
+      "nombre": "Aceite de Aguacate Cristal",
+      "prefijo": "ae08120b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e6dd0fa6": {
+      "nombre": "Dátiles medjool",
+      "prefijo": "e6dd0fa6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "aab45b38": {
+      "nombre": "Anacardos Crudos",
+      "prefijo": "aab45b38",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Ensalada de manzana con yogur y chocolate en tarro",
+      "descripcion": "Una ensalada dulce y cremosa de manzana verde con yogur, sirope de arce, dátiles, coco y pepitas de chocolate, servida en tarro.",
+      "tiempo_prep_min": 15,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "086e8640",
+          180
+        ],
+        [
+          "585bd18b",
+          80
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "c7de73e8",
+          12
+        ],
+        [
+          "3a88a7b8",
+          54
+        ],
+        [
+          "b2aba459",
+          20
+        ],
+        [
+          "6328f4b9",
+          16
+        ]
+      ],
+      "instrucciones": "1. Añadir todos los ingredientes a un tarro grande y agitar hasta que todos queden bien impregnados.\n2. Servir con los toppings adicionales que se deseen.",
+      "consejos": "Elige una manzana verde firme y ácida para contrastar con el dulzor del sirope y los dátiles.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/caramel-delites-apple-salad/",
+        "autor": null,
+        "kcal_web": 297
+      }
+    },
+    {
+      "nombre": "Daneses de requesón y arándanos",
+      "descripcion": "Bollitos tiernos de masa de requesón rellenos de crema de queso y arándanos, ideales para un desayuno o merienda.",
+      "tiempo_prep_min": 30,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "508e2d88",
+          75
+        ],
+        [
+          "51176662",
+          16
+        ],
+        [
+          "20c74a2a",
+          125
+        ],
+        [
+          "242a5689",
+          4
+        ],
+        [
+          "b2c88c97",
+          320
+        ],
+        [
+          "f75a3721",
+          6
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "572b713a",
+          45
+        ],
+        [
+          "70b4da1a",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y forra una bandeja con papel de horno.\n2. Mezcla los arándanos con 1 cucharadita de azúcar moreno en un bol pequeño y reserva.\n3. En un bol grande, combina la harina, la levadura química y la sal.\n4. Añade el requesón y la vainilla y remueve hasta integrar. Con las manos, presiona la mezcla hasta formar una bola.\n5. Pasa la masa a una superficie enharinada y amasa hasta que quede lisa, añadiendo más harina si está muy pegajosa.\n6. Divide la masa en 6 porciones iguales y forma una bola con cada una.\n7. Con las manos húmedas, aplana cada bola y haz un hueco en el centro, dejando un borde de 1 cm.\n8. Para el relleno, mezcla el requesón, el queso crema, 1 cucharada de azúcar moreno y la vainilla. Reparte el relleno en los huecos y cubre con los arándanos.\n9. Coloca los daneses en la bandeja, pinta los bordes con el huevo batido y hornea 10-15 minutos o hasta que cuajen.\n10. Si lo deseas, espolvorea con azúcar glas antes de servir.",
+      "consejos": "Deja enfriar unos minutos antes de servir para que el relleno asiente y no queme.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/blueberry-cottage-cheese-danish/",
+        "autor": null,
+        "kcal_web": 178
+      }
+    },
+    {
+      "nombre": "Crepes de requesón con fresas y sirope de arce",
+      "descripcion": "Crepes finos y proteicos elaborados con requesón triturado, rellenos de una crema suave de requesón con sirope de arce y fresas frescas. Una opción dulce y equilibrada para el desayuno o la merienda.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "20c74a2a",
+          62
+        ],
+        [
+          "b2c88c97",
+          490
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "668919bc",
+          28
+        ],
+        [
+          "16665787",
+          150
+        ],
+        [
+          "34d6fafa",
+          20
+        ]
+      ],
+      "instrucciones": "1. Para el relleno, tritura el requesón (245 g) con el sirope de arce en un vaso batidor hasta obtener una crema lisa. Pasa la mezcla a un bol y refrigera hasta el momento de usar.\n2. Para las crepes, tritura el requesón (245 g) con 60 ml de agua en un vaso batidor hasta que quede liso.\n3. Pasa el requesón triturado a un bol y bate con las varillas los huevos, la mantequilla derretida y el sirope de arce restante. También puedes hacerlo todo en el vaso batidor.\n4. Añade poco a poco la harina y la sal a la mezcla de requesón. La masa debe tener la consistencia de una masa de tortitas muy líquida. Si no está suficientemente líquida, añade el agua restante (60 ml) cucharada a cucharada.\n5. Engrasa una sartén para crepes y caliéntala a fuego bajo. Vierte 60 ml de masa en la sartén, levántala y gírala suavemente para que la masa se reparta de forma uniforme y forme una crepe más grande. Cocina 1 minuto, dale la vuelta y cocina 20-30 segundos más. Reserva en un plato. Repite hasta agotar la masa.\n6. Para montar, dobla la crepe por la mitad, pon 2 cucharadas de la crema de requesón con sirope y unas fresas laminadas en una de las mitades. Dobla de nuevo para formar un triángulo. Corona con un poco de sirope de arce y sirve.",
+      "consejos": "Deja reposar la masa 10 minutos antes de cocinar para que la harina se hidrate y las crepes queden más finas y flexibles.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/blended-cottage-cheese-crepes/",
+        "autor": null,
+        "kcal_web": 190
+      }
+    },
+    {
+      "nombre": "Rollo de crepe de tiramisú con requesón",
+      "descripcion": "Un rollo de crepe horneado relleno de una crema de requesón, nata y café, cubierto con cacao. Una versión ligera y original del tiramisú.",
+      "tiempo_prep_min": 45,
+      "porciones": 8,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "20c74a2a",
+          62
+        ],
+        [
+          "b2c88c97",
+          425
+        ],
+        [
+          "6cd81fed",
+          150
+        ],
+        [
+          "668919bc",
+          28
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "4834cee3",
+          120
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "edb1e321",
+          10
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C. Forra una bandeja de horno estándar (30x45 cm) con papel de hornear y engrásala con spray antiadherente.\n2. Añade los ingredientes del crepe (harina, sal, 245 g de requesón, agua, huevos, mantequilla y 20 g de sirope de arce) a un vaso de batidora de alta velocidad y tritura hasta obtener una mezcla homogénea.\n3. Vierte la mezcla del crepe sobre la bandeja preparada.\n4. Hornea a 175 °C durante 10 minutos. Saca del horno y deja enfriar unos minutos antes de refrigerar durante 1 hora.\n5. Prepara el relleno: añade 180 g de requesón, 60 g de sirope de arce, el extracto de vainilla y el café espresso en polvo a un vaso de batidora de alta velocidad. Tritura hasta que quede suave y reserva.\n6. Monta la nata en un bol grande hasta que forme picos firmes.\n7. Incorpora el requesón batido a la nata montada y mezcla con movimientos envolventes.\n8. Coloca el crepe enfriado sobre una tabla de cortar grande. Extiende el relleno sobre el crepe, dejando 7-8 cm libres en un extremo.\n9. Enrolla el crepe alejándolo de ti hacia el extremo que quedó vacío.\n10. Espolvorea el cacao en polvo por encima con un colador, corta en porciones y sirve.",
+      "consejos": "Refrigera el rollo al menos 1 hora antes de cortarlo para que el relleno esté firme y sea más fácil de lonchear.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/cottage-cheese-tiramisu-crepe-roll/",
+        "autor": null,
+        "kcal_web": 211
+      }
+    },
+    {
+      "nombre": "Bocados helados de yogur griego con cacahuete",
+      "descripcion": "Bocados helados y cremosos de yogur griego mezclado con crema de cacahuete y sirope de arce, con chips de chocolate y sal en escamas. Un snack fresco y proteico listo en minutos.",
+      "tiempo_prep_min": 10,
+      "porciones": 9,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          240
+        ],
+        [
+          "6328f4b9",
+          128
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "b2aba459",
+          21
+        ]
+      ],
+      "instrucciones": "1. Mezcla el yogur, la crema de cacahuete y el sirope de arce en un bol hasta obtener una textura suave y esponjosa.\n2. Vierte la mezcla en un molde de bizcocho forrado con papel de horno y cubre con los chips de chocolate y la sal en escamas.\n3. Congela durante al menos 3 horas.\n4. Saca del congelador y corta en trozos del tamaño de un bocado.",
+      "consejos": "Puedes sustituir el yogur griego por skyr si prefieres una textura más densa y un extra de proteína.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/frozen-yogurt-bites/",
+        "autor": null,
+        "kcal_web": 136
+      }
+    },
+    {
+      "nombre": "Batido cremoso de fresa y chía",
+      "descripcion": "Un batido cremoso y refrescante de fresa y plátano con yogur griego y semillas de chía. Ideal para desayuno o merienda.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f35fc1f1",
+          150
+        ],
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "f75a3721",
+          2
+        ],
+        [
+          "b5b5e57f",
+          12
+        ]
+      ],
+      "instrucciones": "1. Pon todos los ingredientes excepto las semillas de chía en una batidora.\n2. Tritura hasta obtener una mezcla homogénea. Añade las semillas de chía y pulsa suavemente hasta que se integren.\n3. Sirve en un vaso y deja reposar unos minutos para que las semillas de chía se expandan.",
+      "consejos": "Deja reposar el batido 5 minutos antes de consumirlo para que las semillas de chía espesen la textura.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/creamy-strawberry-chia-smoothie/",
+        "autor": null,
+        "kcal_web": 159
+      }
+    },
+    {
+      "nombre": "Crumble de manzana fácil",
+      "descripcion": "Un postre templado de manzana con una cobertura crujiente de avena, azúcar moreno y canela. Sencillo y perfecto para compartir.",
+      "tiempo_prep_min": 50,
+      "porciones": 6,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "7d5a031f",
+          900
+        ],
+        [
+          "8767a425",
+          79
+        ],
+        [
+          "f2671248",
+          80
+        ],
+        [
+          "0f347066",
+          135
+        ],
+        [
+          "51176662",
+          100
+        ],
+        [
+          "589e624a",
+          3
+        ],
+        [
+          "9ea83b94",
+          113
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C y engrasa una fuente de horno de 23x23 cm.\n2. Pela las manzanas, córtalas en trozos pequeños y colócalas en el fondo de la fuente. Vierte el zumo de naranja y espolvorea la harina. Mezcla y reserva.\n3. En un bol grande, mezcla los copos de avena, la harina integral, el azúcar moreno, la canela y la sal.\n4. Añade la mantequilla ablandada y trabájala con un tenedor o con las manos hasta obtener migas.\n5. Reparte la cobertura de migas de forma uniforme sobre las manzanas.\n6. Hornea a 190 °C durante 40 minutos o hasta que el relleno burbujee, las manzanas estén tiernas y la cobertura empiece a dorarse.\n7. Sirve con nata montada o una bola de helado de vainilla.",
+      "consejos": "Puedes sustituir el zumo de naranja por agua y el azúcar moreno por azúcar de coco si lo prefieres.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/apple-crisp/",
+        "autor": null,
+        "kcal_web": 287
+      }
+    },
+    {
+      "nombre": "Dip de queso de cabra con mermelada de frambuesa",
+      "descripcion": "Un dip cremoso y agridulce de queso de cabra suavizado, cubierto con mermelada de frambuesa, miel picante y copos de guindilla. Se sirve en 5 minutos con crackers, verduras o pan.",
+      "tiempo_prep_min": 5,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "675965d4",
+          112
+        ],
+        [
+          "78f4535e",
+          60
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "37d5c3d0",
+          5
+        ]
+      ],
+      "instrucciones": "1. Extiende el queso de cabra sobre una fuente o plato con la parte posterior de una cuchara o un cuchillo, formando una capa uniforme con ondulaciones.\n2. Reparte la mermelada de frambuesa de manera uniforme sobre el queso.\n3. Rocía con la miel picante y termina con los copos de guindilla y las hierbas frescas picadas.\n4. Sirve inmediatamente con crackers, verduras o pan de baguette en rodajas.",
+      "consejos": "Saca el queso de cabra de la nevera unos minutos antes para que se extienda mejor y resulte más cremoso.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/goat-cheese-dip/",
+        "autor": null,
+        "kcal_web": 99
+      }
+    },
+    {
+      "nombre": "Hummus de chocolate",
+      "descripcion": "Un hummus dulce de chocolate y crema de almendra, perfecto como postre o merienda para untar. Se prepara en pocos minutos con garbanzos cocidos.",
+      "tiempo_prep_min": 10,
+      "porciones": 6,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "0a8c87df",
+          64
+        ],
+        [
+          "edb1e321",
+          15
+        ],
+        [
+          "34d6fafa",
+          42
+        ],
+        [
+          "f75a3721",
+          4
+        ]
+      ],
+      "instrucciones": "1. Coloca todos los ingredientes en un robot de cocina de alta potencia y tritura a velocidad alta durante 1-2 minutos, parando de vez en cuando para raspar las paredes.\n2. Tritura hasta obtener una textura suave.\n3. Sirve con galletas, pretzels o fruta.",
+      "consejos": "Ajusta la cantidad de sirope de arce al gusto para controlar el dulzor.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/chocolate-hummus-recipe/",
+        "autor": null,
+        "kcal_web": 151
+      }
+    },
+    {
+      "nombre": "Tostada de crema de cacahuete y plátano",
+      "descripcion": "Una tostada integral con crema de cacahuete, plátano en rodajas, un toque de miel y pepitas de chocolate. Ideal para un desayuno o merienda rápida.",
+      "tiempo_prep_min": 5,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1948a73a",
+          30
+        ],
+        [
+          "6328f4b9",
+          16
+        ],
+        [
+          "1131a576",
+          60
+        ],
+        [
+          "8619b09f",
+          7
+        ],
+        [
+          "b2aba459",
+          5
+        ]
+      ],
+      "instrucciones": "1. Tuesta la rebanada de pan integral hasta que esté dorada.\n2. Extiende la crema de cacahuete de forma uniforme sobre la tostada.\n3. Coloca encima las rodajas de plátano y añade un hilo de miel.\n4. Espolvorea las pepitas de chocolate y sirve.",
+      "consejos": "Elige una crema de cacahuete 100% natural sin azúcares añadidos para un desayuno más equilibrado.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/toast-tuesday-peanut-butter-banana/",
+        "autor": "Lee Funke",
+        "kcal_web": 265
+      }
+    },
+    {
+      "nombre": "Ensalada de atún con yogur y eneldo",
+      "descripcion": "Una ensalada de atún fresca y cremosa, aliñada con yogur griego, limón y mostaza, con un toque de eneldo y cebolla roja. Lista en pocos minutos y perfecta para comer o cenar.",
+      "tiempo_prep_min": 15,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "83505726",
+          284
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "585bd18b",
+          80
+        ],
+        [
+          "866d6397",
+          28
+        ],
+        [
+          "12a8ab46",
+          23
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "21a40eb5",
+          1
+        ],
+        [
+          "2fedb06b",
+          3
+        ]
+      ],
+      "instrucciones": "1. Coloca el atún escurrido, la cebolla roja picada fina y el apio picado fino en un bol grande y mezcla hasta que se integren.\n2. Añade el yogur griego, la mayonesa, el zumo de limón, la mostaza, la sal y la pimienta al atún y remueve hasta que todo quede bien combinado y el atún esté cubierto de salsa.\n3. Espolvorea el pimentón y el eneldo fresco picado por encima. Refrigera la ensalada de atún para que se enfríe o sírvela inmediatamente sobre un sándwich o una ensalada.",
+      "consejos": "Escurre bien el atún para que la ensalada no quede aguada y ajusta la sal al final.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/sea-possibilities-challenge-5-minute-healthy-tuna-salad/",
+        "autor": null,
+        "kcal_web": 259
+      }
+    },
+    {
+      "nombre": "Dip de pollo búfalo con queso cottage",
+      "descripcion": "Un dip cremoso y picante de pollo desmenuzado con queso cottage batido, yogur griego y salsa búfalo, gratinado con mozzarella y azul. Ideal para compartir como snack o entrante.",
+      "tiempo_prep_min": 40,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          454
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bf392211",
+          21
+        ],
+        [
+          "aa87b67a",
+          240
+        ],
+        [
+          "585bd18b",
+          80
+        ],
+        [
+          "95aa4443",
+          60
+        ],
+        [
+          "8619b09f",
+          7
+        ],
+        [
+          "382a08c2",
+          85
+        ],
+        [
+          "30ed35cf",
+          40
+        ],
+        [
+          "82930270",
+          20
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 200 °C.\n2. Sazona las pechugas de pollo por ambos lados con sal y pimienta.\n3. Calienta el aceite de oliva en una sartén grande apta para horno a fuego medio. Cuando esté caliente, añade el pollo y cocina 5-6 minutos por cada lado.\n4. Retira el pollo cuando alcance 74 °C en el interior.\n5. Tritura el queso cottage en un procesador de alimentos o batidora de alta velocidad durante 4-5 minutos hasta que quede completamente suave y batido. Añade el yogur griego y la salsa picante y tritura hasta integrar.\n6. Desmenuza el pollo y devuélvelo a la misma sartén. Añade la mezcla de queso cottage y remueve hasta que el pollo quede bien cubierto.\n7. Cubre el dip con la mozzarella rallada y hornea a 200 °C durante 15-20 minutos o hasta que empiece a burbujear. Opcionalmente, gratina unos minutos para dorar el queso.\n8. Saca del horno cuando esté caliente y espolvorea el queso azul y la cebolleta picada.\n9. Sirve con tus crackers, crostini, apio, zanahoria o pepino favoritos.",
+      "consejos": "Si no tienes sartén apta para horno, pasa la mezcla a una fuente antes de gratinar.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/cottage-cheese-buffalo-chicken-dip/",
+        "autor": null,
+        "kcal_web": 233
+      }
+    },
+    {
+      "nombre": "Wrap de requesón y pavo",
+      "descripcion": "Un wrap original hecho con una lámina de requesón y huevo horneada, relleno de pavo, queso, verduras crujientes y una salsa cremosa de yogur griego.",
+      "tiempo_prep_min": 40,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          480
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "bbece24a",
+          1
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "866d6397",
+          14
+        ],
+        [
+          "123d2515",
+          8
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "c0e08eab",
+          120
+        ],
+        [
+          "a67b08c2",
+          80
+        ],
+        [
+          "d106e3bb",
+          120
+        ],
+        [
+          "0d971edf",
+          100
+        ],
+        [
+          "08637e90",
+          30
+        ],
+        [
+          "d23e1bdd",
+          20
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y forra una bandeja con papel de horno.\n2. Tritura el requesón, los huevos, el cebollino, el ajo en polvo y la sal en un vaso batidor hasta obtener una mezcla homogénea.\n3. Vierte la mezcla en la bandeja y extiéndela con una espátula formando un rectángulo uniforme. Hornea de 30 a 45 minutos, hasta que esté dorado.\n4. Mientras se hornea, prepara la salsa: mezcla en un bol el yogur griego, la mayonesa, el kétchup, el cebollino, la sal sazonada, la pimienta y la pizca de sal. Refrigera.\n5. Saca la lámina del horno, traslada el papel de horno a una tabla y déjala enfriar en la nevera unos 10-15 minutos.\n6. Corta la lámina por la mitad a lo ancho y reparte 2 cucharadas de salsa en cada mitad, extendiéndola bien.\n7. Coloca el pavo, el queso havarti, el pimiento, el pepinillo, la cebolla roja y la rúcula y enrolla con cuidado cada wrap.\n8. Sirve inmediatamente.",
+      "consejos": "Deja enfriar bien la lámina antes de rellenarla para que no se rompa al enrollar.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/cottage-cheese-wrap/",
+        "autor": null,
+        "kcal_web": 285
+      }
+    },
+    {
+      "nombre": "Ensalada de atún fiesta",
+      "descripcion": "Una ensalada fresca y completa con atún, alubias negras, maíz y tomate, aliñada con un aderezo de lima, comino y yogur griego. Ideal para comer o cenar.",
+      "tiempo_prep_min": 20,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "83505726",
+          567
+        ],
+        [
+          "bfda87c0",
+          425
+        ],
+        [
+          "03858a00",
+          165
+        ],
+        [
+          "a92874a5",
+          150
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "d61c2a0f",
+          4
+        ],
+        [
+          "65756599",
+          30
+        ],
+        [
+          "7fcfe0b8",
+          8
+        ],
+        [
+          "ae08120b",
+          56
+        ],
+        [
+          "8619b09f",
+          7
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "bbece24a",
+          1.5
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla el atún escurrido, las alubias negras escurridas y enjuagadas, el maíz, los tomates cherry cortados por la mitad, la cebolla roja picada y el cilantro picado. Reserva.\n2. Prepara el aliño: en un tarro con tapa, combina el zumo de lima, la sal, el yogur griego, el aceite de aguacate, la miel, el comino molido y el ajo en polvo. Cierra bien y agita hasta que todos los ingredientes se integren.\n3. Vierte el aliño sobre la mezcla de atún y remueve hasta que quede bien combinado.\n4. Sirve inmediatamente o guarda en la nevera hasta 5 días.",
+      "consejos": "Escurre bien el atún y las alubias para evitar que la ensalada quede aguada; puedes añadir el aliño justo antes de servir si la vas a guardar.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/fiesta-tuna-salad/",
+        "autor": null,
+        "kcal_web": 289
+      }
+    },
+    {
+      "nombre": "Barritas energéticas de chocolate y coco",
+      "descripcion": "Barritas sin horno de dátiles, anacardos, cacao y coco, perfectas como snack energético. Se preparan en pocos minutos y se conservan en el congelador.",
+      "tiempo_prep_min": 20,
+      "porciones": 16,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e6dd0fa6",
+          480
+        ],
+        [
+          "aab45b38",
+          180
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "edb1e321",
+          30
+        ],
+        [
+          "c7de73e8",
+          160
+        ]
+      ],
+      "instrucciones": "1. Deshuesa los dátiles y asegúrate de que estén blandos. Colócalos en un procesador de alimentos junto con los anacardos y el extracto de vainilla.\n2. Tritura a velocidad alta durante 2-3 minutos, parando un par de veces para bajar los restos de las paredes.\n3. Añade el cacao en polvo y la sal y tritura hasta que se integren. Si la masa no queda pegajosa, añade 1-2 cucharaditas de agua.\n4. Incorpora el coco rallado y tritura una última vez, dejando trozos o pulverizándolo por completo.\n5. La masa debe quedar blanda, similar a una masa de galletas.\n6. Forra un molde de 23x23 cm con papel de horno y extiende la masa de forma uniforme con las manos o una espátula. Espolvorea un poco más de coco rallado por encima y presiónalo.\n7. Alisa los bordes con una espátula y congela durante 30-60 minutos.\n8. Saca del congelador, retira del molde, corta por la mitad y cada mitad en 8 porciones.",
+      "consejos": "Conserva las barritas en el congelador y sácalas unos minutos antes de consumir para que recuperen su textura.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/no-bake-chocolate-coconut-energy-bars/",
+        "autor": null,
+        "kcal_web": 242
+      }
+    }
+  ]
+}

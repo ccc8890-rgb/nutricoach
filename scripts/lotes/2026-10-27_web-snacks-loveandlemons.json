@@ -1,0 +1,827 @@
+{
+  "lote": "web-snacks-loveandlemons-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cfd9ca77": {
+      "nombre": "Calabaza",
+      "prefijo": "cfd9ca77",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6ca75761": {
+      "nombre": "Semillas de calabaza",
+      "prefijo": "6ca75761",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "70d24d12": {
+      "nombre": "Tomillo",
+      "prefijo": "70d24d12",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7d5a031f": {
+      "nombre": "Manzana",
+      "prefijo": "7d5a031f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ced19ed4": {
+      "nombre": "Vinagre sidra FEMUA, botella",
+      "prefijo": "ced19ed4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9df73a2d": {
+      "nombre": "Caldo de verduras",
+      "prefijo": "9df73a2d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6e801766": {
+      "nombre": "Tahini",
+      "prefijo": "6e801766",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f68fa954": {
+      "nombre": "Eneldo",
+      "prefijo": "f68fa954",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d21b8e95": {
+      "nombre": "Pan de pita",
+      "prefijo": "d21b8e95",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "f0671f02": {
+      "nombre": "Vinagre de manzana",
+      "prefijo": "f0671f02",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95aa4443": {
+      "nombre": "Salsa picante",
+      "prefijo": "95aa4443",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "88db0b2d": {
+      "nombre": "Tomates cherry rama Dulcita",
+      "prefijo": "88db0b2d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f964daec": {
+      "nombre": "Cebolla roja Olives García en vinagre",
+      "prefijo": "f964daec",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ba39ef20": {
+      "nombre": "Aceituna con Hueso Kalamata",
+      "prefijo": "ba39ef20",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "1762689b": {
+      "nombre": "Crackers",
+      "prefijo": "1762689b",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "7398705d": {
+      "nombre": "Macedonia de Verduras Frasco",
+      "prefijo": "7398705d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ac0c0a04": {
+      "nombre": "Remolacha",
+      "prefijo": "ac0c0a04",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4218ee8b": {
+      "nombre": "Semillas de sésamo",
+      "prefijo": "4218ee8b",
+      "rol": "especias_aromaticos",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "fea7cbe9": {
+      "nombre": "Perejil",
+      "prefijo": "fea7cbe9",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Guacamole clásico",
+      "descripcion": "Guacamole fresco y cremoso con aguacate, lima, cilantro y un toque de jalapeño. Listo en pocos minutos, ideal para untar o acompañar.",
+      "tiempo_prep_min": 10,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "91ad5545",
+          600
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "d61c2a0f",
+          10
+        ],
+        [
+          "65756599",
+          140
+        ],
+        [
+          "c25964f2",
+          15
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "7f40a393",
+          120
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla los aguacates, la cebolla, el cilantro, la ralladura y el zumo de lima, el jalapeño, la sal y el comino (si lo usas). Machaca hasta que los ingredientes se integren pero queden algo grumosos.\n2. Incorpora el tomate troceado si lo usas, con movimientos suaves.\n3. Prueba y ajusta de sal, y sirve.",
+      "consejos": "Usa aguacates bien maduros y añade la ralladura de lima para un aroma más intenso.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/guacamole-recipe/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 251
+      }
+    },
+    {
+      "nombre": "Calabaza delicata asada con manzana y salvia",
+      "descripcion": "Guarnición otoñal de calabaza delicata y cebollitas asadas, mezclada con kale, manzana, salvia y un aliño de mostaza y vinagre de sidra.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "cfd9ca77",
+          900
+        ],
+        [
+          "82930270",
+          80
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "6ca75761",
+          20
+        ],
+        [
+          "d946bd47",
+          60
+        ],
+        [
+          "70d24d12",
+          2
+        ],
+        [
+          "7d5a031f",
+          150
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "ced19ed4",
+          15
+        ],
+        [
+          "bdc11c5a",
+          2
+        ],
+        [
+          "20367cb0",
+          1
+        ],
+        [
+          "34d6fafa",
+          2
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 220 °C y forrar una bandeja con papel de horno.\n2. Colocar la calabaza y las cebollitas en la bandeja, rociar con aceite de oliva y espolvorear sal y pimienta. Mezclar y distribuir sin que se toquen. Asar 25-30 minutos hasta que la calabaza esté dorada y las cebollitas blandas.\n3. Preparar el aliño: batir el aceite de oliva, el vinagre de sidra, el ajo, la mostaza, el sirope de arce y una pizca de sal y pimienta. Reservar.\n4. En una sartén pequeña a fuego medio-bajo, tostar las semillas de calabaza con una pizca de sal unos 2 minutos, removiendo con frecuencia. Reservar.\n5. En un bol mediano, mezclar el kale, la salvia y el tomillo. Añadir la calabaza y las cebollitas asadas calientes, la manzana, la mitad de las semillas y la mitad del aliño. Mezclar y pasar a una fuente apta para horno.\n6. Hornear la fuente 8-10 minutos hasta que la manzana y el kale estén calientes y el kale ligeramente marchito. Justo antes de servir, rociar con el resto del aliño y cubrir con las semillas restantes.",
+      "consejos": "Si preparas el plato con antelación, detente tras el paso 5 y guarda en la nevera; recalentar en el horno antes de añadir el aliño y las semillas restantes.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/delicata-squash-with-apples-and-sage/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 208
+      }
+    },
+    {
+      "nombre": "Sopa de garbanzos al limón",
+      "descripcion": "Una sopa ligera y cremosa de garbanzos con caldo de verduras, tahini, espinacas y un toque fresco de limón y eneldo. Se sirve con pan de pita.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "82930270",
+          100
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "9df73a2d",
+          960
+        ],
+        [
+          "1f1a4cd3",
+          492
+        ],
+        [
+          "6e801766",
+          30
+        ],
+        [
+          "cb57d667",
+          60
+        ],
+        [
+          "f68fa954",
+          6
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "d21b8e95",
+          200
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite de oliva en una olla grande a fuego medio. Añade las cebolletas, la sal y varios gránulos de pimienta y cocina 2 minutos, hasta que se ablanden pero sigan verdes. Añade 720 ml del caldo y 275 g de los garbanzos y cuece a fuego lento, sin tapar, 15 minutos.\n2. Tritura en una batidora el resto del caldo (240 ml), los garbanzos restantes (217 g) y el tahini hasta obtener una crema. Incorpora a la olla y cuece a fuego lento 2 minutos.\n3. Añade las espinacas, el eneldo y el zumo de limón y remueve hasta que las espinacas se marchiten. Sazona al gusto con sal y pimienta.\n4. Reparte en cuencos y corona con un chorrito generoso de aceite de oliva, unas gotas de zumo de limón y copos de guindilla. Sirve con pan de pita.",
+      "consejos": "Añade el zumo de limón al final para conservar su aroma fresco y ajusta la sal según el caldo utilizado.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/chickpea-soup/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 233
+      }
+    },
+    {
+      "nombre": "Huevos rellenos",
+      "descripcion": "Huevos cocidos rellenos de una crema de yema con mayonesa, mostaza y un toque de vinagre. Un aperitivo clásico, fácil y resultón.",
+      "tiempo_prep_min": 35,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "866d6397",
+          42
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "f0671f02",
+          5
+        ],
+        [
+          "95aa4443",
+          3
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "21a40eb5",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pon los huevos en una olla mediana y cúbrelos con agua fría unos 2,5 cm por encima. Lleva a ebullición, tapa la olla y apaga el fuego. Deja reposar los huevos tapados de 10 a 12 minutos.\n2. Pasa los huevos a un bol con agua y hielo y enfría unos 14 minutos, hasta que estén completamente fríos.\n3. Golpea suavemente los huevos contra la encimera para romper la cáscara y pélalos; puedes hacerlo bajo el grifo de agua fría. Sécalos si es necesario.\n4. Corta los huevos pelados por la mitad a lo largo. Con una cuchara pequeña, saca con cuidado las yemas y ponlas en un bol mediano. Reserva las claras.\n5. Añade al bol de las yemas la mayonesa, la mostaza, el vinagre de manzana y un chorrito de salsa picante si la usas. Machaca con un tenedor hasta obtener una crema y sazona al gusto con sal, pimienta y más salsa picante si quieres. Para un relleno más fino, tritura la mezcla en un procesador de alimentos.\n6. Reparte el relleno entre las claras de huevo y adorna con pimentón, cebollino y/o eneldo fresco.",
+      "consejos": "Puedes usar el líquido de un bote de pepinillos encurtidos en lugar del vinagre de manzana para un sabor más intenso.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/deviled-eggs/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 111
+      }
+    },
+    {
+      "nombre": "Ensalada de garbanzos con hierbas y verduras",
+      "descripcion": "Una ensalada fresca y colorida con garbanzos, tomates cherry, pepino, aceitunas y una vinagreta de limón y mostaza. Perfecta como plato principal ligero o guarnición.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "1f1a4cd3",
+          492
+        ],
+        [
+          "88db0b2d",
+          300
+        ],
+        [
+          "2e8d5d64",
+          100
+        ],
+        [
+          "f964daec",
+          75
+        ],
+        [
+          "ba39ef20",
+          70
+        ],
+        [
+          "59163485",
+          30
+        ],
+        [
+          "2fedb06b",
+          15
+        ],
+        [
+          "c63a423f",
+          15
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, batir el aceite de oliva, el zumo de limón, el ajo rallado, la mostaza, la sal y varias vueltas de pimienta negra.\n2. Añadir los garbanzos, los tomates cherry cortados por la mitad, el pepino en dados, la cebolla roja encurtida y las aceitunas kalamata y mezclar para que se impregnen.\n3. Incorporar el perejil, el eneldo y la menta picados y volver a mezclar.\n4. Ajustar de sal y pimienta, decorar con hojas de menta fresca y servir.",
+      "consejos": "Puedes prepararla con antelación y guardarla en la nevera; los sabores se intensifican si la dejas reposar 30 minutos antes de servir.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/chickpea-salad/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 231
+      }
+    },
+    {
+      "nombre": "Requesón batido con aceite de oliva y limón",
+      "descripcion": "Crema untable de requesón batido con aceite de oliva, limón y ajo, ideal para acompañar con verduras o crackers.",
+      "tiempo_prep_min": 5,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          454
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "59163485",
+          5
+        ],
+        [
+          "1762689b",
+          60
+        ],
+        [
+          "7398705d",
+          200
+        ]
+      ],
+      "instrucciones": "1. En un robot de cocina, poner el requesón, el aceite de oliva, el zumo de limón, el ajo y la sal. Triturar a pulsos hasta obtener una crema.\n2. Pasar a un bol de servir y aliñar con un chorrito de aceite de oliva, hierbas frescas, ralladura de limón y copos de guindilla. Servir con crackers y verduras.",
+      "consejos": "Si queda demasiado espeso, añade una cucharada de agua fría y vuelve a triturar para ajustar la textura.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/whipped-cottage-cheese/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 175
+      }
+    },
+    {
+      "nombre": "Dip de aguacate y requesón",
+      "descripcion": "Crema untable de aguacate y requesón con un toque de limón y ajo, ideal para mojar verduras o crackers. Lista en 10 minutos.",
+      "tiempo_prep_min": 10,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          240
+        ],
+        [
+          "91ad5545",
+          200
+        ],
+        [
+          "bf392211",
+          21
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "03f57b8d",
+          5
+        ],
+        [
+          "1762689b",
+          60
+        ],
+        [
+          "7398705d",
+          200
+        ]
+      ],
+      "instrucciones": "1. En un robot de cocina, coloca el requesón, el aguacate, el aceite de oliva, el ajo, el zumo de limón y la sal. Tritura hasta obtener una crema suave y homogénea.\n2. Pasa la crema a un bol de servir y espolvorea por encima el condimento tipo everything bagel y el cebollino picado.\n3. Sirve con crackers y verduras variadas para mojar.",
+      "consejos": "Si no tienes condimento everything bagel, sustitúyelo por semillas de sésamo y amapola con un poco de cebolla deshidratada.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/cottage-cheese-dip/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 147
+      }
+    },
+    {
+      "nombre": "Ensalada de huevo",
+      "descripcion": "Una ensalada cremosa de huevo cocido con mayonesa, mostaza de Dijon y hierbas frescas. Ideal como relleno de bocadillos o para comer sola.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "866d6397",
+          56
+        ],
+        [
+          "20367cb0",
+          15
+        ],
+        [
+          "12a8ab46",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "08637e90",
+          30
+        ],
+        [
+          "03f57b8d",
+          3
+        ],
+        [
+          "f68fa954",
+          3
+        ]
+      ],
+      "instrucciones": "1. Cocer los huevos hasta que estén duros, pelarlos y picarlos.\n2. En un bol mediano, batir la mayonesa, la mostaza, el zumo de limón, la sal y varias vueltas de pimienta.\n3. Incorporar la cebolla y mezclar; añadir con cuidado los huevos, el cebollino y el eneldo.\n4. Tapar y refrigerar 20 minutos. Remover, ajustar de sazón y servir.",
+      "consejos": "Para un sabor más intenso, deja reposar la ensalada en la nevera al menos 20 minutos antes de servir.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/egg-salad/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 196
+      }
+    },
+    {
+      "nombre": "Hummus de remolacha",
+      "descripcion": "Hummus cremoso de garbanzos con remolacha asada, tahini y especias. Ideal para untar con pan de pita o verduras.",
+      "tiempo_prep_min": 50,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ac0c0a04",
+          100
+        ],
+        [
+          "1f1a4cd3",
+          246
+        ],
+        [
+          "6e801766",
+          80
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "31f12840",
+          1
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "4218ee8b",
+          5
+        ],
+        [
+          "fea7cbe9",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C.\n2. Colocar la remolacha en un trozo de papel de aluminio, rociar con aceite de oliva y espolvorear con sal. Envolver y asar en una bandeja durante 35-50 minutos, hasta que esté tierna al pincharla con un tenedor.\n3. Sacar del horno, retirar el papel de aluminio y dejar enfriar. Cuando esté templada, pelar la piel (puede hacerse bajo el grifo con las manos) y trocear groseramente.\n4. En un procesador de alimentos, poner la remolacha asada, los garbanzos, el tahini, el aceite de oliva, el zumo de limón, el ajo, el cilantro, el comino, la sal y el agua. Procesar hasta obtener una textura muy suave, añadiendo más agua si es necesario. Ajustar de sal.\n5. Pasar a un bol de servir y rociar con aceite de oliva. Decorar con semillas de sésamo, ralladura de limón y perejil. Servir con pan de pita caliente y verduras.",
+      "consejos": "Asar la remolacha hasta que esté bien tierna aporta un sabor más dulce y una textura más cremosa al hummus.",
+      "origen_web": {
+        "url": "https://www.loveandlemons.com/beet-hummus/",
+        "autor": "Jeanine Donofrio",
+        "kcal_web": 165
+      }
+    }
+  ]
+}

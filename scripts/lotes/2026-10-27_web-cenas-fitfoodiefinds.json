@@ -1,0 +1,1643 @@
+{
+  "lote": "web-cenas-fitfoodiefinds-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "83505726": {
+      "nombre": "Atún en lata al natural",
+      "prefijo": "83505726",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b6499d25": {
+      "nombre": "Zanahoria rallada",
+      "prefijo": "b6499d25",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fd5b64f0": {
+      "nombre": "Col lombarda",
+      "prefijo": "fd5b64f0",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "46825bfa": {
+      "nombre": "Cacahuetes",
+      "prefijo": "46825bfa",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "ef6ecb36": {
+      "nombre": "Jengibre fresco",
+      "prefijo": "ef6ecb36",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "caa47a33": {
+      "nombre": "Salsa de soja",
+      "prefijo": "caa47a33",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "e5efc372": {
+      "nombre": "Coliflor",
+      "prefijo": "e5efc372",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8820b293": {
+      "nombre": "Brócoli",
+      "prefijo": "8820b293",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9df73a2d": {
+      "nombre": "Caldo de verduras",
+      "prefijo": "9df73a2d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "67e4d52d": {
+      "nombre": "Queso cheddar",
+      "prefijo": "67e4d52d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95e7ab5d": {
+      "nombre": "Vieira pacific",
+      "prefijo": "95e7ab5d",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "origen": "marisco"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "41cb2b97": {
+      "nombre": "Vino blanco",
+      "prefijo": "41cb2b97",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fea7cbe9": {
+      "nombre": "Perejil",
+      "prefijo": "fea7cbe9",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "564c253f": {
+      "nombre": "Ralladura de limón",
+      "prefijo": "564c253f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "afa334c2": {
+      "nombre": "Pimienta Cayena Molida Tarro",
+      "prefijo": "afa334c2",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f0671f02": {
+      "nombre": "Vinagre de manzana",
+      "prefijo": "f0671f02",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "babf3806": {
+      "nombre": "Alubia pinta",
+      "prefijo": "babf3806",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6c177099": {
+      "nombre": "Alubia negra",
+      "prefijo": "6c177099",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c3123736": {
+      "nombre": "Judías blancas",
+      "prefijo": "c3123736",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4e8a3263": {
+      "nombre": "Alubia blanca",
+      "prefijo": "4e8a3263",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "057baedf": {
+      "nombre": "Pimiento",
+      "prefijo": "057baedf",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f38c50dc": {
+      "nombre": "Arroz salvaje",
+      "prefijo": "f38c50dc",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "70d24d12": {
+      "nombre": "Tomillo",
+      "prefijo": "70d24d12",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cfd9ca77": {
+      "nombre": "Calabaza",
+      "prefijo": "cfd9ca77",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0123ea99": {
+      "nombre": "Pipas de calabaza tostadas",
+      "prefijo": "0123ea99",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a010ea17": {
+      "nombre": "Alubia cocida blanca",
+      "prefijo": "a010ea17",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6e801766": {
+      "nombre": "Tahini",
+      "prefijo": "6e801766",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "e5b7ba6b": {
+      "nombre": "Gambas",
+      "prefijo": "e5b7ba6b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "41f3bf76": {
+      "nombre": "Romero",
+      "prefijo": "41f3bf76",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "644ff411": {
+      "nombre": "Pescado blanco",
+      "prefijo": "644ff411",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "f0204a76": {
+      "nombre": "Pavo picado",
+      "prefijo": "f0204a76",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "b12e5a68": {
+      "nombre": "Pimiento amarillo",
+      "prefijo": "b12e5a68",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "df4f3e58": {
+      "nombre": "Sazonador para fajitas Hacendado sabor tex-mex",
+      "prefijo": "df4f3e58",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c8825eec": {
+      "nombre": "Lechuga Iceberg",
+      "prefijo": "c8825eec",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fa56e340": {
+      "nombre": "Quinoa cocida",
+      "prefijo": "fa56e340",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65c05fc4": {
+      "nombre": "Chili crisp",
+      "prefijo": "65c05fc4",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "ef1e4c61": {
+      "nombre": "Cebolla blanca",
+      "prefijo": "ef1e4c61",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21aeb6ee": {
+      "nombre": "Mezcla de hojas verdes variadas",
+      "prefijo": "21aeb6ee",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ad30a656": {
+      "nombre": "Pasas",
+      "prefijo": "ad30a656",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "675965d4": {
+      "nombre": "Queso fresco de cabra",
+      "prefijo": "675965d4",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "6ca75761": {
+      "nombre": "Semillas de calabaza",
+      "prefijo": "6ca75761",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "c2cd3cc3": {
+      "nombre": "Estragón",
+      "prefijo": "c2cd3cc3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d0a93278": {
+      "nombre": "Tomillo Frasco",
+      "prefijo": "d0a93278",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8810f4f6": {
+      "nombre": "Piña",
+      "prefijo": "8810f4f6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03858a00": {
+      "nombre": "Maíz dulce",
+      "prefijo": "03858a00",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ae08120b": {
+      "nombre": "Aceite de Aguacate Cristal",
+      "prefijo": "ae08120b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ced19ed4": {
+      "nombre": "Vinagre sidra FEMUA, botella",
+      "prefijo": "ced19ed4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d262ebde": {
+      "nombre": "Arroz blanco",
+      "prefijo": "d262ebde",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95aa4443": {
+      "nombre": "Salsa picante",
+      "prefijo": "95aa4443",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7ec11283": {
+      "nombre": "Cúrcuma molida",
+      "prefijo": "7ec11283",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6c5d82a5": {
+      "nombre": "Boniato",
+      "prefijo": "6c5d82a5",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e88e2cb8": {
+      "nombre": "Muslo de pollo",
+      "prefijo": "e88e2cb8",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "eb5939be": {
+      "nombre": "Caldo de Pollo 100%",
+      "prefijo": "eb5939be",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "3285d3b1": {
+      "nombre": "Pasta",
+      "prefijo": "3285d3b1",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "2faee000": {
+      "nombre": "Guisantes congelados (cocidos)",
+      "prefijo": "2faee000",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Ensalada tailandesa de pollo con cacahuete",
+      "descripcion": "Una ensalada fresca y crujiente de pollo desmenuzado con verduras y un aliño cremoso de cacahuete, lima y yogur griego.",
+      "tiempo_prep_min": 140,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          681
+        ],
+        [
+          "d106e3bb",
+          120
+        ],
+        [
+          "b6499d25",
+          110
+        ],
+        [
+          "fd5b64f0",
+          70
+        ],
+        [
+          "82930270",
+          25
+        ],
+        [
+          "d61c2a0f",
+          8
+        ],
+        [
+          "46825bfa",
+          73
+        ],
+        [
+          "585bd18b",
+          180
+        ],
+        [
+          "6328f4b9",
+          85
+        ],
+        [
+          "ef6ecb36",
+          4
+        ],
+        [
+          "65756599",
+          60
+        ],
+        [
+          "caa47a33",
+          18
+        ]
+      ],
+      "instrucciones": "1. Hornea las pechugas de pollo a 175 °C durante unos 25 minutos, hasta que se puedan desmenuzar fácilmente.\n2. Mientras se cocina el pollo, mezcla en un bol grande el pimiento rojo, la zanahoria rallada, la lombarda, la cebolleta, el cilantro y los cacahuetes.\n3. En un bol mediano, mezcla el yogur griego, la crema de cacahuete, el jengibre, el zumo de lima, la salsa de soja y la sal hasta obtener un aliño homogéneo.\n4. Cuando el pollo esté listo, desmenúzalo con dos tenedores y déjalo enfriar por completo.\n5. Una vez frío, añade el pollo al bol de las verduras y mezcla.\n6. Vierte el aliño sobre la ensalada de pollo y remueve hasta que quede bien integrado.\n7. Sirve sobre hojas verdes, sobre tostadas o en un envoltorio de lechuga.",
+      "consejos": "Deja enfriar el pollo antes de mezclarlo para que no ablande las verduras crujientes.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/thai-peanut-chicken-salad/",
+        "autor": null,
+        "kcal_web": 216
+      }
+    },
+    {
+      "nombre": "Sopa cremosa de brócoli y coliflor con queso cheddar",
+      "descripcion": "Una sopa cremosa y ligera de brócoli y coliflor asados con ajo, cebolla y queso cheddar. Ideal como plato principal reconfortante.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5efc372",
+          400
+        ],
+        [
+          "8820b293",
+          500
+        ],
+        [
+          "bdc11c5a",
+          40
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "950afc33",
+          75
+        ],
+        [
+          "9df73a2d",
+          720
+        ],
+        [
+          "67e4d52d",
+          226
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 200 °C.\n2. Coloca la coliflor, el brócoli y los dientes de ajo en una bandeja de horno. Rocía con 3 cucharadas de aceite de oliva y mezcla para que las verduras queden bien cubiertas.\n3. Asa las verduras a 200 °C durante unos 20 minutos, o hasta que el brócoli empiece a dorarse.\n4. Mientras se asan las verduras, sofríe la cebolla picada en 1 cucharada de aceite de oliva con una pizca de sal. Cuando esté transparente, vierte el caldo de verduras y deja cocer a fuego lento unos minutos.\n5. Pasa todos los ingredientes a una batidora de alta velocidad (incluido el queso). Si lo deseas, reserva algunos floretes asados para decorar.\n6. Tritura durante aproximadamente un minuto hasta obtener una sopa cremosa.",
+      "consejos": "Reserva algunos floretes asados para decorar y añadir textura al servir.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/lightened-up-broccoli-cheese-soup/",
+        "autor": null,
+        "kcal_web": 418
+      }
+    },
+    {
+      "nombre": "Vieiras a la parrilla con salsa de vino blanco",
+      "descripcion": "Vieiras marinadas con limón, miel y ajo, asadas a la parrilla y servidas con una salsa reducida de vino blanco y hierbas frescas.",
+      "tiempo_prep_min": 50,
+      "porciones": 2,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "95e7ab5d",
+          400
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "950afc33",
+          40
+        ],
+        [
+          "8619b09f",
+          7
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "668919bc",
+          42
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "41cb2b97",
+          240
+        ],
+        [
+          "0e40c366",
+          4
+        ],
+        [
+          "fea7cbe9",
+          4
+        ],
+        [
+          "03f57b8d",
+          3
+        ],
+        [
+          "564c253f",
+          2
+        ],
+        [
+          "afa334c2",
+          1
+        ]
+      ],
+      "instrucciones": "1. Secar bien las vieiras con papel de cocina y colocarlas en un bol poco profundo. Reservar.\n2. Preparar la marinada: mezclar el ajo picado, el zumo de limón, la miel, la sal y el aceite de oliva en un tarro y agitar hasta que la miel se disuelva.\n3. Verter la marinada sobre las vieiras y darles la vuelta un par de veces para que queden bien cubiertas.\n4. Tapar el bol y refrigerar 30 minutos, no más, para que el limón no empiece a cocer las vieiras.\n5. Mientras marinan, preparar la salsa: derretir la mantequilla en un cazo a fuego medio.\n6. Añadir la cebolla picada con una pizca de sal y sofreír 4-5 minutos; añadir el ajo.\n7. Sofreír el ajo y la cebolla 2-3 minutos más, añadir el vino blanco y el resto de la sal y la pimienta, y batir con unas varillas.\n8. Bajar a fuego medio-bajo y reducir el vino a la mitad, unos 20 minutos.\n9. Retirar del fuego y añadir el cilantro, el perejil, el cebollino y la ralladura de limón; remover y tapar para mantener caliente.\n10. Precalentar la parrilla a fuego medio-alto (unos 190-205 °C) y asegurarse de que esté limpia.\n11. Sacar las vieiras de la nevera y ensartar 4 en cada brocheta.\n12. Asar las vieiras sobre calor directo 2-3 minutos por cada lado, hasta que la temperatura interna alcance 49 °C; no pasarlas de cocción.\n13. Retirarlas de la parrilla y dejarlas reposar 5 minutos en un plato; su temperatura interna subirá 3-6 °C.\n14. Espolvorear con una pizca de pimienta de cayena y rociar con la salsa de vino blanco.",
+      "consejos": "No dejes las vieiras más de 30 minutos en la marinada, ya que el ácido del limón empezaría a cocerlas.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/grilled-scallops-recipe/",
+        "autor": null,
+        "kcal_web": 486
+      }
+    },
+    {
+      "nombre": "Ensalada de cuatro alubias",
+      "descripcion": "Una ensalada fresca y colorida con cuatro tipos de alubias, pimiento, cebolla y un aliño cítrico con comino y chile. Ideal como guarnición o plato ligero.",
+      "tiempo_prep_min": 15,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f0671f02",
+          60
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "8619b09f",
+          10
+        ],
+        [
+          "65756599",
+          36
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "babf3806",
+          425
+        ],
+        [
+          "6c177099",
+          425
+        ],
+        [
+          "c3123736",
+          425
+        ],
+        [
+          "4e8a3263",
+          425
+        ],
+        [
+          "057baedf",
+          150
+        ],
+        [
+          "08637e90",
+          70
+        ],
+        [
+          "d61c2a0f",
+          4
+        ],
+        [
+          "59163485",
+          8
+        ]
+      ],
+      "instrucciones": "1. Coloca todos los ingredientes del aliño (vinagre de manzana, aceite de oliva, miel, zumo de lima, ajo picado, comino molido, chile en polvo, sal y pimienta) en un tarro con tapa y agita hasta que se integren. Reserva.\n2. En un bol grande, mezcla las alubias pintas, negras, blancas grandes y blancas, el pimiento picado, la cebolla roja picada, la ralladura de lima, el cilantro y el perejil picados.\n3. Vierte el aliño sobre la ensalada y remueve hasta que todos los ingredientes queden bien cubiertos.\n4. Refrigera la ensalada durante 30-45 minutos para que se enfríe.\n5. Remueve de nuevo, ajusta de sal y pimienta al gusto y sirve inmediatamente.",
+      "consejos": "Puedes conservar la ensalada en la nevera hasta 3 días; antes de servir, remueve y ajusta el aliño si es necesario.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/bean-salad/",
+        "autor": null,
+        "kcal_web": 283
+      }
+    },
+    {
+      "nombre": "Sopa cremosa de calabaza y arroz salvaje",
+      "descripcion": "Una sopa reconfortante y cremosa con calabaza, arroz salvaje, alubias blancas y kale, especiada con comino y pimentón. Ideal como plato principal en días fríos.",
+      "tiempo_prep_min": 90,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bdc11c5a",
+          28
+        ],
+        [
+          "91f40662",
+          120
+        ],
+        [
+          "41cb2b97",
+          80
+        ],
+        [
+          "f38c50dc",
+          160
+        ],
+        [
+          "9df73a2d",
+          1920
+        ],
+        [
+          "70d24d12",
+          10
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "cfd9ca77",
+          850
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "21a40eb5",
+          2
+        ],
+        [
+          "4e8a3263",
+          850
+        ],
+        [
+          "d946bd47",
+          280
+        ],
+        [
+          "0123ea99",
+          45
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite de oliva en una olla grande a fuego medio.\n2. Añade la cebolla y sazona con 5 g de sal. Sofríe durante 8-10 minutos hasta que esté transparente.\n3. Incorpora el ajo y el apio y sofríe 2-3 minutos más.\n4. Desglasa con el vino blanco y raspa los restos del fondo de la olla.\n5. Añade el arroz salvaje y tuéstalo 3-4 minutos. Vierte 1200 ml del caldo de verduras y lleva a ebullición.\n6. Agrega el resto de la sal, el tomillo fresco atado y la pimienta. Tapa y cocina a fuego lento 40 minutos, removiendo de vez en cuando.\n7. Comprueba que el arroz esté al dente; si sigue muy crujiente, cocina 15 minutos más.\n8. Retira el manojo de tomillo. Añade el puré de calabaza, el cilantro, el comino, el pimentón, las alubias blancas y el resto del caldo (720 ml). Remueve y cocina a fuego lento 15-20 minutos hasta alcanzar la consistencia deseada. Si quieres la sopa más líquida, añade 240-720 ml de agua.\n9. Incorpora el kale, tapa y cocina 5 minutos hasta que se ablande.\n10. Sirve la sopa con las pipas de calabaza tostadas por encima.",
+      "consejos": "Si prefieres una textura más fina, tritura una parte de la sopa antes de añadir el kale.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/creamy-pumpkin-wild-rice-soup/",
+        "autor": null,
+        "kcal_web": 322
+      }
+    },
+    {
+      "nombre": "Ensalada de gambas y alubias blancas",
+      "descripcion": "Ensalada fresca de gambas salteadas con alubias blancas, pimiento rojo y hierbas aromáticas, aliñada con un aderezo de tahini y limón.",
+      "tiempo_prep_min": 30,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "a010ea17",
+          425
+        ],
+        [
+          "bf392211",
+          70
+        ],
+        [
+          "12a8ab46",
+          70
+        ],
+        [
+          "bbece24a",
+          2
+        ],
+        [
+          "65756599",
+          15
+        ],
+        [
+          "6e801766",
+          10
+        ],
+        [
+          "f0671f02",
+          5
+        ],
+        [
+          "e5b7ba6b",
+          454
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "08637e90",
+          50
+        ],
+        [
+          "59163485",
+          15
+        ],
+        [
+          "c63a423f",
+          15
+        ]
+      ],
+      "instrucciones": "1. Mezclar las alubias blancas escurridas con 14 g de aceite de oliva, 10 g de zumo de limón, el ajo en polvo y una pizca de sal en un bol.\n2. Calentar las alubias en el microondas a potencia máxima durante 90 segundos y dejar reposar al menos 20 minutos.\n3. En un tarro, añadir 28 g de aceite de oliva, 45 g de zumo de limón, el zumo de lima, el tahini, el vinagre de manzana y 1 g de sal.\n4. Tapar el tarro y agitar hasta que todos los ingredientes se integren. Reservar.\n5. Calentar una sartén grande a fuego medio-alto y añadir 28 g de aceite de oliva.\n6. Cuando el aceite esté caliente, añadir el ajo y cocinar 1 minuto; después, incorporar las gambas.\n7. Espolvorear las gambas con sal y 15 g de zumo de limón, cocinar 3 minutos, darles la vuelta y cocinar 3-4 minutos más hasta que adquieran un color rosado pálido.\n8. Retirar del fuego, pasar las gambas a un bol grande y dejar enfriar por completo.\n9. Cuando las gambas estén frías, añadir el pimiento rojo, la cebolla roja, el perejil y la menta al bol.\n10. Incorporar las alubias y el aderezo y mezclar hasta que todos los ingredientes queden cubiertos.\n11. Servir inmediatamente o refrigerar 30 minutos y servir frío.",
+      "consejos": "Puedes servir la ensalada fría tras reposar en la nevera para que los sabores se integren mejor.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/shrimp-salad-recipe/",
+        "autor": null,
+        "kcal_web": 258
+      }
+    },
+    {
+      "nombre": "Pechuga de pollo sous vide con limón y romero",
+      "descripcion": "Pechugas de pollo cocinadas al vacío a baja temperatura con limón, aceite de oliva y romero, jugosas y aromáticas. Se pueden servir tal cual o dorarlas un poco en la sartén.",
+      "tiempo_prep_min": 125,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          227
+        ],
+        [
+          "60ad001e",
+          20
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "41f3bf76",
+          2
+        ]
+      ],
+      "instrucciones": "1. Llena una olla grande con agua, coloca el sous vide y programa la temperatura a 63 °C (145 °F). Asegúrate de que la pechuga quede completamente sumergida.\n2. Sazona la pechuga con sal y pimienta y colócala en una bolsa de vacío o en una bolsa zip apta para cocción.\n3. Añade a la bolsa las rodajas de limón, el aceite de oliva y la rama de romero, y asegúrate de que la pechuga quede bien impregnada.\n4. Extrae el máximo de aire posible de la bolsa para que el pollo se hunda, y sumérgela por completo en el agua.\n5. Cocina la pechuga a 63 °C durante 1,5–2 horas.\n6. Pasado el tiempo, saca la bolsa del baño de agua y retira la pechuga de la bolsa.\n7. Sirve la pechuga tal cual o dórala para conseguir una textura crujiente: calienta 1–2 cucharadas de aceite de oliva en una sartén mediana y, cuando esté aromático, marca la pechuga 1–2 minutos por cada lado.",
+      "consejos": "Puedes dorar la pechuga en la sartén justo antes de servir para darle un acabado crujiente sin perder la jugosidad del sous vide.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/18-sous-vide-chicken-breast-recipes/",
+        "autor": null,
+        "kcal_web": 184
+      }
+    },
+    {
+      "nombre": "Salmón marinado con eneldo y limón",
+      "descripcion": "Salmón marinado en una mezcla de aceite de oliva, limón, mostaza, miel, eneldo y ajo. Una base sencilla y aromática para cocinar el salmón al horno o a la plancha.",
+      "tiempo_prep_min": 45,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "8619b09f",
+          14
+        ],
+        [
+          "2fedb06b",
+          6
+        ],
+        [
+          "bdc11c5a",
+          20
+        ],
+        [
+          "2fd7e358",
+          1134
+        ]
+      ],
+      "instrucciones": "1. Mezcla en un bol mediano todos los ingredientes de la marinada (aceite de oliva, zumo de limón, mostaza de Dijon, miel, eneldo picado, sal y ajo picado) y bate con unas varillas hasta integrar.\n2. Vierte la marinada en el fondo de una bandeja de horno, una fuente grande o una bolsa de plástico y coloca el lomo de salmón con la piel hacia arriba. Tapa o cierra.\n3. Deja marinar en el frigorífico entre 30 y 45 minutos como mínimo, sin pasarse de ese tiempo para evitar que el limón empiece a cocinar el pescado.\n4. Cocina el salmón con tu método preferido, por ejemplo al horno.",
+      "consejos": "No dejes el salmón más de 45 minutos en la marinada para que el ácido del limón no cure la superficie del pescado.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/simple-salmon-marinade-recipe/",
+        "autor": null,
+        "kcal_web": 328
+      }
+    },
+    {
+      "nombre": "Pescado blanco a la parrilla con mantequilla de eneldo",
+      "descripcion": "Filetes de pescado blanco marinados en limón y asados a la parrilla, servidos con una mantequilla batida de eneldo, limón y ajo.",
+      "tiempo_prep_min": 33,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "644ff411",
+          454
+        ],
+        [
+          "668919bc",
+          170
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "564c253f",
+          4
+        ],
+        [
+          "2fedb06b",
+          3
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "3350c934",
+          2
+        ]
+      ],
+      "instrucciones": "1. Precalienta la parrilla a 200 °C y limpia la rejilla o coloca una sartén de parrilla para que se caliente.\n2. Bate en un bol 1 cucharada de zumo de limón, 1 cucharada de aceite de oliva y ½ cucharadita de sal.\n3. Coloca el pescado en una fuente y vierte la mezcla de limón por encima; pincela bien y deja marinar 15 minutos.\n4. Con una batidora de mano, bate el resto de la sal con la mantequilla, la ralladura de limón, la pimienta, el eneldo y el ajo hasta obtener una crema ligera y esponjosa.\n5. Engrasa la rejilla o la sartén de parrilla y coloca el pescado con la piel hacia arriba; asa 2-4 minutos. Dale la vuelta, añade 2-3 cucharadas de la mezcla de mantequilla por encima y asa 2-4 minutos más, hasta que el pescado se separe fácilmente con un tenedor y alcance 54-57 °C en el interior.\n6. Retira el pescado de la parrilla y cúbrelo con sal en escamas y eneldo fresco; opcionalmente, derrite el resto de la mantequilla de eneldo y úsala como salsa para mojar.",
+      "consejos": "El tiempo de asado varía según el grosor del filete; comprueba la temperatura interna para no pasarlo.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/grilled-fish-recipe/",
+        "autor": null,
+        "kcal_web": 482
+      }
+    },
+    {
+      "nombre": "Wraps de pavo a la fajita con lechuga",
+      "descripcion": "Relleno de pavo picado con pimientos y cebolla al estilo fajita, servido sobre hojas de lechuga iceberg y aliñado con una crema de aguacate y yogur griego.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "f0204a76",
+          454
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "b12e5a68",
+          150
+        ],
+        [
+          "08637e90",
+          75
+        ],
+        [
+          "df4f3e58",
+          20
+        ],
+        [
+          "91ad5545",
+          200
+        ],
+        [
+          "585bd18b",
+          30
+        ],
+        [
+          "65756599",
+          45
+        ],
+        [
+          "c8825eec",
+          400
+        ],
+        [
+          "d61c2a0f",
+          10
+        ]
+      ],
+      "instrucciones": "1. Calienta 28 g de aceite de oliva en una sartén grande a fuego medio-alto.\n2. Cuando el aceite esté caliente, añade el ajo picado y el pavo picado.\n3. Cocina unos 5 minutos hasta que el pavo empiece a dorarse y añade el pimiento rojo, el pimiento amarillo y la cebolla roja picados finos.\n4. Cocina unos 5 minutos más hasta que la carne esté bien dorada y las verduras pochadas.\n5. Añade las especias para fajita y unas cucharadas de agua, mezcla y asegúrate de que todo quede bien impregnado.\n6. Deja cocinar unos minutos más para que la salsa espese; añade más agua si lo prefieres más jugoso.\n7. Retira del fuego y reserva.\n8. Prepara la crema de aguacate: tritura el aguacate, el yogur griego, el zumo de lima y el agua hasta obtener una crema suave; añade más agua si quieres más líquida.\n9. Monta los wraps poniendo unos 80 g de relleno sobre una hoja de lechuga iceberg y rociando con la crema de aguacate.\n10. Sirve con zumo de lima y cilantro fresco.",
+      "consejos": "Lava y seca bien las hojas de lechuga iceberg para que queden crujientes y no se ablanden con el relleno.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/fajita-ground-turkey-lettuce-wraps/",
+        "autor": null,
+        "kcal_web": 339
+      }
+    },
+    {
+      "nombre": "Ensalada crujiente de quinoa y calabaza asada",
+      "descripcion": "Una ensalada templada de quinoa crujiente al horno con calabaza butternut asada, verduras de hoja verde, pasas, queso de cabra y un aliño cremoso de yogur y estragón.",
+      "tiempo_prep_min": 70,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "fa56e340",
+          370
+        ],
+        [
+          "65c05fc4",
+          60
+        ],
+        [
+          "cfd9ca77",
+          560
+        ],
+        [
+          "ef1e4c61",
+          70
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "21aeb6ee",
+          140
+        ],
+        [
+          "ad30a656",
+          75
+        ],
+        [
+          "675965d4",
+          115
+        ],
+        [
+          "6ca75761",
+          45
+        ],
+        [
+          "585bd18b",
+          80
+        ],
+        [
+          "866d6397",
+          42
+        ],
+        [
+          "c2cd3cc3",
+          9
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "12a8ab46",
+          5
+        ],
+        [
+          "d0a93278",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 200 °C y cubre una bandeja con papel de hornear. Extiende la quinoa cocida en la bandeja, añade la salsa chili crujiente y mezcla hasta que toda la quinoa quede cubierta. Distribúyela en una capa uniforme.\n2. En otra bandeja, mezcla la calabaza butternut en dados, la cebolla picada, los ajos machacados, el aceite de oliva y la sal marina.\n3. Hornea ambas bandejas durante 40-50 minutos, con la quinoa en la rejilla superior y la calabaza en la inferior, hasta que la quinoa esté crujiente y la calabaza tierna. Remueve la quinoa cada 20 minutos aproximadamente.\n4. Mientras se hornea, prepara el aliño: tritura el yogur griego, la mayonesa, el estragón fresco, las cebolletas, el zumo de limón, la sal marina y las hojas de tomillo hasta obtener una crema homogénea. Reserva.\n5. Saca las bandejas del horno cuando estén listas.\n6. Reparte la quinoa y las verduras asadas en 4-6 cuencos. Añade un puñado de hojas verdes a cada uno y corona con las pasas doradas, el queso de cabra, las semillas de calabaza y el aliño.\n7. Sirve inmediatamente.",
+      "consejos": "Usa quinoa cocida y fría para que quede más crujiente al hornearla y remuévela a mitad de cocción para que se dore de forma uniforme.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/crispy-quinoa-and-butternut-squash-salad/",
+        "autor": null,
+        "kcal_web": 359
+      }
+    },
+    {
+      "nombre": "Salmón a la parrilla con salsa de piña",
+      "descripcion": "Salmón al horno en papillote con mantequilla de cilantro y lima, acompañado de una salsa fresca de piña a la parrilla, tomate cherry y jalapeño.",
+      "tiempo_prep_min": 30,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2fd7e358",
+          302
+        ],
+        [
+          "668919bc",
+          28
+        ],
+        [
+          "0e40c366",
+          8
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "65756599",
+          45
+        ],
+        [
+          "8810f4f6",
+          300
+        ],
+        [
+          "08637e90",
+          50
+        ],
+        [
+          "a92874a5",
+          150
+        ],
+        [
+          "c25964f2",
+          15
+        ],
+        [
+          "f0671f02",
+          15
+        ]
+      ],
+      "instrucciones": "1. Precalienta la parrilla a 200 °C.\n2. Seca los filetes de salmón con papel de cocina y sazónalos con sal y pimienta.\n3. Mezcla la mantequilla ablandada con el cilantro picado, el ajo picado, sal y pimienta en un bol pequeño.\n4. Unta la mezcla de mantequilla sobre los filetes de salmón y colócalos sobre un trozo grande de papel de aluminio. Exprime el zumo de lima sobre ellos.\n5. Cierra el papel de aluminio formando un paquete, asegurándote de que no haya agujeros por donde escape el aire.\n6. Asa el salmón a 200 °C durante 8-10 minutos o hasta que la temperatura interna alcance 57 °C y se desmenuce fácilmente.\n7. Retira del calor, abre el paquete con cuidado para liberar el vapor y deja reposar 5 minutos antes de comer.\n8. En un bol mediano, mezcla la cebolla roja picada, el cilantro picado, los tomates cherry troceados, el jalapeño picado, el vinagre de manzana y el zumo de lima. Reserva en la nevera.\n9. Prepara la piña: córtala en tiras y sazónala con el chile en polvo y la sal.\n10. Asa la piña a 200 °C directamente sobre la parrilla durante 12-15 minutos, girándola cada 5 minutos.\n11. Retira del calor, deja enfriar y córtala en trozos pequeños.\n12. Añade la piña al resto de los ingredientes de la salsa y mezcla bien.",
+      "consejos": "Puedes usar perejil en lugar de cilantro si prefieres un sabor más suave.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/video-foil-pack-salmon-grilled-pineapple-salsa/",
+        "autor": null,
+        "kcal_web": 273
+      }
+    },
+    {
+      "nombre": "Ensalada de atún saludable",
+      "descripcion": "Una ensalada de atún cremosa y ligera, elaborada con yogur griego en lugar de mayonesa, con apio, cebolla roja y un toque de eneldo y limón. Lista en 15 minutos y perfecta para comer o cenar.",
+      "tiempo_prep_min": 15,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "83505726",
+          280
+        ],
+        [
+          "08637e90",
+          50
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "585bd18b",
+          80
+        ],
+        [
+          "866d6397",
+          28
+        ],
+        [
+          "12a8ab46",
+          23
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "3350c934",
+          0.5
+        ],
+        [
+          "21a40eb5",
+          0.3
+        ],
+        [
+          "2fedb06b",
+          3
+        ]
+      ],
+      "instrucciones": "1. Coloca el atún escurrido, la cebolla roja picada fina y el apio picado fino en un bol grande y mezcla bien.\n2. Añade el yogur griego, la mayonesa, el zumo de limón, la mostaza, la sal y la pimienta al bol y remueve hasta que todo esté integrado y el atún quede bien cubierto de salsa.\n3. Espolvorea el pimentón y el eneldo fresco picado por encima. Deja enfriar en la nevera o sirve inmediatamente sobre un sándwich o una ensalada.",
+      "consejos": "Escurre bien el atún para que la ensalada no quede aguada y ajusta la sal al final.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/sea-possibilities-challenge-5-minute-healthy-tuna-salad/",
+        "autor": null,
+        "kcal_web": 259
+      }
+    },
+    {
+      "nombre": "Bol de gambas con lima y cilantro",
+      "descripcion": "Un bol fresco y completo con gambas salteadas marinadas en lima y ajo, ensalada de tomate y maíz, arroz blanco, aguacate y una crema de yogur y lima.",
+      "tiempo_prep_min": 45,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          680
+        ],
+        [
+          "65756599",
+          46
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "7f40a393",
+          907
+        ],
+        [
+          "03858a00",
+          283
+        ],
+        [
+          "0e40c366",
+          45
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "ae08120b",
+          28
+        ],
+        [
+          "ced19ed4",
+          10
+        ],
+        [
+          "d262ebde",
+          800
+        ],
+        [
+          "91ad5545",
+          400
+        ],
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "866d6397",
+          28
+        ],
+        [
+          "95aa4443",
+          10
+        ]
+      ],
+      "instrucciones": "1. Seca las gambas con papel de cocina y ponlas en un bol. Sazónalas con 1 cucharadita de sal, la ralladura de lima y el ajo picado. Mezcla y refrigera.\n2. Prepara la ensalada de tomate: mezcla los tomates con ½ cucharadita de sal y déjalos reposar 10-15 minutos para que suelten el exceso de agua.\n3. Pasa los tomates a un colador y escúrrelos. Ponlos en un bol.\n4. Añade el maíz y ½ taza de cilantro picado a los tomates y mezcla. Incorpora 1 cucharada de zumo de lima, el comino, 1 cucharada de aceite de aguacate, el vinagre de sidra y el resto de la sal. Mezcla bien y refrigera hasta el momento de servir.\n5. Saca las gambas de la nevera y déjalas a temperatura ambiente 5 minutos.\n6. Calienta el resto del aceite de aguacate en una sartén grande a fuego medio-alto.\n7. Cuando el aceite esté caliente, añade las gambas y cocínalas 2-3 minutos por cada lado, hasta que empiecen a curvarse y se pongan rosadas. Retíralas de la sartén para que no se pasen. Mézclalas con ¼ de taza de cilantro picado y ½ cucharada de zumo de lima. Reserva.\n8. Mezcla en un bol todos los ingredientes de la crema (yogur griego, 1 cucharada de zumo de lima, mayonesa, 1 cucharada de cilantro picado, ½ cucharadita de sal y la salsa picante) hasta que quede homogénea.\n9. Saca la ensalada de tomate de la nevera, remueve y ajusta de sal.\n10. Reparte la ensalada de tomate, las gambas, el arroz, el aguacate y la crema en 4-6 boles y sirve.",
+      "consejos": "No cocines las gambas en exceso: en cuanto se curven y se pongan rosadas, retíralas del fuego para que queden jugosas.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/cilantro-lime-shrimp-bowls/",
+        "autor": null,
+        "kcal_web": 487
+      }
+    },
+    {
+      "nombre": "Sopa de inmunidad con pollo y verduras",
+      "descripcion": "Una sopa reconfortante con pollo, verduras, pasta y un toque de jengibre y cúrcuma. Ideal para los días fríos.",
+      "tiempo_prep_min": 50,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4dacb910",
+          80
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "ef1e4c61",
+          30
+        ],
+        [
+          "60ad001e",
+          2
+        ],
+        [
+          "59163485",
+          8
+        ],
+        [
+          "d106e3bb",
+          120
+        ],
+        [
+          "7ec11283",
+          3
+        ],
+        [
+          "12a8ab46",
+          75
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "6c5d82a5",
+          200
+        ],
+        [
+          "e88e2cb8",
+          680
+        ],
+        [
+          "e5efc372",
+          300
+        ],
+        [
+          "eb5939be",
+          1920
+        ],
+        [
+          "ef6ecb36",
+          12
+        ],
+        [
+          "3285d3b1",
+          113
+        ],
+        [
+          "2faee000",
+          340
+        ],
+        [
+          "f0671f02",
+          15
+        ]
+      ],
+      "instrucciones": "1. Prepara la pasta de inmunidad: tritura en un procesador de alimentos la zanahoria, el apio, el ajo, la cebolla, la ralladura de limón, el perejil, el pimiento rojo, la cúrcuma y 1 cucharada de zumo de limón hasta obtener una pasta gruesa.\n2. Calienta 2 cucharadas de aceite de oliva en una olla grande a fuego medio-alto. Añade la pasta y sofríe hasta que desprenda aroma. Agrega el boniato y sazona con ½ cucharadita de sal. Saltea durante 2-3 minutos.\n3. Aparta el boniato a un lado y añade los muslos de pollo. Dora el pollo 1-2 minutos por cada lado.\n4. Incorpora la coliflor, el caldo de pollo y el jengibre. Lleva a ebullición. Añade la pasta y cocina hasta que esté al dente, unos 7-10 minutos.\n5. Cuando la pasta esté cocida y el pollo hecho, retira el pollo de la olla. Añade los guisantes y el resto de la sal. Lleva a un hervor suave.\n6. Desmenuza el pollo y devuélvelo a la olla. Agrega el zumo de limón restante y el vinagre de manzana. Remueve.\n7. Sirve inmediatamente. Opcional: ajusta de sal y pimienta al gusto.",
+      "consejos": "Puedes añadir un poco de pimienta negra al servir para realzar el sabor.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/immunity-soup-recipe/",
+        "autor": null,
+        "kcal_web": 454
+      }
+    }
+  ]
+}

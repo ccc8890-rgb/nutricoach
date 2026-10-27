@@ -1,0 +1,1561 @@
+{
+  "lote": "web-cenas-skinnytaste-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "51176662": {
+      "nombre": "Azúcar moreno",
+      "prefijo": "51176662",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "be15871b": {
+      "nombre": "Añojo para Guisar",
+      "prefijo": "be15871b",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c94faa0f": {
+      "nombre": "Cebada",
+      "prefijo": "c94faa0f",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "8f023610": {
+      "nombre": "Clara de huevo",
+      "prefijo": "8f023610",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "810d496b": {
+      "nombre": "Mayonesa ligera",
+      "prefijo": "810d496b",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d641c84f": {
+      "nombre": "Alcaparras",
+      "prefijo": "d641c84f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "de0eb774": {
+      "nombre": "Salmón ahumado",
+      "prefijo": "de0eb774",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "1948a73a": {
+      "nombre": "Pan integral",
+      "prefijo": "1948a73a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "368b99df": {
+      "nombre": "Perejil seco",
+      "prefijo": "368b99df",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "34f7b619": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "94bb2af1": {
+      "nombre": "Ternera",
+      "prefijo": "94bb2af1",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "de124e1a": {
+      "nombre": "Caldo de carne",
+      "prefijo": "de124e1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "b12e5a68": {
+      "nombre": "Pimiento amarillo",
+      "prefijo": "b12e5a68",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b223775": {
+      "nombre": "Patata",
+      "prefijo": "0b223775",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fa56e340": {
+      "nombre": "Quinoa cocida",
+      "prefijo": "fa56e340",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e5b7ba6b": {
+      "nombre": "Gambas",
+      "prefijo": "e5b7ba6b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "87c8c74b": {
+      "nombre": "Pan rallado panko",
+      "prefijo": "87c8c74b",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "1390b7a4": {
+      "nombre": "Tomate triturado",
+      "prefijo": "1390b7a4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "382a08c2": {
+      "nombre": "Queso mozzarella",
+      "prefijo": "382a08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "513d4dc7": {
+      "nombre": "Vinagre de Vino Tinto",
+      "prefijo": "513d4dc7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "efdb0f46": {
+      "nombre": "Aceite de oliva virgen extra",
+      "prefijo": "efdb0f46",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "32c7062f": {
+      "nombre": "Bacon 1/ 5 M",
+      "prefijo": "32c7062f",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "afa334c2": {
+      "nombre": "Pimienta Cayena Molida Tarro",
+      "prefijo": "afa334c2",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "350ffddf": {
+      "nombre": "Maiz dulce mazorca",
+      "prefijo": "350ffddf",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e88e2cb8": {
+      "nombre": "Muslo de pollo",
+      "prefijo": "e88e2cb8",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "e152c2f2": {
+      "nombre": "Berenjena",
+      "prefijo": "e152c2f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5a1860a7": {
+      "nombre": "Tomate doble concentrado",
+      "prefijo": "5a1860a7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d0a93278": {
+      "nombre": "Tomillo Frasco",
+      "prefijo": "d0a93278",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "49230ad1": {
+      "nombre": "Albahaca fresca",
+      "prefijo": "49230ad1",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3afe2356": {
+      "nombre": "Champiñón",
+      "prefijo": "3afe2356",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12ce769f": {
+      "nombre": "Vino tinto",
+      "prefijo": "12ce769f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9df73a2d": {
+      "nombre": "Caldo de verduras",
+      "prefijo": "9df73a2d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ff64faff": {
+      "nombre": "Lentejas",
+      "prefijo": "ff64faff",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c14d168a": {
+      "nombre": "Orégano seco",
+      "prefijo": "c14d168a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3285d3b1": {
+      "nombre": "Pasta",
+      "prefijo": "3285d3b1",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "67e4d52d": {
+      "nombre": "Queso cheddar",
+      "prefijo": "67e4d52d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "6f64e109": {
+      "nombre": "Queso crema light",
+      "prefijo": "6f64e109",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "cb0e5aa3": {
+      "nombre": "Galleta Salada Bote",
+      "prefijo": "cb0e5aa3",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "847180ed": {
+      "nombre": "Mayonesa light",
+      "prefijo": "847180ed",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "95aa4443": {
+      "nombre": "Salsa picante",
+      "prefijo": "95aa4443",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "88db0b2d": {
+      "nombre": "Tomates cherry rama Dulcita",
+      "prefijo": "88db0b2d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "013d90a9": {
+      "nombre": "Salchicha Wieners Pollo",
+      "prefijo": "013d90a9",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "b18ec13a": {
+      "nombre": "Alubias",
+      "prefijo": "b18ec13a",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eb5939be": {
+      "nombre": "Caldo de Pollo 100%",
+      "prefijo": "eb5939be",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "caa47a33": {
+      "nombre": "Salsa de soja",
+      "prefijo": "caa47a33",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja",
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "d19d7abb": {
+      "nombre": "Mirin",
+      "prefijo": "d19d7abb",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "551b359c": {
+      "nombre": "Sake",
+      "prefijo": "551b359c",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "7e5f6bee": {
+      "nombre": "Aceite de girasol",
+      "prefijo": "7e5f6bee",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "f38c50dc": {
+      "nombre": "Arroz salvaje",
+      "prefijo": "f38c50dc",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5839902": {
+      "nombre": "Arroz integral",
+      "prefijo": "b5839902",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "07559d78": {
+      "nombre": "Seta Shiitake Bandeja",
+      "prefijo": "07559d78",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "894e649b": {
+      "nombre": "Crema agria",
+      "prefijo": "894e649b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "219fa68f": {
+      "nombre": "Lechuga romana",
+      "prefijo": "219fa68f",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Sopa de ternera y cebada",
+      "descripcion": "Sopa contundente de ternera guisada con verduras y cebada perlada, ideal para días fríos.",
+      "tiempo_prep_min": 130,
+      "porciones": 5,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          5
+        ],
+        [
+          "be15871b",
+          681
+        ],
+        [
+          "4dacb910",
+          128
+        ],
+        [
+          "950afc33",
+          160
+        ],
+        [
+          "91f40662",
+          60
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "c94faa0f",
+          133
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Calentar una olla grande y pesada a fuego medio.\n2. Añadir el aceite y la carne, sazonar con un poco de sal y dorar la carne durante unos minutos.\n3. Cuando la carne esté dorada, añadir la zanahoria, la cebolla, el apio y el ajo y remover bien.\n4. Añadir el agua, la sal y las hojas de laurel y llevar a ebullición.\n5. Al hervir, bajar el fuego y tapar.\n6. Cocer a fuego lento tapado hasta que la carne esté muy tierna, unos 90-120 minutos.\n7. Añadir la cebada, ajustar la sal si es necesario y añadir pimienta negra recién molida.\n8. Cocer 30-35 minutos más, retirar las hojas de laurel y servir.\n9. Alternativa en olla a presión: seguir los pasos con la carne y la zanahoria, añadir el agua, tapar y cerrar.\n10. Cocinar a presión alta unos 45 minutos con liberación natural, o hasta que la ternera esté tierna.\n11. Abrir la olla y añadir la cebada. Cocinar 30 minutos más sin tapar en modo saltear. Probar la sal y ajustar si es necesario.",
+      "consejos": "La sopa espesa al reposar porque la cebada absorbe caldo; añade un poco de agua caliente al recalentarla.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/beef-barley-soup/",
+        "autor": null,
+        "kcal_web": 336
+      }
+    },
+    {
+      "nombre": "Sándwich de ensalada de huevo y aguacate con salmón",
+      "descripcion": "Un sándwich de pan integral tostado con una cremosa ensalada de huevo y aguacate, pepino y salmón ahumado.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "8f023610",
+          66
+        ],
+        [
+          "91ad5545",
+          57
+        ],
+        [
+          "810d496b",
+          15
+        ],
+        [
+          "20367cb0",
+          3
+        ],
+        [
+          "d641c84f",
+          3
+        ],
+        [
+          "03f57b8d",
+          3
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "2e8d5d64",
+          100
+        ],
+        [
+          "de0eb774",
+          113
+        ],
+        [
+          "1948a73a",
+          120
+        ]
+      ],
+      "instrucciones": "1. Mezcla las yemas de huevo con el aguacate, la mayonesa ligera, la mostaza, la salmuera de alcaparras si la usas, el cebollino, la sal y la pimienta. Machaca con un tenedor.\n2. Pica las claras de huevo y añádelas a la mezcla de yemas; ajusta de sal y pimienta al gusto.\n3. Para montar, coloca 28 g de salmón ahumado sobre cada rebanada de pan tostado, cubre con pepino y reparte la ensalada de huevo entre las tostadas.",
+      "consejos": "Tuesta el pan justo antes de montar el sándwich para que no se ablande.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/healthy-avocado-egg-salad-and-salmon/",
+        "autor": null,
+        "kcal_web": 226
+      }
+    },
+    {
+      "nombre": "Pechuga de pollo al horno con costra de parmesano",
+      "descripcion": "Pechugas de pollo jugosas marinadas en salmuera y horneadas con una costra crujiente de pan rallado y parmesano. Una receta sencilla, alta en proteínas y perfecta para una comida o cena ligera.",
+      "tiempo_prep_min": 95,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          680
+        ],
+        [
+          "bbece24a",
+          2
+        ],
+        [
+          "368b99df",
+          1
+        ],
+        [
+          "21a40eb5",
+          1
+        ],
+        [
+          "866d6397",
+          21
+        ],
+        [
+          "34f7b619",
+          40
+        ],
+        [
+          "b983723d",
+          10
+        ],
+        [
+          "60ad001e",
+          100
+        ]
+      ],
+      "instrucciones": "1. Aplanar el extremo más grueso de las pechugas para que queden de grosor uniforme y se cocinen de manera homogénea.\n2. Disolver 1/4 taza de sal kosher en 6 tazas de agua en un bol grande.\n3. Sumergir las pechugas en la salmuera y refrigerar entre 1 y 2 horas.\n4. Sacar el pollo, secarlo con papel de cocina y desechar el agua.\n5. Precalentar el horno a 220 °C y engrasar una bandeja de 23 x 30 cm con aceite de oliva.\n6. Mezclar 3/4 cucharadita de sal con el ajo en polvo, el perejil y el pimentón; frotar las pechugas con la mezcla y colocarlas en la bandeja.\n7. Untar la mayonesa sobre cada pechuga, espolvorear con el pan rallado y el parmesano y rociar con aceite de oliva.\n8. Hornear de 24 a 27 minutos, hasta que el pollo alcance una temperatura interna mínima de 74 °C.\n9. Mientras se hornea, cortar el limón en gajos y servir junto al pollo.",
+      "consejos": "Deja reposar el pollo 5 minutos antes de cortarlo para que conserve todos sus jugos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/baked-chicken-breasts/",
+        "autor": null,
+        "kcal_web": 271
+      }
+    },
+    {
+      "nombre": "Sopa de ternera, patata y quinoa",
+      "descripcion": "Una sopa reconfortante con ternera tierna, patata y quinoa, aromatizada con comino, cilantro y un toque de sazón. Ideal como plato único para comer o cenar.",
+      "tiempo_prep_min": 120,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          9
+        ],
+        [
+          "82930270",
+          90
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "7f40a393",
+          120
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "94bb2af1",
+          227
+        ],
+        [
+          "de124e1a",
+          5
+        ],
+        [
+          "4dacb910",
+          60
+        ],
+        [
+          "b12e5a68",
+          20
+        ],
+        [
+          "0b223775",
+          300
+        ],
+        [
+          "fa56e340",
+          185
+        ],
+        [
+          "d61c2a0f",
+          24
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite en una olla grande y sofríe la cebolleta y el ajo hasta que se ablanden, unos 3 minutos a fuego medio.\n2. Añade el tomate, el comino, el sazón y 6 g de cilantro picado; cocina 2 minutos más.\n3. Incorpora la ternera, el agua, el caldo de carne, la zanahoria, el pimiento amarillo y la sal; lleva a ebullición.\n4. Tapa y cocina a fuego lento unos 90 minutos, hasta que la carne esté tierna.\n5. Añade la patata y la quinoa cocida y cocina 25 minutos más.\n6. Agrega el resto del cilantro picado y sirve.\n7. Si usas olla a presión, cocina la sopa con la carne 45 minutos, añade la patata y la quinoa y cocina 10 minutos más.",
+      "consejos": "Si no tienes sazón, puedes sustituirlo por una pizca de cúrcuma y pimentón para dar color y aroma.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/beef-potato-and-quinoa-soup/",
+        "autor": null,
+        "kcal_web": 307.9
+      }
+    },
+    {
+      "nombre": "Zoodles de calabacín con gambas al parmesano",
+      "descripcion": "Espirales de calabacín con salsa de tomate y gambas rebozadas al horno, gratinadas con mozzarella y parmesano. Una cena ligera y sabrosa para dos.",
+      "tiempo_prep_min": 30,
+      "porciones": 2,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          227
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "34f7b619",
+          42
+        ],
+        [
+          "87c8c74b",
+          7
+        ],
+        [
+          "b983723d",
+          5
+        ],
+        [
+          "bf392211",
+          5
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "1390b7a4",
+          300
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "f8586302",
+          397
+        ],
+        [
+          "382a08c2",
+          28
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 230 °C y engrasar una bandeja de horno con spray antiadherente.\n2. Batir el huevo en un bol. En otro bol mezclar el pan rallado integral, el panko y el parmesano rallado.\n3. Lavar y secar las gambas, sazonarlas ligeramente con pimienta negra. Pasar unas pocas a la vez por el huevo batido y después por la mezcla de pan rallado hasta cubrirlas; colocarlas en la bandeja.\n4. Rociar generosamente la superficie de las gambas con spray de aceite y hornear en la rejilla central unos 6-7 minutos.\n5. Dar la vuelta a las gambas y cocinar otros 3 minutos o hasta que estén hechas.\n6. En una sartén grande apta para horno, calentar 1 cucharadita de aceite de oliva a fuego medio.\n7. Añadir el ajo y cocinar hasta que se dore, unos 2 minutos. Incorporar el tomate triturado, sal y pimienta y cocer a fuego lento 5-6 minutos.\n8. Cuando las gambas estén listas, añadir los espirales de calabacín a la sartén y cocinar 1 minuto y medio a 2 minutos como máximo, removiendo para mezclar con la salsa.\n9. Colocar las gambas sobre los zoodles, cubrir con la mozzarella rallada y gratinar 1 minuto hasta que el queso se funda.",
+      "consejos": "No cocines demasiado los espirales de calabacín para que mantengan textura firme y no suelten demasiada agua.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/shrimp-zoodles-parmesan-for-two/",
+        "autor": null,
+        "kcal_web": 375
+      }
+    },
+    {
+      "nombre": "Ensalada BLT de desayuno",
+      "descripcion": "Una ensalada fresca de col rizada lacinato con bacon crujiente, tomates cherry, aguacate y huevo, ideal para empezar el día.",
+      "tiempo_prep_min": 15,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "d946bd47",
+          200
+        ],
+        [
+          "513d4dc7",
+          5
+        ],
+        [
+          "efdb0f46",
+          9
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "32c7062f",
+          60
+        ],
+        [
+          "91ad5545",
+          57
+        ],
+        [
+          "a92874a5",
+          100
+        ]
+      ],
+      "instrucciones": "1. En un bol, mezcla la col rizada con el aceite de oliva, el vinagre y 1 g de sal. Masajea con las manos durante unos 3 minutos hasta que la col se ablande.\n2. Cocina los huevos al punto deseado; se recomienda pasados por agua (soft boiled).\n3. Reparte la col en dos boles y coloca encima el bacon troceado, los tomates cherry partidos por la mitad, el aguacate en láminas y el huevo.\n4. Termina con una pizca de sal y pimienta al gusto.",
+      "consejos": "Masajear la col rizada con el aliño ablanda sus fibras y mejora la textura y el sabor de la ensalada.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/breakfast-blt-salad/",
+        "autor": null,
+        "kcal_web": 292
+      }
+    },
+    {
+      "nombre": "Bol de gambas y verduras a la parrilla",
+      "descripcion": "Un bol fresco y ligero con gambas marinadas a la parrilla, verduras asadas y aguacate, aliñado con lima. Ideal como comida o cena rápida y saludable.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          340
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "c17ad017",
+          3
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "e2dd1c2b",
+          1.5
+        ],
+        [
+          "51176662",
+          4
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "afa334c2",
+          0.5
+        ],
+        [
+          "f8586302",
+          200
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "350ffddf",
+          600
+        ],
+        [
+          "91ad5545",
+          113
+        ],
+        [
+          "65756599",
+          15
+        ]
+      ],
+      "instrucciones": "1. Seca las gambas con papel de cocina y colócalas en un bol mediano. Añade el aceite de oliva y remueve para que se impregnen bien. Agrega la cebolla en polvo, el ajo en polvo, el pimentón ahumado, el azúcar moreno, 2 g de sal, pimienta y la cayena. Vuelve a remover y ensarta las gambas con cuidado en brochetas de madera previamente remojadas o metálicas. Reserva.\n2. Rocía ligeramente el pimiento, el calabacín y las mazorcas con spray de aceite de oliva y extiéndelo con las manos. Sazona con 1 g de sal y pimienta.\n3. Calienta la parrilla a fuego medio-alto y asa las mazorcas, los medios pimientos y los calabacines durante 4 minutos. Con unas pinzas de metal, dales la vuelta con cuidado y coloca las gambas en la parrilla. Cocina 4 minutos más, girando las gambas a los 2 minutos. Retira todo de la parrilla a la vez.\n4. Coloca las mazorcas en una tabla y corta los granos con cuidado. Pica los pimientos y el calabacín. Pon los granos en un bol mediano con los pimientos, el calabacín, el aguacate y el zumo de lima. Añade 1 g de sal y pimienta al gusto. Remueve para mezclar bien. Reparte las gambas y la ensalada en 4 platos y sirve.",
+      "consejos": "No dejes las gambas demasiado tiempo en la parrilla para que no se sequen; con 4 minutos suelen estar listas.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/grilled-shrimp-and-vegetable-bowl/",
+        "autor": null,
+        "kcal_web": 247
+      }
+    },
+    {
+      "nombre": "Pollo asado con ratatouille",
+      "descripcion": "Muslos de pollo dorados y horneados sobre un guiso de berenjena, calabacín, pimiento y tomate con hierbas frescas. Un plato único completo y lleno de verduras.",
+      "tiempo_prep_min": 70,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "efdb0f46",
+          28
+        ],
+        [
+          "e88e2cb8",
+          800
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "bdc11c5a",
+          20
+        ],
+        [
+          "e152c2f2",
+          450
+        ],
+        [
+          "5a1860a7",
+          16
+        ],
+        [
+          "d0a93278",
+          3
+        ],
+        [
+          "f8586302",
+          400
+        ],
+        [
+          "b12e5a68",
+          150
+        ],
+        [
+          "7f40a393",
+          600
+        ],
+        [
+          "49230ad1",
+          40
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C.\n2. Calentar una olla grande a fuego medio-alto y añadir 7 g de aceite de oliva.\n3. Secar los muslos de pollo con papel de cocina, sazonar con sal y pimienta por todos lados y colocarlos en la olla. Cocinar sin mover hasta que estén dorados y se despeguen, unos 5 minutos.\n4. Dar la vuelta y cocinar hasta que el otro lado empiece a dorarse, unos 3 minutos. Retirar el pollo a un plato y reservar.\n5. Bajar el fuego a medio, añadir el resto del aceite, la cebolla, el ajo y una pizca de sal. Cocinar removiendo de vez en cuando hasta que las verduras empiecen a ablandarse, unos 3 minutos.\n6. Añadir la berenjena y otra pizca de sal y cocinar removiendo hasta que empiece a ablandarse, unos 5 minutos.\n7. Añadir el concentrado de tomate y el tomillo y cocinar removiendo constantemente durante 1 minuto.\n8. Añadir el calabacín, el pimiento, los tomates, otra pizca de sal y un poco de pimienta negra y cocinar removiendo hasta que todas las verduras estén tiernas, unos 10 minutos.\n9. Retirar la olla del fuego.\n10. Sumergir parcialmente el pollo entre las verduras. Introducir la olla en el horno y cocinar destapada hasta que la parte más gruesa del pollo alcance 71 °C en el interior, unos 20 minutos.\n11. Sacar del horno y dejar reposar 10 minutos. Incorporar la albahaca y servir.",
+      "consejos": "Deja reposar el pollo tapado esos 10 minutos para que los jugos se asienten y la carne quede más jugosa.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/ratatouille-baked-chicken/",
+        "autor": null,
+        "kcal_web": 543
+      }
+    },
+    {
+      "nombre": "Boloñesa de lentejas",
+      "descripcion": "Una salsa de lentejas con verduras y tomate, inspirada en la boloñesa clásica, ideal para mezclar con pasta. Plato completo, saciante y lleno de sabor.",
+      "tiempo_prep_min": 70,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "4dacb910",
+          200
+        ],
+        [
+          "3afe2356",
+          227
+        ],
+        [
+          "5a1860a7",
+          170
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "12ce769f",
+          120
+        ],
+        [
+          "1390b7a4",
+          425
+        ],
+        [
+          "9df73a2d",
+          720
+        ],
+        [
+          "ff64faff",
+          200
+        ],
+        [
+          "c14d168a",
+          1.5
+        ],
+        [
+          "3285d3b1",
+          454
+        ],
+        [
+          "b983723d",
+          40
+        ],
+        [
+          "49230ad1",
+          5
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite en una olla grande a fuego medio.\n2. Añade la cebolla, la zanahoria, los champiñones y la sal. Remueve para que se impregnen de aceite y sofríe unos 8-10 minutos, hasta que la cebolla esté transparente y los champiñones empiecen a reducirse.\n3. Agrega el concentrado de tomate y el ajo. Remueve bien y cocina unos 5 minutos, hasta que el tomate tome un color más oscuro y huela tostado.\n4. Si usas vino tinto, viértelo para desglasar la olla. Cocina 1-2 minutos más hasta que se evapore el alcohol.\n5. Incorpora el tomate triturado, el caldo, las lentejas y el orégano. Sube el fuego a medio-alto y remueve de vez en cuando hasta que el líquido esté a punto de hervir.\n6. Baja el fuego a medio-bajo para mantener un hervor suave, tapa y cocina 35-40 minutos, removiendo ocasionalmente, hasta que las lentejas estén tiernas.\n7. Mientras tanto, pon agua con sal a hervir y cuece la pasta según las instrucciones del paquete hasta que esté al dente. Escúrrela y mézclala con la salsa. Sirve en cuencos y espolvorea con parmesano rallado y albahaca fresca.",
+      "consejos": "Puedes sustituir el parmesano por levadura nutricional para una versión vegana.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/lentil-bolognese/",
+        "autor": null,
+        "kcal_web": 358
+      }
+    },
+    {
+      "nombre": "Pechugas de pollo rellenas al estilo búfalo",
+      "descripcion": "Pechugas de pollo enrolladas con un relleno cremoso de queso, verduras y un toque picante, empanadas y horneadas. Se sirven con una salsa búfalo de mantequilla y salsa picante.",
+      "tiempo_prep_min": 45,
+      "porciones": 5,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "67e4d52d",
+          28
+        ],
+        [
+          "6f64e109",
+          68
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "82930270",
+          25
+        ],
+        [
+          "4dacb910",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "4ad8714c",
+          425
+        ],
+        [
+          "cb0e5aa3",
+          45
+        ],
+        [
+          "847180ed",
+          15
+        ],
+        [
+          "95aa4443",
+          90
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "668919bc",
+          10
+        ],
+        [
+          "bbece24a",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C y engrasar ligeramente una fuente de horno con aceite en spray.\n2. Mezclar en un bol el cheddar rallado, el queso crema, el apio, la cebolleta, la zanahoria, la sal y la pimienta.\n3. Extender las pechugas de pollo y repartir la mezcla en el centro. Enrollar cada pechuga.\n4. Triturar las galletas saladas y ponerlas en un bol para empanar.\n5. En otro bol, mezclar la mayonesa, 1 cucharada de salsa picante y el zumo de limón.\n6. Pasar cada rollo de pollo por la mezcla de mayonesa y luego por las galletas trituradas. Colocarlos en la fuente con la unión hacia abajo.\n7. Rociar ligeramente la superficie del pollo con aceite en spray y hornear 30 minutos.\n8. Mientras se hornea, derretir la mantequilla y mezclarla con el resto de la salsa picante y el ajo en polvo.\n9. Rociar la salsa búfalo sobre las pechugas horneadas y servir.",
+      "consejos": "Sirve las pechugas con apio y zanahoria en bastones para completar el plato.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/stuffed-buffalo-chicken-breasts/",
+        "autor": null,
+        "kcal_web": 172
+      }
+    },
+    {
+      "nombre": "Gambas al horno con maíz y tomates",
+      "descripcion": "Una bandeja de gambas jugosas con maíz asado y tomates cherry, sazonadas con limón y cebollino. Una cena rápida y llena de sabor.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          680
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "350ffddf",
+          600
+        ],
+        [
+          "88db0b2d",
+          300
+        ],
+        [
+          "03f57b8d",
+          6
+        ],
+        [
+          "60ad001e",
+          100
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno en modo grill a alta potencia, con la rejilla a unos 15 cm de la resistencia, y forrar una bandeja con papel de aluminio.\n2. Mezclar el maíz con 1 cucharada de aceite de oliva y 1/2 cucharadita de sal en la bandeja hasta que quede bien cubierto. Extender en una capa uniforme.\n3. Asar hasta que el maíz empiece a dorarse en algunos puntos, removiendo a mitad de cocción, unos 6-7 minutos. Sacar del horno.\n4. Mientras tanto, secar las gambas con papel de cocina y ponerlas en un bol mediano con 2 cucharaditas de aceite de oliva, el ajo, la especia para marisco, la ralladura de limón y 1/2 cucharadita de sal. Mezclar suavemente para cubrirlas.\n5. Extender las gambas sobre el maíz, añadir los tomates cherry, rociar con la cucharada restante de aceite y asar hasta que las gambas estén opacas y los tomates empiecen a reventar, unos 7-8 minutos.\n6. Espolvorear con el cebollino picado y servir con gajos de limón al lado.",
+      "consejos": "No sobrecocines las gambas para que no queden duras; están listas en cuanto se vuelven opacas.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/sheet-pan-shrimp-with-corn-and-tomatoes/",
+        "autor": null,
+        "kcal_web": 295
+      }
+    },
+    {
+      "nombre": "Sopa cremosa de salchicha y patata",
+      "descripcion": "Una sopa cremosa y reconfortante con salchicha, patata y alubias cannellini, terminada con espinacas frescas.",
+      "tiempo_prep_min": 55,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "013d90a9",
+          340
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "b18ec13a",
+          255
+        ],
+        [
+          "eb5939be",
+          960
+        ],
+        [
+          "0b223775",
+          600
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "cb57d667",
+          30
+        ]
+      ],
+      "instrucciones": "1. Calentar una olla grande a fuego medio-alto y rociar con aceite.\n2. Añadir las salchichas, desmenuzarlas y cocinar hasta que se doren, unos 7 minutos, removiendo a menudo. Retirar con una espumadera y reservar en un bol.\n3. Añadir inmediatamente 1 cucharadita de aceite, la cebolla y el ajo. Cocinar hasta que las verduras se ablanden, unos 5 minutos.\n4. Añadir las especias italianas y remover bien para cubrir las verduras. Añadir las alubias y el caldo y remover.\n5. Triturar la sopa con una batidora de mano hasta que quede cremosa. Si no se tiene, pasar la mezcla a una batidora de vaso y triturar hasta que quede cremosa. Devolver a la olla.\n6. Añadir la salchicha cocinada, las patatas, la sal y la pimienta, y llevar a ebullición.\n7. Bajar el fuego, tapar y dejar cocer a fuego lento unos 30 minutos o hasta que las patatas estén tiernas.\n8. Cuando las patatas estén tiernas, añadir las espinacas. Cocer 1 minuto y servir.",
+      "consejos": "Si no tienes batidora de mano, tritura solo una parte de las alubias para mantener algo de textura.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/creamy-sausage-and-potato-soup/",
+        "autor": null,
+        "kcal_web": 402
+      }
+    },
+    {
+      "nombre": "Salmón teriyaki con miel",
+      "descripcion": "Salmón marinado en soja, mirin, sake y miel, sellado a la plancha y glaseado con su propia marinada. Un plato rápido y sabroso listo en 15 minutos.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "caa47a33",
+          42
+        ],
+        [
+          "d19d7abb",
+          42
+        ],
+        [
+          "551b359c",
+          42
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "2fd7e358",
+          454
+        ],
+        [
+          "7e5f6bee",
+          9
+        ]
+      ],
+      "instrucciones": "1. Mezcla la salsa de soja, el mirin, el sake y la miel en una bolsa con cierre. Añade el salmón y remueve para que se impregne. Refrigera entre 1 y 8 horas.\n2. Saca el salmón y reserva la marinada. Calienta una sartén a fuego medio-alto; cuando esté caliente, añade el aceite. Sella el salmón 2 minutos por cada lado. Baja el fuego, vierte la marinada reservada, tapa y cocina 4-5 minutos hasta que esté hecho por dentro.",
+      "consejos": "No dejes marinar el salmón más de 8 horas para que no quede demasiado salado.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/honey-teriyaki-salmon/",
+        "autor": null,
+        "kcal_web": 266
+      }
+    },
+    {
+      "nombre": "Sopa de pollo, arroz salvaje y setas shiitake",
+      "descripcion": "Sopa reconfortante de pollo desmenuzado con arroz salvaje, arroz integral y setas shiitake en un caldo de verduras.",
+      "tiempo_prep_min": 60,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "668919bc",
+          14
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "20c74a2a",
+          8
+        ],
+        [
+          "eb5939be",
+          1440
+        ],
+        [
+          "4dacb910",
+          80
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "e88e2cb8",
+          397
+        ],
+        [
+          "f38c50dc",
+          128
+        ],
+        [
+          "b5839902",
+          95
+        ],
+        [
+          "07559d78",
+          113
+        ],
+        [
+          "894e649b",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Derretir la mantequilla en una olla grande a fuego medio, añadir la cebolla y sofreír hasta que esté blanda pero sin dorarse, unos 3-4 minutos.\n2. Añadir la harina y sofreír otro minuto.\n3. Incorporar el caldo de pollo, el agua, la zanahoria, el ajo, el apio, el arroz integral y los muslos de pollo, tapar y cocer a fuego lento 20 minutos.\n4. Añadir la mezcla de arroz salvaje con su sobre de condimento, el arroz de grano largo y las setas, y cocer a fuego lento y tapado 25 minutos, removiendo de vez en cuando.\n5. Sacar el pollo de la olla y desmenuzarlo con dos tenedores, devolverlo a la olla, añadir la nata agria y más agua si está demasiado espesa, ajustar de sal y pimienta al gusto y servir.",
+      "consejos": "Si la sopa espesa demasiado al reposar, añade un poco más de caldo o agua caliente antes de recalentarla.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/chicken-shiitake-and-wild-rice-soup/",
+        "autor": null,
+        "kcal_web": 200
+      }
+    },
+    {
+      "nombre": "Ensalada de lechuga romana a la parrilla con pollo y maíz",
+      "descripcion": "Una ensalada templada con lechuga romana y mazorcas de maíz a la parrilla, pollo jugoso y un aliño fresco de salsa y lima.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1d197cae",
+          120
+        ],
+        [
+          "efdb0f46",
+          56
+        ],
+        [
+          "65756599",
+          30
+        ],
+        [
+          "e88e2cb8",
+          454
+        ],
+        [
+          "c14d168a",
+          1
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "350ffddf",
+          300
+        ],
+        [
+          "219fa68f",
+          300
+        ],
+        [
+          "91ad5545",
+          113
+        ],
+        [
+          "08637e90",
+          20
+        ],
+        [
+          "a92874a5",
+          75
+        ]
+      ],
+      "instrucciones": "1. Mezcla la salsa, el aceite de oliva y el zumo de lima en un bol pequeño y reserva.\n2. Sazona los muslos de pollo con la sal, el orégano y el comino.\n3. Calienta la parrilla a fuego medio. Retira las hojas exteriores marchitas de la lechuga romana y córtala por la mitad a lo largo. Colócala en una fuente y rocía los lados cortados con spray de aceite de oliva. Rocía ligeramente las mazorcas de maíz con aceite de oliva.\n4. Coloca el pollo y el maíz en la parrilla y cocina unos 5 minutos por cada lado, hasta que el pollo esté hecho y el maíz tierno. Retira y pasa a una tabla de cortar.\n5. Asa la lechuga romana cerca de la fuente de calor a fuego alto, con el lado cortado hacia abajo, durante 1-2 minutos. Retira.\n6. Corta el pollo en tiras y desgrana el maíz. Sirve sobre la lechuga romana con el aguacate, los tomates, la cebolla, una pizca de sal y el aliño por encima.",
+      "consejos": "Asa la lechuga justo antes de servir para que mantenga su textura crujiente y un ligero sabor ahumado.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/grilled-romaine-corn-and-chicken-salad-with-salsa-dressing/",
+        "autor": null,
+        "kcal_web": 288
+      }
+    }
+  ]
+}

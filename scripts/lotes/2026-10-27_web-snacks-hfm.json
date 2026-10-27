@@ -1,0 +1,1180 @@
+{
+  "lote": "web-snacks-hfm-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "53587262": {
+      "nombre": "Quinoa",
+      "prefijo": "53587262",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8810f4f6": {
+      "nombre": "Piña",
+      "prefijo": "8810f4f6",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7d5a031f": {
+      "nombre": "Manzana",
+      "prefijo": "7d5a031f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "38fe1a4e": {
+      "nombre": "Yogur natural",
+      "prefijo": "38fe1a4e",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "e3012f44": {
+      "nombre": "Leche de almendras (sin azúcar)",
+      "prefijo": "e3012f44",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e99e9f9a": {
+      "nombre": "Mini muslo de pollo 98% La Carloteña asado al",
+      "prefijo": "e99e9f9a",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "447c5697": {
+      "nombre": "Huevos cocidos",
+      "prefijo": "447c5697",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b1cb2f9": {
+      "nombre": "Pistachos",
+      "prefijo": "0b1cb2f9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "515b18b8": {
+      "nombre": "Proteína de suero (whey)",
+      "prefijo": "515b18b8",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "057baedf": {
+      "nombre": "Pimiento",
+      "prefijo": "057baedf",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "75177bbb": {
+      "nombre": "Orégano",
+      "prefijo": "75177bbb",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f0671f02": {
+      "nombre": "Vinagre de manzana",
+      "prefijo": "f0671f02",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e5efc372": {
+      "nombre": "Coliflor",
+      "prefijo": "e5efc372",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "5036194d": {
+      "nombre": "Salsa buffalo",
+      "prefijo": "5036194d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "71805ea3": {
+      "nombre": "Canela Molida Frasco",
+      "prefijo": "71805ea3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3cbe24f8": {
+      "nombre": "Almendras",
+      "prefijo": "3cbe24f8",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "c98f36fc": {
+      "nombre": "Anacardos",
+      "prefijo": "c98f36fc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "9286a63f": {
+      "nombre": "Aceite de coco",
+      "prefijo": "9286a63f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c465cf20": {
+      "nombre": "Orejones albaricoque",
+      "prefijo": "c465cf20",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "dcf63110": {
+      "nombre": "Arándanos secos",
+      "prefijo": "dcf63110",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b0820d49": {
+      "nombre": "Pepitas de Chocolate Negro",
+      "prefijo": "b0820d49",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2aba459": {
+      "nombre": "Chocolate negro en pepitas",
+      "prefijo": "b2aba459",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos",
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "c125af5a": {
+      "nombre": "Agua",
+      "prefijo": "c125af5a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "570f8ae9": {
+      "nombre": "Batido Proteína Sabor Chocolate",
+      "prefijo": "570f8ae9",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "46825bfa": {
+      "nombre": "Cacahuetes",
+      "prefijo": "46825bfa",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "9076c191": {
+      "nombre": "Proteína en polvo sabor vainilla",
+      "prefijo": "9076c191",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "a54e5749": {
+      "nombre": "Chocolate negro 75-80%",
+      "prefijo": "a54e5749",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Dip de yogur griego y cacao con fruta",
+      "descripcion": "Un dip cremoso de yogur griego, cacao y sirope de arce, ideal para mojar fruta fresca. Se prepara en cinco minutos y es un snack o merienda sencilla y sabrosa.",
+      "tiempo_prep_min": 5,
+      "porciones": 4,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          240
+        ],
+        [
+          "34d6fafa",
+          60
+        ],
+        [
+          "edb1e321",
+          10
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "16665787",
+          100
+        ],
+        [
+          "1131a576",
+          100
+        ],
+        [
+          "8810f4f6",
+          100
+        ],
+        [
+          "7d5a031f",
+          100
+        ]
+      ],
+      "instrucciones": "1. En un bol mediano, añade el yogur griego, el sirope de arce, el cacao en polvo y el extracto de vainilla.\n2. Mezcla bien hasta que todos los ingredientes estén integrados y la mezcla quede suave.\n3. Sirve con la fruta troceada y, si se desea, con galletas saladas o pretzels; o guarda en la nevera hasta el momento de servir.",
+      "consejos": "Puedes sustituir el sirope de arce por miel o agave y ajustar la cantidad según el dulzor de la fruta.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/yogurt-fruit-dip/",
+        "autor": null,
+        "kcal_web": 93
+      }
+    },
+    {
+      "nombre": "Pudín de chía con fresas",
+      "descripcion": "Un pudín cremoso de semillas de chía con leche de almendra y yogur, endulzado con miel y coronado con fresas frescas. Ideal para desayuno o merienda, se prepara la noche anterior.",
+      "tiempo_prep_min": 245,
+      "porciones": 4,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b5b5e57f",
+          80
+        ],
+        [
+          "38fe1a4e",
+          120
+        ],
+        [
+          "e3012f44",
+          480
+        ],
+        [
+          "f75a3721",
+          8
+        ],
+        [
+          "8619b09f",
+          113
+        ],
+        [
+          "16665787",
+          300
+        ]
+      ],
+      "instrucciones": "1. En un bol mediano, batir bien las semillas de chía, el yogur, la leche de almendra, el extracto de vainilla y la miel hasta que quede homogéneo.\n2. Cubrir y refrigerar toda la noche (unas 4 horas como mínimo).\n3. Retirar los tallos verdes de las fresas y picarlas finamente.\n4. Repartir el pudín de chía y las fresas en capas en los vasos o recipientes.",
+      "consejos": "Remueve el pudín una vez pasada la primera hora de refrigeración para evitar que las semillas se apelmacen en el fondo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/strawberry-chia-seed-pudding/",
+        "autor": null,
+        "kcal_web": 254
+      }
+    },
+    {
+      "nombre": "Ensalada de pollo con aliño de requesón",
+      "descripcion": "Una ensalada fresca y proteica con pollo, huevo, manzana y pistachos, aliñada con una crema suave de requesón y mostaza.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b2c88c97",
+          240
+        ],
+        [
+          "20367cb0",
+          14
+        ],
+        [
+          "12a8ab46",
+          25
+        ],
+        [
+          "c17ad017",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "e99e9f9a",
+          450
+        ],
+        [
+          "447c5697",
+          200
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "7d5a031f",
+          180
+        ],
+        [
+          "0b1cb2f9",
+          60
+        ]
+      ],
+      "instrucciones": "1. Triturar el requesón, la mostaza de Dijon, el zumo de limón, la cebolla en polvo, la sal y la pimienta en un procesador de alimentos hasta obtener una crema homogénea.\n2. En un bol grande, mezclar el pollo asado troceado, los huevos cocidos picados, el apio en dados, la manzana en dados y los pistachos picados.\n3. Añadir el aliño de requesón y mezclar bien hasta integrar todos los ingredientes.",
+      "consejos": "Sirve la ensalada bien fría y añade los pistachos justo antes de comer para que mantengan su textura crujiente.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/cottage-cheese-chicken-salad/",
+        "autor": null,
+        "kcal_web": 197
+      }
+    },
+    {
+      "nombre": "Avena nocturna con crema de cacahuete y proteína",
+      "descripcion": "Desayuno cremoso de avena reposada toda la noche con yogur, crema de cacahuete y proteína, servido con fresas frescas. Se prepara en 10 minutos y se conserva en tarros individuales.",
+      "tiempo_prep_min": 10,
+      "porciones": 8,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "515b18b8",
+          120
+        ],
+        [
+          "38fe1a4e",
+          245
+        ],
+        [
+          "34d6fafa",
+          85
+        ],
+        [
+          "6328f4b9",
+          64
+        ],
+        [
+          "318db297",
+          540
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "16665787",
+          150
+        ]
+      ],
+      "instrucciones": "1. Pon todos los ingredientes en un vaso de batidora y tritura durante 8-10 segundos, solo hasta que se integren; no batas en exceso.\n2. Reparte la mezcla en 8 tarros, tapa y guarda en la nevera toda la noche.\n3. Sirve con fresas frescas por encima.",
+      "consejos": "Si usas proteína en polvo con sabor, prueba a reducir ligeramente el sirope para ajustar el dulzor.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/peanut-butter-overnight-oats/",
+        "autor": null,
+        "kcal_web": 230
+      }
+    },
+    {
+      "nombre": "Pollo a la plancha con salsa de piña y pepino",
+      "descripcion": "Pechugas de pollo a la plancha con una salsa fresca de piña, pepino, cebolla roja y cilantro aliñada con lima. Una receta rápida y ligera, lista en 15 minutos.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          600
+        ],
+        [
+          "bf392211",
+          9
+        ],
+        [
+          "12a8ab46",
+          6
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "8810f4f6",
+          165
+        ],
+        [
+          "2e8d5d64",
+          150
+        ],
+        [
+          "65756599",
+          30
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "0e40c366",
+          4
+        ]
+      ],
+      "instrucciones": "1. Calienta una plancha o parrilla a fuego medio-alto.\n2. Unta las pechugas de pollo con el aceite de oliva y sazónalas generosamente con sal, pimienta y el condimento de limón y pimienta.\n3. Asa el pollo 4-5 minutos por cada lado o hasta que esté bien cocido por dentro.\n4. Mientras se cocina el pollo, mezcla en un bol el pepino, la piña, la cebolla roja y el cilantro picados.\n5. Añade el zumo de lima y sal al gusto, y remueve.\n6. Sirve el pollo con la salsa de piña y pepino por encima.",
+      "consejos": "Deja reposar el pollo 2-3 minutos antes de servirlo para que conserve todo su jugo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/grilled-chicken-with-pineapple-cucumber-salsa/",
+        "autor": null,
+        "kcal_web": 175
+      }
+    },
+    {
+      "nombre": "Ensalada de garbanzos y quinoa",
+      "descripcion": "Una ensalada fresca y completa con quinoa, garbanzos, verduras crujientes y un aliño sencillo de aceite de oliva y vinagre de manzana.",
+      "tiempo_prep_min": 15,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "53587262",
+          170
+        ],
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "2e8d5d64",
+          300
+        ],
+        [
+          "a92874a5",
+          300
+        ],
+        [
+          "057baedf",
+          300
+        ],
+        [
+          "08637e90",
+          150
+        ],
+        [
+          "59163485",
+          15
+        ],
+        [
+          "75177bbb",
+          5
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "f0671f02",
+          15
+        ],
+        [
+          "6187036a",
+          40
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. En un cazo, pon la quinoa escurrida, 1/2 cucharadita de sal y 420 ml de agua fría. Lleva a ebullición.\n2. Baja el fuego, tapa y cocina a fuego lento durante 15 minutos. Apaga el fuego y deja reposar tapada 5 minutos. Suelta la quinoa con un tenedor y déjala enfriar por completo.\n3. En un bol grande, mezcla las verduras preparadas (pepino, tomates cherry, pimientos y cebolla roja) con los garbanzos y la quinoa fría. Aliña con el aceite de oliva y el vinagre de manzana, y sazona con sal y pimienta al gusto. Remueve para combinar.\n4. Reparte en cuencos y sirve con el queso feta desmenuzado por encima.",
+      "consejos": "Puedes preparar la quinoa con antelación y guardarla en la nevera para que la ensalada esté lista en menos tiempo.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/chickpea-salad-recipe/",
+        "autor": null,
+        "kcal_web": 271
+      }
+    },
+    {
+      "nombre": "Chips de aro de cebolla al parmesano",
+      "descripcion": "Crujientes chips de cebolla horneadas sobre una base de parmesano gratinado, especiadas con pimentón ahumado, ajo y cebolla en polvo. Un aperitivo sabroso y fácil de preparar.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "950afc33",
+          400
+        ],
+        [
+          "b983723d",
+          227
+        ],
+        [
+          "c17ad017",
+          2
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "e2dd1c2b",
+          2
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 200 °C y forra una bandeja con papel de horno.\n2. Corta las cebollas en rodajas finas de unos 6 mm de grosor.\n3. Extiende el queso parmesano rallado sobre la bandeja preparada.\n4. Coloca con cuidado las rodajas de cebolla sobre el parmesano.\n5. Rocía con aceite de cocina en espray y sazona con el pimentón ahumado, la cebolla en polvo y el ajo en polvo.\n6. Hornea durante 18-20 minutos o hasta que el queso se dore.\n7. Deja enfriar 10 minutos para que el queso endurezca.\n8. Corta en cuadrados y sirve con tu salsa favorita, como tzatziki.",
+      "consejos": "Deja enfriar bien antes de cortar para que las chips queden crujientes y no se rompan.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/onion-ring-chips/",
+        "autor": null,
+        "kcal_web": 256
+      }
+    },
+    {
+      "nombre": "Bocados de coliflor al estilo búfalo",
+      "descripcion": "Bocados de coliflor crujientes y especiados, horneados o hechos en freidora de aire, con un toque picante de salsa búfalo. Una opción sabrosa y ligera para picar.",
+      "tiempo_prep_min": 32,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5efc372",
+          600
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "318db297",
+          30
+        ],
+        [
+          "20c74a2a",
+          16
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "5036194d",
+          60
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Corta la coliflor en ramilletes de unos 6 cm.\n2. En un bol grande bate los huevos con la leche, el aceite de oliva y una pizca de sal y pimienta.\n3. En un bol pequeño mezcla el ajo en polvo con la harina.\n4. Añade la coliflor al batido de huevo y remueve bien para que quede completamente cubierta.\n5. Pasa la coliflor a una bolsa zip y añade la mezcla de harina y especias. Cierra y agita hasta que quede uniformemente cubierta.\n6. Precalienta la freidora de aire a 200 °C y engrasa ligeramente la rejilla.\n7. Coloca la coliflor en una sola capa con un poco de espacio entre los trozos.\n8. Cocina durante 20-22 minutos, ajustando el tiempo según el tamaño de los ramilletes.\n9. Retira de la freidora y mezcla con la salsa búfalo.\n10. Alternativamente, precalienta el horno a 200 °C y engrasa una bandeja grande antiadherente.\n11. Extiende la coliflor uniformemente en la bandeja con espacio entre los trozos.\n12. Hornea durante 30 minutos, dándoles la vuelta a mitad de cocción.\n13. Cuando la coliflor esté tierna, rocía con la salsa búfalo, remueve suavemente y vuelve a hornear unos 5 minutos más.",
+      "consejos": "Sirve los bocados inmediatamente para que mantengan su textura crujiente.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/buffalo-cauliflower-bites/",
+        "autor": null,
+        "kcal_web": 183
+      }
+    },
+    {
+      "nombre": "Dip de yogur griego y crema de cacahuete",
+      "descripcion": "Una crema rápida y cremosa de yogur griego, crema de cacahuete y miel, ideal para mojar fruta o galletas. Se prepara en solo 5 minutos.",
+      "tiempo_prep_min": 5,
+      "porciones": 6,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          240
+        ],
+        [
+          "6328f4b9",
+          85
+        ],
+        [
+          "8619b09f",
+          21
+        ],
+        [
+          "71805ea3",
+          1
+        ]
+      ],
+      "instrucciones": "1. Poner en un bol el yogur griego natural, la crema de cacahuete y la miel.\n2. Mezclar bien hasta que todos los ingredientes estén integrados.\n3. Servir en un bol y espolvorear con una pizca de canela al gusto. Acompañar con fruta o galletas.",
+      "consejos": "Si la mezcla queda demasiado espesa, añade una cucharada de leche o agua para ajustar la textura.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/peanut-butter-yogurt-dip/",
+        "autor": null,
+        "kcal_web": 113
+      }
+    },
+    {
+      "nombre": "Barritas de avena con chocolate y frutos secos",
+      "descripcion": "Barritas energéticas de avena tostada con almendras, anacardos, orejones, arándanos y pepitas de chocolate, unidas con miel y aceite de coco. Ideales como snack o desayuno.",
+      "tiempo_prep_min": 87,
+      "porciones": 10,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "3cbe24f8",
+          70
+        ],
+        [
+          "c98f36fc",
+          70
+        ],
+        [
+          "8619b09f",
+          170
+        ],
+        [
+          "9286a63f",
+          42
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "c465cf20",
+          70
+        ],
+        [
+          "dcf63110",
+          35
+        ],
+        [
+          "b0820d49",
+          45
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C y forrar una bandeja con papel de horno. Extender los copos de avena, las almendras picadas y los anacardos picados y tostar 12 minutos, removiendo a mitad.\n2. Dejar templar y pasar a un bol. En un cazo, calentar la miel, el aceite de coco y el extracto de vainilla hasta que estén tibios.\n3. Verter la mezcla de miel sobre la avena y los frutos secos. Añadir la sal, los orejones picados, los arándanos secos picados y las pepitas de chocolate.\n4. Mezclar muy bien; el chocolate se fundirá y ayudará a ligar.\n5. Presionar la mezcla en un molde de pan de 28x13 cm forrado con papel, insistiendo en el centro y las esquinas.\n6. Congelar 1 hora y cortar en barritas. Conservar en nevera en un recipiente hermético.",
+      "consejos": "Presiona bien la mezcla en el molde para que las barritas no se deshagan al cortarlas.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/chocolate-chip-granola-bars/",
+        "autor": null,
+        "kcal_web": 275
+      }
+    },
+    {
+      "nombre": "Chips de calabacín al horno",
+      "descripcion": "Rodajas finas de calabacín horneadas con parmesano y orégano, crujientes y ligeras. Un aperitivo o guarnición sencilla y sabrosa.",
+      "tiempo_prep_min": 22,
+      "porciones": 4,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          400
+        ],
+        [
+          "b983723d",
+          60
+        ],
+        [
+          "bbece24a",
+          1.5
+        ],
+        [
+          "75177bbb",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C y engrasar ligeramente dos bandejas grandes antiadherentes con aceite en spray (o forrarlas con papel de horno).\n2. Cortar los calabacines en rodajas finas de unos 6 mm con un cuchillo afilado o mandolina.\n3. Repartir las rodajas en las bandejas y espolvorear con el ajo en polvo, el orégano, sal y pimienta. Mezclar para que se impregnen y colocarlas en una sola capa sin solaparse.\n4. Rociar ligeramente con aceite en spray y espolvorear el queso parmesano rallado por encima.\n5. Hornear durante 15-17 minutos, hasta que estén doradas y ligeramente crujientes.",
+      "consejos": "Corta las rodajas de grosor uniforme para que se horneen de forma homogénea y queden crujientes.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/baked-zucchini-chips/",
+        "autor": null,
+        "kcal_web": 89
+      }
+    },
+    {
+      "nombre": "Huevos rellenos de aguacate",
+      "descripcion": "Huevos cocidos rellenos de una crema suave de yema, aguacate y yogur griego, con un toque de mostaza y limón. Un aperitivo fresco y proteico.",
+      "tiempo_prep_min": 20,
+      "porciones": 8,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          400
+        ],
+        [
+          "91ad5545",
+          99
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "12a8ab46",
+          10
+        ],
+        [
+          "e2dd1c2b",
+          1
+        ]
+      ],
+      "instrucciones": "1. Coloca los huevos en un cazo y cúbrelos con agua fría. Lleva a ebullición a fuego medio, tapa y apaga el fuego; deja reposar 15 minutos y pasa los huevos a un baño de hielo. Pélalos en cuanto se enfríen.\n2. Corta los huevos por la mitad y retira con cuidado las yemas.\n3. Tritura las yemas con el aguacate, el yogur griego, la mostaza de Dijon, el zumo de limón, la sal y la pimienta hasta obtener una crema suave. Pasa la mezcla a una manga pastelera.\n4. Rellena cada mitad de huevo con la crema y espolvorea ligeramente con el pimentón ahumado.\n5. Sirve.",
+      "consejos": "Pela los huevos bajo un chorro de agua fría para que la cáscara se desprenda más fácilmente.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/avocado-deviled-eggs/",
+        "autor": null,
+        "kcal_web": 96
+      }
+    },
+    {
+      "nombre": "Bocados energéticos de proteína sin horno",
+      "descripcion": "Snack rápido y sin horno a base de avena, proteína de suero y crema de cacahuete, endulzado con miel y con trocitos de chocolate.",
+      "tiempo_prep_min": 10,
+      "porciones": 14,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          188
+        ],
+        [
+          "515b18b8",
+          60
+        ],
+        [
+          "6328f4b9",
+          128
+        ],
+        [
+          "8619b09f",
+          85
+        ],
+        [
+          "b2aba459",
+          60
+        ],
+        [
+          "c125af5a",
+          45
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezclar los copos de avena, la proteína de suero, la crema de cacahuete y la miel hasta integrar.\n2. Si la mezcla queda seca, añadir 30-45 ml de agua y remover hasta formar una masa firme; si hace falta, añadir más agua de una en una cucharadita hasta lograr la consistencia deseada.\n3. Incorporar las pepitas de chocolate y mezclar de nuevo.\n4. Tomar porciones del tamaño de una cucharada y formar bolitas; colocarlas en una bandeja forrada con papel de horno.\n5. Refrigerar al menos 30 minutos antes de servir y conservar en la nevera.",
+      "consejos": "Si la masa está demasiado pegajosa, añade más copos de avena poco a poco hasta que se pueda manejar.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/no-bake-protein-energy-bites/",
+        "autor": null,
+        "kcal_web": 145
+      }
+    },
+    {
+      "nombre": "Barritas de avena, plátano y chocolate",
+      "descripcion": "Barritas energéticas de avena con plátano, crema de cacahuete, proteína de chocolate y pepitas de chocolate, ideales para desayuno o merienda.",
+      "tiempo_prep_min": 25,
+      "porciones": 12,
+      "tipo_plato": "Merienda",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          240
+        ],
+        [
+          "6328f4b9",
+          128
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "0f347066",
+          219
+        ],
+        [
+          "570f8ae9",
+          30
+        ],
+        [
+          "b0820d49",
+          85
+        ],
+        [
+          "46825bfa",
+          73
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C y forrar un molde con papel de horno.\n2. En un bol, machacar los plátanos con un tenedor hasta que queden blandos. Añadir la crema de cacahuete y mezclar bien.\n3. Incorporar el extracto de vainilla, los copos de avena, la proteína de chocolate, los cacahuetes y las pepitas de chocolate, y mezclar hasta combinar.\n4. Extender la mezcla de forma uniforme y presionarla ligeramente en el molde preparado.\n5. Hornear durante 15 minutos o hasta que la superficie esté ligeramente dorada.\n6. Dejar enfriar sobre una rejilla antes de cortar en cuadrados.",
+      "consejos": "Deja enfriar por completo antes de cortar para que las barritas se mantengan firmes.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/healthy-oatmeal-bars/",
+        "autor": null,
+        "kcal_web": 195
+      }
+    },
+    {
+      "nombre": "Barritas de avena y chocolate sin horno",
+      "descripcion": "Barritas energéticas sin horno con una base de avena y proteína y un relleno cremoso de chocolate negro y crema de cacahuete.",
+      "tiempo_prep_min": 30,
+      "porciones": 12,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          250
+        ],
+        [
+          "9076c191",
+          30
+        ],
+        [
+          "8619b09f",
+          170
+        ],
+        [
+          "6328f4b9",
+          200
+        ],
+        [
+          "f75a3721",
+          5
+        ],
+        [
+          "a54e5749",
+          90
+        ]
+      ],
+      "instrucciones": "1. Forra un molde cuadrado de 20x20 cm con papel de horno para poder desmoldar fácilmente.\n2. En un bol grande, mezcla los copos de avena con la proteína en polvo. Añade la miel, 135 g de crema de cacahuete y el extracto de vainilla, y bate con una batidora de mano hasta integrar.\n3. Presiona la mitad de la mezcla de avena en el fondo del molde preparado.\n4. En un bol apto para microondas, funde suavemente el chocolate negro con los 65 g restantes de crema de cacahuete hasta obtener una mezcla lisa.\n5. Vierte la mezcla de chocolate sobre la capa de avena y refrigera en el congelador durante 20 minutos o hasta que la capa de chocolate esté sólida.\n6. Presiona el resto de la mezcla de avena sobre el chocolate y corta en 12 cuadrados antes de servir.",
+      "consejos": "Conserva las barritas en la nevera para que el relleno de chocolate se mantenga firme.",
+      "origen_web": {
+        "url": "https://healthyfitnessmeals.com/no-bake-chocolate-oat-bars/",
+        "autor": null,
+        "kcal_web": 234
+      }
+    }
+  ]
+}
