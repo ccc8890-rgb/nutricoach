@@ -39,10 +39,10 @@ Cada superficie tiene un fichero «interruptor» de una línea.
 | Hoy | `calendar-01` (calendario con «17») | `today` |
 | Dieta | `rice-bowl-01` (cuenco de arroz) | tenedor y cuchillo finos de **Phosphor Light** (`fork-knife-light`, excepción a mano en `sharp-core.tsx`, decidido 27-10) |
 | Recetas | `book-open-02` | `menu-book` |
-| Entreno | `dumbbell-01` (mancuerna inclinada) | `fitness-center` |
+| Entreno | `dumbbell-01` (mancuerna inclinada) | barra horizontal con discos de **Phosphor Thin** (`barbell-thin`, excepción a mano en `sharp-core.tsx`, decidido 27-10; alternativa vista: Circum `dumbbell`) |
 | Datos | `analytics-up` | `bar-chart-4-bars` |
 
-Pendiente de Carlos en esa barra: **Entreno**. Las pesas (mancuerna, barra, kettlebell) le parecen «las típicas de IA»; se le han enseñado ideas que no son una pesa (persona levantando barra, cronómetro, comba, zapatilla… en `salidas/27-10-2026_iconos/candidatos3-entreno-y-cubiertos.png`). Recomendado: persona con barra (mingcute `weightlifting-line`). Dieta decidida: cubiertos finos.
+Decididos el 27-10: Dieta = cubiertos finos (Phosphor Light) y Entreno = barra horizontal fina (Phosphor Thin, tras ver 32 variantes de pesas en `salidas/27-10-2026_iconos/pesas-opciones.png`; Carlos descartó la mancuerna, la kettlebell y las demás por «típicas de IA»).
 
 ## Historial de lo probado (por orden) y por qué se descartó
 
