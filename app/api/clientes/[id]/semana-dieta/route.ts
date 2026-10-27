@@ -34,8 +34,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (franja) {
     // Selector de recetas para una franja: verificadas primero, con búsqueda opcional
     let q = admin.from('recetas')
-      .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tipo_receta, tiempo_prep_min, verificacion, contenido_estado')
-      .eq('estado', 'aprobada').gt('kcal', 0).limit(200)
+      .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tipo_receta, tiempo_prep_min, verificacion, contenido_estado, familia, proteinas_principales, tipo_contenido')
+      .eq('estado', 'aprobada').gt('kcal', 0).limit(1000)
     const texto = url.searchParams.get('q')?.trim()
     if (texto) q = aplicarBusquedaNombre(q, texto)
     // Modo postres: recetas dulces o de picoteo para añadir como complemento de una comida
@@ -55,9 +55,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return (obj.p != null ? 2 * Math.abs(r.p - obj.p) : 0) + (obj.c != null ? Math.abs(r.c - obj.c) : 0) + (obj.g != null ? Math.abs(r.g - obj.g) : 0)
     }
     const recetas = (data ?? [])
-      .filter(x => soloPostres || todas || tipoPlatoCompatibleConSlot(franja, x.tipo_plato))
+      .filter(x => (todas || x.tipo_contenido !== 'elaboracion') && (soloPostres || todas || tipoPlatoCompatibleConSlot(franja, x.tipo_plato)))
       .sort((a, b) => (todas ? Number(b.tipo_receta === 'guarnicion') - Number(a.tipo_receta === 'guarnicion') : 0) || Number(!!b.verificacion) - Number(!!a.verificacion) || encaje(a) - encaje(b))
-      .slice(0, 60)
+      .slice(0, 300)
 
     // Datos para decidir de un vistazo: macros ya ajustados al hueco, repeticiones en el plan y favoritas del cliente
     const dia = url.searchParams.get('dia')
@@ -70,6 +70,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     ])
     const usos = new Map<string, number>()
     for (const u of usadas ?? []) usos.set(u.receta_id, (usos.get(u.receta_id) ?? 0) + 1)
+    // Variedad del plan: cuántas comidas hay de cada proteína principal
+    const idsUsados = [...usos.keys()]
+    const { data: protUsadas } = idsUsados.length ? await admin.from('recetas').select('id, proteinas_principales').in('id', idsUsados) : { data: [] as { id: string; proteinas_principales: string[] | null }[] }
+    const variedad: Record<string, number> = {}
+    for (const r of protUsadas ?? []) for (const p of r.proteinas_principales ?? []) variedad[p] = (variedad[p] ?? 0) + (usos.get(r.id) ?? 0)
     const favoritas = new Set((favs ?? []).map(f => f.receta_id))
     const enriquecidas = recetas.map(x => {
       const f = !soloPostres && !todas && objetivoHueco > 0 && x.kcal > 0 ? objetivoHueco / x.kcal : 1
@@ -80,7 +85,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         usos: usos.get(x.id) ?? 0, favorita: favoritas.has(x.id),
       }
     })
-    return NextResponse.json({ recetas: enriquecidas })
+    return NextResponse.json({ recetas: enriquecidas, variedad })
   }
 
   const [{ data: comidas, error }, { data: cliente, error: clienteError }] = await Promise.all([

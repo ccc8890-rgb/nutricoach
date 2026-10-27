@@ -7,6 +7,10 @@ export const CATEGORIAS = CATEGORIAS_PLATO
 
 // ─── Familias de cocinero ───
 export const FAMILIAS_ELABORACION = ['Panes y masas', 'Salsas', 'Condimentos y mezclas', 'Fondos y caldos', 'Grasas aromáticas', 'Mantequillas compuestas', 'Cremas y rellenos', 'Fermentos y curados'] as const
+// Proteína principal de un plato (filtro rápido del selector de recetas del planificador). Se calcula en lib/recetas/proteina-principal.ts
+export const PROTEINAS_PRINCIPALES = ['Pollo', 'Carne', 'Pescado', 'Huevo', 'Legumbres', 'Vegetal', 'Queso', 'Lácteos'] as const
+export type ProteinaPrincipal = (typeof PROTEINAS_PRINCIPALES)[number]
+export const ETIQUETA_PROTEINA: Record<ProteinaPrincipal, string> = { Pollo: 'Pollo y pavo', Carne: 'Carne', Pescado: 'Pescado y marisco', Huevo: 'Huevo', Legumbres: 'Legumbres', Vegetal: 'Tofu y tempeh', Queso: 'Queso', Lácteos: 'Yogur y lácteos' }
 export const FAMILIAS_PLATO = ['Entrantes', 'Sopas y cremas', 'Verduras y ensaladas', 'Arroces y cereales', 'Pastas', 'Carnes', 'Pescados', 'Huevos', 'Bocadillos y bowls', 'Desayunos y meriendas', 'Postres', 'Guarniciones'] as const
 
 // Tipo de plato (el que usa el planificador para colocar la receta en la dieta)

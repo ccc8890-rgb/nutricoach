@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import cloudinaryLoader from '@/lib/cloudinary-loader'
+import { PROTEINAS_PRINCIPALES, ETIQUETA_PROTEINA } from '@/lib/recetas-constants'
 import DetalleDiaDieta from './DetalleDiaDieta'
 import { DndContext, DragOverlay, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
 import { Activity, BadgeCheck, CalendarDays, ChevronDown, ChevronRight, ClipboardPaste, Copy, Loader2, Maximize2, Minimize2, MoreHorizontal, Play, Plus, Search, SlidersHorizontal, Sparkles, Trash2, Video, X } from 'lucide-react'
@@ -14,7 +15,7 @@ type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta 
 type Total = { kcal: number; p: number; c: number; g: number }
 type Dia = { dia: string; comidas: Comida[]; total: Total }
 type Plan = { id: string; nombre: string; kcal_objetivo: number | null; proteinas_objetivo: number | null; carbohidratos_objetivo: number | null; grasas_objetivo: number | null }
-type RecetaOpcion = Receta & { kcal: number; proteinas: number; tiempo_prep_min: number | null; kcal_hueco?: number; proteinas_hueco?: number; encaje?: number; usos?: number; favorita?: boolean }
+type RecetaOpcion = Receta & { kcal: number; proteinas: number; tiempo_prep_min: number | null; kcal_hueco?: number; proteinas_hueco?: number; encaje?: number; usos?: number; favorita?: boolean; familia?: string | null; proteinas_principales?: string[] }
 type FiltroOpcion = 'rapidas' | 'proteicas' | 'favoritas'
 const FILTROS_OPCION: { id: FiltroOpcion; texto: string }[] = [{ id: 'rapidas', texto: 'Rápidas' }, { id: 'proteicas', texto: 'Alta proteína' }, { id: 'favoritas', texto: 'Favoritas' }]
 type ResultadoSemana = { ok: boolean; complementos?: number; avisos?: { dia: string; franja: string; motivo: string }[]; asignadas: number; repetidas: number; sinCubrir: { dia: string; franja: string }[]; errores: { dia: string; franja: string; error: string }[]; mensaje?: string }
@@ -241,6 +242,9 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [opciones, setOpciones] = useState<RecetaOpcion[]>([])
   const [buscando, setBuscando] = useState(false)
   const [filtrosOpcion, setFiltrosOpcion] = useState<FiltroOpcion[]>([])
+  const [proteinasSel, setProteinasSel] = useState<string[]>([])
+  const [familiaSel, setFamiliaSel] = useState<string | null>(null)
+  const [variedad, setVariedad] = useState<Record<string, number>>({})
   const [guardando, setGuardando] = useState(false)
   const [ocupado, setOcupado] = useState<string | null>(null)
   const [resultado, setResultado] = useState<ResultadoSemana | null>(null)
@@ -287,11 +291,20 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const opcionesFiltradas = useMemo(() => opciones.filter(o =>
     (!filtrosOpcion.includes('rapidas') || (o.tiempo_prep_min != null && o.tiempo_prep_min <= 20)) &&
     (!filtrosOpcion.includes('proteicas') || (o.kcal > 0 && (o.proteinas * 4) / o.kcal >= 0.28)) &&
-    (!filtrosOpcion.includes('favoritas') || o.favorita)
-  ), [opciones, filtrosOpcion])
+    (!filtrosOpcion.includes('favoritas') || o.favorita) &&
+    (proteinasSel.length === 0 || proteinasSel.some(p => o.proteinas_principales?.includes(p))) &&
+    (!familiaSel || o.familia === familiaSel)
+  ), [opciones, filtrosOpcion, proteinasSel, familiaSel])
+  // Botones de categoría: solo los que tienen recetas en esta franja, con su contador
+  const chipsProteina = useMemo(() => PROTEINAS_PRINCIPALES.map(p => ({ id: p, texto: ETIQUETA_PROTEINA[p], n: opciones.filter(o => o.proteinas_principales?.includes(p)).length })).filter(c => c.n > 0), [opciones])
+  const chipsFamilia = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const o of opciones) if (o.familia) m.set(o.familia, (m.get(o.familia) ?? 0) + 1)
+    return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([id, n]) => ({ id, n }))
+  }, [opciones])
   const sugerencias = useMemo(() => {
-    if (busqueda.trim() || filtrosOpcion.length > 0) return []
-    const nuevas = opciones.filter(o => !o.usos)
+    if (busqueda.trim()) return []
+    const nuevas = opcionesFiltradas.filter(o => !o.usos)
     const elegidas: { etiqueta: string; receta: RecetaOpcion }[] = []
     const poner = (etiqueta: string, r?: RecetaOpcion) => { if (r && !elegidas.some(e => e.receta.id === r.id)) elegidas.push({ etiqueta, receta: r }) }
     const porEncaje = [...nuevas].sort((a, b) => (a.encaje ?? 9) - (b.encaje ?? 9))
@@ -300,7 +313,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     poner('Rápida', porEncaje.find(o => o.tiempo_prep_min != null && o.tiempo_prep_min <= 20))
     poner('Variedad', porEncaje.find(o => !elegidas.some(e => e.receta.id === o.id) && (o.encaje ?? 9) <= (porEncaje[0]?.encaje ?? 0) + 0.15))
     return elegidas
-  }, [opciones, busqueda, filtrosOpcion])
+  }, [opcionesFiltradas, busqueda])
 
   // Franjas que se rellenan al generar: por defecto las que ya usa el plan; el coach puede añadir o quitar
   const franjasPlan = useMemo(() => franjas.filter(f => dias.some(d => d.comidas.some(c => c.nombre === f))), [franjas, dias])
@@ -355,7 +368,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     const t = setTimeout(async () => {
       const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?franja=${encodeURIComponent(hueco.franja)}&dia=${encodeURIComponent(hueco.dia)}&q=${encodeURIComponent(busqueda)}`)
       const data = await res.json().catch(() => null)
-      setOpciones(data?.recetas ?? []); setBuscando(false)
+      setOpciones(data?.recetas ?? []); setVariedad(data?.variedad ?? {}); setBuscando(false)
     }, 250)
     return () => clearTimeout(t)
   }, [hueco, busqueda, clienteId])
@@ -736,6 +749,30 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar receta…" className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
             </div>
+            {chipsProteina.length > 0 && (
+              <div className="flex gap-1.5 mb-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                {chipsProteina.map(c => {
+                  const activo = proteinasSel.includes(c.id)
+                  return (
+                    <button key={c.id} onClick={() => setProteinasSel(p => activo ? p.filter(x => x !== c.id) : [...p, c.id])}
+                      className="text-[12px] px-2.5 py-1 rounded-md whitespace-nowrap shrink-0"
+                      style={{ background: activo ? 'var(--primary)' : 'var(--bg)', color: activo ? 'var(--bg)' : 'var(--text)', border: '1px solid var(--border)' }}>{c.texto} <span style={{ opacity: 0.6 }}>{c.n}</span></button>
+                  )
+                })}
+              </div>
+            )}
+            {chipsFamilia.length > 1 && (
+              <div className="flex gap-1.5 mb-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                {chipsFamilia.map(c => {
+                  const activo = familiaSel === c.id
+                  return (
+                    <button key={c.id} onClick={() => setFamiliaSel(activo ? null : c.id)}
+                      className="text-[12px] px-2.5 py-1 rounded-md whitespace-nowrap shrink-0"
+                      style={{ background: activo ? 'var(--primary)' : 'transparent', color: activo ? 'var(--bg)' : 'var(--text-muted)', border: '1px dashed var(--border)' }}>{c.id} <span style={{ opacity: 0.6 }}>{c.n}</span></button>
+                  )
+                })}
+              </div>
+            )}
             <div className="flex flex-wrap gap-1.5 mb-2">
               {FILTROS_OPCION.map(f => {
                 const activo = filtrosOpcion.includes(f.id)
@@ -746,6 +783,14 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
                 )
               })}
             </div>
+            {(proteinasSel.length > 0 || familiaSel || filtrosOpcion.length > 0) && (
+              <button onClick={() => { setProteinasSel([]); setFamiliaSel(null); setFiltrosOpcion([]) }} className="text-[12px] mb-1.5 underline self-start" style={{ color: 'var(--text-muted)' }}>Limpiar filtros</button>
+            )}
+            {Object.keys(variedad).length > 0 && (
+              <p className="text-[12px] mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                En el plan: {PROTEINAS_PRINCIPALES.filter(p => chipsProteina.some(c => c.id === p)).map(p => `${ETIQUETA_PROTEINA[p]} ×${variedad[p] ?? 0}`).join(' · ')}
+              </p>
+            )}
             <div className="overflow-y-auto space-y-1.5 flex-1">
               {buscando ? <div className="py-6 flex justify-center"><Loader2 size={18} className="animate-spin" /></div> : <>
                 {sugerencias.length > 0 && (

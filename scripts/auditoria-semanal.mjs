@@ -22,6 +22,8 @@ const cor = run('node', ['scripts/aplicar-correcciones-matches.mjs', '--aplica']
 console.log(lineas(cor, /^filas a corregir|^Nada que corregir/))
 const cam = run('npx', ['tsx', 'scripts/completar-campos-recetas.mts', '--aplica'])
 console.log(lineas(cam, /^recetas|^Aplicado|^Avisos/))
+// Proteína principal de cada receta (filtros del selector de recetas del planificador)
+console.log(lineas(run('npx', ['tsx', 'scripts/clasificar-proteina-principal.ts', '--apply']), /^Recetas:|^Aplicado/))
 const ri = run('npx', ['tsx', 'scripts/recalcular-recipe-intelligence.ts', '--apply', '--limite=2000'])
 console.log(/"file"/.test(ri) ? 'Puntuaciones de inteligencia de receta recalculadas' : 'ERROR recalculando puntuaciones')
 console.log(lineas(run('npx', ['tsx', 'scripts/batch-audit-profesional.ts', '--apply']), /^Auditadas/))
