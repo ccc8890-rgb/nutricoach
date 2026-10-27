@@ -129,12 +129,12 @@ function ChipSesion({ sesion, fecha, seleccionada, esPasado, onSeleccionar, resu
       {...listeners}
       {...attributes}
       onClick={onSeleccionar}
-      className="touch-none select-none cursor-grab active:cursor-grabbing mb-1 relative"
+      className={`touch-none select-none cursor-grab active:cursor-grabbing relative ${resumen ? 'mb-3' : 'mb-1'}`}
       style={{ transform: transform ? CSS.Translate.toString(transform) : undefined, zIndex: isDragging ? 30 : undefined, opacity: isDragging ? 0.7 : 1 }}
       title={sesion.nombre}
     >
       <p
-        className="text-[11px] font-medium px-1.5 py-1 rounded-md flex items-center gap-1"
+        className={`font-medium rounded-md flex items-center gap-1 ${resumen ? 'text-[13px] px-2 py-1.5 leading-snug' : 'text-[11px] px-1.5 py-1'}`}
         style={{
           background: color?.bg ?? 'var(--surface-elevated,var(--border))',
           color: color?.text ?? 'var(--text-muted)',
@@ -144,13 +144,13 @@ function ChipSesion({ sesion, fecha, seleccionada, esPasado, onSeleccionar, resu
       >
         {sesion.ajuste?.tipo === 'copiar' && <Copy size={10} className="flex-shrink-0" aria-label="Copia" />}
         {sesion.ajuste?.tipo === 'mover' && <span className="flex-shrink-0" aria-label="Movida">↷</span>}
-        <span className="truncate flex-1">{sesion.nombre}</span>
+        <span className={`flex-1 ${resumen ? 'break-words' : 'truncate'}`}>{sesion.nombre}</span>
         {garmin && <Watch size={10} className="flex-shrink-0" style={{ opacity: garmin === 'enviada' ? 1 : 0.45 }} aria-label={garmin === 'enviada' ? 'En el reloj' : 'Pendiente de enviar al reloj'} />}
       </p>
       {resumen && resumen.length > 0 && (
-        <ul className="mt-1 px-1 space-y-0.5">
-          {resumen.slice(0, 7).map((l, i) => <li key={i} className="text-[11px] leading-snug" style={{ color: 'var(--text-muted)' }}>{l}</li>)}
-          {resumen.length > 7 && <li className="text-[11px]" style={{ color: 'var(--text-muted)' }}>+{resumen.length - 7} más</li>}
+        <ul className="mt-2 px-1.5 space-y-2">
+          {resumen.slice(0, 7).map((l, i) => <li key={i} className="text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{l}</li>)}
+          {resumen.length > 7 && <li className="text-[13px]" style={{ color: 'var(--text-muted)' }}>+{resumen.length - 7} más</li>}
         </ul>
       )}
     </div>
@@ -534,7 +534,7 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
 
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className={vista === 'semana' ? 'overflow-x-auto pb-1' : ''}>
-        <div className={vista === 'semana' ? 'min-w-[900px]' : ''}>
+        <div className={vista === 'semana' ? 'min-w-[1200px]' : ''}>
         <div className="grid grid-cols-7 gap-1.5 mb-1.5">
           {DIAS_ABREV.map(d => (
             <p key={d} className="text-center text-xs font-semibold uppercase tracking-wider py-1" style={{ color: 'var(--text-muted)' }}>{d}</p>
