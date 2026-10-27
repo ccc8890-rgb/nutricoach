@@ -18,6 +18,11 @@ export type ResultadoRevision = {
   veredicto?: Veredicto; aplicadas?: Record<string, unknown>; tokens?: number
 }
 
+const textoFuente = (raw: unknown): string | null => {
+  const t = (raw as { texto?: unknown } | null)?.texto
+  return typeof t === 'string' && t.trim().length >= 40 ? t.slice(0, 8000) : null
+}
+
 const issuesATexto = (q: unknown): string[] => {
   const o = (q ?? {}) as { bloqueantes?: unknown; avisos?: unknown }
   return [...(Array.isArray(o.bloqueantes) ? o.bloqueantes : []), ...(Array.isArray(o.avisos) ? o.avisos : [])].filter((x): x is string => typeof x === 'string')
@@ -25,7 +30,7 @@ const issuesATexto = (q: unknown): string[] => {
 
 export async function cargarFicha(db: Db, recetaId: string): Promise<FichaParaRevisar | null> {
   const { data: r } = await db.from('recetas')
-    .select('id, nombre, estado, tipo_contenido, familia, categoria, tipo_plato, tipo_receta, descripcion, instrucciones, consejos, porciones, kcal, proteinas, carbohidratos, grasas, tags, url_origen, quality_issues, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos, orden, alimento:alimentos(nombre, calorias))')
+    .select('id, nombre, estado, tipo_contenido, familia, categoria, tipo_plato, tipo_receta, descripcion, instrucciones, consejos, porciones, kcal, proteinas, carbohidratos, grasas, tags, url_origen, raw_scrape, quality_issues, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos, orden, alimento:alimentos(nombre, calorias))')
     .eq('id', recetaId).maybeSingle()
   if (!r) return null
   const { count } = await db.from('receta_ingredientes').select('id', { count: 'exact', head: true }).eq('elaboracion_id', recetaId)
@@ -41,6 +46,7 @@ export async function cargarFicha(db: Db, recetaId: string): Promise<FichaParaRe
     }),
     hallazgos_deterministas: issuesATexto(r.quality_issues),
     usada_en_recetas: count ?? 0,
+    fuente_texto: textoFuente(r.raw_scrape),
   }
 }
 

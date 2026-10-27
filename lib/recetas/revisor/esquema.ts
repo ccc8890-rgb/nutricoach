@@ -19,6 +19,8 @@ export type FichaParaRevisar = {
   ingredientes: { nombre: string; alimento: string | null; gramos: number; kcal100: number | null }[]
   hallazgos_deterministas: string[]
   usada_en_recetas: number
+  /** Lo que dijo el vídeo/web de origen (pie + audio), si se guardó al importar. Sin él no se pueden contrastar cantidades. */
+  fuente_texto: string | null
 }
 
 const MAX_HALLAZGOS = 20
@@ -84,6 +86,7 @@ export function hashFicha(f: FichaParaRevisar, nota?: string | null): string {
     kcal: f.kcal, proteinas: f.proteinas, carbohidratos: f.carbohidratos, grasas: f.grasas,
     tags: [...(f.tags ?? [])].sort(),
     ingredientes: [...f.ingredientes].sort((a, b) => (a.nombre + a.gramos).localeCompare(b.nombre + b.gramos)).map(i => [i.nombre, i.alimento, i.gramos, i.kcal100]),
+    fuente: f.fuente_texto ?? null,
     nota: nota ?? null,
   }
   return createHash('sha256').update(JSON.stringify(canonico)).digest('hex')

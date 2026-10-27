@@ -4,6 +4,13 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 27-10-2026 (mañana, Claude) — El agente revisor contrasta con el texto original del reel
+
+- **Qué:** Content Radar guarda ahora con cada ficha nueva el texto del vídeo/web (pie + transcripción del audio, máx. 12.000 caracteres) en `recetas.raw_scrape` (`{texto, origen, url, capturado}`; la columna ya existía y estaba vacía): `process_pending._handle_recipe_flow` → `recipe["fuente_texto"]` → `bridge_nutricoach` (`empaquetar_fuente` en `receta_calidad.py`). El revisor lo lee (`fuente_texto`, hasta 8.000 caracteres), lo incluye en el prompt como `texto_original` y entra en la huella; si hay texto, debe contrastar ingredientes y cantidades (hallazgo `fuente`); si no, el prompt le prohíbe afirmar que ha verificado contra el origen.
+- **Solo fichas nuevas desde ahora.** Las ~100 que ya están en cola no tienen texto: la transcripción en bruto no se guardaba en ningún sitio (Notion solo recibe la receta ya extraída). Recuperarlo exige volver a descargar y transcribir cada reel (yt-dlp con cookies + Whisper, ≈ 1 céntimo por reel): pendiente de decidir.
+- **Coste:** el prompt crece unos 2.000-3.000 tokens por ficha con texto (≈ +1 céntimo).
+- **Migración pendiente de aplicar a mano** (el clasificador de permisos bloquea `supabase db query --linked` aunque el usuario dé permiso verbal; hay que añadir la regla `Bash(supabase db query --linked:*)` en los ajustes de Claude Code o lanzarla uno mismo): `supabase/migrations/20261027110000_revisor_reserva.sql` (fase `revisando` + `fase_revision_at`). Después hay que usarla en `revisarFicha` (reservar con `update … where fase_revision='en_agente' … returning` antes de llamar a la IA y recuperar reservas de más de 10 min).
+
 ## ✅ 27-10-2026 (madrugada, Claude) — Segunda revisión independiente del agente revisor y correcciones
 
 Un agente nuevo (modelo más potente, solo lectura) revisó el circuito: 5 importantes y 10 menores, ninguno crítico. Corregido con tests (`scripts/probar-revisor.ts` casos i-m, `enrutador-ia.test.ts`, `clasificacion.test.ts`, `revisor-recetario.test.ts`):

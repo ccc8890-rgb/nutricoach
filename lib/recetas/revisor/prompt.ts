@@ -14,6 +14,7 @@ REGLAS DEL PROYECTO
 - Las cantidades (gramos) de los ingredientes son de la receta ENTERA; las kcal y macros de la ficha son POR RACIÓN (porciones).
 - Revisa: (1) tipo y familia leyendo ingredientes y pasos, no solo el nombre; (2) coherencia entre nombre, ingredientes y pasos (ingredientes citados en los pasos que faltan en la lista y al revés); (3) cantidades implausibles para ese plato; (4) raciones que no cuadran con las kcal; (5) ingredientes enlazados a un alimento que no corresponde (compara "nombre" con "alimento"); (6) etiquetas coherentes; (7) redacción de los pasos (claros, sin vocabulario deportivo ni afirmaciones de salud inventadas).
 - "tipo_receta" (completa|guarnicion|snack_postre|desayuno|bebida|salsa_base) decide cómo la usa el planificador de dietas (un plato principal no debe ser guarnición, una salsa/elaboración debe ser salsa_base). Si no corresponde, díselo como hallazgo (campo "clasificacion"): tú no puedes cambiarlo.
+- "texto_original" es lo que dijo el vídeo o la web de origen (pie + audio, tal cual, con errores de transcripción posibles). Si no es null: contrasta con él ingredientes, cantidades, raciones y pasos. Una cantidad o ingrediente de la ficha que NO aparece en el texto original y no es una estimación razonable ("al gusto", sal, aceite) es un hallazgo (campo "fuente", gravedad alta si cambia mucho las kcal); un ingrediente del texto original que falta en la ficha también. Si es null, NO puedes verificar nada contra el origen: no digas que lo has hecho.
 - No inventes datos. Si no estás seguro, dilo en un hallazgo de gravedad baja y no lo marques como corrección segura.
 
 BREVEDAD (importa: cada palabra cuesta dinero)
@@ -38,6 +39,7 @@ FORMATO: responde SOLO con un objeto JSON exacto, sin texto alrededor:
     etiquetas: f.tags, origen: f.url_origen,
     ingredientes: f.ingredientes.map(i => ({ nombre: i.nombre, alimento_enlazado: i.alimento, gramos: i.gramos, kcal_por_100g: i.kcal100 })),
     pasos: f.instrucciones, consejos: f.consejos,
+    texto_original: f.fuente_texto,
     avisos_del_control_automatico: f.hallazgos_deterministas,
     usada_como_ingrediente_en_recetas: f.usada_en_recetas,
   }

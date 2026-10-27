@@ -7,7 +7,7 @@ import { FAMILIAS_PLATO, FAMILIAS_ELABORACION } from '../lib/recetas-constants'
 const ficha = (extra: Partial<FichaParaRevisar> = {}): FichaParaRevisar => ({
   id: 'f1', nombre: 'Pollo al curry con arroz', estado: 'en_revision', tipo_contenido: 'plato', familia: null, categoria: 'Comida', tipo_plato: 'Comida', tipo_receta: 'completa',
   descripcion: 'Un guiso sencillo', instrucciones: '1. Sofríe. 2. Añade el curry.', consejos: null, porciones: 2, kcal: 520, proteinas: 38, carbohidratos: 55, grasas: 14,
-  tags: ['Pollo', 'Arroz'], url_origen: 'https://example.com/r', hallazgos_deterministas: [], usada_en_recetas: 0,
+  tags: ['Pollo', 'Arroz'], url_origen: 'https://example.com/r', hallazgos_deterministas: [], usada_en_recetas: 0, fuente_texto: null,
   ingredientes: [{ nombre: 'Pollo', alimento: 'Pechuga de pollo', gramos: 300, kcal100: 110 }, { nombre: 'Arroz', alimento: 'Arroz basmati', gramos: 150, kcal100: 350 }],
   ...extra,
 })
@@ -78,6 +78,16 @@ const rev = (extra: Partial<RevisionAgente> = {}): RevisionAgente => ({ tipo_con
   assert.notEqual(hashFicha(ficha()), hashFicha(ficha({ tipo_receta: 'guarnicion' })))
   assert.notEqual(hashFicha(ficha()), hashFicha(ficha({ ingredientes: [{ ...ficha().ingredientes[0], kcal100: 999 }, ficha().ingredientes[1]] })))
   assert.ok(p.sistema.includes('Máximo 6 hallazgos') && p.sistema.includes('NO incluyas hallazgos'))
+}
+
+// ── texto original del reel/web ──
+{
+  const sin = construirPrompt(ficha())
+  assert.ok(sin.usuario.includes('"texto_original": null'))
+  assert.ok(sin.sistema.includes('texto_original'))
+  const con = construirPrompt(ficha({ fuente_texto: 'Mezcla 200 gramos de harina con 2 huevos' }))
+  assert.ok(con.usuario.includes('Mezcla 200 gramos de harina con 2 huevos'))
+  assert.notEqual(hashFicha(ficha()), hashFicha(ficha({ fuente_texto: 'texto' })))
 }
 
 // ── transiciones de fase (las que Carlos puede hacer desde la API) ──
