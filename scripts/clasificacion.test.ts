@@ -48,6 +48,13 @@ assert.equal(familiaPlato({ nombre: 'Zanahoria Baby con Feta' }), 'Verduras y en
 assert.equal(familiaPlato({ nombre: 'Lasaña abierta de tomates cherry confitados, crema de pistacho, burrata, bacon crujiente y calabacín a la plancha' }), 'Pastas')
 assert.equal(familiaPlato({ nombre: 'Costilla con salsa barbacoa, puré de maíz y cebolla encurtida' }), 'Carnes')
 assert.equal(familiaPlato({ nombre: 'Salmón con puré de patata' }), 'Pescados')
+// Revisión independiente: una verdura al principio no puede ganar a la proteína que aparece después (la verdura es la categoría débil)
+assert.equal(familiaPlato({ nombre: 'Rape con verduras salteadas y arroz integral' }), 'Pescados')
+assert.equal(familiaPlato({ nombre: 'Garbanzos con espinacas y bacalao' }), 'Pescados')
+assert.equal(familiaPlato({ nombre: 'Brócoli al vapor con salmón a la plancha' }), 'Pescados')
+assert.equal(familiaPlato({ nombre: 'Calabacín relleno de pavo y queso light' }), 'Carnes')
+assert.equal(familiaPlato({ nombre: 'Calabacín meloso con pollo' }), 'Carnes')
+assert.equal(familiaPlato({ nombre: 'Calabacín a la plancha' }), 'Verduras y ensaladas')
 assert.equal(familiaPlato({ nombre: 'Puré de zanahoria con mantequilla avellana', tipo_receta: 'guarnicion' }), 'Guarniciones')
 assert.equal(familiaElaboracion('Buñuelo relleno crujiente'), null)
 assert.equal(familiaPlato({ nombre: 'Plato misterioso', tags: ['Pollo'] }), 'Carnes')       // las etiquetas deciden si el nombre no

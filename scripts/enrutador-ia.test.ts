@@ -63,5 +63,17 @@ const adaptadorCon = (resp: Record<string, string | Error>): Adaptador => async 
   assert.deepEqual(llamadas, ['deepseek'])
   assert.equal(r.intentos[0].error, 'sin tiempo')
 
+  // Revisión independiente: lo que se paga en un intento con JSON roto también cuenta (antes solo se devolvía el uso del que acertó)
+  r = await llamarIA('plan_entreno', { sistema: 's', usuario: 'u', json: true }, { adaptador: adaptadorCon({ anthropic: 'esto no es json', openai: '{"a":1}' }), env: todas })
+  assert.equal(r.proveedor, 'openai')
+  assert.deepEqual(r.uso, { entrada: 10, salida: 20 })                   // el uso del que acertó, como siempre
+  assert.deepEqual(r.usoTotal, { entrada: 20, salida: 40 })              // acierto + intento fallido pagado
+  assert.deepEqual(r.intentos[0].uso, { entrada: 10, salida: 20 })
+  // Si fallan todos, el error lleva el gasto de los intentos que respondieron
+  await assert.rejects(
+    llamarIA('plan_entreno', { sistema: 's', usuario: 'u', json: true }, { adaptador: adaptadorCon({ anthropic: 'basura', openai: 'basura', deepseek: new Error('500') }), env: todas }),
+    (e: unknown) => e instanceof ErrorIA && e.intentos.reduce((n, i) => n + (i.uso?.entrada ?? 0), 0) === 20,
+  )
+
   console.log('enrutador-ia.test.ts OK')
 })().catch(e => { console.error(e); process.exit(1) })

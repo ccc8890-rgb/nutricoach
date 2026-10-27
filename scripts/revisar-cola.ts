@@ -32,7 +32,7 @@ async function main() {
     console.log(`${id.slice(0, 8)} → ${r.estado}${r.veredicto ? ` (${r.veredicto})` : ''}${r.tokens ? ` · ${r.tokens} tokens` : ''}`, r.aplicadas && Object.keys(r.aplicadas).length ? `· aplicó ${JSON.stringify(r.aplicadas)}` : '')
     return
   }
-  const r = await revisarPendientes(db, { limite, tokensDia })
+  const r = await revisarPendientes(db, { limite, tokensDia, hastaMs: Date.now() + 8 * 60_000 }) // máx. 8 min: la pasada local tiene un límite de 20
   console.log(`Revisadas ${r.revisadas} · sin cambios ${r.omitidas} · inválidas ${r.invalidas} · ${r.tokens.toLocaleString('es-ES')} tokens${r.paradoPorPresupuesto ? ' · TOPE DIARIO' : ''}`)
   const a = await acuerdoConCarlos(db)
   if (a.total) console.log(`Acuerdo con Carlos: ${a.acuerdo}/${a.total} (${Math.round(100 * a.acuerdo / a.total)} %)`)

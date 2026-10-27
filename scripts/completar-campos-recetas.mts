@@ -18,6 +18,7 @@ const APLICA = process.argv.includes('--aplica')
 const norm=(s:string|null|undefined)=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
 // 'Elaboración' es la categoría de masas, salsas, fondos… (tipo_contenido='elaboracion'): sin ella en la lista oficial, esta pasada la machacaba con el tipo de plato
 const LISTA_CAT=['Desayuno','Comida','Cena','Merienda','Snack','Postre','Salsa','Acompañamiento','Elaboración']
+const TIPOS_DB=['Desayuno','Comida','Cena','Merienda','Snack','Postre']
 const TIPOS=['Desayuno','Comida','Cena','Merienda','Snack','Postre','Salsa','Acompañamiento']
 const TAG_LEGADO:Record<string,string>={Ensaladas:'Ensalada',Burritos:'Burrito','Fajitas/Tacos':'Tacos',Mealpreps:'Meal prep','Bowls fruta':'Bowl',Tostas:'Tostada',Gofres:'Gofre',Entrante:'Entrante'}
 
@@ -29,7 +30,7 @@ const ings=new Map<string,any[]>(); for(const i of I){(ings.get(i.receta_id)??in
 function tipoPlato(r:any):string|null{
   if(r.tipo_plato==='Almuerzo') return 'Comida'
   if(r.tipo_plato) return null
-  if(LISTA_CAT.includes(r.categoria)) return r.categoria
+  if(TIPOS_DB.includes(r.categoria)) return r.categoria   // tipo_plato solo admite estos valores (check de BD): ni 'Elaboración' ni 'Salsa' ni 'Acompañamiento'
   const n=norm(r.nombre)
   if(/tarta|brownie|mousse|helado|natilla|flan|cheesecake|pudin|pudding|galleta|cookie|donut|bizcocho|mochi/.test(n)) return 'Postre'
   if(/tostada|tortita|pancake|gofre|overnight|porridge|granola/.test(n)) return 'Desayuno'

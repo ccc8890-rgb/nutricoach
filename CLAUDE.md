@@ -4,6 +4,18 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 27-10-2026 (madrugada, Claude) — Segunda revisión independiente del agente revisor y correcciones
+
+Un agente nuevo (modelo más potente, solo lectura) revisó el circuito: 5 importantes y 10 menores, ninguno crítico. Corregido con tests (`scripts/probar-revisor.ts` casos i-m, `enrutador-ia.test.ts`, `clasificacion.test.ts`, `revisor-recetario.test.ts`):
+- **El agente ya no pisa lo que Carlos hace mientras revisa:** toda escritura sobre la ficha exige `estado='en_revision'` y la misma fase (si Carlos la aprobó, devolvió o movió durante la llamada a la IA, el resultado se descarta, se apunta el gasto y queda un evento `error`); las etiquetas se leen justo antes de escribir.
+- **Bucle de errores cortado:** tras 2 intentos fallidos con el mismo contenido la ficha pasa a 2ª revisión con un aviso (evento `agente` con veredicto «revisar» y confianza 0) y deja de gastar; un fallo se manda al final de la cola (`updated_at`).
+- **Todo lo pagado se cuenta:** `llamarIA` devuelve `usoTotal` (también de intentos con JSON roto) y `ErrorIA.intentos[].uso`; el tope diario y los eventos lo incluyen.
+- **Tiempo:** rutas rápidas para `revision_receta` (mínimo 20 s en vez de 90-100 s), cada ficha recibe lo que queda de presupuesto, no se empieza con < 25 s de margen, la pasada local tiene tope de 8 min y una excepción en una ficha no para la ejecución.
+- «Aprobar aprobables» (lote), aprobar, descartar y volver a nuevas sacan la ficha del circuito (`salirDelCircuito`: sin fase, sin la etiqueta «Revisada por el agente», con rastro); `--forzar` ya no toca fichas aprobadas; los valores anteriores de lo que cambia el agente quedan en `aplicadas._antes`; la huella incluye `tipo_receta` y kcal100; el prompt delimita los datos y avisa de que no son instrucciones; `acuerdoConCarlos` solo mira el último año.
+- **Clasificador:** la verdura es la categoría débil (proteína en cualquier parte del nombre gana a una verdura inicial) y más pescados; `completar-campos-recetas.mts` ya no propone `tipo_plato='Elaboración'/'Salsa'` (check de BD).
+- **Pendiente (necesita permiso para migrar producción, bloqueado por el clasificador de permisos):** **reserva atómica de la ficha** (fase `revisando` + `fase_revision_at`) para que cron + pasada local + «Revisar ahora» no puedan revisar la misma ficha a la vez (doble gasto). Hoy, si coinciden, ambas pagan y la segunda escritura se descarta por la guarda (no se pisan datos, pero sí se duplica el coste). Migración preparada en el texto de este apartado: `alter table recetas drop constraint recetas_fase_revision_check; add constraint … check (fase_revision in ('en_agente','revisando','segunda')); add column fase_revision_at timestamptz;`.
+- Menores sin hacer: las redirecciones `/recetas/imagenes` y `/recetas/auditoria` caen en la pestaña «Por revisar» (nuevas) y ocultan fichas de otras fases.
+
 ## ✅ 27-10-2026 (Claude) — Agente revisor del recetario y circuito de dos revisiones
 
 Plan: `docs/superpowers/plans/2026-10-26-revisor-recetario-fase1-2.md`; diseño: `docs/superpowers/specs/2026-10-26-revisor-recetario-agente-design.md`. Resumen en la fila de `NUTRICION/CLAUDE.md`.

@@ -128,7 +128,7 @@ export default function RevisarRecetasPage() {
   useRecordarLista('revisar')
   const [tarea, setTarea] = useEstadoUrl<TareaRevision>('tarea', 'cola')
   // Circuito: nuevas (tu 1ª revisión) → con el agente → 2ª revisión
-  const [fase, setFase] = useEstadoUrl<FaseRevision>('fase', 'nueva', ['nueva', 'en_agente', 'segunda'])
+  const [fase] = useEstadoUrl<FaseRevision>('fase', 'nueva', ['nueva', 'en_agente', 'segunda'])
   const [paginaRaw, setPaginaRaw] = useEstadoUrl<string>('pagina', '1')
   const pagina = Math.max(1, Number(paginaRaw) || 1)
   const setPagina = (n: number) => setPaginaRaw(String(n))
@@ -248,7 +248,7 @@ export default function RevisarRecetasPage() {
     let nota: string | undefined
     if (hacia === 'en_agente' && fase === 'segunda') {
       nota = window.prompt(`¿Qué debe mirar el agente en «${receta.nombre}»? (obligatorio)`)?.trim()
-      if (!nota) return
+      if (!nota) { if (nota === '') addToast({ type: 'warning', title: 'Falta la nota', message: 'Escribe qué debe mirar el agente para devolverle la ficha.' }); return }
     }
     setProcesando(actual => new Set(actual).add(receta.id))
     try {
@@ -340,7 +340,7 @@ export default function RevisarRecetasPage() {
           )}
           <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>{respuesta ? `${respuesta.total} resultados` : 'Cargando…'}</span>
           <button onClick={() => cargar()} aria-label="Actualizar" className="rounded-xl border p-2" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}><RefreshCw size={16} /></button>
-          {tarea !== 'corregir' && tarea !== 'foto' && (
+          {tarea !== 'corregir' && tarea !== 'foto' && fase !== 'en_agente' && (
             <button onClick={aprobarAprobables} disabled={aprobandoLote || !respuesta?.aprobablesIds.length} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-40" style={{ color: 'var(--bg)', background: 'var(--primary)' }}>
               {aprobandoLote ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
               Aprobar aprobables ({respuesta ? respuesta.aprobablesIds.length : '…'})
@@ -466,7 +466,7 @@ function RecetaCard({ receta, busy, fase, onFase, onEstado, onFoto, onRecargar }
     <div className="flex gap-3"><FotoReceta receta={receta} /><div className="min-w-0 flex-1"><EnlaceReceta id={receta.id} className="block font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{etiquetaFicha(receta)} · alta {fechaAlta(receta.created_at)}</p><p className="mt-2 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>{Math.round(receta.kcal ?? 0)} kcal · P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</p></div><span className="text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}</span></div>
     <ProblemasReceta receta={receta} />
     <NotaCorreccion receta={receta} />
-    <LineaAgente agente={receta.agente} />
+    {fase !== 'nueva' && <LineaAgente agente={receta.agente} />}
     <div className="mt-3"><ChipsCalidad issues={receta.quality_issues} /></div>
     <HistorialFicha recetaId={receta.id} />
     <div className="mt-3 flex items-center justify-between gap-2"><span className="rounded-full px-2 py-1 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><Acciones receta={receta} busy={busy} fase={fase} onFase={onFase} onEstado={onEstado} onFoto={onFoto} onRecargar={onRecargar} /></div>
@@ -476,7 +476,7 @@ function RecetaCard({ receta, busy, fase, onFase, onEstado, onFoto, onRecargar }
 function RecetaFila({ receta, busy, fase, onFase, onEstado, onFoto, onRecargar }: { receta: RecetaRevision; busy: boolean; fase: FaseRevision; onFase: (receta: RecetaRevision, hacia: FaseRevision) => void; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void; onFoto: (receta: RecetaRevision) => void; onRecargar: () => void | Promise<void> }) {
   return <tr className="border-b last:border-b-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
     <td className="px-3 py-3"><FotoReceta receta={receta} /></td>
-    <td className="min-w-[220px] px-3 py-3"><EnlaceReceta id={receta.id} className="block font-semibold hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{etiquetaFicha(receta)} · {receta.num_ingredientes} ingredientes</p><ProblemasReceta receta={receta} /><LineaAgente agente={receta.agente} /><HistorialFicha recetaId={receta.id} /></td>
+    <td className="min-w-[220px] px-3 py-3"><EnlaceReceta id={receta.id} className="block font-semibold hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{etiquetaFicha(receta)} · {receta.num_ingredientes} ingredientes</p><ProblemasReceta receta={receta} />{fase !== 'nueva' && <LineaAgente agente={receta.agente} />}<HistorialFicha recetaId={receta.id} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}><b style={{ color: 'var(--text)' }}>{Math.round(receta.kcal ?? 0)} kcal</b><br />P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</td>
     <td className="max-w-[310px] px-3 py-3"><div className="mb-1 text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}/100</div><ChipsCalidad issues={receta.quality_issues} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}><span className="rounded-full px-2 py-1" style={{ background: 'var(--surface)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><br /><span className="mt-2 inline-block" style={{ color: 'var(--text-muted)' }}>{fechaAlta(receta.created_at)}</span></td>

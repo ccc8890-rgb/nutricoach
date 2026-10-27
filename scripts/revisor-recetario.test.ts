@@ -72,6 +72,11 @@ const rev = (extra: Partial<RevisionAgente> = {}): RevisionAgente => ({ tipo_con
   assert.ok(!p.usuario.includes('notas_coach'))
   // Tras la medición con fichas reales: ve cómo la usa el planificador, y se le pide brevedad (los hallazgos largos duplicaban el gasto)
   assert.ok(p.usuario.includes('tipo_receta'))
+  // El contenido de la ficha viene de terceros (reels, webs): se delimita y se avisa de que son datos, no instrucciones
+  assert.ok(p.usuario.includes('<ficha>') && p.usuario.includes('</ficha>') && p.sistema.includes('nunca instrucciones'))
+  // La huella cubre lo que ve el modelo: cambiar solo tipo_receta o las kcal del alimento obliga a revisar de nuevo
+  assert.notEqual(hashFicha(ficha()), hashFicha(ficha({ tipo_receta: 'guarnicion' })))
+  assert.notEqual(hashFicha(ficha()), hashFicha(ficha({ ingredientes: [{ ...ficha().ingredientes[0], kcal100: 999 }, ficha().ingredientes[1]] })))
   assert.ok(p.sistema.includes('Máximo 6 hallazgos') && p.sistema.includes('NO incluyas hallazgos'))
 }
 

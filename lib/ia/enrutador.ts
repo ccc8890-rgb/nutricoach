@@ -14,6 +14,9 @@ export interface RutaModelo { proveedor: Proveedor; modelo: string; minMs?: numb
 const CLAUDE_OPUS: RutaModelo = { proveedor: 'anthropic', modelo: 'claude-opus-5-5', minMs: 150_000 }
 const CLAUDE_SONNET: RutaModelo = { proveedor: 'anthropic', modelo: 'claude-sonnet-5-5', minMs: 90_000 }
 const GPT: RutaModelo = { proveedor: 'openai', modelo: 'gpt-5.5-2026-04-23', minMs: 100_000 }
+// Tareas cortas (revisar una ficha: ~15 s): no exigen los mínimos de tiempo de los planes largos
+const CLAUDE_SONNET_RAPIDO: RutaModelo = { ...CLAUDE_SONNET, minMs: 20_000 }
+const GPT_RAPIDO: RutaModelo = { ...GPT, minMs: 20_000 }
 const DEEPSEEK_PRO: RutaModelo = { proveedor: 'deepseek', modelo: 'deepseek-v4-pro' }
 const DEEPSEEK: RutaModelo = { proveedor: 'deepseek', modelo: 'deepseek-chat' }
 
@@ -27,7 +30,7 @@ export const RUTAS_POR_DEFECTO: Record<TareaIA, RutaModelo[]> = {
   auditoria: [GPT, CLAUDE_SONNET, DEEPSEEK],
   analisis_rendimiento: [CLAUDE_OPUS, GPT, DEEPSEEK],
   // Revisor del recetario: calidad/coste (Opus solo bajo petición con IA_RUTA_REVISION_RECETA)
-  revision_receta: [CLAUDE_SONNET, GPT, DEEPSEEK],
+  revision_receta: [CLAUDE_SONNET_RAPIDO, GPT_RAPIDO, DEEPSEEK],
   texto_barato: [DEEPSEEK, DEEPSEEK_PRO],
 }
 
@@ -48,13 +51,15 @@ export function rutasDe(tarea: TareaIA, env: Record<string, string | undefined> 
   return RUTAS_POR_DEFECTO[tarea]
 }
 
-export interface IntentoIA { proveedor: Proveedor; modelo: string; ok: boolean; ms: number; error?: string }
+export interface IntentoIA { proveedor: Proveedor; modelo: string; ok: boolean; ms: number; error?: string; /** Lo que se pagó en este intento aunque su respuesta no sirviera (p. ej. JSON roto) */ uso?: { entrada: number | null; salida: number | null } }
 export interface RespuestaIA {
   texto: string
   proveedor: Proveedor
   modelo: string
   intentos: IntentoIA[]
   uso: { entrada: number | null; salida: number | null }
+  /** Gasto de TODOS los intentos que respondieron (el que acertó y los fallidos), para topes de gasto */
+  usoTotal: { entrada: number; salida: number }
 }
 export interface ParamsIA {
   sistema: string
@@ -119,14 +124,17 @@ export async function llamarIA(tarea: TareaIA, p: ParamsIA, opciones: { adaptado
     const esUltimo = ruta === conClave[conClave.length - 1]
     const limite = esUltimo ? quedan : Math.floor(quedan * 0.8)
     const t0 = ahora()
+    let usoIntento: IntentoIA['uso']
     try {
       const r = await adaptador(ruta, p, AbortSignal.timeout(limite))
+      usoIntento = r.uso
       if (p.json) extraerJsonPlan(r.texto) // lanza si no es un objeto JSON
-      intentos.push({ ...ruta, ok: true, ms: ahora() - t0 })
-      return { texto: r.texto, proveedor: ruta.proveedor, modelo: ruta.modelo, intentos, uso: r.uso }
+      intentos.push({ ...ruta, ok: true, ms: ahora() - t0, uso: r.uso })
+      const usoTotal = intentos.reduce((n, i) => ({ entrada: n.entrada + (i.uso?.entrada ?? 0), salida: n.salida + (i.uso?.salida ?? 0) }), { entrada: 0, salida: 0 })
+      return { texto: r.texto, proveedor: ruta.proveedor, modelo: ruta.modelo, intentos, uso: r.uso, usoTotal }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
-      intentos.push({ ...ruta, ok: false, ms: ahora() - t0, error: p.json && msg === 'sin JSON' ? 'JSON inválido' : msg.slice(0, 160) })
+      intentos.push({ ...ruta, ok: false, ms: ahora() - t0, error: p.json && msg === 'sin JSON' ? 'JSON inválido' : msg.slice(0, 160), ...(usoIntento ? { uso: usoIntento } : {}) })
     }
   }
   throw new ErrorIA(`Ningún modelo pudo completar la tarea «${tarea}» (${resumenIntentos(intentos)})`, intentos)

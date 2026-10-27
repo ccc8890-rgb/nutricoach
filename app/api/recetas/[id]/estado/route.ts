@@ -5,6 +5,7 @@ import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 import { marcarFotoRevisada } from '@/lib/recetas/imagen-revision'
 import { quitarMarcasReporte } from '@/lib/recetas/reportes'
 import { propagarCambioElaboracion } from '@/lib/recetas/elaboraciones-db'
+import { salirDelCircuito } from '@/lib/recetas/revisor/revisar'
 
 export async function PATCH(
   req: NextRequest,
@@ -69,9 +70,7 @@ export async function PATCH(
     }
 
     // Un cambio de estado saca la ficha del circuito de revisión (nueva → agente → 2ª revisión); aprobar o descartar deja el rastro
-    const srvCircuito = createServiceSupabase()
-    await srvCircuito.from('recetas').update({ fase_revision: null }).eq('id', id)
-    if (estado === 'aprobada' || estado === 'descartada') await srvCircuito.from('recetas_revision_eventos').insert({ receta_id: id, tipo: estado, actor: 'carlos' })
+    await salirDelCircuito(createServiceSupabase(), [id], estado === 'aprobada' || estado === 'descartada' ? estado : undefined)
 
     await auditarRecetaProfesional(
       createServiceSupabase(),

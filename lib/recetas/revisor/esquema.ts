@@ -79,11 +79,11 @@ export function correccionesAplicables(rev: RevisionAgente, ficha: Pick<FichaPar
 /** Huella del contenido revisable (y de la nota de Carlos): si no cambia, no se vuelve a pagar una revisión. */
 export function hashFicha(f: FichaParaRevisar, nota?: string | null): string {
   const canonico = {
-    nombre: f.nombre, tipo_contenido: f.tipo_contenido, familia: f.familia, categoria: f.categoria, tipo_plato: f.tipo_plato,
+    nombre: f.nombre, tipo_contenido: f.tipo_contenido, familia: f.familia, categoria: f.categoria, tipo_plato: f.tipo_plato, tipo_receta: f.tipo_receta,
     descripcion: f.descripcion, instrucciones: f.instrucciones, consejos: f.consejos, porciones: f.porciones,
     kcal: f.kcal, proteinas: f.proteinas, carbohidratos: f.carbohidratos, grasas: f.grasas,
     tags: [...(f.tags ?? [])].sort(),
-    ingredientes: [...f.ingredientes].sort((a, b) => (a.nombre + a.gramos).localeCompare(b.nombre + b.gramos)).map(i => [i.nombre, i.alimento, i.gramos]),
+    ingredientes: [...f.ingredientes].sort((a, b) => (a.nombre + a.gramos).localeCompare(b.nombre + b.gramos)).map(i => [i.nombre, i.alimento, i.gramos, i.kcal100]),
     nota: nota ?? null,
   }
   return createHash('sha256').update(JSON.stringify(canonico)).digest('hex')

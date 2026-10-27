@@ -49,7 +49,7 @@ const ARROCES = set('arroz', 'risotto', 'paella', 'cuscus', 'bulgur')
 const PASTAS = set('pasta', 'noquis', 'noodles', 'tallarines', 'espaguetis', 'macarrones', 'lasana', 'udon', 'fideos')
 const HUEVOS = set('huevo', 'huevos', 'tortilla', 'revuelto')
 const DESAYUNOS = set('avena', 'gachas', 'porridge', 'overnight', 'yogur', 'tortita', 'tortitas', 'pancake', 'pancakes', 'crepe', 'crepes', 'muffin', 'muffins', 'granola', 'batido', 'smoothie', 'gofre', 'gofres', 'waffle', 'cereales', 'bol')
-const PESCADOS = set('pescado', 'salmon', 'atun', 'merluza', 'bacalao', 'gambas', 'dorada', 'lubina', 'sardinas', 'pulpo', 'calamar')
+const PESCADOS = set('pescado', 'salmon', 'atun', 'merluza', 'bacalao', 'gambas', 'dorada', 'lubina', 'sardinas', 'pulpo', 'calamar', 'rape', 'rodaballo', 'lenguado', 'trucha', 'mejillones', 'almejas', 'pescadilla', 'boquerones', 'anchoas', 'langostinos', 'calamares')
 const CARNES = set('pollo', 'ternera', 'cerdo', 'carne', 'beef', 'chicken', 'pork', 'cordero', 'filete', 'carrillera', 'carrilleras', 'pavo', 'butifarra', 'costilla', 'costillas', 'chuleta', 'chuletas', 'lomo', 'solomillo', 'entrecot', 'albondigas', 'pechuga', 'muslo', 'muslos', 'conejo', 'pato', 'cochinillo')
 const VERDURAS = set('ensalada', 'verdura', 'verduras', 'calabacin', 'berenjena', 'brocoli', 'coliflor', 'calabaza', 'zanahoria', 'espinacas', 'champinones')
 const ENTRANTES = set('croqueta', 'croquetas', 'bunuelo', 'bunuelos', 'palitos', 'nachos')
@@ -59,7 +59,7 @@ const TAG_A_FAMILIA: Record<string, FamiliaPlato> = {
 }
 
 // Reglas por prioridad sobre un conjunto de palabras (sin tener en cuenta el orden)
-function familiaPorPalabras(p: string[], r: EntradaPlato): FamiliaPlato | null {
+function familiaPorPalabras(p: string[], r: EntradaPlato, conVerduras = false): FamiliaPlato | null {
   const tiene = (s: Set<string>) => p.some(w => s.has(w))
   const cat = (r.categoria || '').toLowerCase()
   if (tiene(POSTRES)) return 'Postres'
@@ -73,7 +73,7 @@ function familiaPorPalabras(p: string[], r: EntradaPlato): FamiliaPlato | null {
   if (tiene(PESCADOS)) return 'Pescados'
   if (tiene(CARNES)) return 'Carnes'
   if (cat === 'entrante' || tiene(ENTRANTES)) return 'Entrantes'
-  if (tiene(VERDURAS)) return 'Verduras y ensaladas'
+  if (conVerduras && tiene(VERDURAS)) return 'Verduras y ensaladas'
   return null
 }
 
@@ -81,7 +81,8 @@ function familiaPorPalabras(p: string[], r: EntradaPlato): FamiliaPlato | null {
 export function familiaPlato(r: EntradaPlato): FamiliaPlato | null {
   const p = palabras(r.nombre)
   if ((r.categoria || '').toLowerCase() === 'postre') return 'Postres'
-  const f = familiaPorPalabras(p.slice(0, 3), r) ?? familiaPorPalabras(p, r)
+  // La verdura es la categoría débil: una proteína en cualquier parte del nombre gana a una verdura del principio («Garbanzos con espinacas y bacalao»)
+  const f = familiaPorPalabras(p.slice(0, 3), r) ?? familiaPorPalabras(p, r) ?? familiaPorPalabras(p, r, true)
   if (f) return f
   for (const t of r.tags ?? []) { const x = TAG_A_FAMILIA[t.toLowerCase()]; if (x) return x }
   return null

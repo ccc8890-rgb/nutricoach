@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { autorizarCoach } from '@/lib/contenido/auth'
 import { transicionPermitida, type FaseCircuito } from '@/lib/recetas/revisor/esquema'
+import { salirDelCircuito } from '@/lib/recetas/revisor/revisar'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const FASES: FaseCircuito[] = ['nueva', 'en_agente', 'segunda']
@@ -19,14 +20,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!receta) return NextResponse.json({ error: 'Receta no encontrada' }, { status: 404 })
   if (receta.estado !== 'en_revision') return NextResponse.json({ error: 'Solo las fichas en revisión pasan por este circuito' }, { status: 409 })
 
-  const desde: FaseCircuito = receta.fase_revision ?? 'nueva'
+  // «revisando» (reserva del agente, si algún día existe) cuenta como «con el agente»
+  const desde: FaseCircuito = receta.fase_revision === 'revisando' ? 'en_agente' : (receta.fase_revision ?? 'nueva')
   const t = transicionPermitida(desde, hacia)
   if (!t.ok || !t.evento) return NextResponse.json({ error: `No se puede pasar de «${desde}» a «${hacia}»` }, { status: 409 })
   const nota = typeof body?.nota === 'string' ? body.nota.trim().slice(0, 500) : ''
   if (t.evento === 'devuelta' && !nota) return NextResponse.json({ error: 'Al devolver una ficha al agente hay que escribir una nota' }, { status: 400 })
 
-  const { error } = await auth.admin.from('recetas').update({ fase_revision: hacia === 'nueva' ? null : hacia }).eq('id', id)
-  if (error) return NextResponse.json({ error: 'No se pudo cambiar la fase' }, { status: 500 })
+  if (hacia === 'nueva') await salirDelCircuito(auth.admin, [id])
+  else {
+    const { error } = await auth.admin.from('recetas').update({ fase_revision: hacia }).eq('id', id)
+    if (error) return NextResponse.json({ error: 'No se pudo cambiar la fase' }, { status: 500 })
+  }
   await auth.admin.from('recetas_revision_eventos').insert({ receta_id: id, tipo: t.evento, actor: 'carlos', nota: nota || null })
   return NextResponse.json({ ok: true, fase: hacia })
 }

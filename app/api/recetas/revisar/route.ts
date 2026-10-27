@@ -5,6 +5,7 @@ import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 import { marcarFotoRevisada } from '@/lib/recetas/imagen-revision'
 import { inicioFinDiaMadridUtc, normalizarFase, normalizarTareaRevision, type TareaRevision } from '@/lib/recetas/revision'
 import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
+import { salirDelCircuito } from '@/lib/recetas/revisor/revisar'
 
 export const dynamic = 'force-dynamic'
 
@@ -180,6 +181,8 @@ export async function POST(request: NextRequest) {
       if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
       await Promise.all(aprobables.map(id => auditarRecetaProfesional(supabase, id, 'aprobada_lote', 'api_recetas_revisar')))
       await marcarFotoRevisada(supabase, aprobables).catch(() => null)
+      // Aprobadas en lote: fuera del circuito de revisión, con el rastro de que Carlos las aprobó
+      await salirDelCircuito(supabase, aprobables, 'aprobada').catch(() => null)
       // Sin verificar, el motor de planes no las usaría: se verifican las completas (instrucciones, ingredientes, franja, etiquetas, tiempo)
       verificadasAuto = (await verificarRecetasCompletas(supabase, aprobables).catch(() => ({ verificadas: 0, incompletas: [] }))).verificadas
     }
