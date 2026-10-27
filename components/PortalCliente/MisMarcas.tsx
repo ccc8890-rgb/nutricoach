@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { CheckCircle, CircleNotch } from '@phosphor-icons/react'
+import { CheckCircle, CircleNotch } from '@/components/icons/phosphor'
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import { MARCAS } from '@/lib/entrenos/marcas'

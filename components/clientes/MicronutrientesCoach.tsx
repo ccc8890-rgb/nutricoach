@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Activity, ChevronDown, ChevronUp } from 'lucide-react'
+import { Activity, ChevronDown, ChevronUp } from '@/components/icons/lucide'
 import MicronutrientesPortal from '@/components/PortalCliente/MicronutrientesPortal'
 
 // Informe de micronutrientes del plan activo (media diaria) para el coach; carga al abrir.

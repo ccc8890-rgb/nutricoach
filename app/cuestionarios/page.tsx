@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Plus, ClipboardList, Search, Copy, Check, ExternalLink, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, ClipboardList, Search, Copy, Check, ExternalLink, ToggleLeft, ToggleRight } from '@/components/icons/lucide'
 import CuestionarioCreador from '@/components/CuestionarioCreador'
 import Modal from '@/components/ui/Modal'
 import type { Cuestionario, Pregunta } from '@/types'

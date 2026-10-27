@@ -5,7 +5,7 @@ import {
     ChevronLeft, ChevronRight, UtensilsCrossed, Dumbbell,
     CalendarClock, CalendarCheck, AlertCircle, Scale, ClipboardCheck,
     X
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 import { useToast } from '@/components/ui/Toast'
 import { supabase } from '@/lib/supabase'
 

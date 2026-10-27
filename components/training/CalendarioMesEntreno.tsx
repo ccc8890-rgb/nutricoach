@@ -2,7 +2,7 @@
 import { textoKm } from '@/lib/entrenos/km-sesion'
 import { useEffect, useMemo, useState } from 'react'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
-import { CaretLeft, CaretRight, CircleDashed, CircleNotch, Warning } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, CircleDashed, CircleNotch, Warning } from '@/components/icons/phosphor'
 import { IconoFuerza, IconoCarrera } from '@/components/icons/MarcaIconos'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, X } from 'lucide-react'
+import { Loader2, X } from '@/components/icons/lucide'
 import { ASPECTOS_CORRECCION } from '@/lib/recetas/correcciones'
 import { ORIGENES_REPORTE, type OrigenReporte } from '@/lib/recetas/reportes'
 

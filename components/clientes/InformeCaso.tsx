@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, MessageSquareText } from 'lucide-react'
+import { Loader2, MessageSquareText } from '@/components/icons/lucide'
 import type { InformeCaso as Informe } from '@/lib/informe-caso/construir'
 
 // Estructura y contenido; el acabado visual lo pule Codex. Todo el texto sale de lib/informe-caso/construir.ts.

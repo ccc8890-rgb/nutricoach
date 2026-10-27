@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, CreditCard, ForkKnife, Receipt, Repeat, Trophy } from '@phosphor-icons/react'
+import { ArrowRight, CreditCard, ForkKnife, Receipt, Repeat, Trophy } from '@/components/icons/phosphor'
 import type { CommandData, Competicion, CosteCliente, NegocioData } from '@/lib/dashboard/tipos'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { DASHBOARD_MUTED, EmptyState, SectionHeader, SkeletonRows, formatDate, formatEuro } from './comun'

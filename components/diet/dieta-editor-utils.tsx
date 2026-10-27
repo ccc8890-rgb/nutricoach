@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ElementType, ReactNode } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown } from '@/components/icons/lucide'
 import type { PlanNutricion, Alimento } from '@/types'
 
 export type ResultadoBusqueda = Alimento & { imagen?: string; _fuente?: string }

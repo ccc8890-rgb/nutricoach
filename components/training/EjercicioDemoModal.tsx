@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { ArrowSquareOut, Barbell, CaretDown, CaretUp, Play, X } from '@phosphor-icons/react'
+import { ArrowSquareOut, Barbell, CaretDown, CaretUp, Play, X } from '@/components/icons/phosphor'
 
 interface Props {
   nombre: string

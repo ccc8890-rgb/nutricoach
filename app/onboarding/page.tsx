@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ArrowRight, Loader2 } from 'lucide-react'
+import { ChevronLeft, ArrowRight, Loader2 } from '@/components/icons/lucide'
 import OnboardingProgress from '@/components/onboarding/OnboardingProgress'
 import StepSegment, { type Segmento } from '@/components/onboarding/StepSegment'
 import StepGoal, { type Objetivo } from '@/components/onboarding/StepGoal'

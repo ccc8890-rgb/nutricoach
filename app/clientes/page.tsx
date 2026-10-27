@@ -7,7 +7,7 @@ import { invalidateCacheKey, useCachedFetch } from '@/lib/useCachedFetch'
 import { useDebounce } from '@/lib/useDebounce'
 import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import Link from 'next/link'
-import { Check, CreditCard, Link as LinkIcon, Plus, SpinnerGap, UserPlus, UsersThree } from '@phosphor-icons/react'
+import { Check, CreditCard, Link as LinkIcon, Plus, SpinnerGap, UserPlus, UsersThree } from '@/components/icons/phosphor'
 import {
   type ClienteRow, type Filtro, type FiltroAlta, type SortKey, type ToolbarCounts,
   calcularScoreAdherencia, esPredictorBaja, calcularDeudaAtencion,

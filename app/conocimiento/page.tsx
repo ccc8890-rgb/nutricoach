@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Search, BookOpen, ExternalLink, CheckCircle, Trash2, Filter } from 'lucide-react'
+import { Plus, Search, BookOpen, ExternalLink, CheckCircle, Trash2, Filter } from '@/components/icons/lucide'
 
 const DISCIPLINAS = ['todos', 'hyrox', 'running', 'ciclismo', 'triatlon', 'hibrido', 'fuerza', 'recuperacion', 'nutricion', 'general']
 const CATEGORIAS = ['todos', 'periodizacion', 'intensidad', 'volumen', 'fuerza', 'resistencia', 'hiit', 'zona2', 'competicion', 'recuperacion', 'proteina', 'hidratacion', 'suplementacion', 'patologia', 'composicion_corporal', 'metabolismo', 'metodologia', 'otro']

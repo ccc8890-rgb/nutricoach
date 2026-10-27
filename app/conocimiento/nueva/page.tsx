@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Link2, FileText, Hash, Loader2, Sparkles } from 'lucide-react'
+import { ArrowLeft, Link2, FileText, Hash, Loader2, Sparkles } from '@/components/icons/lucide'
 
 const DISCIPLINAS = ['nutricion', 'hyrox', 'running', 'ciclismo', 'triatlon', 'hibrido', 'fuerza', 'recuperacion', 'general']
 const CATEGORIAS = ['periodizacion', 'intensidad', 'volumen', 'fuerza', 'resistencia', 'hiit', 'zona2', 'competicion', 'recuperacion', 'proteina', 'hidratacion', 'suplementacion', 'patologia', 'composicion_corporal', 'metabolismo', 'metodologia', 'otro']

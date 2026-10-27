@@ -1,6 +1,6 @@
 'use client'
 import useSWR from 'swr'
-import { Bell } from 'lucide-react'
+import { Bell } from '@/components/icons/lucide'
 
 interface Cambio { id: string; tipo: string; resumen: string; created_at: string }
 const fetchJson = (u: string) => fetch(u).then(r => (r.ok ? r.json() : { cambios: [] }))

@@ -1,6 +1,6 @@
 'use client'
 
-import { Store, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Store, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from '@/components/icons/lucide'
 import type { ComparativaSupermercados } from '@/types'
 import { useState } from 'react'
 

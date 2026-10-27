@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Camera, Loader2 } from 'lucide-react'
+import { Camera, Loader2 } from '@/components/icons/lucide'
 import { useToast } from '@/components/ui/Toast'
 
 const LADO_MAX = 1600

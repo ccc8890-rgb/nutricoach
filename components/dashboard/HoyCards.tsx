@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Brain, CheckCircle, ClipboardText, Warning, UserPlus } from '@phosphor-icons/react'
+import { ArrowRight, Brain, CheckCircle, ClipboardText, Warning, UserPlus } from '@/components/icons/phosphor'
 import type { ResumenHoy, Tono } from '@/lib/dashboard/hoy'
 import { DASHBOARD_MUTED, DASHBOARD_SECONDARY } from './comun'
 

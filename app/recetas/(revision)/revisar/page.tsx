@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Check, ChevronDown, ExternalLink, ImageOff, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react'
+import { AlertTriangle, Check, ChevronDown, ExternalLink, ImageOff, Loader2, RefreshCw, Search, Trash2 } from '@/components/icons/lucide'
 import EnlaceReceta from '@/components/recetas/EnlaceReceta'
 import SubirFotoReceta from '@/components/recetas/SubirFotoReceta'
 import CandidatasReporte from '@/components/recetas/CandidatasReporte'

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { FileCheck2, Link2, Plus, Trash2, Video } from 'lucide-react'
+import { FileCheck2, Link2, Plus, Trash2, Video } from '@/components/icons/lucide'
 import { useToast } from '@/components/ui/Toast'
 import { interpretarEntrada } from '@/lib/contenido/enlace'
 import { ETIQUETA_ESTADO } from '@/lib/contenido/estados'

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { FilmSlate, ForkKnife, ListChecks, UserPlus, Users } from '@phosphor-icons/react'
+import { FilmSlate, ForkKnife, ListChecks, UserPlus, Users } from '@/components/icons/phosphor'
 import { supabase } from '@/lib/supabase'
 
 export default function Accesos() {

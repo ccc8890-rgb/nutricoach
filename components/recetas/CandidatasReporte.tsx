@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown } from '@/components/icons/lucide'
 import EnlaceReceta from '@/components/recetas/EnlaceReceta'
 import ReportarProblema from '@/components/recetas/ReportarProblema'
 import { etiquetaCalidad } from '@/lib/recetas/etiquetas-calidad'

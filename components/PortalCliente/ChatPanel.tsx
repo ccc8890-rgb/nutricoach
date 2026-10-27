@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Send, Loader2, MessageSquareText } from 'lucide-react'
+import { Send, Loader2, MessageSquareText } from '@/components/icons/lucide'
 import type { ChatMensaje } from '@/types'
 import { scrollChatToBottom } from '@/lib/cliente/chat-scroll'
 

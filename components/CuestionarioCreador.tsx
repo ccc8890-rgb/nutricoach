@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from '@/components/icons/lucide'
 import type { Pregunta, TipoPregunta } from '@/types'
 
 interface Props {

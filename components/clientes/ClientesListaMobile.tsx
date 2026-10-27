@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Barbell, CalendarBlank, ForkKnife, Warning } from '@phosphor-icons/react'
+import { ArrowRight, Barbell, CalendarBlank, ForkKnife, Warning } from '@/components/icons/phosphor'
 import { OBJETIVO_LABELS } from '@/lib/utils'
 import {
   nombreCliente, getEstadoCliente, estadoStyle, checkinColor,

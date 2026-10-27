@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
-import { Loader2, XCircle, Mail } from 'lucide-react'
+import { Loader2, XCircle, Mail } from '@/components/icons/lucide'
 import { supabase } from '@/lib/supabase'
 
 type Estado = 'cargando' | 'token_invalido' | 'formulario' | 'magic_enviado' | 'exito' | 'error'

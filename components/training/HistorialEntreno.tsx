@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Trophy, Lightning, CaretDown, CaretUp } from '@phosphor-icons/react'
+import { Trophy, Lightning, CaretDown, CaretUp } from '@/components/icons/phosphor'
 
 interface PREntry {
   ejercicio_id: string

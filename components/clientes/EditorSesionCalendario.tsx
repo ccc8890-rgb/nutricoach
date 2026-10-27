@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BookmarkPlus, ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2 } from 'lucide-react'
+import { BookmarkPlus, ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2 } from '@/components/icons/lucide'
 import { CATEGORIAS_SESION, type CategoriaSesion } from '@/lib/entrenos/biblioteca-categorias'
 import { MUSCULOS, PESTANAS_EJERCICIO, musculoDe, pestanaDe, subgrupoDe, porDefecto, sinDuplicados, type EjercicioBiblioteca, type Musculo, type PestanaEjercicio } from '@/lib/entrenos/ejercicio-categorias'
 

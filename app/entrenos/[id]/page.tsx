@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, Dumbbell } from 'lucide-react'
+import { ArrowLeft, Loader2, Dumbbell } from '@/components/icons/lucide'
 import PlanTimeline, {
   type SemanaTimeline,
   type SesionTimeline,

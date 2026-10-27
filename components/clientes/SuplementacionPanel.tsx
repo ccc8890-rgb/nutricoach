@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { AlertTriangle, Loader2, Pill } from 'lucide-react'
+import { AlertTriangle, Loader2, Pill } from '@/components/icons/lucide'
 import { useToast } from '@/components/ui/Toast'
 import type { ContextoSuplementos, Recomendacion } from '@/lib/nutricion/suplementos'
 

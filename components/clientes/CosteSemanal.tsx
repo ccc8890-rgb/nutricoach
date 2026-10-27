@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { CosteSemanal } from '@/app/api/clientes/[id]/coste-semanal/route'
-import { ShoppingCart, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { ShoppingCart, AlertCircle, ChevronDown, ChevronUp } from '@/components/icons/lucide'
 
 interface Props {
   clienteId: string

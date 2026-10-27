@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { BotonFavorita } from './BotonFavorita'
-import { MagnifyingGlass, ForkKnife, X, Rows, SquaresFour, CaretDown, Check } from '@phosphor-icons/react'
+import { MagnifyingGlass, ForkKnife, X, Rows, SquaresFour, CaretDown, Check } from '@/components/icons/phosphor'
 import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, APTA_PARA, ALERGENOS_NEGATIVOS, nombreSin } from '@/lib/recetas-constants'
 import { filtrosRecetarioDeUrl, migrarCategoriaAntigua, type TipoVista } from '@/lib/recetas/clasificacion'
 

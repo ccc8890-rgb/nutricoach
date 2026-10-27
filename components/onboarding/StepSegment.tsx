@@ -1,5 +1,5 @@
 'use client'
-import { Check } from 'lucide-react'
+import { Check } from '@/components/icons/lucide'
 
 export type Segmento = 'standard' | 'recomposicion' | 'performance' | 'elite'
 

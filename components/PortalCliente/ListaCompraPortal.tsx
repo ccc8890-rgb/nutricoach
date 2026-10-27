@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CaretDown, CaretUp, Check, CircleNotch, PaperPlaneTilt, Tag } from '@phosphor-icons/react'
+import { CaretDown, CaretUp, Check, CircleNotch, PaperPlaneTilt, Tag } from '@/components/icons/phosphor'
 import type { ItemListaCompra } from '@/app/api/cliente/[codigo]/lista-compra/route'
 import type { ResultadoOptimizacion } from '@/types'
 import type { OfertaDetectada, ProyeccionAhorroAnual } from '@/lib/precios-smart-cart'

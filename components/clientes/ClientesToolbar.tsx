@@ -1,7 +1,7 @@
 // components/clientes/ClientesToolbar.tsx
 'use client'
 
-import { CalendarBlank, CaretDown, ChatCircle, Clock, FadersHorizontal, MagnifyingGlass, UserMinus } from '@phosphor-icons/react'
+import { CalendarBlank, CaretDown, ChatCircle, Clock, FadersHorizontal, MagnifyingGlass, UserMinus } from '@/components/icons/phosphor'
 import type { Filtro, FiltroAlta, SortKey, ToolbarCounts } from '@/lib/clientes-utils'
 
 const FILTRO_LABELS: Record<Filtro, string> = {

@@ -1,7 +1,7 @@
 // components/training/PasosSesion.tsx
 'use client'
 import { useMemo, useState } from 'react'
-import { Watch } from '@phosphor-icons/react'
+import { Watch } from '@/components/icons/phosphor'
 import { validarPasos, resumenSesion, textoCorto, zonasUsadas, ZONAS_RITMO } from '@/lib/entrenos/pasos'
 import type { Ritmos } from '@/lib/entrenos/ritmos'
 import type { ZonasFc } from '@/lib/entrenos/zonas-fc'

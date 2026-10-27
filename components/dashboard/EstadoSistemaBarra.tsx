@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CaretDown, CheckCircle, Warning, XCircle } from '@phosphor-icons/react'
+import { CaretDown, CheckCircle, Warning, XCircle } from '@/components/icons/phosphor'
 import type { ComprobacionSistema, NivelEstado } from '@/lib/sistema/estado'
 
 type Estado = { nivel: NivelEstado; resumen: string; comprobaciones: ComprobacionSistema[] }

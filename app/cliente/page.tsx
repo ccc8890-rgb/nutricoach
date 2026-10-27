@@ -12,7 +12,7 @@ import {
   BookOpenText,
   CaretLeft,
   SquaresFour, Rows,
-} from '@phosphor-icons/react'
+} from '@/components/icons/phosphor'
 import { NavHoy, NavDieta, NavRecetas, NavEntreno, NavDatos, IconoDieta, IconoFuerza, IconoCompra, IconoChat, IconoCheckin, IconoDispositivo, IconoSol, IconoLuna, IconoSalir } from '@/components/icons/MarcaIconos'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'

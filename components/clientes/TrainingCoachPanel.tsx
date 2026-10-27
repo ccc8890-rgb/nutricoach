@@ -14,7 +14,7 @@ import {
   Route,
   Target,
   Zap,
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 import { crearCoachDeskPlan, crearTrainingCockpitCards } from '@/lib/training/workspace'
 
 type Tone = 'critico' | 'atencion' | 'ok' | 'neutro'

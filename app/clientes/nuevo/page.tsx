@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { invalidateCacheKey } from '@/lib/useCachedFetch'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/icons/lucide'
 import Link from 'next/link'
 
 export default function NuevoClientePage() {

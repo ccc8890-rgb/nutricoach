@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ShoppingCart, Copy, Check, Store, Loader2 } from 'lucide-react'
+import { ShoppingCart, Copy, Check, Store, Loader2 } from '@/components/icons/lucide'
 import ItemConPrecios from './lista-compra/ItemConPrecios'
 import SelectorComparativa from './lista-compra/SelectorComparativa'
 import type { ListaCompraSemanal, PrecioOpcion, ResumenSupermercado } from '@/types'

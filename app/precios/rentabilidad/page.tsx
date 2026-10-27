@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Store, Search } from 'lucide-react'
+import { Store, Search } from '@/components/icons/lucide'
 import DashboardRentabilidad from '@/components/DashboardRentabilidad'
 
 export default function RentabilidadPage() {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CaretDown, CheckCircle, Clock, Pulse, WarningCircle } from '@phosphor-icons/react'
+import { CaretDown, CheckCircle, Clock, Pulse, WarningCircle } from '@/components/icons/phosphor'
 import { formatearDuracionEjecucion, type AgenteEjecucion } from '@/lib/agentes/ejecuciones'
 
 const ESTADOS = {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertTriangle, ChevronDown, ChevronRight, TrendingDown, TrendingUp, Minus } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronRight, TrendingDown, TrendingUp, Minus } from '@/components/icons/lucide'
 import type { CheckIn, PlanEntrenamiento, PlanNutricion, SeguimientoPeso } from '@/types'
 
 type Tab = 'resumen' | 'nutricion' | 'entrenamiento' | 'seguimiento' | 'comunicacion' | 'perfil'

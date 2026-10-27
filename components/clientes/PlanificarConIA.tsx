@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2, Sparkles } from '@/components/icons/lucide'
 
 interface Estado { etiqueta: string; hayPropuestaPendiente: boolean }
 

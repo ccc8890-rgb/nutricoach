@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown } from '@/components/icons/lucide'
 import { TechnicalRow } from '@/components/PortalCliente/editorial'
 import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 import { notaExplicaPausa, notaLegible, pausa } from '@/lib/training/ejercicio-texto'

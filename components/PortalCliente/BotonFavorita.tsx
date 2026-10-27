@@ -1,7 +1,7 @@
 'use client'
 
 import useSWR, { useSWRConfig } from 'swr'
-import { Heart } from '@phosphor-icons/react'
+import { Heart } from '@/components/icons/phosphor'
 import { fetchJson } from '@/lib/cliente/cache-swr'
 
 export interface RecetaFavorita {

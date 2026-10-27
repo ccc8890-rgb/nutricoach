@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Trash2, Calendar, Trophy, Loader2, AlertTriangle } from 'lucide-react'
+import { Plus, Trash2, Calendar, Trophy, Loader2, AlertTriangle } from '@/components/icons/lucide'
 import { DISCIPLINA_LABELS, FASE_LABELS, FASE_COLORES } from '@/lib/alto-rendimiento/macros-por-fase'
 import type { FaseDeportiva, Disciplina } from '@/lib/alto-rendimiento/macros-por-fase'
 

@@ -14,7 +14,7 @@ import {
   RefreshCw,
   Route,
   Watch,
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 import type { SaludFuente } from '@/lib/integraciones/salud-fuente'
 
 type ActividadFlag = {

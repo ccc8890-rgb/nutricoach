@@ -13,7 +13,7 @@ import {
   SlidersHorizontal,
   VideoCamera,
   WarningCircle,
-} from '@phosphor-icons/react'
+} from '@/components/icons/phosphor'
 import { calcularEjercicioQuality } from '@/lib/training/workspace'
 import {
   crearExerciseLibraryBatchPlan,

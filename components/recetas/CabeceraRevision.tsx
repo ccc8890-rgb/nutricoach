@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus } from '@/components/icons/lucide'
 
 type Cuentas = { nueva: number | null; en_agente: number | null; segunda: number | null }
 

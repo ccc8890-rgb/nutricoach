@@ -1,7 +1,7 @@
 'use client'
 
 import useSWR from 'swr'
-import { CaretDown } from '@phosphor-icons/react'
+import { CaretDown } from '@/components/icons/phosphor'
 import { fetchJson } from '@/lib/cliente/cache-swr'
 
 type Ambito = 'diaria' | 'sesion' | 'carrera'

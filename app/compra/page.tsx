@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import {
     ShoppingCart, X, ChevronDown, ChevronUp,
     Copy, Check, Store
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 
 /* ── Tipos ─────────────────────────────────────────────────── */
 

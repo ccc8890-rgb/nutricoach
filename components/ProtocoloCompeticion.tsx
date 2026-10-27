@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
-import { Plus, Pencil, Trash2, ClipboardList, Timer, Zap, Dumbbell, CalendarDays, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, ClipboardList, Timer, Zap, Dumbbell, CalendarDays, ChevronDown, ChevronUp, Loader2 } from '@/components/icons/lucide'
 import type { ProtocoloCompeticion, ProtocoloCompeticionForm } from '@/types'
 
 interface Props {

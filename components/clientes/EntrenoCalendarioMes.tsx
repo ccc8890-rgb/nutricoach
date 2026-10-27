@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Check, ChevronLeft, ChevronRight, ClipboardPaste, Copy, Flag, Loader2, Pencil, Plus, Trash2, Watch, X } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, ClipboardPaste, Copy, Flag, Loader2, Pencil, Plus, Trash2, Watch, X } from '@/components/icons/lucide'
 import { useToast } from '@/components/ui/Toast'
 import { diaSemanaDe, diferenciaDias, lunesDe, sumarDias, esFechaISO, type Operacion } from '@/lib/entrenos/calendario-ajustes'
 import { CATEGORIAS_SESION, type CategoriaSesion } from '@/lib/entrenos/biblioteca-categorias'

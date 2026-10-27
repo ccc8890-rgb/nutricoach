@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ShoppingCart, TrendingDown, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { ShoppingCart, TrendingDown, ChevronDown, ChevronUp, ExternalLink } from '@/components/icons/lucide'
 
 interface PrecioComparativo {
     supermercado_id: string

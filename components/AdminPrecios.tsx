@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   Store, Search, X, Euro, Save, Trash2, Plus, ExternalLink, Loader2, Check, AlertCircle
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 import { useToast } from '@/components/ui/Toast'
 import type { Supermercado, Alimento, PrecioActual } from '@/types'
 import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'

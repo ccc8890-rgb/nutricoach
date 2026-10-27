@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { LogIn, Sparkles } from 'lucide-react'
+import { LogIn, Sparkles } from '@/components/icons/lucide'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')

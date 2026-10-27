@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ChevronDown, Dumbbell, Loader2 } from 'lucide-react'
+import { ChevronDown, Dumbbell, Loader2 } from '@/components/icons/lucide'
 import { DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import { useToast } from '@/components/ui/Toast'
 

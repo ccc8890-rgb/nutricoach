@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Clock, ExternalLink, Loader2, PlayCircle, Plus, RefreshCw, Search, Video, X } from 'lucide-react'
+import { Clock, ExternalLink, Loader2, PlayCircle, Plus, RefreshCw, Search, Video, X } from '@/components/icons/lucide'
 import type { ComplementoDetalle, DetalleDia, RolComplemento } from '@/lib/nutricion/detalle-dia'
 
 type Objetivo = { kcal: number | null; p: number | null; c: number | null; g: number | null }

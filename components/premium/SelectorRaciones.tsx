@@ -1,6 +1,6 @@
 'use client'
 
-import { Minus, Plus } from 'lucide-react'
+import { Minus, Plus } from '@/components/icons/lucide'
 
 /** Redondeo legible de cantidades escaladas: sin decimales salvo en cantidades pequeñas */
 export function escalarGramos(gramos: number, factor: number): string {

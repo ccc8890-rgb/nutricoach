@@ -15,7 +15,7 @@ import {
     type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { CaretDown, CheckCircle, SpinnerGap } from '@phosphor-icons/react'
+import { CaretDown, CheckCircle, SpinnerGap } from '@/components/icons/phosphor'
 import { IconoFuerza, IconoCarrera } from '@/components/icons/MarcaIconos'
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'

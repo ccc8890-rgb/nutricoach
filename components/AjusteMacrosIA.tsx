@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Brain, Loader2, Check, X, RefreshCw, ArrowRight } from 'lucide-react'
+import { Brain, Loader2, Check, X, RefreshCw, ArrowRight } from '@/components/icons/lucide'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/ui/Toast'
 import type { SugerenciaMacros } from '@/lib/deepseek'

@@ -16,7 +16,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { ArrowUpDown, Brain, ChevronDown, ChevronUp, GripVertical, Video } from 'lucide-react'
+import { ArrowUpDown, Brain, ChevronDown, ChevronUp, GripVertical, Video } from '@/components/icons/lucide'
 import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 import { combinarOrdenBloque, crearGruposEditorSesion } from '@/lib/training/plan-editor-blocks'
 import type { TipoBloqueSesion } from '@/lib/training/session-blocks'

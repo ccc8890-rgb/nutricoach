@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
     DeviceMobile, User, Lock, SignOut, Sun, Moon,
     CheckCircle, CircleNotch, Eye, EyeSlash,
-} from '@phosphor-icons/react'
+} from '@/components/icons/phosphor'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/components/ThemeProvider'
 import { useToast } from '@/components/ui/Toast'

@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { ChevronDown, Dumbbell, GripVertical, Loader2, Plus, X } from 'lucide-react'
+import { ChevronDown, Dumbbell, GripVertical, Loader2, Plus, X } from '@/components/icons/lucide'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/ui/Toast'
 

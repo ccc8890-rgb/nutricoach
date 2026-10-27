@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Zap, CheckCircle, AlertCircle, Moon, MessageCircle, TrendingUp, Minus, Loader2 } from 'lucide-react'
+import { Zap, CheckCircle, AlertCircle, Moon, MessageCircle, TrendingUp, Minus, Loader2 } from '@/components/icons/lucide'
 import { AccionPeriodizacion, ACCION_LABELS, ACCION_DESCRIPTIONS, normalizarAdherenciaPct } from '@/lib/periodizacion/arbol-decision'
 
 interface AccionItem {

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, type ElementType } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CaretDown, CaretRight, List, X } from '@phosphor-icons/react'
+import { CaretDown, CaretRight, List, X } from '@/components/icons/phosphor'
 import {
   IconoInicio, IconoClientes, IconoContenido, IconoDieta, IconoFuerza, IconoCatalogo, IconoRecetas, IconoCompra,
   IconoPrecios, IconoTendencia, IconoDatos, IconoCheckin, IconoAjustes, IconoPanel, IconoSalir, IconoSol, IconoLuna,

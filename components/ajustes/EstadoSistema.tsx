@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, XCircle, Loader2 } from '@/components/icons/lucide'
 import type { ComprobacionSistema, NivelEstado } from '@/lib/sistema/estado'
 
 type Estado = { nivel: NivelEstado; resumen: string; comprobaciones: ComprobacionSistema[] }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Loader2, Pencil } from 'lucide-react'
+import { Loader2, Pencil } from '@/components/icons/lucide'
 import { CATEGORIAS } from '@/lib/recetas-constants'
 import { TAG_CORREGIR } from '@/lib/recetas/correcciones'
 import { TAG_REPORTE_CLIENTE } from '@/lib/recetas/reportes'

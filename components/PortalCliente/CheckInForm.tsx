@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
-import { Loader2, Send, Clock, Flame, ClipboardCheck, Camera, X, ChevronRight } from 'lucide-react'
+import { Loader2, Send, Clock, Flame, ClipboardCheck, Camera, X, ChevronRight } from '@/components/icons/lucide'
 
 interface CheckInFormProps {
     codigo: string

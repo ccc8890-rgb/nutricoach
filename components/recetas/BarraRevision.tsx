@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Check, ChevronLeft, ChevronRight, Loader2, Trash2, Wrench } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Loader2, Trash2, Wrench } from '@/components/icons/lucide'
 import { esRecetaAprobable, type QualityIssues } from '@/lib/recetas/revision'
 import { ASPECTOS_CORRECCION } from '@/lib/recetas/correcciones'
 

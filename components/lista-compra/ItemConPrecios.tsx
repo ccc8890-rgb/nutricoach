@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, ExternalLink, Check } from 'lucide-react'
+import { ChevronDown, ChevronUp, ExternalLink, Check } from '@/components/icons/lucide'
 import type { IngredienteSemanal, PrecioOpcion } from '@/types'
 
 const CATEGORIA_EMOJIS: Record<string, string> = {

@@ -8,7 +8,7 @@ import {
   House,
   Moon,
   Sun,
-} from '@phosphor-icons/react'
+} from '@/components/icons/phosphor'
 import Sidebar from '@/components/Sidebar'
 import { useTheme } from '@/components/ThemeProvider'
 import { supabase } from '@/lib/supabase'

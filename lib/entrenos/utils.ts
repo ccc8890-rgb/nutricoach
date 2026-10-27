@@ -1,5 +1,5 @@
-import type { LucideIcon } from 'lucide-react'
-import { Dumbbell, Heart, Flame, Zap, Bike, Waves, Trophy } from 'lucide-react'
+import type { LucideIcon } from '@/components/icons/lucide'
+import { Dumbbell, Heart, Flame, Zap, Bike, Waves, Trophy } from '@/components/icons/lucide'
 import type { SportModality } from '@/types'
 
 export interface ModalityConfig {

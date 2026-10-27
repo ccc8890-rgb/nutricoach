@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangle, Loader2 } from '@/components/icons/lucide'
 import { useToast } from '@/components/ui/Toast'
 import { MARCADORES_ANALITICA, type GrupoAnalitica } from '@/lib/analiticas-marcadores'
 

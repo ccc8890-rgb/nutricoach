@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { CheckCircle, ChevronRight, Loader2, RefreshCw, Utensils } from 'lucide-react'
+import { CheckCircle, ChevronRight, Loader2, RefreshCw, Utensils } from '@/components/icons/lucide'
 import { supabase } from '@/lib/supabase'
 
 interface ClienteData {

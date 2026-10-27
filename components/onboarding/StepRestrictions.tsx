@@ -1,5 +1,5 @@
 'use client'
-import { Check } from 'lucide-react'
+import { Check } from '@/components/icons/lucide'
 
 const RESTRICCIONES_OPCIONES = [
   'Sin gluten', 'Sin lactosa', 'Vegetariano', 'Vegano',

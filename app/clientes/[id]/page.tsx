@@ -13,7 +13,7 @@ import {
   ExternalLink, Send, AlertTriangle, MessageCircle, HeartPulse,
   ShieldCheck, BookOpen, Target, Copy, RotateCcw,
   FlaskConical,
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento } from '@/types'
 import ResumenCliente, { AvisosCliente, avisosCliente } from '@/components/clientes/ResumenCliente'
 import { OBJETIVO_LABELS } from '@/lib/utils'

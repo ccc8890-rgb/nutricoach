@@ -6,7 +6,7 @@ import cloudinaryLoader from '@/lib/cloudinary-loader'
 import { PROTEINAS_PRINCIPALES, ETIQUETA_PROTEINA } from '@/lib/recetas-constants'
 import DetalleDiaDieta from './DetalleDiaDieta'
 import { DndContext, DragOverlay, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
-import { Activity, BadgeCheck, CalendarDays, ChevronDown, ChevronRight, ClipboardPaste, Copy, Loader2, Maximize2, Minimize2, MoreHorizontal, Play, Plus, Search, SlidersHorizontal, Sparkles, Trash2, Video, X } from 'lucide-react'
+import { Activity, BadgeCheck, CalendarDays, ChevronDown, ChevronRight, ClipboardPaste, Copy, Loader2, Maximize2, Minimize2, MoreHorizontal, Play, Plus, Search, SlidersHorizontal, Sparkles, Trash2, Video, X } from '@/components/icons/lucide'
 import { useToast } from '@/components/ui/Toast'
 import { GuardarPlantillaModal, ListaPlantillasModal, type PlantillaSemana, type SemanaPlantilla } from './PlantillasSemanaDieta'
 

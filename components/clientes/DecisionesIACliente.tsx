@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, ChevronDown, Edit3, Loader2, XCircle } from 'lucide-react'
+import { CheckCircle2, ChevronDown, Edit3, Loader2, XCircle } from '@/components/icons/lucide'
 import PropuestaPlanEntreno from '@/components/clientes/PropuestaPlanEntreno'
 import type { PayloadPlanEntrenoIA } from '@/lib/entrenos/planificar-con-ia'
 

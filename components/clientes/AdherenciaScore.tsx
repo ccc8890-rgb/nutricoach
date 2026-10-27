@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { AdherenciaScore } from '@/lib/adherencia/score'
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle } from '@/components/icons/lucide'
 
 interface Props {
   clienteId: string

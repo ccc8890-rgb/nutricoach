@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { CreditCard, Warning } from '@phosphor-icons/react'
+import { CreditCard, Warning } from '@/components/icons/phosphor'
 import type { CommandData, NegocioData } from '@/lib/dashboard/tipos'
 import { DASHBOARD_MUTED, formatEuro } from './comun'
 

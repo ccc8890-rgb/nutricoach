@@ -8,7 +8,7 @@ import {
   NIVEL_ACTIVIDAD_LABELS, type NivelActividad,
 } from '@/lib/utils'
 import type { Cliente } from '@/types'
-import { ArrowLeft, Zap } from 'lucide-react'
+import { ArrowLeft, Zap } from '@/components/icons/lucide'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'

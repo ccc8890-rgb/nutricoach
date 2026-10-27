@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useDebounce } from '@/lib/useDebounce'
-import { Plus, LayoutTemplate, Search, Loader2, Pencil, Trash2, FlaskConical, Zap, Timer } from 'lucide-react'
+import { Plus, LayoutTemplate, Search, Loader2, Pencil, Trash2, FlaskConical, Zap, Timer } from '@/components/icons/lucide'
 import type { PlantillaDieta, PlantillaDietaTipo } from '@/types'
 import { PLANTILLA_DIETA_TIPO_LABELS } from '@/types'
 import { useToast } from '@/components/ui/Toast'

@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useCachedFetch } from '@/lib/useCachedFetch'
 import Link from 'next/link'
-import { Plus, UtensilsCrossed, Search } from 'lucide-react'
+import { Plus, UtensilsCrossed, Search } from '@/components/icons/lucide'
 import { StaggerList, StaggerItem } from '@/components/ui/Motion'
 
 type PlanRow = {

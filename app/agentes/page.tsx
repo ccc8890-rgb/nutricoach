@@ -13,7 +13,7 @@ import {
   TrendUp,
   WarningCircle,
   X,
-} from '@phosphor-icons/react'
+} from '@/components/icons/phosphor'
 import { StaggerList, StaggerItem } from '@/components/ui/Motion'
 import HistorialEjecucionesAgentes from '@/components/HistorialEjecucionesAgentes'
 

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Store, TrendingDown, TrendingUp, Loader2, Check, Sparkles, ShoppingBag, MessageCircle, Zap, Percent, Award, ExternalLink } from 'lucide-react'
+import { Store, TrendingDown, TrendingUp, Loader2, Check, Sparkles, ShoppingBag, MessageCircle, Zap, Percent, Award, ExternalLink } from '@/components/icons/lucide'
 import type { IngredienteSemanal } from '@/types'
 import {
   calcularOptimizacionMultiSuper,

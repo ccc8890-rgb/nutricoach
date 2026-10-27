@@ -13,7 +13,7 @@ import {
     Flame,
     MessageSquareText,
     X,
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 
 interface CheckIn {
     id: string

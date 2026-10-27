@@ -20,7 +20,7 @@ import {
     UserPlus,
     X,
     TrendingUp,
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 import { useDebounce } from '@/lib/useDebounce'
 import { useToast } from '@/components/ui/Toast'
 import { MODALITY_CONFIG, detectarSubcategoriaLegacy } from '@/lib/entrenos/utils'

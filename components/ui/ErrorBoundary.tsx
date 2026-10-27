@@ -1,7 +1,7 @@
 'use client'
 
 import { Component, type ReactNode, type ErrorInfo } from 'react'
-import { AlertTriangle, RefreshCcw } from 'lucide-react'
+import { AlertTriangle, RefreshCcw } from '@/components/icons/lucide'
 
 interface Props {
     children: ReactNode

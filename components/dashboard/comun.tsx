@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, CheckCircle, Warning } from '@phosphor-icons/react'
+import { ArrowRight, CheckCircle, Warning } from '@/components/icons/phosphor'
 
 export const DASHBOARD_MUTED = 'color-mix(in srgb, var(--text) 66%, transparent)'
 export const DASHBOARD_SECONDARY = 'color-mix(in srgb, var(--text) 84%, transparent)'

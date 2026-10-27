@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search } from 'lucide-react'
+import { Search } from '@/components/icons/lucide'
 import { api } from './api'
 
 type Resultado = { id: string; nombre: string; imagen_url: string | null; tiempo_prep_min: number | null }

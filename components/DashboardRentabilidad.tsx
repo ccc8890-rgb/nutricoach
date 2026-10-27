@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import {
     Store, TrendingDown, TrendingUp,
     Loader2, AlertCircle, CalendarDays, PiggyBank,
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 import type { ComparativaSupermercados, ProyeccionAhorro } from '@/types'
 import ComparadorSupermercados from './ComparadorSupermercados'
 

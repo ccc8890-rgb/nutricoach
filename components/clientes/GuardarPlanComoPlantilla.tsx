@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { BookmarkPlus, Loader2 } from 'lucide-react'
+import { BookmarkPlus, Loader2 } from '@/components/icons/lucide'
 
 /** Guarda el plan de un cliente (estructura semanal, ejercicios y pasos de Garmin) como plantilla reutilizable. */
 export default function GuardarPlanComoPlantilla({ planId, nombreInicial }: { planId: string; nombreInicial: string }) {

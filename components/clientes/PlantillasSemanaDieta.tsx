@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, Trash2, X } from 'lucide-react'
+import { Loader2, Trash2, X } from '@/components/icons/lucide'
 
 export type SemanaPlantilla = { dias: { dia: string; comidas: { franja: string; receta_id: string; nombre: string }[] }[] }
 export type PlantillaSemana = { id: string; nombre: string; descripcion: string | null; etiquetas: string[]; semanas: SemanaPlantilla[]; created_at: string; origen?: 'coach' | 'base' }

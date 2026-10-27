@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Link2, Plus, Search, X, Trash2, Upload } from 'lucide-react'
+import { ArrowLeft, Link2, Plus, Search, X, Trash2, Upload } from '@/components/icons/lucide'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Alimento } from '@/types'
 import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'

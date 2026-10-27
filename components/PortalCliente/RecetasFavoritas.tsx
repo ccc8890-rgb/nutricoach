@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Heart, ForkKnife } from '@phosphor-icons/react'
+import { Heart, ForkKnife } from '@/components/icons/phosphor'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { useFavoritas, BotonFavorita } from './BotonFavorita'
 

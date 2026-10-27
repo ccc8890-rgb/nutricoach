@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Brain, ClipboardList, LogOut, Moon, ShieldAlert, SlidersHorizontal, Sun } from 'lucide-react'
+import { Brain, ClipboardList, LogOut, Moon, ShieldAlert, SlidersHorizontal, Sun } from '@/components/icons/lucide'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/components/ThemeProvider'
 import EstadoSistema from '@/components/ajustes/EstadoSistema'

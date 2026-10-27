@@ -14,7 +14,7 @@ import {
   Trophy,
   Utensils,
   X,
-} from 'lucide-react'
+} from '@/components/icons/lucide'
 import { RECETA_CHEF_COLECCIONES, RECETA_LABELS } from '@/lib/recetario-taxonomia'
 
 type EstadoCobertura = 'cubierto' | 'medio' | 'bajo' | 'critico'
