@@ -29,6 +29,8 @@ console.log(lineas(run('npx', ['tsx', 'scripts/verificar-recetas-auto.ts', '--ap
 // Fases (bizcocho, salsa…) de las recetas nuevas: la IA solo agrupa y el script comprueba que ningún texto cambia (por eso puede ir sin supervisión)
 const fas = run('node', ['scripts/organizar-fases-recetas.mjs', '--auto', '--limite=15'])
 console.log(lineas(fas, /^\d+ candidatas|^aplicada/))
+// Agente revisor: revisa las fichas que Carlos ha pasado «Con el agente» (máx. 5 por pasada, tope diario de tokens; nunca aprueba). Un fallo aquí no para el resto.
+console.log(lineas(run('npx', ['tsx', 'scripts/revisar-cola.ts', '--aplica', '--limite=5']), /^Revisadas|^Con el agente|^Acuerdo|TOPE/))
 // Recetas marcadas «Corregir»: las atiende aparte scripts/corregir-marcadas-ahora.mjs (tarea launchd cada 10 min, ver CLAUDE.md)
 const pas = run('node', ['scripts/auditar-pasos-ingredientes.mjs'])
 console.log(pas.split('\n')[0])
