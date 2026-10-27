@@ -27,6 +27,15 @@ Un agente nuevo (modelo más potente, solo lectura) revisó el circuito: 5 impor
 - **Pendiente (necesita permiso para migrar producción, bloqueado por el clasificador de permisos):** **reserva atómica de la ficha** (fase `revisando` + `fase_revision_at`) para que cron + pasada local + «Revisar ahora» no puedan revisar la misma ficha a la vez (doble gasto). Hoy, si coinciden, ambas pagan y la segunda escritura se descarta por la guarda (no se pisan datos, pero sí se duplica el coste). Migración preparada en el texto de este apartado: `alter table recetas drop constraint recetas_fase_revision_check; add constraint … check (fase_revision in ('en_agente','revisando','segunda')); add column fase_revision_at timestamptz;`.
 - Menores sin hacer: las redirecciones `/recetas/imagenes` y `/recetas/auditoria` caen en la pestaña «Por revisar» (nuevas) y ocultan fichas de otras fases.
 
+## ✅ 27-10-2026 (Claude) — Iconos: familias por superficie y vuelta atrás
+
+Resumen en la fila de `NUTRICION/CLAUDE.md`; detalle, historial y cómo deshacer: [`docs/27-10-2026_iconos-estudio-y-vuelta-atras.md`](docs/27-10-2026_iconos-estudio-y-vuelta-atras.md).
+- **Regla:** no importar iconos de `lucide-react` ni `@phosphor-icons/react` en el código nuevo. En el **coach** importar de `@/components/icons/lucide` o `@/components/icons/phosphor` (nombres de Lucide/Phosphor, dibujos de Hugeicons) y los propios de `MarcaIconos`. En el **portal cliente** (`app/cliente`, `components/PortalCliente`, componentes de entreno del cliente) importar de `@/components/icons/portal-lucide`, `portal-phosphor` o `portal-marca` (interruptores de una línea hacia `sharp-*` / `MarcaIconosSharp`, Material Symbols Light Sharp).
+- **Ficheros generados** (no editar a ciegas): `hugeicons-core.tsx`, `sharp-core.tsx`, `lucide.tsx`, `phosphor.tsx`, `sharp-lucide.tsx`, `sharp-phosphor.tsx`, `MarcaIconosSharp.tsx`. Excepciones puestas a mano y comentadas en cabecera: Dieta (Phosphor Light `fork-knife-light`) y Entreno (Phosphor Thin `barbell-thin`) en ambas familias. Los generadores y las tablas de equivalencias están solo en local: `salidas/27-10-2026_iconos/` (`gen.py`, `gen_sharp.py`, `mapa.py`, `tr.py`).
+- **Props:** los iconos aceptan `size`, `color`, `strokeWidth` (solo Hugeicons), `weight` (`fill`/`duotone` = relleno o tinte) y los atributos SVG; `Icono`/`LucideIcon`/`Icon` son tipos de función, no `ForwardRefExoticComponent`.
+- **Licencias:** Hugeicons MIT, Material Symbols Apache 2.0, Phosphor MIT; los avisos van en la cabecera de cada fichero de dibujos.
+- **Pendiente:** verlo en el iPhone (barra del cliente; trazo fino a 22 px), etiquetas visibles bajo los iconos, retirar las dependencias de Lucide/Phosphor cuando se cierre.
+
 ## ✅ 27-10-2026 (Claude) — Agente revisor del recetario y circuito de dos revisiones
 
 Plan: `docs/superpowers/plans/2026-10-26-revisor-recetario-fase1-2.md`; diseño: `docs/superpowers/specs/2026-10-26-revisor-recetario-agente-design.md`. Resumen en la fila de `NUTRICION/CLAUDE.md`.
