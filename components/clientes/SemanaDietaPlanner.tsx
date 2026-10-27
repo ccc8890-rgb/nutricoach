@@ -740,17 +740,17 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
 
       {hueco && (
         <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={() => setHueco(null)}>
-          <div className="w-full sm:max-w-lg max-h-[85vh] flex flex-col rounded-t-2xl sm:rounded-2xl p-4" style={{ background: 'var(--surface)' }} onClick={e => e.stopPropagation()}>
+          <div className="w-full sm:max-w-3xl max-h-[85vh] flex flex-col rounded-t-2xl sm:rounded-2xl p-4" style={{ background: 'var(--surface)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
               <p className="font-semibold" style={{ color: 'var(--text)' }}>{hueco.franja} · {hueco.dia}{hueco.semana ? ` · semana +${hueco.semana}` : ''}</p>
               <button onClick={() => setHueco(null)} style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
             </div>
             <div className="relative mb-3">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-              <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar receta…" className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
+              <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !guardando && opcionesFiltradas[0]) asignar(opcionesFiltradas[0].id); if (e.key === 'Escape') setHueco(null) }} placeholder="Buscar receta…  (Enter asigna la primera)" className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
             </div>
             {chipsProteina.length > 0 && (
-              <div className="flex gap-1.5 mb-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              <div className="flex gap-1.5 mb-1.5 overflow-x-auto sm:flex-wrap sm:overflow-visible pb-1" style={{ scrollbarWidth: 'none' }}>
                 {chipsProteina.map(c => {
                   const activo = proteinasSel.includes(c.id)
                   return (
@@ -762,7 +762,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               </div>
             )}
             {chipsFamilia.length > 1 && (
-              <div className="flex gap-1.5 mb-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              <div className="flex gap-1.5 mb-1.5 overflow-x-auto sm:flex-wrap sm:overflow-visible pb-1" style={{ scrollbarWidth: 'none' }}>
                 {chipsFamilia.map(c => {
                   const activo = familiaSel === c.id
                   return (
@@ -796,7 +796,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
                 {sugerencias.length > 0 && (
                   <div className="mb-3">
                     <p className="text-[12px] uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>Propuestas</p>
-                    <div className="grid grid-cols-2 gap-1.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                       {sugerencias.map(({ etiqueta, receta }) => (
                         <button key={receta.id} disabled={guardando} onClick={() => asignar(receta.id)}
                           className="text-left rounded-xl overflow-hidden disabled:opacity-50" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
