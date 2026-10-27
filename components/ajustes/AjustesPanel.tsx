@@ -42,7 +42,7 @@ function Campo({ etiqueta, children }: { etiqueta: string; children: React.React
 
 export default function AjustesPanel() {
   const router = useRouter()
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, escala, setEscala } = useTheme()
 
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [errorCarga, setErrorCarga] = useState(false)
@@ -212,6 +212,23 @@ export default function AjustesPanel() {
                 {texto}
               </button>
             ))}
+          </div>
+          <div className="mt-4">
+            <p className="mb-2 text-sm" style={{ color: 'var(--text-secondary)' }}>Tamaño de letra del panel (títulos, textos y tablas)</p>
+            <div className="inline-flex flex-wrap items-end rounded-xl border p-1" style={{ borderColor: 'var(--border)' }} role="group" aria-label="Tamaño de letra">
+              {([[0.9, 'Pequeña'], [1, 'Normal'], [1.15, 'Grande'], [1.3, 'Muy grande'], [1.5, 'Enorme']] as const).map(([valor, texto], i) => (
+                <button
+                  key={valor}
+                  type="button"
+                  onClick={() => setEscala(valor)}
+                  aria-pressed={escala === valor}
+                  className="rounded-lg px-3 py-2 font-medium"
+                  style={{ fontSize: `${12 + i * 2}px`, ...(escala === valor ? buttonStyle : { color: 'var(--text-secondary)' }) }}
+                >
+                  {texto}
+                </button>
+              ))}
+            </div>
           </div>
         </Seccion>
 

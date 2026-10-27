@@ -8,12 +8,16 @@ interface ThemeContextValue {
     theme: Theme
     toggleTheme: () => void
     setTheme: (t: Theme) => void
+    escala: number
+    setEscala: (e: number) => void
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
     theme: 'light',
     toggleTheme: () => { },
     setTheme: () => { },
+    escala: 1,
+    setEscala: () => { },
 })
 
 export function useTheme() {
@@ -27,12 +31,25 @@ function getInitialTheme(): Theme {
     return 'dark'
 }
 
+const ESCALAS = [0.9, 1, 1.15, 1.3, 1.5]
+
+function getEscalaInicial(): number {
+    try {
+        const n = Number(localStorage.getItem('nutricoach-escala'))
+        return ESCALAS.includes(n) ? n : 1
+    } catch {
+        return 1
+    }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setThemeState] = useState<Theme>('dark')
     const [mounted, setMounted] = useState(false)
+    const [escala, setEscalaState] = useState(1)
 
     useEffect(() => {
         setThemeState(getInitialTheme())
+        setEscalaState(getEscalaInicial())
         setMounted(true)
     }, [])
 
@@ -47,6 +64,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('nutricoach-theme', theme)
     }, [theme, mounted])
 
+    useEffect(() => {
+        if (!mounted) return
+        document.documentElement.style.setProperty('--coach-escala', String(escala))
+        try { localStorage.setItem('nutricoach-escala', String(escala)) } catch { /* sin almacenamiento */ }
+    }, [escala, mounted])
+
+    const setEscala = useCallback((e: number) => setEscalaState(e), [])
+
     const toggleTheme = useCallback(() => {
         setThemeState(prev => (prev === 'light' ? 'dark' : 'light'))
     }, [])
@@ -56,7 +81,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }, [])
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+        <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, escala, setEscala }}>
             {children}
         </ThemeContext.Provider>
     )

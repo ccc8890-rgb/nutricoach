@@ -3386,9 +3386,13 @@ html {
 
 /* Panel del coach en escritorio: más ancho útil y letra más legible.
    El tamaño base afecta a todo lo escrito en rem (Tailwind); cambiar solo este número para afinar. */
+html:has(.coach-atelier-shell) {
+  font-size: calc(100% * var(--coach-escala, 1));
+}
+
 @media (min-width: 1024px) {
   html:has(.coach-atelier-shell) {
-    font-size: 110%;
+    font-size: calc(110% * var(--coach-escala, 1));
   }
 
   .coach-atelier-main .max-w-5xl,
