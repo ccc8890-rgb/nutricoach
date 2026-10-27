@@ -820,6 +820,7 @@
   opacity: 0.55;
   transition: opacity 150ms var(--ease-out-strong), color 150ms var(--ease-out-strong);
 }
+.light .coach-meal-card > div:first-child button { opacity: 0.85; }
 .coach-meal-card:hover > div:first-child button,
 .coach-meal-card:focus-within > div:first-child button { opacity: 1; }
 .coach-meal-card > button {
