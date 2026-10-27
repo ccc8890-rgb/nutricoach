@@ -4,29 +4,11 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, type ElementType } from 'react'
 import { supabase } from '@/lib/supabase'
+import { CaretDown, CaretRight, List, X } from '@phosphor-icons/react'
 import {
-  Barbell,
-  BookOpenText,
-  CaretDown,
-  CaretRight,
-  ChartLineUp,
-  ClipboardText,
-  Database,
-  FilmSlate,
-  ForkKnife,
-  Gear,
-  House,
-  List,
-  Moon,
-  ShoppingCart,
-  SidebarSimple,
-  SignOut,
-  Storefront,
-  Sun,
-  TrendUp,
-  UsersThree,
-  X,
-} from '@phosphor-icons/react'
+  IconoInicio, IconoClientes, IconoContenido, IconoDieta, IconoFuerza, IconoCatalogo, IconoRecetas, IconoCompra,
+  IconoPrecios, IconoTendencia, IconoDatos, IconoCheckin, IconoAjustes, IconoPanel, IconoSalir, IconoSol, IconoLuna,
+} from '@/components/icons/MarcaIconos'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
 
@@ -60,27 +42,27 @@ type NavSection = {
 }
 
 const PRIMARY_ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Inicio', icon: House },
-  { href: '/clientes', label: 'Clientes', icon: UsersThree },
-  { href: '/contenido', label: 'Contenido', icon: FilmSlate },
+  { href: '/dashboard', label: 'Inicio', icon: IconoInicio },
+  { href: '/clientes', label: 'Clientes', icon: IconoClientes },
+  { href: '/contenido', label: 'Contenido', icon: IconoContenido },
 ]
 
 const PLANES_ITEMS: NavItem[] = [
-  { href: '/dietas/plantillas', label: 'Plantillas de dieta', icon: ForkKnife },
-  { href: '/entrenos/plantillas', label: 'Plantillas de entreno', icon: Barbell },
-  { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
+  { href: '/dietas/plantillas', label: 'Plantillas de dieta', icon: IconoDieta },
+  { href: '/entrenos/plantillas', label: 'Plantillas de entreno', icon: IconoFuerza },
+  { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: IconoCatalogo },
 ]
 
 const RECETARIO_ITEMS: NavItem[] = [
-  { href: '/recetas', label: 'Recetas', icon: BookOpenText },
-  { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
+  { href: '/recetas', label: 'Recetas', icon: IconoRecetas },
+  { href: '/dietas/alimentos', label: 'Alimentos', icon: IconoCatalogo },
 ]
 
 const COMPRA_ITEMS: NavItem[] = [
-  { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
-  { href: '/precios', label: 'Precios', icon: Storefront, exact: true },
-  { href: '/precios/escandallo', label: 'Coste de recetas', icon: TrendUp },
-  { href: '/precios/rentabilidad', label: 'Rentabilidad por cliente', icon: ChartLineUp },
+  { href: '/compra', label: 'Lista compra', icon: IconoCompra },
+  { href: '/precios', label: 'Precios', icon: IconoPrecios, exact: true },
+  { href: '/precios/escandallo', label: 'Coste de recetas', icon: IconoTendencia },
+  { href: '/precios/rentabilidad', label: 'Rentabilidad por cliente', icon: IconoDatos },
 ]
 
 
@@ -404,12 +386,12 @@ export default function Sidebar() {
   })
 
   const sections: NavSection[] = [
-    { key: 'planes', label: 'Planes', href: '/dietas/plantillas', icon: ClipboardText, items: PLANES_ITEMS },
+    { key: 'planes', label: 'Planes', href: '/dietas/plantillas', icon: IconoCheckin, items: PLANES_ITEMS },
     {
-      key: 'recetario', label: 'Recetario', href: '/recetas', icon: BookOpenText, badge: recetasPendientes,
+      key: 'recetario', label: 'Recetario', href: '/recetas', icon: IconoRecetas, badge: recetasPendientes,
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas' ? { ...item, badge: recetasPendientes } : item),
     },
-    { key: 'compra', label: 'Compra y costes', href: '/compra', icon: ShoppingCart, items: COMPRA_ITEMS },
+    { key: 'compra', label: 'Compra y costes', href: '/compra', icon: IconoCompra, items: COMPRA_ITEMS },
   ]
 
   useEffect(() => {
@@ -471,16 +453,16 @@ export default function Sidebar() {
               Casanova Lab
             </p>
           </div>
-          <AccionIcono label="Contraer barra" onClick={alternarBarra} icon={SidebarSimple} />
+          <AccionIcono label="Contraer barra" onClick={alternarBarra} icon={IconoPanel} />
         </div>
         <div className="mt-2 flex items-center justify-end gap-0.5 border-t pt-2" style={{ borderColor: 'var(--glass-border)' }}>
             <AccionIcono
               label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
               onClick={toggleTheme}
-              icon={theme === 'dark' ? Sun : Moon}
+              icon={theme === 'dark' ? IconoSol : IconoLuna}
             />
-            <AccionIcono label="Ajustes" href="/ajustes" icon={Gear} activo={ajustesActivo} />
-            <AccionIcono label="Cerrar sesión" onClick={handleLogout} icon={SignOut} />
+            <AccionIcono label="Ajustes" href="/ajustes" icon={IconoAjustes} activo={ajustesActivo} />
+            <AccionIcono label="Cerrar sesión" onClick={handleLogout} icon={IconoSalir} />
         </div>
       </div>
 
@@ -530,10 +512,10 @@ export default function Sidebar() {
       </div>
 
       <div className="flex flex-shrink-0 flex-col items-center gap-1 border-b py-3" style={{ borderColor: 'var(--glass-border)' }}>
-        <RailButton label="Ampliar barra" icon={SidebarSimple} onClick={alternarBarra} />
-        <RailButton label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'} icon={theme === 'dark' ? Sun : Moon} onClick={toggleTheme} />
-        <RailButton label="Ajustes" icon={Gear} href="/ajustes" active={ajustesActivo} />
-        <RailButton label="Cerrar sesión" icon={SignOut} onClick={handleLogout} />
+        <RailButton label="Ampliar barra" icon={IconoPanel} onClick={alternarBarra} />
+        <RailButton label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'} icon={theme === 'dark' ? IconoSol : IconoLuna} onClick={toggleTheme} />
+        <RailButton label="Ajustes" icon={IconoAjustes} href="/ajustes" active={ajustesActivo} />
+        <RailButton label="Cerrar sesión" icon={IconoSalir} onClick={handleLogout} />
       </div>
 
       <nav className="flex flex-1 flex-col items-center gap-1 py-3">

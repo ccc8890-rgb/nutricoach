@@ -148,3 +148,73 @@ export const IconoSalir = (p: MarcaIconoProps) => (
     <path d="M9 12h11M16 8l4 4-4 4" />
   </Base>
 )
+
+/** Inicio: casa de tejado recto. */
+export const IconoInicio = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 11l9-7 9 7" />
+    <path d="M5 10v10h14V10" />
+    <Punto cx={12} cy={15} />
+  </Base>
+)
+
+/** Clientes: dos personas, la segunda a medias. */
+export const IconoClientes = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <circle cx={9} cy={8} r={3} />
+    <path d="M3.5 20v-2a5.5 5.5 0 0 1 11 0v2" />
+    <path d="M16 5.5a3 3 0 0 1 0 5.5M17.5 13.2A5 5 0 0 1 20.5 18v2" />
+  </Base>
+)
+
+/** Contenido: fotograma de película. */
+export const IconoContenido = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 5h18v14H3z" />
+    <path d="M7 5v14M17 5v14" />
+    <Punto cx={12} cy={12} />
+  </Base>
+)
+
+/** Catálogo: tres capas apiladas. */
+export const IconoCatalogo = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M4 4.5h16v4.5H4zM4 10h16v4.5H4zM4 15.5h16V20H4z" />
+    <Punto cx={7.5} cy={6.75} />
+  </Base>
+)
+
+/** Precios: tienda con toldo. */
+export const IconoPrecios = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 9l1.5-5h15L21 9H3z" />
+    <path d="M5 9v11h14V9" />
+    <Punto cx={12} cy={15} />
+  </Base>
+)
+
+/** Tendencia: línea que sube con flecha cuadrada. */
+export const IconoTendencia = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 17l6-6 4 4 8-8" />
+    <path d="M15 7h6v6" />
+  </Base>
+)
+
+/** Ajustes: dos reguladores. */
+export const IconoAjustes = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M4 7h16M4 17h16" />
+    <Punto cx={9} cy={7} />
+    <Punto cx={15} cy={17} />
+  </Base>
+)
+
+/** Barra lateral: panel con columna a la izquierda. */
+export const IconoPanel = (p: MarcaIconoProps) => (
+  <Base {...p}>
+    <path d="M3 4h18v16H3z" />
+    <path d="M9 4v16" />
+    <Punto cx={6} cy={8} />
+  </Base>
+)
