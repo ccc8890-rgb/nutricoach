@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-export type NombreCron = 'enviar-garmin' | 'avisos-rendimiento' | 'proponer-bloques' | 'recordatorio-checkin' | 'analisis-rendimiento'
+export type NombreCron = 'enviar-garmin' | 'avisos-rendimiento' | 'proponer-bloques' | 'recordatorio-checkin' | 'analisis-rendimiento' | 'revisor-recetas'
 
 /** Anota que un cron ha terminado. Nunca lanza: registrar no debe romper la tarea. */
 export async function registrarCron(db: SupabaseClient, cron: NombreCron, errores: number, detalle?: string) {

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { validarRevision, correccionesAplicables, hashFicha, type FichaParaRevisar, type RevisionAgente } from '../lib/recetas/revisor/esquema'
+import { validarRevision, correccionesAplicables, hashFicha, transicionPermitida, type FichaParaRevisar, type RevisionAgente } from '../lib/recetas/revisor/esquema'
 import { construirPrompt } from '../lib/recetas/revisor/prompt'
 import { FAMILIAS_PLATO, FAMILIAS_ELABORACION } from '../lib/recetas-constants'
 
@@ -70,5 +70,15 @@ const rev = (extra: Partial<RevisionAgente> = {}): RevisionAgente => ({ tipo_con
   assert.ok(p.usuario.includes('Pollo al curry con arroz') && p.usuario.includes('Mira el curry: parece mucho'))
   assert.ok(!p.usuario.includes('notas_coach'))
 }
+
+// ── transiciones de fase (las que Carlos puede hacer desde la API) ──
+assert.deepEqual(transicionPermitida('nueva', 'en_agente'), { ok: true, evento: 'al_agente' })
+assert.deepEqual(transicionPermitida('segunda', 'en_agente'), { ok: true, evento: 'devuelta' })
+assert.deepEqual(transicionPermitida('en_agente', 'nueva'), { ok: true, evento: 'volver_a_nueva' })
+assert.deepEqual(transicionPermitida('segunda', 'nueva'), { ok: true, evento: 'volver_a_nueva' })
+assert.equal(transicionPermitida('nueva', 'segunda').ok, false)       // solo el agente pasa a 2ª revisión
+assert.equal(transicionPermitida('en_agente', 'segunda').ok, false)
+assert.equal(transicionPermitida('en_agente', 'en_agente').ok, false)
+assert.equal(transicionPermitida('nueva', 'nueva').ok, false)
 
 console.log('revisor-recetario.test OK')

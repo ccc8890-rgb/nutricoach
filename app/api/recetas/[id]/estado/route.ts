@@ -68,6 +68,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Error al actualizar estado' }, { status: 500 })
     }
 
+    // Un cambio de estado saca la ficha del circuito de revisión (nueva → agente → 2ª revisión); aprobar o descartar deja el rastro
+    const srvCircuito = createServiceSupabase()
+    await srvCircuito.from('recetas').update({ fase_revision: null }).eq('id', id)
+    if (estado === 'aprobada' || estado === 'descartada') await srvCircuito.from('recetas_revision_eventos').insert({ receta_id: id, tipo: estado, actor: 'carlos' })
+
     await auditarRecetaProfesional(
       createServiceSupabase(),
       id,

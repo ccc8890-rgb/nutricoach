@@ -39,6 +39,10 @@
         {
             "path": "/api/cron/analisis-rendimiento",
             "schedule": "30 7 * * 1"
+        },
+        {
+            "path": "/api/cron/revisor-recetas",
+            "schedule": "30 5 * * *"
         }
     ],
     "buildCommand": "next build",

@@ -88,3 +88,14 @@ export function hashFicha(f: FichaParaRevisar, nota?: string | null): string {
   }
   return createHash('sha256').update(JSON.stringify(canonico)).digest('hex')
 }
+
+export type FaseCircuito = 'nueva' | 'en_agente' | 'segunda'
+export type EventoFase = 'al_agente' | 'devuelta' | 'volver_a_nueva'
+
+/** Cambios de fase que Carlos puede pedir desde la API: pasar al agente, devolverlo con una nota o volver a nuevas. Solo el agente pasa a «segunda». */
+export function transicionPermitida(desde: FaseCircuito, hacia: FaseCircuito): { ok: boolean; evento?: EventoFase } {
+  if (hacia === 'en_agente' && desde === 'nueva') return { ok: true, evento: 'al_agente' }
+  if (hacia === 'en_agente' && desde === 'segunda') return { ok: true, evento: 'devuelta' }
+  if (hacia === 'nueva' && desde !== 'nueva') return { ok: true, evento: 'volver_a_nueva' }
+  return { ok: false }
+}
