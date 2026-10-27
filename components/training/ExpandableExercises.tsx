@@ -66,6 +66,7 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
   }
 
   const grupos = crearPresentacionEjercicios(ejercicios)
+  const cambian = ejercicios.filter(ej => ej.cambio_semana).length
 
   const renderFila = (ej: EjercicioDetalle & { indiceGlobal: number }, grupoItems: Array<EjercicioDetalle & { indiceGlobal: number }>, ocultarPausa = false) => {
             const comun = ocultarPausa ? 1 : descansoComun(grupoItems)
@@ -104,7 +105,6 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                       if (!comun && descansoDe(ej) && !notaExplicaPausa(detalle, ej.descanso_segundos as number)) chips.push(`pausa ${pausa(ej.descanso_segundos as number)}`)
                       if (ej.peso_sugerido && !/^\s*0([.,]0+)?\s*kg\s*$/i.test(ej.peso_sugerido)) chips.push(ej.peso_sugerido)
                       if (ej.objetivo_open && ej.peso_sugerido) chips.push(`Open ${ej.objetivo_open}`)
-                      if (ej.cambio_semana) chips.push('cambia esta semana')
                       return chips.length > 0 ? (
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
                           {chips.map(c => <span key={c}>{c}</span>)}
@@ -129,6 +129,11 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
 
   return (
     <div className="training-exercise-list">
+      {cambian > 0 && (
+        <p className="mb-3 text-[12px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          Esta semana {cambian === 1 ? 'cambia 1 ejercicio' : `cambian ${cambian} ejercicios`} (series, repeticiones o carga) por la progresión del bloque.
+        </p>
+      )}
       {grupos.map(grupo => (
         <section key={grupo.bloque} className="training-exercise-group">
           <p className="mb-2 mt-4 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] first:mt-0" style={{ color: 'var(--text-muted)' }}>
