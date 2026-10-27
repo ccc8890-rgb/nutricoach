@@ -11,6 +11,7 @@ export const FAMILIAS_ELABORACION = ['Panes y masas', 'Salsas', 'Condimentos y m
 export const PROTEINAS_PRINCIPALES = ['Pollo', 'Carne', 'Pescado', 'Huevo', 'Legumbres', 'Vegetal', 'Queso', 'Lácteos'] as const
 export type ProteinaPrincipal = (typeof PROTEINAS_PRINCIPALES)[number]
 export const ETIQUETA_PROTEINA: Record<ProteinaPrincipal, string> = { Pollo: 'Pollo y pavo', Carne: 'Carne', Pescado: 'Pescado y marisco', Huevo: 'Huevo', Legumbres: 'Legumbres', Vegetal: 'Tofu y tempeh', Queso: 'Queso', Lácteos: 'Yogur y lácteos' }
+export const FAMILIAS_TECNICA = ['Calor y cocción', 'Cortes', 'Emulsiones, espumas y geles', 'Masas y panificación', 'Fermentación y curado', 'Baja temperatura y vacío', 'Ahumado', 'Conservación', 'Pastelería base', 'Maíz y cereales'] as const
 export const FAMILIAS_PLATO = ['Entrantes', 'Sopas y cremas', 'Verduras y ensaladas', 'Arroces y cereales', 'Pastas', 'Carnes', 'Pescados', 'Huevos', 'Bocadillos y bowls', 'Desayunos y meriendas', 'Postres', 'Guarniciones'] as const
 
 // Tipo de plato (el que usa el planificador para colocar la receta en la dieta)
