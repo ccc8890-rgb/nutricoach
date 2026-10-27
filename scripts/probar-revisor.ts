@@ -141,6 +141,28 @@ async function main() {
     assert.ok((await eventos(M)).some(e => e.tipo === 'aprobada'))
     console.log('(m) salir del circuito OK')
 
+    // (n) reserva: dos ejecuciones simultáneas sobre la misma ficha → solo una llama a la IA (no se paga doble)
+    const N = await nueva('ZZ-PRUEBA-N reserva'); const antesN = llamadas
+    cola(ok(), ok())
+    const lento: Adaptador = async (...a) => { await new Promise(r => setTimeout(r, 400)); return adaptador(...a) }
+    const [n1, n2] = await Promise.all([revisarFicha(db, N, { adaptador: lento, env: ENV }), revisarFicha(db, N, { adaptador: lento, env: ENV })])
+    assert.deepEqual([n1.estado, n2.estado].sort(), ['no_en_agente', 'revisada']); assert.equal(llamadas - antesN, 1)
+    console.log('(n) reserva atómica OK')
+
+    // (o) una reserva colgada (ejecución cortada) se recupera a los 10 min; una reciente NO se toca
+    const O = await nueva('ZZ-PRUEBA-O colgada'); const P = await nueva('ZZ-PRUEBA-P reciente')
+    await db.from('recetas').update({ fase_revision: 'revisando', fase_revision_at: new Date(Date.now() - 20 * 60_000).toISOString() }).eq('id', O)
+    await db.from('recetas').update({ fase_revision: 'revisando', fase_revision_at: new Date().toISOString() }).eq('id', P)
+    cola(ok(), ok())
+    const rO = await revisarPendientes(db, { soloIds: [O, P], adaptador, env: ENV })
+    assert.equal(rO.revisadas, 1); assert.equal((await leer(O)).fase_revision, 'segunda'); assert.equal((await leer(P)).fase_revision, 'revisando')
+    console.log('(o) reservas colgadas OK')
+
+    // (p) una respuesta inválida devuelve la ficha a «con el agente» (no se queda reservada)
+    const Q = await nueva('ZZ-PRUEBA-Q libera'); cola('basura', 'basura')
+    assert.equal((await revisarFicha(db, Q, { adaptador, env: ENV })).estado, 'invalida'); assert.equal((await leer(Q)).fase_revision, 'en_agente')
+    console.log('(p) liberación tras fallo OK')
+
     console.log('\nTODO OK')
   } finally {
     for (const id of ids) await db.from('receta_ingredientes').delete().eq('receta_id', id)

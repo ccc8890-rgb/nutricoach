@@ -69,9 +69,11 @@ export async function GET(request: NextRequest) {
       or: (filters: string) => T
       eq: (column: string, value: string) => T
       is: (column: string, value: null) => T
+      in: (column: string, values: string[]) => T
     }>(query: T): T => {
       let result = query
       if (fase === 'nueva') result = result.is('fase_revision', null)
+      else if (fase === 'en_agente') result = result.in('fase_revision', ['en_agente', 'revisando'])   // «revisando» = el agente la tiene ahora mismo
       else if (fase) result = result.eq('fase_revision', fase)
       if (filtros.q) result = aplicarBusquedaNombre(result, filtros.q)
       if (filtros.nivel) result = result.eq('nivel_fit', filtros.nivel)
@@ -117,7 +119,7 @@ export async function GET(request: NextRequest) {
 
     const contarFase = async (f: 'nueva' | 'en_agente' | 'segunda') => {
       const q = supabase.from('recetas').select('id', { count: 'exact', head: true }).in('estado', ['en_revision', 'borrador'])
-      const { count: total } = await (f === 'nueva' ? q.is('fase_revision', null) : q.eq('fase_revision', f))
+      const { count: total } = await (f === 'nueva' ? q.is('fase_revision', null) : f === 'en_agente' ? q.in('fase_revision', ['en_agente', 'revisando']) : q.eq('fase_revision', f))
       return total ?? 0
     }
     const [fNueva, fAgente, fSegunda] = await Promise.all([contarFase('nueva'), contarFase('en_agente'), contarFase('segunda')])

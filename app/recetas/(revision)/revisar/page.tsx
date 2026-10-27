@@ -465,6 +465,7 @@ function RecetaCard({ receta, busy, fase, onFase, onEstado, onFoto, onRecargar }
   return <article className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
     <div className="flex gap-3"><FotoReceta receta={receta} /><div className="min-w-0 flex-1"><EnlaceReceta id={receta.id} className="block font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{etiquetaFicha(receta)} · alta {fechaAlta(receta.created_at)}</p><p className="mt-2 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>{Math.round(receta.kcal ?? 0)} kcal · P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</p></div><span className="text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}</span></div>
     <ProblemasReceta receta={receta} />
+    {receta.fase_revision === 'revisando' && <p className="mt-2 text-xs" style={{ color: 'var(--primary)' }}>El agente la está revisando ahora…</p>}
     <NotaCorreccion receta={receta} />
     {fase !== 'nueva' && <LineaAgente agente={receta.agente} />}
     <div className="mt-3"><ChipsCalidad issues={receta.quality_issues} /></div>

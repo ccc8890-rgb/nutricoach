@@ -58,6 +58,7 @@ export async function tokensGastadosHoy(db: Db): Promise<number> {
   return (data ?? []).reduce((s, e) => s + (e.tokens_entrada ?? 0) + (e.tokens_salida ?? 0), 0)
 }
 
+const RESERVA_MAXIMA_MS = 10 * 60_000
 const ERRORES_MAXIMOS = 2           // tras 2 intentos fallidos con el mismo contenido, la ficha pasa a 2ª revisión con aviso (y deja de gastar)
 const MARGEN_MINIMO_MS = 20_000     // con menos tiempo del que cabe una revisión no se empieza (se perdería lo pagado)
 
@@ -66,17 +67,28 @@ export async function revisarFicha(db: Db, recetaId: string, o: Opciones = {}): 
   const faseOrigen: string | null = actual?.fase_revision ?? null
   // Solo fichas en revisión, y «con el agente» salvo que se fuerce (nunca una aprobada o descartada)
   if (!actual || actual.estado !== 'en_revision' || (faseOrigen !== 'en_agente' && !o.forzar)) return { estado: 'no_en_agente' }
-  const ficha = await cargarFicha(db, recetaId)
-  if (!ficha) return { estado: 'no_en_agente' }
+  // RESERVA atómica: solo una ejecución (cron, pasada local o «Revisar ahora») se queda con la ficha; las demás la ven como ocupada y no pagan.
+  let reservar = db.from('recetas').update({ fase_revision: 'revisando', fase_revision_at: new Date().toISOString() }).eq('id', recetaId).eq('estado', 'en_revision')
+  reservar = faseOrigen ? reservar.eq('fase_revision', faseOrigen) : reservar.is('fase_revision', null)
+  const { data: reservada } = await reservar.select('id')
+  if (!reservada?.length) return { estado: 'no_en_agente' }
 
-  // Toda escritura sobre la ficha exige que SIGA en revisión y en la misma fase: si Carlos la aprobó, la devolvió o la movió
+  // Toda escritura sobre la ficha exige que SIGA reservada por esta ejecución: si Carlos la aprobó, la devolvió o la movió
   // mientras el agente esperaba a la IA, el resultado se descarta en vez de pisar lo que hizo.
   const guardar = async (parche: Record<string, unknown>): Promise<boolean> => {
-    let q = db.from('recetas').update(parche).eq('id', recetaId).eq('estado', 'en_revision')
-    q = faseOrigen ? q.eq('fase_revision', faseOrigen) : q.is('fase_revision', null)
-    const { data } = await q.select('id')
+    const { data } = await db.from('recetas').update(parche).eq('id', recetaId).eq('estado', 'en_revision').eq('fase_revision', 'revisando').select('id')
     return (data?.length ?? 0) > 0
   }
+  // Si algo falla a medias, la ficha vuelve a su fase (y al final de la cola) en vez de quedarse reservada
+  try { return await revisarReservada(db, recetaId, o, faseOrigen, guardar) } catch (e) {
+    await guardar({ fase_revision: faseOrigen, fase_revision_at: new Date().toISOString() }).catch(() => null)
+    throw e
+  }
+}
+
+async function revisarReservada(db: Db, recetaId: string, o: Opciones, faseOrigen: string | null, guardar: (p: Record<string, unknown>) => Promise<boolean>): Promise<ResultadoRevision> {
+  const ficha = await cargarFicha(db, recetaId)
+  if (!ficha) { await guardar({ fase_revision: faseOrigen, fase_revision_at: new Date().toISOString() }); return { estado: 'no_en_agente' } }
 
   const { data: ev } = await db.from('recetas_revision_eventos').select('tipo, nota, hash_ficha, created_at').eq('receta_id', recetaId).in('tipo', ['agente', 'devuelta', 'error']).order('created_at', { ascending: false }).limit(20)
   const ultimoAgente = (ev ?? []).find(e => e.tipo === 'agente')
@@ -126,8 +138,8 @@ export async function revisarFicha(db: Db, recetaId: string, o: Opciones = {}): 
       await guardar({ fase_revision: 'segunda' })
       return { estado: 'sin_resolver', tokens }
     }
-    // Se queda con el agente, pero al final de la cola (updated_at es una columna normal: la actualizamos a mano)
-    await guardar({ updated_at: new Date().toISOString() })
+    // Vuelve a su fase, pero al final de la cola
+    await guardar({ fase_revision: faseOrigen, fase_revision_at: new Date().toISOString() })
     return { estado: 'invalida', tokens }
   }
 
@@ -165,7 +177,9 @@ export async function salirDelCircuito(db: Db, ids: string[], evento?: 'aprobada
 export type ResumenEjecucion = { revisadas: number; omitidas: number; invalidas: number; paradoPorPresupuesto: boolean; tokens: number }
 
 export async function revisarPendientes(db: Db, o: Opciones & { limite?: number; tokensDia?: number; soloIds?: string[]; hastaMs?: number } = {}): Promise<ResumenEjecucion> {
-  let consulta = db.from('recetas').select('id').eq('estado', 'en_revision').eq('fase_revision', 'en_agente').order('updated_at', { ascending: true }).limit(200)
+  // Reservas colgadas (una ejecución cortada por el tiempo o un error): pasados 10 min vuelven a «con el agente»
+  await db.from('recetas').update({ fase_revision: 'en_agente' }).eq('estado', 'en_revision').eq('fase_revision', 'revisando').lt('fase_revision_at', new Date(Date.now() - RESERVA_MAXIMA_MS).toISOString())
+  let consulta = db.from('recetas').select('id').eq('estado', 'en_revision').eq('fase_revision', 'en_agente').order('fase_revision_at', { ascending: true, nullsFirst: true }).limit(200)
   if (o.soloIds) consulta = consulta.in('id', o.soloIds)
   const { data } = await consulta
   const resumen: ResumenEjecucion = { revisadas: 0, omitidas: 0, invalidas: 0, paradoPorPresupuesto: false, tokens: 0 }
