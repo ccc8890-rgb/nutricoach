@@ -37,6 +37,7 @@ function mk(body: string): Icono {
 
 
 
+
 export const H_activity_01 = /*#__PURE__*/ mk(`<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M4.318 19.682C3 18.364 3 16.242 3 12s0-6.364 1.318-7.682S7.758 3 12 3s6.364 0 7.682 1.318S21 7.758 21 12s0 6.364-1.318 7.682S16.242 21 12 21s-6.364 0-7.682-1.318"/><path d="m7 14l2.793-2.793a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 0 1.414 0L17 10"/></g>`)
 
 export const H_add_01 = /*#__PURE__*/ mk(`<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12.001 5v14.002m7.001-7H5"/>`)
@@ -260,6 +261,8 @@ export const H_refresh = /*#__PURE__*/ mk(`<path fill="none" stroke="currentColo
 export const H_repeat = /*#__PURE__*/ mk(`<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m16.388 3l1.003.976c.448.436.672.654.593.839C17.906 5 17.59 5 16.955 5h-7.76C5.22 5 2 8.134 2 12c0 1.487.477 2.866 1.29 4m4.322 5l-1.003-.976c-.448-.436-.672-.654-.593-.839C6.094 19 6.41 19 7.045 19h7.76C18.78 19 22 15.866 22 12a6.84 6.84 0 0 0-1.29-4"/>`)
 
 export const H_restaurant_02 = /*#__PURE__*/ mk(`<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 21.001L7 18m8-7.999l-1 1m4-8l-3 3c-.545.545-.818.818-.964 1.112a2 2 0 0 0 0 1.776c.146.294.419.567.964 1.112s.818.818 1.112.964a2 2 0 0 0 1.776 0c.294-.146.567-.419 1.112-.964l3-3M20 5l-3 3m3 13l-8-8m0 0L2 3c0 3.842 1.526 7.526 4.243 10.243L9 16z"/>`)
+
+export const H_rice_bowl_01 = /*#__PURE__*/ mk(`<g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"><path d="M3.911 12H18.09c1.602 0 2.19.37 1.79 1.982c-.706 2.843-2.703 3.549-4.549 5.404c-.448.45.25 1.117.25 1.613c0 .934-.887 1.001-1.595 1.001h-5.97c-.708 0-1.596-.067-1.595-1c0-.486.677-1.184.25-1.614c-1.846-1.855-3.843-2.561-4.549-5.404c-.4-1.611.188-1.982 1.79-1.982Z"/><path stroke-linecap="round" d="M18.5 12c0-1.791-1.9-3.012-3.5-2.308m-5-2.727a2.5 2.5 0 0 0-1.461-.948C6.626 5.594 4.9 7.658 5.715 9.5A2.51 2.51 0 0 0 3.5 12m12.792-2.517c.781-1.8-.874-3.899-2.83-3.466c-.477-2.69-4.447-2.69-4.923 0M17 9l5-6m-6 3l2-4"/></g>`)
 
 export const H_robot_01 = /*#__PURE__*/ mk(`<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M12 4V2m8 20a8 8 0 1 0-16 0M9.375 8.25H9.25m.25 0a.25.25 0 1 1-.5 0a.25.25 0 0 1 .5 0m5.375 0h-.125m.25 0a.25.25 0 1 1-.5 0a.25.25 0 0 1 .5 0"/><path d="M15.154 4H8.846c-1.255 0-1.883 0-2.372.22A2.5 2.5 0 0 0 5.22 5.474C5 5.964 5 6.591 5 7.846c0 2.008 0 3.013.352 3.796a4 4 0 0 0 2.006 2.006C8.141 14 9.146 14 11.154 14h1.692c2.008 0 3.013 0 3.796-.352a4 4 0 0 0 2.006-2.006C19 10.859 19 9.854 19 7.846c0-1.255 0-1.883-.22-2.372a2.5 2.5 0 0 0-1.254-1.254C17.036 4 16.409 4 15.154 4"/></g>`)
 
