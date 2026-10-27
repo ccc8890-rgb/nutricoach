@@ -30,11 +30,11 @@ const issuesATexto = (q: unknown): string[] => {
 
 export async function cargarFicha(db: Db, recetaId: string): Promise<FichaParaRevisar | null> {
   const { data: r } = await db.from('recetas')
-    .select('id, nombre, estado, tipo_contenido, familia, categoria, tipo_plato, tipo_receta, descripcion, instrucciones, consejos, porciones, kcal, proteinas, carbohidratos, grasas, tags, url_origen, raw_scrape, quality_issues, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos, orden, alimento:alimentos(nombre, calorias))')
+    .select('id, nombre, estado, tipo_contenido, familia, categoria, tipo_plato, tipo_receta, descripcion, instrucciones, consejos, porciones, kcal, proteinas, carbohidratos, grasas, tags, url_origen, raw_scrape, quality_issues, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos, cantidad_original, unidad_display, orden, alimento:alimentos(nombre, calorias))')
     .eq('id', recetaId).maybeSingle()
   if (!r) return null
   const { count } = await db.from('receta_ingredientes').select('id', { count: 'exact', head: true }).eq('elaboracion_id', recetaId)
-  const lineas = ((r.receta_ingredientes ?? []) as unknown as { nombre_libre: string | null; cantidad_gramos: number | null; orden: number | null; alimento: { nombre: string | null; calorias: number | null } | { nombre: string | null; calorias: number | null }[] | null }[])
+  const lineas = ((r.receta_ingredientes ?? []) as unknown as { nombre_libre: string | null; cantidad_gramos: number | null; cantidad_original: number | null; unidad_display: string | null; orden: number | null; alimento: { nombre: string | null; calorias: number | null } | { nombre: string | null; calorias: number | null }[] | null }[])
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
   return {
     id: r.id, nombre: r.nombre, estado: r.estado, tipo_contenido: r.tipo_contenido ?? 'plato', familia: r.familia, categoria: r.categoria, tipo_plato: r.tipo_plato,
@@ -42,7 +42,9 @@ export async function cargarFicha(db: Db, recetaId: string): Promise<FichaParaRe
     proteinas: r.proteinas, carbohidratos: r.carbohidratos, grasas: r.grasas, tags: r.tags, url_origen: r.url_origen,
     ingredientes: lineas.map(l => {
       const a = Array.isArray(l.alimento) ? l.alimento[0] : l.alimento
-      return { nombre: l.nombre_libre ?? a?.nombre ?? '', alimento: a?.nombre ?? null, gramos: Number(l.cantidad_gramos) || 0, kcal100: a?.calorias ?? null }
+      return { nombre: l.nombre_libre ?? a?.nombre ?? '', alimento: a?.nombre ?? null, gramos: Number(l.cantidad_gramos) || 0, kcal100: a?.calorias ?? null,
+        // Solo hay cantidad dicha si la dijo el vídeo; si no, los gramos son una estimación del sistema
+        cantidad_dicha: l.cantidad_original ? `${l.cantidad_original} ${l.unidad_display ?? ''}`.trim() : null }
     }),
     hallazgos_deterministas: issuesATexto(r.quality_issues),
     usada_en_recetas: count ?? 0,

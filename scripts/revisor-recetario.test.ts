@@ -8,7 +8,7 @@ const ficha = (extra: Partial<FichaParaRevisar> = {}): FichaParaRevisar => ({
   id: 'f1', nombre: 'Pollo al curry con arroz', estado: 'en_revision', tipo_contenido: 'plato', familia: null, categoria: 'Comida', tipo_plato: 'Comida', tipo_receta: 'completa',
   descripcion: 'Un guiso sencillo', instrucciones: '1. Sofríe. 2. Añade el curry.', consejos: null, porciones: 2, kcal: 520, proteinas: 38, carbohidratos: 55, grasas: 14,
   tags: ['Pollo', 'Arroz'], url_origen: 'https://example.com/r', hallazgos_deterministas: [], usada_en_recetas: 0, fuente_texto: null,
-  ingredientes: [{ nombre: 'Pollo', alimento: 'Pechuga de pollo', gramos: 300, kcal100: 110 }, { nombre: 'Arroz', alimento: 'Arroz basmati', gramos: 150, kcal100: 350 }],
+  ingredientes: [{ nombre: 'Pollo', alimento: 'Pechuga de pollo', gramos: 300, kcal100: 110, cantidad_dicha: '300 gramos' }, { nombre: 'Arroz', alimento: 'Arroz basmati', gramos: 150, kcal100: 350, cantidad_dicha: null }],
   ...extra,
 })
 const valida = (extra: Record<string, unknown> = {}) => ({
@@ -88,6 +88,16 @@ const rev = (extra: Partial<RevisionAgente> = {}): RevisionAgente => ({ tipo_con
   const con = construirPrompt(ficha({ fuente_texto: 'Mezcla 200 gramos de harina con 2 huevos' }))
   assert.ok(con.usuario.includes('Mezcla 200 gramos de harina con 2 huevos'))
   assert.notEqual(hashFicha(ficha()), hashFicha(ficha({ fuente_texto: 'texto' })))
+}
+
+// ── el texto del vídeo es una pista, no la verdad; y se distingue lo que dijo el vídeo de lo que estimó el sistema ──
+{
+  const p = construirPrompt(ficha({ fuente_texto: 'Mezcla la harina con huevos' }))
+  assert.ok(p.sistema.includes('NO es la verdad') && p.sistema.includes('nunca marques'))
+  assert.ok(p.sistema.includes('cantidad_dicha') && p.sistema.includes('ESTIMACIÓN'))
+  assert.ok(p.usuario.includes('"cantidad_dicha": "300 gramos"') && p.usuario.includes('"cantidad_dicha": null'))
+  const a = ficha(), b = ficha({ ingredientes: [{ ...a.ingredientes[0] }, { ...a.ingredientes[1], cantidad_dicha: '150 g' }] })
+  assert.notEqual(hashFicha(a), hashFicha(b))
 }
 
 // ── transiciones de fase (las que Carlos puede hacer desde la API) ──

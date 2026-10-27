@@ -16,7 +16,7 @@ export type FichaParaRevisar = {
   tipo_plato: string | null; tipo_receta: string | null; descripcion: string | null; instrucciones: string | null; consejos: string | null
   porciones: number | null; kcal: number | null; proteinas: number | null; carbohidratos: number | null; grasas: number | null
   tags: string[] | null; url_origen: string | null
-  ingredientes: { nombre: string; alimento: string | null; gramos: number; kcal100: number | null }[]
+  ingredientes: { nombre: string; alimento: string | null; gramos: number; kcal100: number | null; cantidad_dicha: string | null }[]
   hallazgos_deterministas: string[]
   usada_en_recetas: number
   /** Lo que dijo el vídeo/web de origen (pie + audio), si se guardó al importar. Sin él no se pueden contrastar cantidades. */
@@ -85,7 +85,7 @@ export function hashFicha(f: FichaParaRevisar, nota?: string | null): string {
     descripcion: f.descripcion, instrucciones: f.instrucciones, consejos: f.consejos, porciones: f.porciones,
     kcal: f.kcal, proteinas: f.proteinas, carbohidratos: f.carbohidratos, grasas: f.grasas,
     tags: [...(f.tags ?? [])].sort(),
-    ingredientes: [...f.ingredientes].sort((a, b) => (a.nombre + a.gramos).localeCompare(b.nombre + b.gramos)).map(i => [i.nombre, i.alimento, i.gramos, i.kcal100]),
+    ingredientes: [...f.ingredientes].sort((a, b) => (a.nombre + a.gramos).localeCompare(b.nombre + b.gramos)).map(i => [i.nombre, i.alimento, i.gramos, i.kcal100, i.cantidad_dicha]),
     fuente: f.fuente_texto ?? null,
     nota: nota ?? null,
   }
