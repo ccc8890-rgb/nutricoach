@@ -1,0 +1,3528 @@
+{
+  "lote": "web-mediterraneandish-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "30693562": {
+      "nombre": "Ternera picada",
+      "prefijo": "30693562",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "37936737": {
+      "nombre": "Rábano",
+      "prefijo": "37936737",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "83505726": {
+      "nombre": "Atún en lata al natural",
+      "prefijo": "83505726",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cecd2d22": {
+      "nombre": "Atún en aceite de oliva",
+      "prefijo": "cecd2d22",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "9a1002ce": {
+      "nombre": "Aceitunas verdes hueso",
+      "prefijo": "9a1002ce",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "efdb0f46": {
+      "nombre": "Aceite de oliva virgen extra",
+      "prefijo": "efdb0f46",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a010ea17": {
+      "nombre": "Alubia cocida blanca",
+      "prefijo": "a010ea17",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a92874a5": {
+      "nombre": "Tomate cherry",
+      "prefijo": "a92874a5",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "49230ad1": {
+      "nombre": "Albahaca fresca",
+      "prefijo": "49230ad1",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b1ff971a": {
+      "nombre": "Espinacas baby",
+      "prefijo": "b1ff971a",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8892bcf0": {
+      "nombre": "Eneldo seco",
+      "prefijo": "8892bcf0",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e5b7ba6b": {
+      "nombre": "Gambas",
+      "prefijo": "e5b7ba6b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0de2af4e": {
+      "nombre": "Muslos de pollo",
+      "prefijo": "0de2af4e",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "5a1860a7": {
+      "nombre": "Tomate doble concentrado",
+      "prefijo": "5a1860a7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c14d168a": {
+      "nombre": "Orégano seco",
+      "prefijo": "c14d168a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2525c236": {
+      "nombre": "Tomillo seco",
+      "prefijo": "2525c236",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "41cb2b97": {
+      "nombre": "Vino blanco",
+      "prefijo": "41cb2b97",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3f7a69c2": {
+      "nombre": "Tomate pelado",
+      "prefijo": "3f7a69c2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9df73a2d": {
+      "nombre": "Caldo de verduras",
+      "prefijo": "9df73a2d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ad30a656": {
+      "nombre": "Pasas",
+      "prefijo": "ad30a656",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d641c84f": {
+      "nombre": "Alcaparras",
+      "prefijo": "d641c84f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2435e7ae": {
+      "nombre": "Lubina",
+      "prefijo": "2435e7ae",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "becc1fbe": {
+      "nombre": "Piñones",
+      "prefijo": "becc1fbe",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "9b3a5c0a": {
+      "nombre": "Hogaza de Pan Rústico",
+      "prefijo": "9b3a5c0a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "38fe1a4e": {
+      "nombre": "Yogur natural",
+      "prefijo": "38fe1a4e",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "447c5697": {
+      "nombre": "Huevos cocidos",
+      "prefijo": "447c5697",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Mostaza"
+      ],
+      "origen": "vegetal"
+    },
+    "1948a73a": {
+      "nombre": "Pan integral",
+      "prefijo": "1948a73a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "fea7cbe9": {
+      "nombre": "Perejil",
+      "prefijo": "fea7cbe9",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "e88e2cb8": {
+      "nombre": "Muslo de pollo",
+      "prefijo": "e88e2cb8",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "eb5939be": {
+      "nombre": "Caldo de Pollo 100%",
+      "prefijo": "eb5939be",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e4fdfad8": {
+      "nombre": "Pimentón dulce",
+      "prefijo": "e4fdfad8",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "081fbb40": {
+      "nombre": "Nuez moscada molida",
+      "prefijo": "081fbb40",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "59f1bfdb": {
+      "nombre": "Molinillo Pimienta 4 Bayas",
+      "prefijo": "59f1bfdb",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ccd5d912": {
+      "nombre": "Solomillo de ternera",
+      "prefijo": "ccd5d912",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "5a2b6b52": {
+      "nombre": "Pimiento verde",
+      "prefijo": "5a2b6b52",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12ce769f": {
+      "nombre": "Vino tinto",
+      "prefijo": "12ce769f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "49156dfd": {
+      "nombre": "Arroz basmati",
+      "prefijo": "49156dfd",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ef6ecb36": {
+      "nombre": "Jengibre fresco",
+      "prefijo": "ef6ecb36",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1390b7a4": {
+      "nombre": "Tomate triturado",
+      "prefijo": "1390b7a4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5e1ebd30": {
+      "nombre": "Contramuslo de pollo",
+      "prefijo": "5e1ebd30",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "5e122ac4": {
+      "nombre": "Naranja",
+      "prefijo": "5e122ac4",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "39bdbb82": {
+      "nombre": "Almendra laminada",
+      "prefijo": "39bdbb82",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6f687582": {
+      "nombre": "Tomates cherry pera kumato",
+      "prefijo": "6f687582",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "55c7c890": {
+      "nombre": "Melaza",
+      "prefijo": "55c7c890",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e601abd9": {
+      "nombre": "Vinagre de vino blanco",
+      "prefijo": "e601abd9",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f2723f87": {
+      "nombre": "Granada",
+      "prefijo": "f2723f87",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "079aa047": {
+      "nombre": "Ñoquis frescos",
+      "prefijo": "079aa047",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "b12e5a68": {
+      "nombre": "Pimiento amarillo",
+      "prefijo": "b12e5a68",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "46245eee": {
+      "nombre": "Albahaca seca",
+      "prefijo": "46245eee",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f349ccc8": {
+      "nombre": "Coles de Bruselas",
+      "prefijo": "f349ccc8",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6c5d82a5": {
+      "nombre": "Boniato",
+      "prefijo": "6c5d82a5",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31108cb4": {
+      "nombre": "Chalotas",
+      "prefijo": "31108cb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b223775": {
+      "nombre": "Patata",
+      "prefijo": "0b223775",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "265ec681": {
+      "nombre": "Pan de molde",
+      "prefijo": "265ec681",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "86d39197": {
+      "nombre": "Leche entera",
+      "prefijo": "86d39197",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "513d4dc7": {
+      "nombre": "Vinagre de Vino Tinto",
+      "prefijo": "513d4dc7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "ecc7f788": {
+      "nombre": "Carne picada de ternera",
+      "prefijo": "ecc7f788",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "e152c2f2": {
+      "nombre": "Berenjena",
+      "prefijo": "e152c2f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a43e543e": {
+      "nombre": "Requesón batido",
+      "prefijo": "a43e543e",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "382a08c2": {
+      "nombre": "Queso mozzarella",
+      "prefijo": "382a08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "b6381c1c": {
+      "nombre": "Espinacas congeladas (cocidas)",
+      "prefijo": "b6381c1c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b0b14be3": {
+      "nombre": "Patata (cocida)",
+      "prefijo": "b0b14be3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d0a93278": {
+      "nombre": "Tomillo Frasco",
+      "prefijo": "d0a93278",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c8e0f469": {
+      "nombre": "Romero seco",
+      "prefijo": "c8e0f469",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2f6b30f6": {
+      "nombre": "Azafran",
+      "prefijo": "2f6b30f6",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "94ba864e": {
+      "nombre": "Cúrcuma",
+      "prefijo": "94ba864e",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95efbbab": {
+      "nombre": "Judías verdes",
+      "prefijo": "95efbbab",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "77dd58cc": {
+      "nombre": "Canela en rama",
+      "prefijo": "77dd58cc",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7dbc3a0d": {
+      "nombre": "Aceite vegetal",
+      "prefijo": "7dbc3a0d",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "8469bf72": {
+      "nombre": "Leche semidesnatada",
+      "prefijo": "8469bf72",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "564c253f": {
+      "nombre": "Ralladura de limón",
+      "prefijo": "564c253f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d5dcebb6": {
+      "nombre": "Paté Vegetal Pimiento Rojo con Semillas Girasol",
+      "prefijo": "d5dcebb6",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eea44971": {
+      "nombre": "Espinacas frescas",
+      "prefijo": "eea44971",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c9d05c24": {
+      "nombre": "Claras de huevo",
+      "prefijo": "c9d05c24",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "de0eb774": {
+      "nombre": "Salmón ahumado",
+      "prefijo": "de0eb774",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "675965d4": {
+      "nombre": "Queso fresco de cabra",
+      "prefijo": "675965d4",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "f68fa954": {
+      "nombre": "Eneldo",
+      "prefijo": "f68fa954",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f8b03728": {
+      "nombre": "Pollo entero con piel",
+      "prefijo": "f8b03728",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "c0a67c44": {
+      "nombre": "Filetes de anchoa en aceite de oliva",
+      "prefijo": "c0a67c44",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "a4923411": {
+      "nombre": "Tomates pera",
+      "prefijo": "a4923411",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ba39ef20": {
+      "nombre": "Aceituna con Hueso Kalamata",
+      "prefijo": "ba39ef20",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "60d69579": {
+      "nombre": "Queso Rallado Pecorino D.O.P",
+      "prefijo": "60d69579",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "7fb4b7ea": {
+      "nombre": "Lechuga",
+      "prefijo": "7fb4b7ea",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0401d093": {
+      "nombre": "Aceitunas negras sin hueso",
+      "prefijo": "0401d093",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "88ce9e3c": {
+      "nombre": "Corazones de alcachofa",
+      "prefijo": "88ce9e3c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4052c471": {
+      "nombre": "Atún en lata en aceite de oliva",
+      "prefijo": "4052c471",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "20f15ab2": {
+      "nombre": "Albahaca Frasco",
+      "prefijo": "20f15ab2",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "15c94b4b": {
+      "nombre": "Bacalao (fresco)",
+      "prefijo": "15c94b4b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "c0f5aeb4": {
+      "nombre": "Hinojo",
+      "prefijo": "c0f5aeb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "d8f9b409": {
+      "nombre": "Levadura seca",
+      "prefijo": "d8f9b409",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "70d24d12": {
+      "nombre": "Tomillo",
+      "prefijo": "70d24d12",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "715a14ac": {
+      "nombre": "Anchoas en Aceite de Oliva",
+      "prefijo": "715a14ac",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "03f57b8d": {
+      "nombre": "Cebollino",
+      "prefijo": "03f57b8d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c7ad7588": {
+      "nombre": "Espárragos",
+      "prefijo": "c7ad7588",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "41f3bf76": {
+      "nombre": "Romero",
+      "prefijo": "41f3bf76",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "ef1e4c61": {
+      "nombre": "Cebolla blanca",
+      "prefijo": "ef1e4c61",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9241af66": {
+      "nombre": "Higos",
+      "prefijo": "9241af66",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "86017f5c": {
+      "nombre": "Setas",
+      "prefijo": "86017f5c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34f7b619": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "a847878f": {
+      "nombre": "Cordero",
+      "prefijo": "a847878f",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "2c6f1573": {
+      "nombre": "Azúcar",
+      "prefijo": "2c6f1573",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "de124e1a": {
+      "nombre": "Caldo de carne",
+      "prefijo": "de124e1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Tomates rellenos de atún",
+      "descripcion": "Tomates grandes asados rellenos de una mezcla de atún, cebolla, ajo y aceitunas. Un plato mediterráneo sencillo que se puede servir templado o frío.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "7f40a393",
+          908
+        ],
+        [
+          "950afc33",
+          100
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "cecd2d22",
+          284
+        ],
+        [
+          "9a1002ce",
+          34
+        ],
+        [
+          "59163485",
+          8
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C y engrasar ligeramente con aceite de oliva el fondo de una fuente cuadrada de 20-23 cm.\n2. Cortar la parte superior de los tomates con un cuchillo de sierra y reservar las tapas. Vaciar la pulpa con una cuchara, picarla groseramente y reservarla junto con el jugo en un bol.\n3. Poner una pizca de sal (aproximadamente 1/8 de cucharadita) dentro de cada tomate y colocarlos boca abajo sobre un plato para que escurran.\n4. Calentar el aceite de oliva en una sartén grande antiadherente a fuego medio. Añadir la cebolla y cocinar removiendo de vez en cuando hasta que esté blanda y translúcida, unos 10 minutos. Incorporar el ajo y cocinar hasta que aromatice, unos 30 segundos.\n5. Añadir la pulpa y el jugo reservados de los tomates y sazonar con el resto de la sal (1/2 cucharadita). Cocinar sin remover hasta que casi todo el líquido se haya evaporado, unos 5 minutos.\n6. Retirar del fuego y añadir el atún, las aceitunas, el perejil y el zumo de limón. Sazonar con pimienta negra recién molida al gusto.\n7. Colocar los tomates en la fuente engrasada, separados entre sí, y repartir el relleno entre ellos, formando un montículo. Si se reservaron las tapas, colocarlas encima.\n8. Hornear durante 30 minutos, o hasta que los tomates estén tiernos.\n9. Servir templado, a temperatura ambiente o frío.",
+      "consejos": "Elige tomates grandes y firmes para que aguanten bien el relleno y el horneado.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/stuffed-tomatoes-with-tuna/",
+        "autor": null,
+        "kcal_web": 143.9
+      }
+    },
+    {
+      "nombre": "Ensalada de atún con alubias blancas y espinacas",
+      "descripcion": "Una ensalada fresca y completa con alubias blancas, atún, tomate cherry, olivas y un aliño de limón y albahaca. Lista en 15 minutos y perfecta para comer o cenar.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "12a8ab46",
+          60
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "efdb0f46",
+          56
+        ],
+        [
+          "a010ea17",
+          425
+        ],
+        [
+          "a92874a5",
+          110
+        ],
+        [
+          "08637e90",
+          50
+        ],
+        [
+          "59163485",
+          30
+        ],
+        [
+          "9a1002ce",
+          35
+        ],
+        [
+          "83505726",
+          140
+        ],
+        [
+          "49230ad1",
+          20
+        ],
+        [
+          "b1ff971a",
+          57
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, batir con unas varillas el zumo de limón, el ajo picado, el aceite de oliva, la pimienta de Alepo y una pizca de sal.\n2. Añadir al bol las alubias blancas escurridas, los tomates cherry troceados, la cebolla roja en juliana fina, el perejil picado y las aceitunas. Remover para que se impregnen del aliño.\n3. Incorporar con cuidado el atún escurrido en trozos grandes y la albahaca en tiras, sin deshacer demasiado el atún. Probar y ajustar de sal, pimienta de Alepo o zumo de limón si hace falta.\n4. Repartir las espinacas baby en cuatro platos y colocar encima la ensalada de atún. Servir al momento o refrigerar hasta 2 horas.",
+      "consejos": "Escurre bien las alubias y el atún para que el aliño no quede aguado y añade la albahaca al final para que conserve su aroma.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/tuna-white-bean-salad/",
+        "autor": null,
+        "kcal_web": 187.2
+      }
+    },
+    {
+      "nombre": "Gambas al aire con limón y pimentón",
+      "descripcion": "Gambas jugosas marinadas con aceite de oliva, limón, pimentón y eneldo, cocinadas rápidamente en freidora de aire. Un plato ligero y lleno de sabor.",
+      "tiempo_prep_min": 12,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "8892bcf0",
+          2
+        ],
+        [
+          "21a40eb5",
+          2
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "60ad001e",
+          100
+        ],
+        [
+          "e5b7ba6b",
+          908
+        ],
+        [
+          "2fedb06b",
+          5
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla el aceite de oliva, el eneldo seco, el pimentón, el ajo en polvo y una pizca generosa de sal y pimienta. Añade el bicarbonato sódico (si lo usas) y la ralladura de limón (reserva los gajos para después). Bate hasta integrar.\n2. Seca bien las gambas con papel de cocina. Añádelas a la mezcla de aceite y remueve hasta que queden completamente cubiertas.\n3. Precalienta la freidora de aire a 200 °C. Coloca las gambas en la cesta dejando un poco de espacio entre ellas. Cocina durante 5-6 minutos, hasta que estén rosadas por completo, curvadas y empiecen a dorarse en los bordes. Sirve con los gajos de limón y eneldo fresco picado si lo deseas.",
+      "consejos": "No amontones las gambas en la cesta para que se cocinen de forma uniforme y queden doradas.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/air-fryer-shrimp/",
+        "autor": null,
+        "kcal_web": 234.6
+      }
+    },
+    {
+      "nombre": "Muslos de pollo al horno con tomate especiado",
+      "descripcion": "Muslos de pollo jugosos al horno con una capa de tomate especiado, cebolla y tomate fresco. Un plato principal sabroso y sencillo de preparar.",
+      "tiempo_prep_min": 70,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0de2af4e",
+          1200
+        ],
+        [
+          "950afc33",
+          450
+        ],
+        [
+          "7f40a393",
+          150
+        ],
+        [
+          "bf392211",
+          81
+        ],
+        [
+          "5a1860a7",
+          75
+        ],
+        [
+          "60ad001e",
+          50
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "c14d168a",
+          1
+        ],
+        [
+          "e2dd1c2b",
+          2
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "3350c934",
+          2
+        ],
+        [
+          "59163485",
+          10
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 220 °C con una rejilla en el centro y otra a unos 15 cm del grill.\n2. Sazona los muslos de pollo con sal por ambos lados y bajo la piel. Reserva.\n3. En un bol pequeño, mezcla el tomate concentrado, el aceite de oliva, el zumo de limón, el ajo picado, el orégano, el pimentón ahumado, el comino y la pimienta negra hasta obtener una pasta.\n4. Unta los muslos con la mezcla por ambos lados y bajo la piel.\n5. Engrasa el fondo de una fuente de horno de 23x33 cm con un poco de aceite de oliva. Extiende tres cuartas partes de la cebolla en el fondo y coloca el pollo encima. Reparte el resto de la cebolla y el tomate en rodajas entre los muslos. Vierte 60 ml de agua por las esquinas sin lavar la mezcla del pollo.\n6. Hornea en la rejilla central unos 40 minutos, hasta que un termómetro de cocina marque 74 °C en la parte más gruesa del muslo, sin tocar el hueso.\n7. Sube la fuente a la rejilla superior y enciende el grill a temperatura alta. Gratina de 1 a 3 minutos, vigilando de cerca, hasta que la superficie se dore ligeramente.\n8. Saca del horno y deja reposar el pollo de 5 a 10 minutos. Espolvorea con perejil picado y sirve con la cebolla, el tomate y los jugos de la fuente.",
+      "consejos": "Puedes acompañar este plato con arroz o pan para aprovechar la salsa de tomate y los jugos.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/baked-chicken-thighs/",
+        "autor": null,
+        "kcal_web": 312.9
+      }
+    },
+    {
+      "nombre": "Guiso siciliano de pescado",
+      "descripcion": "Guiso de lubina con tomate, vino blanco, pasas y alcaparras, aromatizado con tomillo y perejil. Un plato mediterráneo completo y sabroso.",
+      "tiempo_prep_min": 45,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "efdb0f46",
+          14
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "2525c236",
+          1
+        ],
+        [
+          "41cb2b97",
+          180
+        ],
+        [
+          "3f7a69c2",
+          794
+        ],
+        [
+          "9df73a2d",
+          720
+        ],
+        [
+          "ad30a656",
+          40
+        ],
+        [
+          "d641c84f",
+          30
+        ],
+        [
+          "2435e7ae",
+          908
+        ],
+        [
+          "59163485",
+          30
+        ],
+        [
+          "becc1fbe",
+          25
+        ],
+        [
+          "9b3a5c0a",
+          200
+        ]
+      ],
+      "instrucciones": "1. Calienta 1 cucharada de aceite de oliva en una olla grande a fuego medio. Añade la cebolla, el apio y una pizca de sal y pimienta (unos 3 g de sal y 1 g de pimienta). Cocina removiendo hasta que se ablanden, unos 4 minutos. Añade el tomillo, los copos de guindilla y el ajo y cocina brevemente hasta que huelan, unos 30 segundos más.\n2. Vierte el vino blanco y el jugo reservado del tomate. Lleva a ebullición suave y cocina hasta que el líquido se reduzca a la mitad. Añade los tomates, el caldo de verduras, las pasas y las alcaparras. Cocina 15-20 minutos a fuego medio hasta que se integren los sabores.\n3. Seca el pescado y sazónalo ligeramente con sal y pimienta. Introduce los trozos de pescado en el líquido de cocción y remueve con cuidado para que queden bien cubiertos. Lleva a ebullición suave y cocina 5 minutos más. Retira la olla del fuego y tapa. Deja reposar 4-5 minutos para que el pescado termine de cocinarse; debe desmenuzarse fácilmente con un cuchillo. Por último, incorpora el perejil picado.\n4. Sirve el guiso caliente en cuencos y corona cada ración con unos piñones tostados si lo deseas. Acompaña con pan rústico.",
+      "consejos": "Añade el perejil al final para que conserve su aroma y color fresco.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/sicilian-fish-stew/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 320
+      }
+    },
+    {
+      "nombre": "Avena nocturna con yogur y chía",
+      "descripcion": "Desayuno cremoso y saciante que se prepara la noche anterior con yogur natural, copos de avena y semillas de chía. Solo hay que añadir la fruta o los toppings favoritos antes de comer.",
+      "tiempo_prep_min": 15,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "38fe1a4e",
+          907
+        ],
+        [
+          "0f347066",
+          125
+        ],
+        [
+          "b5b5e57f",
+          30
+        ],
+        [
+          "f75a3721",
+          4
+        ]
+      ],
+      "instrucciones": "1. En un bol, mezcla el yogur con los copos de avena, las semillas de chía y el extracto de vainilla hasta obtener una mezcla homogénea.\n2. Reparte la mezcla en 6 recipientes con tapa y añade, si quieres, fruta fresca o congelada, especias u otros ingredientes para dar sabor. Tapa y deja reposar en la nevera toda la noche (unas 8 horas).\n3. Justo antes de servir, añade los toppings: fruta fresca, frutos secos, granola o un poco de miel.",
+      "consejos": "Puedes preparar los 6 tarros el domingo y tener desayuno listo para varios días; añade los toppings crujientes justo antes de comer para que no se ablanden.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/overnight-oats-recipe/",
+        "autor": null,
+        "kcal_web": 184.2
+      }
+    },
+    {
+      "nombre": "Ensalada de atún con huevo",
+      "descripcion": "Una ensalada fresca y proteica con atún, huevo cocido, apio y un aliño de vinagreta Dijon. Ideal para comer o cenar.",
+      "tiempo_prep_min": 10,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "83505726",
+          340
+        ],
+        [
+          "447c5697",
+          100
+        ],
+        [
+          "c25964f2",
+          30
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "9a1002ce",
+          35
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "20367cb0",
+          120
+        ],
+        [
+          "59163485",
+          10
+        ],
+        [
+          "1948a73a",
+          120
+        ]
+      ],
+      "instrucciones": "1. En un bol mediano, mezcla el atún escurrido, los huevos cocidos picados, el jalapeño picado, el apio picado, la cebolleta picada y las aceitunas picadas.\n2. Sazona con una pizca generosa de sal, pimienta y copos de guindilla.\n3. Vierte 120 ml de vinagreta Dijon sobre la ensalada y remueve suavemente hasta que todo quede bien integrado.\n4. Prueba y ajusta el punto de sal y aliño si es necesario.\n5. Decora con perejil fresco picado y sirve sobre pan integral o en hojas de lechuga.",
+      "consejos": "Puedes ajustar la cantidad de jalapeño y copos de guindilla según el picante que prefieras.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/tuna-salad-recipe-with-egg/",
+        "autor": null,
+        "kcal_web": 132.1
+      }
+    },
+    {
+      "nombre": "Gambas al ajillo con parmesano",
+      "descripcion": "Gambas jugosas a la plancha con una salsa de aceite de oliva, ajo, limón y orégano, terminadas con parmesano. Una receta rápida y llena de sabor.",
+      "tiempo_prep_min": 10,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          454
+        ],
+        [
+          "bf392211",
+          70
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "fea7cbe9",
+          30
+        ],
+        [
+          "60ad001e",
+          100
+        ],
+        [
+          "c14d168a",
+          1
+        ],
+        [
+          "b983723d",
+          25
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Seca las gambas con papel de cocina y sazónalas con sal, pimienta y copos de guindilla al gusto. Rocíalas con un poco de aceite de oliva y remuévelas para que queden bien impregnadas.\n2. En un bol grande, mezcla con unas varillas el ajo picado, el perejil (si lo usas), la ralladura y el zumo de limón, 60 ml de aceite de oliva y el orégano. Sazona ligeramente con sal, pimienta y copos de guindilla al gusto.\n3. Calienta una plancha o parrilla a fuego medio-alto y engrasa ligeramente la superficie. Asa las gambas por ambos lados hasta que estén rosadas, unos 5 minutos en total según su tamaño.\n4. Retira las gambas del fuego de inmediato y mézclalas con la salsa de aceite, ajo y limón. Añade el parmesano rallado y remueve para que se impregnen. Pasa a una fuente y sirve al momento.",
+      "consejos": "No dejes las gambas demasiado tiempo en la plancha para que no se resequen; deben quedar jugosas y rosadas.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/garlic-parmesan-shrimp/",
+        "autor": null,
+        "kcal_web": 158.5
+      }
+    },
+    {
+      "nombre": "Muslos de pollo al cilantro y lima",
+      "descripcion": "Muslos de pollo dorados y horneados en una salsa de vino blanco, caldo, lima y cilantro. Un plato mediterráneo lleno de sabor, ideal para una comida principal.",
+      "tiempo_prep_min": 65,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e88e2cb8",
+          1200
+        ],
+        [
+          "bf392211",
+          21
+        ],
+        [
+          "41cb2b97",
+          240
+        ],
+        [
+          "eb5939be",
+          480
+        ],
+        [
+          "0e40c366",
+          30
+        ],
+        [
+          "65756599",
+          134
+        ],
+        [
+          "bdc11c5a",
+          24
+        ],
+        [
+          "e4fdfad8",
+          2
+        ],
+        [
+          "bbece24a",
+          9
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "3350c934",
+          2
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C.\n2. En un bol pequeño, mezcla el pimentón dulce, el ajo en polvo, la nuez moscada, la sal y la pimienta. Seca los muslos de pollo con papel de cocina y sazónalos por todos lados, incluso bajo la piel. Deja reposar el pollo a temperatura ambiente unos 15 minutos mientras se calienta el horno.\n3. Calienta 1-2 cucharadas de aceite de oliva en una sartén de hierro fundido a fuego medio-alto. Coloca el pollo con la piel hacia abajo y déjalo sin mover hasta que la piel se despegue fácilmente y esté bien dorada, de 5 a 7 minutos. Dale la vuelta y dora el otro lado unos 4 minutos. Retira el pollo a un plato.\n4. Baja el fuego a medio-bajo y añade el vino blanco. Cocina unos minutos para reducirlo, raspando suavemente los restos dorados del fondo de la sartén. Añade el caldo de pollo y lleva a ebullición suave. Incorpora el ajo, el zumo de lima y la mayor parte del cilantro, reservando un poco para decorar.\n5. Devuelve el pollo a la sartén y lleva la salsa de nuevo a ebullición suave. Cocina a fuego lento unos 5 minutos.\n6. Tapa la sartén con una tapa o papel de aluminio y métela en el horno. Hornea durante 45 minutos, o hasta que el pollo esté bien cocido y alcance 74 °C en la parte más gruesa.\n7. Deja reposar el pollo 5 minutos. Decora con el cilantro reservado y sirve con abundante salsa de la sartén.",
+      "consejos": "Acompaña con arroz blanco o patatas para aprovechar la salsa.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/cilantro-lime-chicken-thighs-recipe/",
+        "autor": null,
+        "kcal_web": 358.3
+      }
+    },
+    {
+      "nombre": "Brochetas de ternera especiadas",
+      "descripcion": "Brochetas de ternera marinadas en vino tinto, limón y especias, con cebolla y pimientos asados a la parrilla.",
+      "tiempo_prep_min": 60,
+      "porciones": 10,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bbece24a",
+          8
+        ],
+        [
+          "081fbb40",
+          3
+        ],
+        [
+          "59f1bfdb",
+          2
+        ],
+        [
+          "21a40eb5",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "ccd5d912",
+          1362
+        ],
+        [
+          "08637e90",
+          450
+        ],
+        [
+          "5a2b6b52",
+          300
+        ],
+        [
+          "d106e3bb",
+          300
+        ],
+        [
+          "60ad001e",
+          200
+        ],
+        [
+          "efdb0f46",
+          216
+        ],
+        [
+          "12ce769f",
+          240
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla el ajo en polvo, la nuez moscada, el cardamomo, la pimienta de Jamaica, el pimentón y una pizca generosa de sal y pimienta.\n2. Añade la ternera al bol y frótala con las especias hasta que quede bien cubierta.\n3. En una fuente honda, combina la cebolla roja en láminas, el zumo de limón, el aceite de oliva y el vino tinto. Incorpora la carne especiada y mezcla con las manos. Tapa y refrigera al menos 30 minutos (mejor 2-4 horas).\n4. Saca la carne de la nevera 1 hora antes de asar. Si usas brochetas de bambú, remójalas en agua al menos 1 hora. Corta la cebolla y los pimientos en trozos del ancho de la carne.\n5. Precalienta la parrilla a fuego alto durante 10 minutos y engrasa ligeramente la rejilla.\n6. Ensarta alternando trozos de carne, cebolla y pimientos (unas 4 piezas de carne por brocheta). Reserva la marinada y sazona las brochetas con pimienta negra recién molida.\n7. Asa las brochetas dándoles la vuelta de vez en cuando y pincelándolas con la marinada, unos 8-10 minutos según el punto deseado.\n8. Retira del fuego, pasa a una fuente y deja reposar 5 minutos antes de servir.",
+      "consejos": "Si usas brochetas de madera, remójalas bien para que no se quemen y pincela la carne con la marinada solo durante los primeros minutos de asado.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/beef-shish-kabob-recipe/",
+        "autor": null,
+        "kcal_web": 273.7
+      }
+    },
+    {
+      "nombre": "Kabsa de pollo y arroz",
+      "descripcion": "Arroz basmati especiado cocido en caldo de pollo con tomate, zanahoria y cítricos, coronado con pollo dorado, almendras y pasas. Un plato único aromático de inspiración saudí.",
+      "tiempo_prep_min": 100,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "49156dfd",
+          500
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "950afc33",
+          227
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "ef6ecb36",
+          5
+        ],
+        [
+          "1390b7a4",
+          70
+        ],
+        [
+          "7f40a393",
+          340
+        ],
+        [
+          "4dacb910",
+          120
+        ],
+        [
+          "e88e2cb8",
+          454
+        ],
+        [
+          "5e1ebd30",
+          454
+        ],
+        [
+          "5e122ac4",
+          5
+        ],
+        [
+          "12a8ab46",
+          10
+        ],
+        [
+          "39bdbb82",
+          43
+        ],
+        [
+          "ad30a656",
+          85
+        ],
+        [
+          "21a40eb5",
+          2
+        ],
+        [
+          "3350c934",
+          2
+        ],
+        [
+          "589e624a",
+          2
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "fea7cbe9",
+          5
+        ]
+      ],
+      "instrucciones": "1. Lavar el arroz basmati hasta que el agua salga clara (mínimo tres veces), dejarlo en remojo 45 minutos y escurrirlo en un colador fino.\n2. Mezclar en un bol el pimentón, la pimienta negra, el cardamomo, la canela, el comino, el cilantro, la nuez moscada y el clavo para formar la mezcla de especias.\n3. En una olla grande, calentar 2 cucharadas de aceite de oliva a fuego medio, sofreír la cebolla hasta que esté dorada y ligeramente caramelizada (unos 5 minutos), añadir el ajo y el jengibre, el tomate triturado y toda la mezcla de especias y sofreír 1 minuto hasta que aromatice.\n4. Añadir el tomate y la zanahoria y cocinar 4-5 minutos hasta que estén confitados y con textura de pasta; incorporar el pollo y mezclar bien para que quede completamente cubierto. Precalentar el horno en modo grill.\n5. Añadir a la olla 720 ml de agua, 18 g de sal, la ralladura de naranja y los limones negros pinchados; mezclar bien. El pollo debe quedar casi sumergido en el líquido; añadir un poco más de agua si es necesario.\n6. Llevar a ebullición suave a fuego medio, tapar y cocinar el pollo unos 30 minutos hasta que no quede nada rosado en la parte más gruesa. Sacar el pollo y colocarlo en una bandeja apta para grill en una sola capa, pincelar con un poco de caldo y salar ligeramente.\n7. Añadir el arroz escurrido al caldo y remover; subir el fuego hasta que hierva, tapar y bajar a fuego bajo. Cocinar tapado 20 minutos hasta que todo el líquido se haya absorbido.\n8. Mientras tanto, dorar el pollo con la piel hacia arriba en el grill, girándolo y moviéndolo a menudo para que se dore de forma uniforme (unos 10-12 minutos), retirándolo cuando la piel esté dorada sin quemarse.\n9. En una sartén pequeña, calentar la cucharada restante de aceite de oliva a fuego medio-bajo, tostar la almendra laminada 4-5 minutos hasta que esté dorada, añadir las pasas y mezclar 2 minutos más hasta que se hinchen y brillen. Retirar del fuego y reservar.\n10. Servir el arroz en una fuente grande, soltándolo con un tenedor, cubrir con las almendras y pasas y colocar encima el pollo. Espolvorear con perejil picado si se desea.",
+      "consejos": "Deja el arroz en remojo el tiempo indicado y no destapes la olla durante la cocción para que quede suelto y en grano.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/kabsa-saudi-chicken-and-rice/",
+        "autor": null,
+        "kcal_web": 451.1
+      }
+    },
+    {
+      "nombre": "Gambas salteadas con calabacín al estilo mediterráneo",
+      "descripcion": "Salteado rápido de gambas con calabacín, pimiento, garbanzos y tomates cherry, aromatizado con especias mediterráneas y un toque de limón y albahaca.",
+      "tiempo_prep_min": 22,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c14d168a",
+          5
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "e4fdfad8",
+          1
+        ],
+        [
+          "e5b7ba6b",
+          454
+        ],
+        [
+          "efdb0f46",
+          28
+        ],
+        [
+          "08637e90",
+          75
+        ],
+        [
+          "bdc11c5a",
+          20
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "f8586302",
+          300
+        ],
+        [
+          "1f1a4cd3",
+          164
+        ],
+        [
+          "6f687582",
+          225
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "60ad001e",
+          60
+        ],
+        [
+          "49230ad1",
+          10
+        ]
+      ],
+      "instrucciones": "1. En un bol pequeño, mezcla las especias: orégano, comino, cilantro y pimentón.\n2. Seca las gambas con papel de cocina y sazónalas con sal y 1 ½ cucharadita de la mezcla de especias. Reserva el resto de la mezcla para las verduras.\n3. Calienta 2 cucharadas de aceite de oliva virgen extra en una sartén grande de hierro fundido a fuego medio. Añade la cebolla y la mitad del ajo y cocina 3-4 minutos, removiendo, hasta que aromatice sin que el ajo se queme.\n4. Añade el calabacín, el pimiento y los garbanzos. Sazona con sal, pimienta y el resto de la mezcla de especias. Remueve y cocina a fuego medio-alto 5-7 minutos, hasta que las verduras estén tiernas.\n5. Pasa las verduras a un plato. Vuelve a poner la sartén al fuego con un poco más de aceite de oliva, añade las gambas sazonadas y el ajo restante y cocina a fuego medio-alto 4-5 minutos, removiendo de vez en cuando, hasta que las gambas estén rosadas.\n6. Devuelve las verduras a la sartén con las gambas, añade los tomates cherry y el zumo de limón y remueve bien. Termina con la albahaca fresca.",
+      "consejos": "No cocines demasiado las gambas: en cuanto estén rosadas y opacas, retíralas del fuego para que queden jugosas.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/sauteed-shrimp-zucchini/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 298.7
+      }
+    },
+    {
+      "nombre": "Muslos de pollo a la granada",
+      "descripcion": "Muslos de pollo especiados y asados con una salsa de vino blanco y melaza de granada, terminados con menta seca y granos de granada.",
+      "tiempo_prep_min": 220,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "3350c934",
+          2
+        ],
+        [
+          "081fbb40",
+          2
+        ],
+        [
+          "21a40eb5",
+          4
+        ],
+        [
+          "bdc11c5a",
+          24
+        ],
+        [
+          "55c7c890",
+          63
+        ],
+        [
+          "e601abd9",
+          15
+        ],
+        [
+          "e88e2cb8",
+          1200
+        ],
+        [
+          "08637e90",
+          150
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "41cb2b97",
+          120
+        ],
+        [
+          "eb5939be",
+          600
+        ],
+        [
+          "f2723f87",
+          200
+        ]
+      ],
+      "instrucciones": "1. Mezcla en un bol pequeño la sal sazonada, el clavo molido, la pimienta negra, la nuez moscada y el pimentón para preparar el aliño de especias.\n2. Seca bien los muslos de pollo y aplícales el aliño generosamente, levantando con cuidado la piel para poner también algo debajo.\n3. Coloca el pollo en una fuente grande sobre la mitad de la cebolla roja en rodajas, tapa y refrigera al menos 2 horas.\n4. Saca el pollo de la nevera y déjalo a temperatura ambiente 15-20 minutos.\n5. Precalienta el horno a 230 °C.\n6. Calienta 1 cucharada de aceite de oliva en una sartén grande y pesada a fuego medio-alto y dora los muslos por ambos lados, empezando por la piel; pásalos a una bandeja de asar.\n7. En la misma sartén, añade un poco más de aceite si hace falta y sofríe el resto de la cebolla 3-5 minutos a fuego medio-alto hasta que se dore ligeramente.\n8. Añade el vino blanco y deja que reduzca; agrega la melaza de granada, el laurel, la sal sazonada y el caldo de pollo y deja que hierva suavemente 5-7 minutos para que se forme la salsa.\n9. Retira el laurel y vierte la salsa de granada y vino sobre los muslos en la bandeja.\n10. Tapa y hornea a 230 °C durante 20 minutos; destapa y hornea en la rejilla más baja otros 25-30 minutos o hasta que esté bien cocido.\n11. Saca del horno y deja reposar 5 minutos.\n12. Sirve con menta seca y granos de granada fresca por encima.",
+      "consejos": "Deja marinar el pollo con las especias y la cebolla al menos 2 horas para que coja más sabor.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/pomegranate-chicken-thigh-recipe/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 412
+      }
+    },
+    {
+      "nombre": "Salmón al horno con salsa Dijon",
+      "descripcion": "Salmón al horno con una salsa de mostaza Dijon, limón, ajo y especias, terminado con eneldo fresco. Una cena sabrosa y rápida.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "60ad001e",
+          100
+        ],
+        [
+          "20367cb0",
+          8
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "c14d168a",
+          1
+        ],
+        [
+          "31f12840",
+          1
+        ],
+        [
+          "e4fdfad8",
+          1
+        ],
+        [
+          "2fd7e358",
+          568
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "2fedb06b",
+          2
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C con una rejilla en el centro y otra a unos 15 cm del grill.\n2. En un bol pequeño, mezcla con unas varillas 56 g de aceite de oliva, la ralladura y el zumo de un limón, la mostaza Dijon, el ajo picado, el orégano, el cilantro, el pimentón y los copos de guindilla.\n3. Forra una bandeja grande con papel de aluminio, dejando sobrante en un lado para cubrir el salmón sin tocarlo, y coloca encima papel de horno engrasado con aceite de oliva.\n4. Seca los filetes de salmón y colócalos con la piel hacia abajo sobre el papel. Sazona con sal y pimienta y vierte la salsa preparada por encima.\n5. Cubre el salmón con el papel de aluminio sobrante formando una tienda sin que toque el pescado y cierra bien los bordes. Hornea de 15 a 20 minutos, hasta que el salmón esté casi hecho en su parte más gruesa.\n6. Saca la bandeja del horno, abre el papel de aluminio y coloca el salmón en la rejilla superior con el grill a máxima potencia. Gratina de 1 a 3 minutos, hasta que la superficie se dore ligeramente, vigilando para que no se queme el ajo.\n7. Espolvorea el eneldo fresco picado por encima y sirve con gajos de limón.",
+      "consejos": "Vigila atentamente el gratinado final para que el ajo no se queme y el salmón no se seque.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/baked-dijon-salmon/",
+        "autor": null,
+        "kcal_web": 344.3
+      }
+    },
+    {
+      "nombre": "Muslos de pollo al horno con limón y ajo",
+      "descripcion": "Muslos de pollo marinados con limón, ajo, cebolla y especias, horneados hasta quedar dorados y jugosos. Una receta sencilla y llena de sabor mediterráneo.",
+      "tiempo_prep_min": 80,
+      "porciones": 12,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0de2af4e",
+          1320
+        ],
+        [
+          "c14d168a",
+          3
+        ],
+        [
+          "3350c934",
+          7
+        ],
+        [
+          "d61c2a0f",
+          3
+        ],
+        [
+          "e4fdfad8",
+          2
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "bdc11c5a",
+          48
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "60ad001e",
+          300
+        ],
+        [
+          "efdb0f46",
+          56
+        ]
+      ],
+      "instrucciones": "1. Seca los muslos de pollo con papel de cocina y sálalos por encima y por debajo de la piel. Si tienes tiempo, colócalos en una bandeja y refrigera sin cubrir durante unas horas o toda la noche (opcional).\n2. Introduce el pollo en una bolsa grande con cierre. En un bol pequeño, mezcla el orégano, la pimienta negra, el cilantro, el pimentón y el comino. Añade las especias a la bolsa con el pollo.\n3. Agrega el ajo, la cebolla, la ralladura y el zumo de 2 limones y el aceite de oliva. Cierra la bolsa y masajea para que el pollo quede bien cubierto. Deja marinar unos 30 minutos, o refrigera de 2 a 4 horas si tienes tiempo.\n4. Precalienta el horno a 230 °C.\n5. Engrasa ligeramente una fuente de horno y coloca los muslos de pollo junto con la cebolla y el marinado. Reparte las rodajas de limón entre ellos.\n6. Hornea durante 35 minutos o hasta que el pollo esté completamente cocinado y sus jugos salgan claros. La temperatura interna debe alcanzar 74 °C. Si lo deseas, gratina unos minutos hasta que la piel quede crujiente.",
+      "consejos": "Deja marinar el pollo varias horas o toda la noche para que absorba mejor el sabor del limón y las especias.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/baked-chicken-drumsticks/",
+        "autor": null,
+        "kcal_web": 155.6
+      }
+    },
+    {
+      "nombre": "Ñoquis al horno con verduras asadas",
+      "descripcion": "Una bandeja de ñoquis y verduras asadas con especias mediterráneas y espinacas, terminada con parmesano.",
+      "tiempo_prep_min": 55,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "079aa047",
+          454
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "b12e5a68",
+          150
+        ],
+        [
+          "08637e90",
+          150
+        ],
+        [
+          "6f687582",
+          300
+        ],
+        [
+          "bdc11c5a",
+          24
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "c14d168a",
+          1.5
+        ],
+        [
+          "46245eee",
+          1.5
+        ],
+        [
+          "2525c236",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "b1ff971a",
+          100
+        ],
+        [
+          "b983723d",
+          30
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 220 °C.\n2. En una bandeja grande, mezcla los ñoquis, el pimiento rojo, el pimiento amarillo, la cebolla roja, los tomates cherry, el ajo picado, el aceite de oliva, el orégano, la albahaca, la sal, el tomillo, los copos de guindilla y la pimienta negra. Remueve con las manos hasta que todo quede bien impregnado de especias y aceite.\n3. Hornea durante 40 minutos, removiendo a mitad de cocción. Cinco minutos antes de terminar, saca la bandeja del horno, añade las espinacas y remueve. Vuelve a hornear los 5 minutos restantes, hasta que las espinacas estén marchitas.\n4. Sirve con parmesano en lascas y un chorrito de aceite de oliva.",
+      "consejos": "Remueve a mitad de horneado para que los ñoquis y las verduras se doren de forma uniforme.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/sheet-pan-gnocchi-with-roasted-vegetables/",
+        "autor": null,
+        "kcal_web": 366.5
+      }
+    },
+    {
+      "nombre": "Pollo al pimentón con verduras al horno",
+      "descripcion": "Muslos de pollo con hueso y piel, marinados en una pasta de pimentón, ajo y limón, asados junto a coles de Bruselas, boniato y chalotas. Una bandeja única, sabrosa y completa.",
+      "tiempo_prep_min": 50,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e88e2cb8",
+          1200
+        ],
+        [
+          "f349ccc8",
+          454
+        ],
+        [
+          "6c5d82a5",
+          500
+        ],
+        [
+          "31108cb4",
+          150
+        ],
+        [
+          "bdc11c5a",
+          40
+        ],
+        [
+          "efdb0f46",
+          70
+        ],
+        [
+          "12a8ab46",
+          15
+        ],
+        [
+          "e4fdfad8",
+          14
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "59f1bfdb",
+          2
+        ]
+      ],
+      "instrucciones": "1. Seca bien los muslos de pollo con papel de cocina y sálalos generosamente por ambos lados. Déjalos a temperatura ambiente unos minutos, idealmente 30 minutos, mientras preparas el resto.\n2. Precalienta el horno a 220 °C.\n3. Coloca las coles de Bruselas, el boniato y las chalotas en una bandeja grande de horno. Sala, añade un buen chorro de aceite de oliva y mezcla.\n4. En un cuenco pequeño, mezcla el pimentón dulce, el cilantro molido y la pimienta de Jamaica.\n5. Espolvorea 1 cucharada y 1/3 de la mezcla de especias sobre las verduras.\n6. A la mezcla de especias restante, añade el ajo machacado, el zumo de limón y 3 cucharadas de aceite de oliva virgen extra. Remueve hasta formar una pasta. Unta el pollo con esta pasta por ambos lados y también bajo la piel (levanta la piel y añade pasta, es importante para el sabor).\n7. Encaja los trozos de pollo entre las verduras en la bandeja.\n8. Hornea hasta que un termómetro insertado en el pollo marque 77-79 °C y las verduras estén tiernas, unos 35 minutos.",
+      "consejos": "Deja reposar el pollo 5 minutos antes de servir para que los jugos se asienten.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/paprika-chicken-sheet-pan/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 439
+      }
+    },
+    {
+      "nombre": "Biftekia al horno con patatas",
+      "descripcion": "Albóndigas griegas de carne picada de ternera, especiadas con orégano y menta, horneadas junto a patatas. Un plato completo y sabroso.",
+      "tiempo_prep_min": 75,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0b223775",
+          908
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "bf392211",
+          126
+        ],
+        [
+          "265ec681",
+          100
+        ],
+        [
+          "86d39197",
+          120
+        ],
+        [
+          "08637e90",
+          150
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "c14d168a",
+          2
+        ],
+        [
+          "513d4dc7",
+          30
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "ecc7f788",
+          908
+        ],
+        [
+          "59163485",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C.\n2. En una bandeja de horno, mezclar las patatas con el zumo de limón, sal, pimienta, orégano al gusto y 3-4 cucharadas de aceite de oliva hasta que queden bien cubiertas.\n3. Añadir 120 ml de agua, cubrir con papel de aluminio y hornear 10 minutos. Destapar, remover para que no se peguen y volver a cubrir; hornear otros 10 minutos. Retirar del horno pero mantenerlo encendido.\n4. Mientras tanto, poner el pan en un bol grande, añadir 2 cucharadas de aceite de oliva y leche suficiente para cubrirlo. Mezclar y dejar reposar hasta que se absorba el líquido, unos 10 minutos.\n5. En una sartén, calentar 3 cucharadas de aceite de oliva a fuego medio-alto. Saltear la cebolla hasta que esté transparente, añadir el ajo y cocinar hasta que todo esté dorado y caramelizado. Reservar y dejar enfriar.\n6. A la mezcla de pan, añadir el orégano, la menta, la sal, la pimienta, el vinagre y el huevo. Mezclar. Incorporar la cebolla y el ajo, la carne y el perejil. Mezclar muy bien con las manos hasta que todo esté integrado y la masa sea homogénea y blanda; si está demasiado seca, añadir 1-2 cucharadas de agua. Dividir en 12 albóndigas redondas de unos 1,5 cm de grosor.\n7. Colocar las albóndigas entre y sobre las patatas. Rociar o pincelar con aceite de oliva. Hornear hasta que un termómetro de cocina insertado en el centro marque al menos 71 °C, unos 30-40 minutos. Al final, si se desea, gratinar unos minutos para dorar las patatas.\n8. Sacar del horno, dejar reposar unos minutos y servir con gajos de limón.",
+      "consejos": "Si la mezcla de carne está demasiado seca para formar las albóndigas, añade una o dos cucharadas de agua para que queden jugosas.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/biftekia-baked-greek-beef-patties/",
+        "autor": null,
+        "kcal_web": 465.2
+      }
+    },
+    {
+      "nombre": "Lasaña de berenjena",
+      "descripcion": "Una lasaña sin pasta en la que láminas de berenjena asada sustituyen a la masa, con un relleno cremoso de ricota, espinacas y hierbas.",
+      "tiempo_prep_min": 70,
+      "porciones": 12,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e152c2f2",
+          680
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "a43e543e",
+          425
+        ],
+        [
+          "382a08c2",
+          170
+        ],
+        [
+          "b983723d",
+          50
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "c14d168a",
+          1
+        ],
+        [
+          "b6381c1c",
+          280
+        ],
+        [
+          "59163485",
+          60
+        ],
+        [
+          "49230ad1",
+          19
+        ],
+        [
+          "1d197cae",
+          480
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Opcional: salar las láminas de berenjena por ambos lados y dejar reposar 20-30 minutos.\n2. Precalentar el horno a 200 °C con la rejilla en el centro.\n3. Secar las berenjenas con papel de cocina, colocarlas en una bandeja ligeramente engrasada, pincelar con aceite de oliva y asar 15-20 minutos hasta que estén tiernas y flexibles.\n4. Mientras se asan, batir el huevo en un bol y mezclar con la ricota, 100 g de mozzarella, 25 g de parmesano, el ajo picado, el orégano, las espinacas escurridas y las hierbas picadas; salpimentar al gusto.\n5. Sacar la berenjena del horno y bajar la temperatura a 190 °C.\n6. En una fuente de 23x33 cm, extender 120 ml de salsa de tomate, colocar 4-6 láminas de berenjena, extender la mitad del relleno de ricota y una capa fina de salsa; repetir el proceso.\n7. Terminar con el resto de la salsa, 70 g de mozzarella y 25 g de parmesano.\n8. Cubrir bien con papel de aluminio y hornear 15-20 minutos; destapar y hornear otros 15-20 minutos hasta que el queso se derrita y los bordes estén dorados.\n9. Dejar reposar 10 minutos antes de cortar y servir.",
+      "consejos": "Escurre bien las espinacas y las berenjenas para evitar que la lasaña quede aguada.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/eggplant-lasagna/",
+        "autor": null,
+        "kcal_web": 146.6
+      }
+    },
+    {
+      "nombre": "Salmón asado lentamente con patatas y hierbas",
+      "descripcion": "Salmón jugoso asado a baja temperatura con patatas baby crujientes, ajo, tomillo y romero. Un plato mediterráneo sencillo y lleno de sabor.",
+      "tiempo_prep_min": 50,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b0b14be3",
+          454
+        ],
+        [
+          "d0a93278",
+          4
+        ],
+        [
+          "c8e0f469",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bdc11c5a",
+          20
+        ],
+        [
+          "efdb0f46",
+          84
+        ],
+        [
+          "2fd7e358",
+          454
+        ],
+        [
+          "60ad001e",
+          100
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 230 °C. En un bol grande, mezcla las patatas baby cortadas por la mitad con 1 cucharadita de tomillo fresco, 1 cucharadita de romero seco, sal y pimienta al gusto, 2 cucharaditas de ajo picado y 2 cucharadas de aceite de oliva. Remueve hasta que las patatas queden bien impregnadas.\n2. Coloca las patatas con el corte hacia abajo en una bandeja de horno y ásalas durante 25 minutos. Mientras tanto, saca el salmón de la nevera y sazónalo con sal y pimienta por ambos lados. Déjalo a temperatura ambiente.\n3. Retira las patatas del horno y baja la temperatura a 120 °C. Empuja las patatas hacia un lado de la bandeja para hacer sitio al salmón. Pincela la bandeja con un poco de aceite de oliva y coloca el salmón. Rocía el salmón con 3-4 cucharadas de aceite de oliva virgen extra. Reparte el ajo restante por encima del pescado y espolvorea con el tomillo y el romero restantes.\n4. Cuando el horno haya alcanzado los 120 °C, vuelve a introducir la bandeja con el salmón y las patatas y asa durante 15-18 minutos para un punto poco hecho, o hasta 25 minutos para un punto medio, según el grosor del pescado.\n5. Exprime un poco de zumo de limón sobre el salmón y sirve inmediatamente.",
+      "consejos": "Ajusta el tiempo de horneado del salmón según su grosor para que quede en su punto.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/slow-roasted-salmon/",
+        "autor": null,
+        "kcal_web": 253.9
+      }
+    },
+    {
+      "nombre": "Arroz persa con ternera y judías verdes",
+      "descripcion": "Arroz basmati especiado con azafrán, ternera picada y judías verdes, con una capa crujiente de arroz en el fondo. Un plato único aromático de inspiración persa.",
+      "tiempo_prep_min": 135,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "49156dfd",
+          375
+        ],
+        [
+          "2f6b30f6",
+          0.3
+        ],
+        [
+          "efdb0f46",
+          28
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "30693562",
+          454
+        ],
+        [
+          "94ba864e",
+          3
+        ],
+        [
+          "589e624a",
+          2.5
+        ],
+        [
+          "5a1860a7",
+          16
+        ],
+        [
+          "95efbbab",
+          454
+        ],
+        [
+          "77dd58cc",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "60ad001e",
+          30
+        ],
+        [
+          "7dbc3a0d",
+          42
+        ]
+      ],
+      "instrucciones": "1. Lavar el arroz basmati con agua fría hasta que el agua salga clara y dejarlo en remojo en agua fría al menos 30 minutos.\n2. Mientras tanto, disolver el azafrán en 60 ml de agua.\n3. Calentar el aceite de oliva en una sartén grande a fuego medio-alto, pochar la cebolla picada hasta que esté dorada, unos 5 minutos. Añadir el ajo y la ternera picada, desmenuzándola mientras se cocina.\n4. Cuando la carne esté dorada, incorporar la cúrcuma y la canela molida, luego el tomate concentrado. Añadir las judías verdes, la canela en rama y 360 ml de agua. Sazonar con 5 g de sal, la pimienta, el zumo de limón y la mitad del agua de azafrán.\n5. Bajar el fuego y cocer a fuego lento removiendo con frecuencia hasta que se evapore el agua y quede una mezcla de carne con poca salsa, unos 20 minutos. Apagar el fuego y ajustar de sal.\n6. En una olla grande antiadherente, llevar a ebullición 2 litros de agua con los 18 g de sal restantes. Escurrir el arroz y añadirlo a la olla. Cocer hasta que los granos estén ligeramente tiernos pero firmes, 5-7 minutos. Escurrir y reservar. Enjuagar la olla.\n7. En un bol, mezclar 1 1/2 tazas del arroz cocido con el resto del agua de azafrán hasta que tome color dorado. Verter el aceite vegetal en la olla enjuagada sin calentar y extender el arroz con azafrán en el fondo.\n8. Alternar capas de arroz y de la mezcla de carne y judías formando una pirámide alejada de las paredes de la olla. Hacer 5 agujeros hasta el fondo con el dorso de una cuchara para que circule el vapor.\n9. Tapar la olla y poner a fuego alto. Cuando empiece a salir vapor, bajar a fuego bajo (unos 5 minutos). Envolver la tapa con un paño de cocina y volver a colocar. Cocer tapado a fuego bajo 1 hora para que el arroz se termine de hacer al vapor.\n10. Destapar, mezclar suavemente el arroz y servir en una fuente (retirar la canela en rama). Con una espátula, despegar la capa crujiente del fondo y servirla aparte, entera o troceada alrededor del arroz.",
+      "consejos": "No subas el fuego durante el vaporizado final para que la capa crujiente no se queme y el arroz quede suelto.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/loobia-polo-persian-beef-and-green-bean-rice/",
+        "autor": null,
+        "kcal_web": 461.1
+      }
+    },
+    {
+      "nombre": "Calabacín gratinado con bechamel y carne",
+      "descripcion": "Una cazuela al horno de calabacín asado con carne picada especiada y una cremosa bechamel, gratinada con mozzarella.",
+      "tiempo_prep_min": 55,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          1600
+        ],
+        [
+          "ecc7f788",
+          680
+        ],
+        [
+          "382a08c2",
+          100
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "59f1bfdb",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bf392211",
+          126
+        ],
+        [
+          "20c74a2a",
+          48
+        ],
+        [
+          "8469bf72",
+          960
+        ],
+        [
+          "081fbb40",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 230 °C.\n2. Colocar las rodajas de calabacín en una sola capa en una bandeja de horno engrasada, sin amontonarlas. Salpimentar y rociar con aceite de oliva.\n3. Hornear durante 15-18 minutos, dándoles la vuelta a mitad de cocción. Retirar cuando estén tiernas y ligeramente doradas. Bajar la temperatura del horno a 175 °C.\n4. Mientras tanto, calentar 1 cucharada de aceite de oliva en una sartén grande. Saltear brevemente la cebolla picada y añadir la carne picada. Sazonar con pimienta de Jamaica, cardamomo, sal y pimienta. Cocinar a fuego medio-alto, removiendo de vez en cuando, hasta que la carne esté bien hecha (unos 10 minutos). Reservar.\n5. Preparar la bechamel: calentar 1/2 taza (120 ml) de aceite de oliva. Añadir la harina y cocinar a fuego medio-bajo durante 5 minutos o hasta que esté suave y dorada. Subir a fuego medio, añadir la leche taza a taza batiendo continuamente. Cocinar otros 7 minutos o hasta que la mezcla esté suave, empiece a burbujear y espese un poco. Retirar del fuego y dejar reposar para que espese.\n6. En una fuente de horno engrasada o sartén grande de hierro, montar la cazuela: primera capa de carne, luego dos capas de calabacín. Añadir carne y 1 taza (100 g) de mozzarella. Cubrir con una capa uniforme de bechamel.\n7. Hornear a 175 °C durante 45 minutos hasta que la superficie de la bechamel se dore. Vigilar para que no se dore en exceso.\n8. Retirar del horno y dejar reposar unos 5 minutos antes de servir.",
+      "consejos": "Deja reposar la bechamel fuera del fuego antes de montar la cazuela para que espese y se extienda mejor.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/zucchini-bechamel-casserole/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 611
+      }
+    },
+    {
+      "nombre": "Salmón al aire con especias",
+      "descripcion": "Filetes de salmón marinados con aceite de oliva, limón y especias, cocinados en freidora de aire. Una cena rápida y sabrosa.",
+      "tiempo_prep_min": 13,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          21
+        ],
+        [
+          "564c253f",
+          2
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "e2dd1c2b",
+          1
+        ],
+        [
+          "2525c236",
+          1
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "2fd7e358",
+          680
+        ]
+      ],
+      "instrucciones": "1. Precalienta la freidora de aire a 200 °C. En un bol grande, mezcla el aceite de oliva, la ralladura de limón, el ajo rallado, el pimentón ahumado, el tomillo seco, el comino y una pizca de sal y pimienta. Bate hasta combinar.\n2. Seca bien los filetes de salmón por todos lados. Añádelos a la mezcla de aceite y especias y gíralos para que queden completamente cubiertos.\n3. Coloca los filetes en la cesta de la freidora de aire con la piel hacia abajo, dejando espacio entre ellos. Cocina hasta que los bordes empiecen a dorarse y un termómetro de cocina insertado en la parte más gruesa de cada filete marque 63 °C. Empieza a comprobar a los 8-10 minutos para los cortes más gruesos o a los 5-7 minutos para los más finos. Si es necesario, continúa cocinando hasta alcanzar los 63 °C.\n4. Deja reposar el salmón unos minutos antes de servir.",
+      "consejos": "Si usas un filete grande de salmón, córtalo en 4 porciones iguales antes de cocinar.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/air-fryer-salmon/",
+        "autor": null,
+        "kcal_web": 291.7
+      }
+    },
+    {
+      "nombre": "Espinacas con huevos a la turca",
+      "descripcion": "Un plato de espinacas salteadas con cebolla, ajo, tomate y especias, con huevos escalfados en la salsa. Sencillo, sabroso y nutritivo.",
+      "tiempo_prep_min": 35,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "efdb0f46",
+          28
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "e2dd1c2b",
+          0.5
+        ],
+        [
+          "d5dcebb6",
+          30
+        ],
+        [
+          "7f40a393",
+          240
+        ],
+        [
+          "eea44971",
+          283
+        ],
+        [
+          "3350c934",
+          0.5
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "59163485",
+          5
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite de oliva en una sartén grande a fuego medio-alto. Añade la cebolla y cocina hasta que esté dorada, unos 5 minutos. Agrega el ajo y remueve hasta que aromatice, aproximadamente 1 minuto.\n2. Incorpora el comino y el pimentón ahumado, removiendo para que impregnen la cebolla. Añade la pasta de pimiento rojo y mezcla hasta que se distribuya uniformemente.\n3. Agrega el tomate rallado, el agua y un par de puñados grandes de espinacas. Remueve hasta que las hojas se marchiten y sigue añadiendo espinacas en puñados hasta incorporarlas todas. Cocina removiendo unos 7 minutos más, hasta que las espinacas estén tiernas y los sabores se integren. Sazona con sal y pimienta negra.\n4. Baja el fuego a medio-bajo. Con una cuchara de madera, haz 4 huecos en la mezcla de espinacas. Casca un huevo en cada hueco con cuidado y sazona cada uno con un poco de sal. Tapa la sartén y cocina hasta que los huevos cuajen al punto deseado, unos 5 a 7 minutos.\n5. Retira la tapa y espolvorea el pimiento de Alepo y el perejil fresco sobre los huevos y las espinacas. Sirve inmediatamente.",
+      "consejos": "Puedes sustituir la pasta de pimiento rojo turca por concentrado de tomate si no la encuentras.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/spinach-and-eggs/",
+        "autor": null,
+        "kcal_web": 168.5
+      }
+    },
+    {
+      "nombre": "Huevos en purgatorio",
+      "descripcion": "Huevos escalfados sobre una salsa de tomate especiada con cebolla, ajo y pimiento rojo, terminados con albahaca y queso curado. Un plato sencillo y sabroso de la cocina italiana.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "efdb0f46",
+          42
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "d106e3bb",
+          120
+        ],
+        [
+          "1390b7a4",
+          794
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "49230ad1",
+          5
+        ],
+        [
+          "b983723d",
+          20
+        ],
+        [
+          "9b3a5c0a",
+          120
+        ]
+      ],
+      "instrucciones": "1. En una sartén grande o cazuela ancha con tapa, a fuego medio-bajo, sofríe el aceite de oliva, la cebolla, el ajo, los copos de guindilla y el pimiento rojo durante unos 10 minutos, removiendo, hasta que la cebolla y el pimiento estén blandos. Si el pimiento no está tierno, tapa parcialmente y cocina 5 minutos más. Sazona con sal.\n2. Añade el tomate triturado y lleva a ebullición suave a fuego medio. Baja el fuego, tapa parcialmente y cocina a fuego lento unos 15 minutos, hasta que el tomate oscurezca y espese. Destapa y cocina 5 minutos más hasta que la salsa espese bien.\n3. Con el dorso de una cuchara, haz 4 huecos amplios en la salsa. Casca un huevo en cada hueco y sazona cada uno con una pizca de sal. Tapa y cocina suavemente hasta que las claras cuajen y la yema quede líquida, unos 2-3 minutos.\n4. Retira del fuego y adorna con las hojas de albahaca troceadas y el queso rallado. Sirve inmediatamente, con pan al lado.",
+      "consejos": "Acompaña con pan de hogaza para mojar la salsa, pero ajústalo según tu objetivo calórico.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/eggs-in-purgatory/",
+        "autor": null,
+        "kcal_web": 207.7
+      }
+    },
+    {
+      "nombre": "Frittata de claras con salmón ahumado",
+      "descripcion": "Una frittata ligera y sabrosa elaborada con claras de huevo, salmón ahumado, queso de cabra y eneldo. Ideal para un desayuno o comida proteica.",
+      "tiempo_prep_min": 35,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "08637e90",
+          75
+        ],
+        [
+          "c9d05c24",
+          360
+        ],
+        [
+          "de0eb774",
+          170
+        ],
+        [
+          "675965d4",
+          113
+        ],
+        [
+          "d641c84f",
+          15
+        ],
+        [
+          "f68fa954",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y coloca una rejilla en el centro.\n2. Calienta el aceite de oliva en una sartén antiadherente apta para horno de 25 cm de diámetro a fuego medio. Añade la cebolla roja picada y cocina de 3 a 4 minutos, removiendo de vez en cuando, hasta que se ablande y empiece a dorarse.\n3. Mientras tanto, bate las claras de huevo en un bol grande hasta que estén espumosas, unos 30 segundos. Incorpora el salmón ahumado, el queso de cabra desmenuzado, las alcaparras picadas, el eneldo picado y la pimienta negra.\n4. Vierte la mezcla de claras y salmón en la sartén con la cebolla. Cocina sin remover a fuego medio de 3 a 4 minutos, hasta que los bordes empiecen a cuajar.\n5. Transfiere la sartén al horno y hornea 12 minutos, o hasta que la frittata esté cuajada y el centro firme.\n6. Deja enfriar unos minutos y corta en 8 porciones. Sirve con un poco más de eneldo fresco por encima.",
+      "consejos": "Puedes sustituir el queso de cabra por queso feta si lo prefieres, pero ajusta la sal porque el salmón y las alcaparras ya aportan bastante.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/egg-white-frittata-with-smoked-salmon/",
+        "autor": null,
+        "kcal_web": 104.3
+      }
+    },
+    {
+      "nombre": "Pollo a la puttanesca",
+      "descripcion": "Pollo dorado y jugoso cocinado en una salsa de tomate con anchoas, aceitunas y alcaparras. Un plato mediterráneo lleno de sabor.",
+      "tiempo_prep_min": 45,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8b03728",
+          1362
+        ],
+        [
+          "efdb0f46",
+          101
+        ],
+        [
+          "c0a67c44",
+          30
+        ],
+        [
+          "bdc11c5a",
+          20
+        ],
+        [
+          "a4923411",
+          794
+        ],
+        [
+          "ba39ef20",
+          70
+        ],
+        [
+          "d641c84f",
+          45
+        ],
+        [
+          "c14d168a",
+          2
+        ],
+        [
+          "59163485",
+          30
+        ],
+        [
+          "60ad001e",
+          50
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Seca el pollo con papel de cocina y sazónalo bien con sal y pimienta por ambos lados, también por debajo de la piel.\n2. En una sartén grande antiadherente a fuego medio-alto, añade 3 cucharadas de aceite de oliva. Cuando empiece a brillar, añade el pollo con la piel hacia abajo y cocina hasta que esté crujiente y dorado, unos 5-8 minutos. Dale la vuelta y cocina hasta que el otro lado también esté dorado, unos 5 minutos más.\n3. Pasa el pollo a una bandeja grande, espolvorea con la mezcla de especias italianas y vierte el zumo de limón por encima. Reserva.\n4. Baja el fuego a medio. Si la sartén está seca, añade un poco más de aceite de oliva. Añade los filetes de anchoa y cocina unos 2 minutos, removiendo, hasta que se deshagan en el aceite y le den sabor.\n5. Añade el ajo y cocina hasta que aromatice, unos 30 segundos. Agrega los tomates, la mitad de las aceitunas, la mitad de las alcaparras, el orégano seco y los copos de guindilla (si usas). Lleva la salsa a ebullición suave a fuego medio.\n6. Vuelve a poner el pollo en la sartén, encajándolo en la salsa. Echa un poco de salsa por encima. Tapa parcialmente y cocina hasta que el pollo esté bien hecho y tierno, unos 25-30 minutos, según el tamaño de las piezas. La temperatura interna en la parte más gruesa debe alcanzar 74 °C.\n7. Sirve adornado con el perejil y el resto de las aceitunas y alcaparras.",
+      "consejos": "Acompaña con pan crujiente o una ensalada verde para completar el plato.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/chicken-puttanesca/",
+        "autor": null,
+        "kcal_web": 470.8
+      }
+    },
+    {
+      "nombre": "Alubias con col rizada al estilo toscano",
+      "descripcion": "Un plato reconfortante de alubias blancas y col rizada cocinadas con ajo, salvia y un toque de picante, terminado con queso pecorino rallado.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "d946bd47",
+          300
+        ],
+        [
+          "efdb0f46",
+          42
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "a010ea17",
+          800
+        ],
+        [
+          "eb5939be",
+          960
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "60d69579",
+          30
+        ]
+      ],
+      "instrucciones": "1. Lavar la col rizada, retirar los tallos centrales duros y trocear las hojas en bocados. Reservar.\n2. En una olla mediana a fuego medio, calentar el aceite de oliva hasta que brille. Añadir la cebolla y sofreír hasta que esté translúcida y fragante, sin dorarse, unos 3 minutos. Agregar el ajo, los copos de guindilla y la salvia; remover durante 30 segundos.\n3. Añadir la col rizada troceada, remover para que se impregne del aceite y los aromáticos, y cocinar de 2 a 3 minutos hasta que las hojas empiecen a ablandarse. Sazonar con una pizca generosa de sal (aproximadamente 1/2 cucharadita).\n4. Incorporar las alubias escurridas y verter el caldo. Reducir el fuego a medio-bajo, tapar y dejar cocer a fuego lento unos 5 minutos, removiendo una o dos veces, hasta que la col esté tierna y las alubias bien calientes.\n5. Retirar del fuego, probar y sazonar con pimienta negra recién molida. Servir en cuencos hondos y espolvorear con queso pecorino toscano o parmesano recién rallado y un chorrito de aceite de oliva virgen extra.",
+      "consejos": "Para una versión vegetariana, sustituye el caldo de pollo por caldo de verduras.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/beans-and-greens/",
+        "autor": null,
+        "kcal_web": 169.9
+      }
+    },
+    {
+      "nombre": "Ensalada niçoise con atún y corazones de alcachofa",
+      "descripcion": "Una ensalada fresca y completa de inspiración francesa con atún, huevo cocido, verduras crujientes y un aliño de mostaza y vinagre de vino tinto.",
+      "tiempo_prep_min": 15,
+      "porciones": 5,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "7f40a393",
+          600
+        ],
+        [
+          "7fb4b7ea",
+          115
+        ],
+        [
+          "37936737",
+          90
+        ],
+        [
+          "2e8d5d64",
+          150
+        ],
+        [
+          "0401d093",
+          70
+        ],
+        [
+          "88ce9e3c",
+          150
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "4052c471",
+          140
+        ],
+        [
+          "82930270",
+          60
+        ],
+        [
+          "20f15ab2",
+          10
+        ],
+        [
+          "513d4dc7",
+          30
+        ],
+        [
+          "20367cb0",
+          30
+        ],
+        [
+          "efdb0f46",
+          72
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Sazona los tomates: pon los gajos de tomate en un colador grande sobre un bol, añade una pizca generosa de sal, mezcla y deja reposar 10 minutos. Reserva los jugos que suelten para el aliño.\n2. Prepara la ensalada: extiende la lechuga en una fuente. Coloca encima los rábanos, el pepino, las aceitunas, los corazones de alcachofa, los huevos y los tomates escurridos. Reparte el atún desmenuzado, la cebolleta y la albahaca troceada. Sazona con pimienta negra.\n3. Haz el aliño: en el bol con los jugos de los tomates, añade el vinagre de vino tinto, la mostaza de Dijon y una pizca de sal. Bate para combinar y, sin dejar de batir, vierte el aceite de oliva en hilo hasta emulsionar. Prueba y ajusta de sal.\n4. Sirve: vierte un poco del aliño sobre la ensalada y mezcla con cuidado, o sirve el aliño aparte para que cada comensal se sirva.",
+      "consejos": "Escurre bien los tomates y las alcachofas para que la ensalada no quede aguada y el aliño mantenga su textura.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/nicoise-salad/",
+        "autor": null,
+        "kcal_web": 341.3
+      }
+    },
+    {
+      "nombre": "Frittata de espinacas y feta",
+      "descripcion": "Una frittata al horno con huevos, espinacas, queso feta y hierbas frescas. Ideal como comida o cena ligera, con una ensalada al lado.",
+      "tiempo_prep_min": 22,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          400
+        ],
+        [
+          "c14d168a",
+          1
+        ],
+        [
+          "8892bcf0",
+          0.5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "21a40eb5",
+          1
+        ],
+        [
+          "242a5689",
+          1
+        ],
+        [
+          "b6381c1c",
+          170
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "fea7cbe9",
+          60
+        ],
+        [
+          "c63a423f",
+          10
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "6187036a",
+          100
+        ],
+        [
+          "86d39197",
+          60
+        ],
+        [
+          "efdb0f46",
+          28
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C.\n2. En un bol grande, batir los huevos con el orégano, el eneldo, la pimienta, el pimentón y la levadura química (si se usa). Salar al gusto.\n3. Añadir las espinacas escurridas, la cebolla picada, el perejil, la menta, el ajo picado, el queso feta desmenuzado y la leche. Mezclar bien.\n4. Calentar el aceite de oliva en una sartén apta para horno de 30 cm a fuego medio-alto. Verter la mezcla de huevo y agitar suavemente la sartén para que se extienda. Cocinar unos 4 minutos hasta que la base cuaje.\n5. Transferir la sartén al horno y hornear unos 8 minutos, hasta que la superficie esté firme y no se mueva al agitar la sartén.\n6. Sacar del horno, dejar reposar unos minutos, cortar en porciones y servir, si se desea, con ensalada de pepino y tomate.",
+      "consejos": "Escurre bien las espinacas para evitar que la frittata quede aguada.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/feta-spinach-frittata-recipe/",
+        "autor": null,
+        "kcal_web": 114.6
+      }
+    },
+    {
+      "nombre": "Gambas salteadas con limón y especias",
+      "descripcion": "Gambas salteadas rápidamente con ajo, pimentón y limón, listas en pocos minutos.",
+      "tiempo_prep_min": 10,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          454
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "60ad001e",
+          100
+        ],
+        [
+          "e4fdfad8",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Secar las gambas con papel de cocina y ponerlas en un bol mediano con las especias italianas, el pimentón dulce y una buena pizca de sal y pimienta.\n2. Rociar con 2 cucharadas de aceite de oliva y remover para que se impregnen bien.\n3. Calentar la cucharada restante de aceite de oliva en una sartén de hierro fundido a fuego medio-alto hasta que empiece a brillar.\n4. Añadir las gambas sazonadas y el ajo picado a la sartén caliente y cocinar, removiendo de vez en cuando, hasta que las gambas se vuelvan rosadas, unos 2 a 4 minutos según su tamaño.\n5. Retirar inmediatamente las gambas de la sartén y pasarlas a un plato o fuente con borde. Terminar con la ralladura y el zumo de limón y servir al momento.",
+      "consejos": "No cocines las gambas en exceso para que no queden duras; retíralas del fuego en cuanto tomen color rosado.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/sauteed-shrimp/",
+        "autor": null,
+        "kcal_web": 188.1
+      }
+    },
+    {
+      "nombre": "Bacalao a la provenzal",
+      "descripcion": "Bacalao horneado sobre una salsa de tomate con cebolla, hinojo, aceitunas y hierbas. Un plato mediterráneo sencillo y listo en media hora.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "15c94b4b",
+          567
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "950afc33",
+          110
+        ],
+        [
+          "c0f5aeb4",
+          100
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "1390b7a4",
+          411
+        ],
+        [
+          "ba39ef20",
+          35
+        ],
+        [
+          "d0a93278",
+          3
+        ],
+        [
+          "fea7cbe9",
+          4
+        ],
+        [
+          "60ad001e",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C. Secar los lomos de bacalao con papel de cocina y sazonarlos con sal y pimienta. Reservar.\n2. Calentar el aceite de oliva en una sartén grande de hierro fundido a fuego medio-bajo. Añadir la cebolla, el hinojo y 2 g de sal. Cocinar removiendo de 7 a 9 minutos hasta que las verduras se ablanden. Añadir el ajo, remover y cocinar 1 minuto hasta que aromatice.\n3. Añadir el tomate triturado, las aceitunas, el tomillo, el perejil, la ralladura de limón, 2 g más de sal y la pimienta. Remover y cocinar unos 2 minutos hasta que la mezcla empiece a espesar.\n4. Colocar los lomos de bacalao sobre la salsa, cuchareando un poco por encima. Hornear de 6 a 8 minutos hasta que el pescado esté hecho y se desmenuce con facilidad.\n5. Sazonar con sal y pimienta y espolvorear con más perejil picado antes de servir.",
+      "consejos": "Sirve el bacalao con pan crujiente o arroz para aprovechar la salsa.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/cod-provencal/",
+        "autor": null,
+        "kcal_web": 325.5
+      }
+    },
+    {
+      "nombre": "Tortilla horneada de calabacín y menta",
+      "descripcion": "Una tortilla al horno de estilo mediterráneo con calabacín salteado, cebolla y menta fresca, perfecta como plato principal ligero o para compartir.",
+      "tiempo_prep_min": 30,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f8586302",
+          600
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "950afc33",
+          70
+        ],
+        [
+          "bbece24a",
+          2
+        ],
+        [
+          "c63a423f",
+          15
+        ],
+        [
+          "6cd81fed",
+          400
+        ],
+        [
+          "242a5689",
+          2
+        ],
+        [
+          "265ec681",
+          50
+        ],
+        [
+          "318db297",
+          80
+        ],
+        [
+          "6187036a",
+          30
+        ],
+        [
+          "60ad001e",
+          30
+        ],
+        [
+          "7f40a393",
+          100
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C.\n2. Espolvorear las rodajas de calabacín con un poco de sal y dejar reposar 15 minutos. Secar con papel de cocina.\n3. En una sartén de hierro fundido de 25 cm (apta para horno), calentar el aceite de oliva a fuego medio y añadir el calabacín y la cebolla. Subir a fuego medio-alto y saltear 5-7 minutos hasta que estén tiernos y dorados. Añadir la mayor parte de la menta troceada, reservando un poco para decorar. Apagar el fuego y dejar templar.\n4. En un bol mediano, batir los huevos con la sal, los copos de guindilla y la levadura química. Escurrir el pan remojado en leche, desmenuzarlo con las manos y añadirlo a los huevos. Batir brevemente.\n5. Incorporar el calabacín y la cebolla a la mezcla de huevo. Si hace falta, añadir un poco más de aceite de oliva a la sartén. Verter la mezcla en la sartén.\n6. Hornear a 175 °C durante 15-20 minutos, o hasta que la superficie de la tortilla esté cuajada.\n7. Cubrir con queso feta desmenuzado si se desea y decorar con la menta reservada. Servir con gajos de limón y tomate en rodajas.",
+      "consejos": "Escurre bien el calabacín tras salarlo para evitar que la tortilla quede aguada.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/middle-eastern-zucchini-baked-omelet-eggah/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 209
+      }
+    },
+    {
+      "nombre": "Pissaladière",
+      "descripcion": "Tarta plana de origen francés con masa fina, cebolla caramelizada, anchoas y aceitunas negras. Ideal como aperitivo o comida ligera.",
+      "tiempo_prep_min": 150,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "20c74a2a",
+          250
+        ],
+        [
+          "d8f9b409",
+          3
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "950afc33",
+          1360
+        ],
+        [
+          "70d24d12",
+          2
+        ],
+        [
+          "715a14ac",
+          60
+        ],
+        [
+          "ba39ef20",
+          35
+        ]
+      ],
+      "instrucciones": "1. En un bol grande o en el de una amasadora con gancho, mezclar la harina, la levadura y la sal. Verter el agua templada y el aceite de oliva y mezclar hasta que la masa forme una bola y toda la harina esté humedecida.\n2. Amasar a velocidad 2 durante 4 minutos, hasta que la masa esté elástica y casi lisa. Si se amasa a mano, volcar sobre una superficie ligeramente enharinada y amasar 5 minutos; si está demasiado pegajosa, espolvorear con 1 cucharadita de harina cada vez hasta lograr una textura suave y ligeramente pegajosa, sin añadir más harina de la necesaria.\n3. Engrasar ligeramente el bol con aceite de oliva, girar la bola de masa para que se impregne, tapar y dejar levar en un lugar cálido unos 60 minutos, hasta que haya duplicado su volumen.\n4. Mientras tanto, caramelizar las cebollas: en una sartén grande o cazuela con tapa, combinar las cebollas, 180 ml de agua, el aceite de oliva, la sal, el tomillo y la hoja de laurel. Llevar a ebullición a fuego fuerte, tapar y cocinar hasta que el agua se haya evaporado, unos 10 minutos. Destapar y seguir cocinando, removiendo a menudo, hasta que las cebollas estén tiernas y doradas, unos 15-20 minutos; si se pegan, soltarlas con un chorrito de agua. Retirar del fuego, desechar los tallos de tomillo y el laurel y reservar hasta que la masa esté lista.\n5. Precalentar el horno a 200 °C y forrar una bandeja con papel de horno.\n6. Volcar la masa sobre la bandeja y estirarla con las manos hasta formar un rectángulo que llegue casi a los bordes, de aproximadamente 0,5-1 cm de grosor. Dejar reposar 15 minutos. Extender la cebolla caramelizada sobre la masa dejando un borde fino, colocar las anchoas encima y distribuir las aceitunas. Pincelar los bordes ligeramente con aceite de oliva.\n7. Hornear 20-25 minutos, hasta que la masa esté ligeramente dorada. Sacar del horno y pasar a una rejilla para que se enfríe.\n8. Cortar en cuadrados y servir templada o a temperatura ambiente.",
+      "consejos": "La tarta está mejor el mismo día en que se hornea; si se prepara con antelación, conservarla en un recipiente hermético y recalentarla brevemente en el horno.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/pissaladiere/",
+        "autor": null,
+        "kcal_web": 267.3
+      }
+    },
+    {
+      "nombre": "Frittata de espárragos y queso de cabra",
+      "descripcion": "Una frittata al horno con espárragos, chalota, ajo y queso de cabra desmenuzado, aromatizada con hierbas frescas. Sencilla y sabrosa, ideal para una comida ligera.",
+      "tiempo_prep_min": 35,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          400
+        ],
+        [
+          "8469bf72",
+          180
+        ],
+        [
+          "59163485",
+          8
+        ],
+        [
+          "03f57b8d",
+          4
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "efdb0f46",
+          28
+        ],
+        [
+          "c7ad7588",
+          454
+        ],
+        [
+          "31108cb4",
+          40
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "675965d4",
+          28
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 200 °C. En una jarra grande, batir los huevos, la leche, el perejil, el perifollo, el cebollino, 2,5 g de sal y la pimienta hasta que quede homogéneo. Reservar.\n2. Calentar 14 g de aceite de oliva en una sartén apta para horno de 25 cm a fuego medio. Añadir los espárragos, la chalota y los 2,5 g de sal restantes. Cocinar removiendo hasta que la chalota esté translúcida y los espárragos empiecen a ablandarse, unos 4 minutos. Añadir el ajo y cocinar 1 minuto.\n3. Bajar el fuego a medio-bajo, añadir los 14 g de aceite de oliva restantes y verter la mezcla de huevo sobre los espárragos. Cocinar sin remover unos 4 minutos, hasta que los bordes empiecen a cuajar. Desmenuzar el queso de cabra por encima.\n4. Pasar la sartén al horno y cocinar de 8 a 10 minutos, hasta que los huevos estén completamente cuajados. Dejar templar ligeramente antes de cortar y servir.",
+      "consejos": "Deja reposar la frittata unos minutos fuera del horno para que se asiente y sea más fácil cortarla en porciones.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/asparagus-frittata/",
+        "autor": null,
+        "kcal_web": 132.4
+      }
+    },
+    {
+      "nombre": "Paquetes de gambas y verduras a la parrilla",
+      "descripcion": "Gambas marinadas con vino blanco, limón, pimentón y miel, cocinadas al vapor en papillote con calabacín y pimientos. Una cena ligera y aromática lista en muy poco tiempo.",
+      "tiempo_prep_min": 18,
+      "porciones": 6,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "efdb0f46",
+          75
+        ],
+        [
+          "41cb2b97",
+          120
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "60ad001e",
+          360
+        ],
+        [
+          "e2dd1c2b",
+          10
+        ],
+        [
+          "41f3bf76",
+          8
+        ],
+        [
+          "8619b09f",
+          170
+        ],
+        [
+          "e5b7ba6b",
+          908
+        ],
+        [
+          "f8586302",
+          400
+        ],
+        [
+          "5a2b6b52",
+          75
+        ],
+        [
+          "d106e3bb",
+          120
+        ],
+        [
+          "ef1e4c61",
+          70
+        ],
+        [
+          "fea7cbe9",
+          5
+        ]
+      ],
+      "instrucciones": "1. Cortar seis hojas de papel de aluminio y seis de papel de horno de unos 30 x 30 cm. Colocar el papel de horno sobre cada hoja de aluminio y levantar los bordes formando un cuenco para que no se salgan los jugos.\n2. En un bol grande, batir el aceite de oliva, el vino blanco, el ajo picado, la ralladura y el zumo de dos limones, el pimentón ahumado, los copos de guindilla (si se usan), el romero y la miel. Salar al gusto.\n3. Añadir las gambas, el calabacín, los pimientos y la cebolla. Mezclar bien para que se impregnen.\n4. Repartir la mezcla de gambas y verduras en los cuencos de aluminio, añadiendo también los jugos. Juntar dos lados del aluminio en el centro, doblarlos un poco para sellar la parte superior y cerrar los bordes laterales, dejando algo de espacio para que se forme vapor.\n5. Calentar la parrilla a fuego medio-alto (200-230 °C). Cortar el limón restante en gajos para servir.\n6. Colocar los paquetes en la parrilla con los bordes doblados hacia arriba y cocinar tapados de 5 a 8 minutos. Abrir con cuidado uno de los paquetes (evitando el vapor) y comprobar que las gambas y las verduras están hechas; las gambas deben estar rosadas y curvadas.\n7. Retirar los paquetes de la parrilla y servir inmediatamente con perejil picado y un chorrito de zumo de limón. Tener cuidado, ya que al abrir los paquetes sale vapor muy caliente.",
+      "consejos": "Abre los paquetes con cuidado y hacia un lado para evitar quemarte con el vapor.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/shrimp-foil-packets/",
+        "autor": null,
+        "kcal_web": 381
+      }
+    },
+    {
+      "nombre": "Sándwich de ensalada de garbanzos con verduras y hierbas",
+      "descripcion": "Un sándwich fresco y vegetal con garbanzos ligeramente machacados, verduras crujientes, aceitunas y hierbas, aliñado con vinagreta Dijon.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "91f40662",
+          40
+        ],
+        [
+          "4dacb910",
+          60
+        ],
+        [
+          "2e8d5d64",
+          100
+        ],
+        [
+          "37936737",
+          60
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "ba39ef20",
+          35
+        ],
+        [
+          "9a1002ce",
+          35
+        ],
+        [
+          "59163485",
+          60
+        ],
+        [
+          "c63a423f",
+          10
+        ],
+        [
+          "20367cb0",
+          60
+        ],
+        [
+          "1948a73a",
+          320
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, añade los garbanzos escurridos y enjuagados y machácalos ligeramente con el dorso de un tenedor.\n2. Añade el apio, la zanahoria, el pepino, el rábano, la cebolleta, las aceitunas, el perejil y la menta, todos picados. Sazona con sal y pimienta y mezcla con cuidado.\n3. Incorpora la vinagreta Dijon al gusto y remueve hasta que todos los garbanzos y verduras queden bien impregnados.\n4. Tuesta las 8 rebanadas de pan integral. Reparte la mezcla de garbanzos sobre 4 rebanadas y cubre con las otras 4.\n5. Sirve inmediatamente.",
+      "consejos": "Puedes preparar la ensalada de garbanzos con antelación y guardarla en la nevera; añade la vinagreta justo antes de servir para que las verduras mantengan su textura crujiente.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/chickpea-salad-sandwich/",
+        "autor": null,
+        "kcal_web": 278.7
+      }
+    },
+    {
+      "nombre": "Garbanzos asados crujientes con especias",
+      "descripcion": "Garbanzos al horno bien crujientes, aromatizados con za'atar, zumaque y harissa. Un snack sencillo y sabroso de inspiración mediterránea.",
+      "tiempo_prep_min": 30,
+      "porciones": 8,
+      "tipo_plato": "Snack",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          850
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "e4fdfad8",
+          2
+        ]
+      ],
+      "instrucciones": "1. Escurre y enjuaga los garbanzos y sécalos muy bien con papel de cocina; déjalos en un escurridor o sobre una bandeja forrada con papel hasta que estén lo más secos posible.\n2. Precalienta el horno a 200 °C con una rejilla en el centro.\n3. Extiende los garbanzos en una bandeja grande sin papel de hornear ni aluminio. Rocíalos con el aceite de oliva y sazona con la sal. Remueve hasta que queden bien cubiertos y colócalos en una sola capa.\n4. Hornea entre 20 y 35 minutos, agitando la bandeja cada 10 minutos para que se doren de forma uniforme. Estarán listos cuando estén bien dorados y crujientes por fuera.\n5. En cuanto salgan del horno, añade el za'atar, el zumaque y la harissa en polvo. Remueve bien para que se impregnen y sirve templados.",
+      "consejos": "Secar muy bien los garbanzos antes de hornearlos es clave para que queden crujientes.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/roasted-chickpeas/",
+        "autor": "Suzy Karadsheh",
+        "kcal_web": 392
+      }
+    },
+    {
+      "nombre": "Muslos de pollo estofados con setas e higos secos",
+      "descripcion": "Muslos de pollo dorados y estofados al horno con un caldo aromático de vino, tomate y especias, con setas salteadas e higos secos. Un plato principal completo y lleno de sabor.",
+      "tiempo_prep_min": 60,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c8e0f469",
+          2
+        ],
+        [
+          "e4fdfad8",
+          2
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "59f1bfdb",
+          1
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "e88e2cb8",
+          1200
+        ],
+        [
+          "efdb0f46",
+          28
+        ],
+        [
+          "31108cb4",
+          280
+        ],
+        [
+          "bdc11c5a",
+          40
+        ],
+        [
+          "5a1860a7",
+          56
+        ],
+        [
+          "12ce769f",
+          180
+        ],
+        [
+          "eb5939be",
+          480
+        ],
+        [
+          "9241af66",
+          85
+        ],
+        [
+          "86017f5c",
+          340
+        ],
+        [
+          "60ad001e",
+          50
+        ],
+        [
+          "59163485",
+          10
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 175 °C.\n2. Mezclar en un bol pequeño el romero, el pimentón, el cilantro, la pimienta negra, la pimienta de Jamaica y la nuez moscada.\n3. Secar bien los muslos de pollo con papel de cocina y salarlos por ambos lados. Frotar la mezcla de especias por ambos lados, levantando la piel para que penetre también debajo. Reservar 20 minutos.\n4. Cubrir con una fina capa de aceite de oliva una olla grande o cazuela de hierro y calentar a fuego medio-alto. Dorar los muslos con la piel hacia abajo sin moverlos durante 8 minutos, hasta que la piel se despegue y esté dorada.\n5. Dar la vuelta al pollo y dorar brevemente por el otro lado, unos 3 minutos. Retirar a un plato.\n6. En la misma olla, añadir las chalotas y el ajo y cocinar removiendo a fuego medio unos 3 minutos hasta que se ablanden. Incorporar el concentrado de tomate, el vino, el caldo, las hojas de laurel y 1 cucharadita de romero seco. Salar ligeramente, llevar a ebullición suave y reducir unos 4 minutos.\n7. Colocar de nuevo el pollo en la olla, encajándolo en el líquido de modo que lo cubra solo tres cuartas partes y la piel quede expuesta. Añadir los higos secos y llevar a ebullición suave.\n8. Pasar la olla al horno y cocinar destapada hasta que el pollo esté muy tierno y el líquido se haya reducido a la mitad, unos 40-45 minutos. A los 30 minutos, añadir las setas salteadas.\n9. Mientras tanto, saltear las setas: cubrir con una fina capa de aceite de oliva una sartén antiadherente pequeña y calentar a fuego medio-alto. Añadir las setas y remover hasta que suelten su líquido y se doren, unos 7 minutos. Retirar del fuego.\n10. Unos 10 minutos antes de terminar la cocción del pollo, incorporar con cuidado las setas salteadas a la olla y devolver al horno esos últimos 10 minutos.\n11. Terminar con el zumo de limón y un poco de perejil fresco picado. Servir inmediatamente, regando con la salsa de la olla.",
+      "consejos": "Si el líquido se reduce demasiado durante el horneado, añadir un poco de caldo caliente para mantener la salsa.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/braised-chicken-thighs-recipe/",
+        "autor": null,
+        "kcal_web": 413.8
+      }
+    },
+    {
+      "nombre": "Moussaka griega",
+      "descripcion": "Una lasaña griega de berenjenas con salsa de carne y bechamel, gratinada al horno. Plato contundente y lleno de sabor.",
+      "tiempo_prep_min": 120,
+      "porciones": 12,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e152c2f2",
+          1000
+        ],
+        [
+          "34f7b619",
+          30
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "a847878f",
+          454
+        ],
+        [
+          "c14d168a",
+          3
+        ],
+        [
+          "589e624a",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "21a40eb5",
+          1
+        ],
+        [
+          "12ce769f",
+          120
+        ],
+        [
+          "1390b7a4",
+          400
+        ],
+        [
+          "2c6f1573",
+          4
+        ],
+        [
+          "de124e1a",
+          120
+        ],
+        [
+          "bf392211",
+          100
+        ],
+        [
+          "20c74a2a",
+          83
+        ],
+        [
+          "8469bf72",
+          960
+        ],
+        [
+          "6cd81fed",
+          100
+        ]
+      ],
+      "instrucciones": "1. Prepara la berenjena: corta los extremos y córtala en láminas de 0,5 cm de grosor. Colócalas en una capa y espolvorea con sal. Deja reposar 30 minutos para que suelten el amargor.\n2. Mientras tanto, prepara la salsa de carne: calienta 2 cucharadas de aceite de oliva en una sartén grande a fuego medio. Añade la cebolla y sofríe hasta que esté ligeramente dorada, unos 5 minutos. Agrega la carne picada y cocina hasta que se dore. Retira el exceso de grasa.\n3. Sazona la carne con orégano, canela, pimienta, nuez moscada, pimentón y sal (aproximadamente 1/2 cucharadita). Vierte el vino y deja hervir 1 minuto para reducir. Añade el tomate triturado, el azúcar y el caldo de carne caliente. Cocina a fuego medio-bajo hasta que espese y tome aroma, 20-30 minutos.\n4. Mientras se cocina la salsa, prepara la berenjena para gratinar: precalienta el grill del horno a temperatura alta. Unta una bandeja grande con aceite de oliva. Seca las láminas de berenjena con papel de cocina para eliminar el exceso de sal y colócalas en una capa. Pincélalas generosamente con aceite de oliva por ambos lados.\n5. Gratina la berenjena: coloca la bandeja a unos 15 cm del grill y cocina brevemente, dándoles la vuelta para que se ablanden y se doren por ambos lados. Retira del horno y reserva.\n6. Prepara el horneado: apaga el grill y precalienta el horno a 180°C. Engrasa ligeramente una fuente de horno de 24x33 cm.\n7. Prepara la bechamel: en un cazo grande, calienta el aceite de oliva a fuego medio-alto hasta que brille. Añade la harina, la sal y una pizca de pimienta negra. Cocina, removiendo continuamente, hasta que tome color dorado. Incorpora poco a poco la leche caliente, batiendo con varillas. Cocina a fuego medio hasta que espese y cubra el dorso de una cuchara, 5-7 minutos. Sazona con nuez moscada.\n8. Termina la bechamel: bate los huevos en un bol pequeño. Añade un cazo de la bechamel caliente y mezcla para templar. Vierte lentamente la mezcla de huevo en la bechamel, removiendo. Lleva a ebullición suave durante 2 minutos más. Prueba y ajusta la sal. Retira del fuego y deja enfriar y espesar un poco más.\n9. Monta la moussaka: coloca la mitad de las láminas de berenjena en el fondo de la fuente. Extiende la salsa de carne encima. Cubre con el resto de la berenjena. Vierte la bechamel por encima y extiéndela para cubrir toda la berenjena. Espolvorea con el pan rallado.\n10. Hornea: introduce la fuente en el centro del horno precalentado y hornea durante 45 minutos. Si lo deseas, sube la bandeja a la parte superior y gratina brevemente para que la superficie se dore.\n11. Sirve: retira del horno y deja reposar 10 minutos para que se asiente y sea más fácil cortar. Corta en porciones cuadradas y sirve.",
+      "consejos": "Deja reposar la moussaka unos minutos antes de cortarla para que las porciones mantengan mejor la forma.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/moussaka-recipe-eggplant-casserole/",
+        "autor": null,
+        "kcal_web": 309.9
+      }
+    }
+  ]
+}

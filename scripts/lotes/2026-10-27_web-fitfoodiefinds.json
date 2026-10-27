@@ -1,0 +1,3656 @@
+{
+  "lote": "web-fitfoodiefinds-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "16665787": {
+      "nombre": "Fresas",
+      "prefijo": "16665787",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "30693562": {
+      "nombre": "Ternera picada",
+      "prefijo": "30693562",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "37936737": {
+      "nombre": "Rábano",
+      "prefijo": "37936737",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "51176662": {
+      "nombre": "Azúcar moreno",
+      "prefijo": "51176662",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "53587262": {
+      "nombre": "Quinoa",
+      "prefijo": "53587262",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "57641694": {
+      "nombre": "Queso rallado",
+      "prefijo": "57641694",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "83505726": {
+      "nombre": "Atún en lata al natural",
+      "prefijo": "83505726",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "d38e02f3": {
+      "nombre": "Brotes germinados",
+      "prefijo": "d38e02f3",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c7ad7588": {
+      "nombre": "Espárragos",
+      "prefijo": "c7ad7588",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b1cb2f9": {
+      "nombre": "Pistachos",
+      "prefijo": "0b1cb2f9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "20367cb0": {
+      "nombre": "Mostaza de Dijon",
+      "prefijo": "20367cb0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "12a8ab46": {
+      "nombre": "Zumo de limón",
+      "prefijo": "12a8ab46",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e601abd9": {
+      "nombre": "Vinagre de vino blanco",
+      "prefijo": "e601abd9",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4b388ffd": {
+      "nombre": "Pollo entero (crudo)",
+      "prefijo": "4b388ffd",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "ef1e4c61": {
+      "nombre": "Cebolla blanca",
+      "prefijo": "ef1e4c61",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d0a93278": {
+      "nombre": "Tomillo Frasco",
+      "prefijo": "d0a93278",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "41cb2b97": {
+      "nombre": "Vino blanco",
+      "prefijo": "41cb2b97",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eb5939be": {
+      "nombre": "Caldo de Pollo 100%",
+      "prefijo": "eb5939be",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "192e437a": {
+      "nombre": "Maicena",
+      "prefijo": "192e437a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bbece24a": {
+      "nombre": "Ajo en polvo",
+      "prefijo": "bbece24a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2525c236": {
+      "nombre": "Tomillo seco",
+      "prefijo": "2525c236",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "46245eee": {
+      "nombre": "Albahaca seca",
+      "prefijo": "46245eee",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "585bd18b": {
+      "nombre": "Yogur griego natural",
+      "prefijo": "585bd18b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "f349ccc8": {
+      "nombre": "Coles de Bruselas",
+      "prefijo": "f349ccc8",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "32c7062f": {
+      "nombre": "Bacon 1/ 5 M",
+      "prefijo": "32c7062f",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "bfdfdee1": {
+      "nombre": "Mantequilla con sal",
+      "prefijo": "bfdfdee1",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e88e2cb8": {
+      "nombre": "Muslo de pollo",
+      "prefijo": "e88e2cb8",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "079aa047": {
+      "nombre": "Ñoquis frescos",
+      "prefijo": "079aa047",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten",
+        "Huevos"
+      ],
+      "origen": "vegetal"
+    },
+    "4834cee3": {
+      "nombre": "Nata para montar",
+      "prefijo": "4834cee3",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "2628d64e": {
+      "nombre": "Salsa barbacoa",
+      "prefijo": "2628d64e",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Gluten",
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "caa47a33": {
+      "nombre": "Salsa de soja",
+      "prefijo": "caa47a33",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja",
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "e63f3694": {
+      "nombre": "Lomo de cerdo",
+      "prefijo": "e63f3694",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "4c9d38c6": {
+      "nombre": "Media calabaza cacahuete",
+      "prefijo": "4c9d38c6",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "086e8640": {
+      "nombre": "Manzana Joya",
+      "prefijo": "086e8640",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "589e624a": {
+      "nombre": "Canela molida",
+      "prefijo": "589e624a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "081fbb40": {
+      "nombre": "Nuez moscada molida",
+      "prefijo": "081fbb40",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "de124e1a": {
+      "nombre": "Caldo de carne",
+      "prefijo": "de124e1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "ce104e48": {
+      "nombre": "Crema fresca (nata o crème fraîche)",
+      "prefijo": "ce104e48",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "8820b293": {
+      "nombre": "Brócoli",
+      "prefijo": "8820b293",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b12e5a68": {
+      "nombre": "Pimiento amarillo",
+      "prefijo": "b12e5a68",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3598c189": {
+      "nombre": "Jarabe Arce",
+      "prefijo": "3598c189",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ef6ecb36": {
+      "nombre": "Jengibre fresco",
+      "prefijo": "ef6ecb36",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3d2cd22d": {
+      "nombre": "Salsa sriracha",
+      "prefijo": "3d2cd22d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "f75a3721": {
+      "nombre": "Extracto de vainilla",
+      "prefijo": "f75a3721",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "edb1e321": {
+      "nombre": "Cacao en polvo (desgrasado)",
+      "prefijo": "edb1e321",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "4218ee8b": {
+      "nombre": "Semillas de sésamo",
+      "prefijo": "4218ee8b",
+      "rol": "especias_aromaticos",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "e5b7ba6b": {
+      "nombre": "Gambas",
+      "prefijo": "e5b7ba6b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "464ace19": {
+      "nombre": "Salsa Worcestershire Botella",
+      "prefijo": "464ace19",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "vegetal"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c661ff5c": {
+      "nombre": "Leche de coco",
+      "prefijo": "c661ff5c",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "318db297": {
+      "nombre": "Leche",
+      "prefijo": "318db297",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "508e2d88": {
+      "nombre": "Arándanos",
+      "prefijo": "508e2d88",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "564c253f": {
+      "nombre": "Ralladura de limón",
+      "prefijo": "564c253f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c0f5aeb4": {
+      "nombre": "Hinojo",
+      "prefijo": "c0f5aeb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7d5a031f": {
+      "nombre": "Manzana",
+      "prefijo": "7d5a031f",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "849140d6": {
+      "nombre": "Cebolla morada",
+      "prefijo": "849140d6",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c465cf20": {
+      "nombre": "Orejones albaricoque",
+      "prefijo": "c465cf20",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c98f36fc": {
+      "nombre": "Anacardos",
+      "prefijo": "c98f36fc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "675965d4": {
+      "nombre": "Queso fresco de cabra",
+      "prefijo": "675965d4",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "f68fa954": {
+      "nombre": "Eneldo",
+      "prefijo": "f68fa954",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ced19ed4": {
+      "nombre": "Vinagre sidra FEMUA, botella",
+      "prefijo": "ced19ed4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6f687582": {
+      "nombre": "Tomates cherry pera kumato",
+      "prefijo": "6f687582",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2e8d5d64": {
+      "nombre": "Pepino",
+      "prefijo": "2e8d5d64",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5aa40d0": {
+      "nombre": "Vinagre balsámico",
+      "prefijo": "b5aa40d0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b2c88c97": {
+      "nombre": "Requesón",
+      "prefijo": "b2c88c97",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "af60ae7c": {
+      "nombre": "Barra Pan Masa Madre",
+      "prefijo": "af60ae7c",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "63c26672": {
+      "nombre": "Nueces",
+      "prefijo": "63c26672",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "0a8c87df": {
+      "nombre": "Crema de Almendras Lata",
+      "prefijo": "0a8c87df",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "9286a63f": {
+      "nombre": "Aceite de coco",
+      "prefijo": "9286a63f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "94ba864e": {
+      "nombre": "Cúrcuma",
+      "prefijo": "94ba864e",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1390b7a4": {
+      "nombre": "Tomate triturado",
+      "prefijo": "1390b7a4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b07aab66": {
+      "nombre": "Semillas de cilantro",
+      "prefijo": "b07aab66",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6c5d82a5": {
+      "nombre": "Boniato",
+      "prefijo": "6c5d82a5",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ff64faff": {
+      "nombre": "Lentejas",
+      "prefijo": "ff64faff",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9df73a2d": {
+      "nombre": "Caldo de verduras",
+      "prefijo": "9df73a2d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "49156dfd": {
+      "nombre": "Arroz basmati",
+      "prefijo": "49156dfd",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b223775": {
+      "nombre": "Patata",
+      "prefijo": "0b223775",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0d971edf": {
+      "nombre": "Pepinillo encurtido",
+      "prefijo": "0d971edf",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0de2af4e": {
+      "nombre": "Muslos de pollo",
+      "prefijo": "0de2af4e",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "5a1860a7": {
+      "nombre": "Tomate doble concentrado",
+      "prefijo": "5a1860a7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1131a576": {
+      "nombre": "Plátano",
+      "prefijo": "1131a576",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95db3d38": {
+      "nombre": "Harina de avena",
+      "prefijo": "95db3d38",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "242a5689": {
+      "nombre": "Levadura química",
+      "prefijo": "242a5689",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "52cdd7b9": {
+      "nombre": "Moras",
+      "prefijo": "52cdd7b9",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0994bd1e": {
+      "nombre": "Frambuesas",
+      "prefijo": "0994bd1e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1948a73a": {
+      "nombre": "Pan integral",
+      "prefijo": "1948a73a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "d23e1bdd": {
+      "nombre": "Rúcula",
+      "prefijo": "d23e1bdd",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cfd9ca77": {
+      "nombre": "Calabaza",
+      "prefijo": "cfd9ca77",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95efbbab": {
+      "nombre": "Judías verdes",
+      "prefijo": "95efbbab",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8469bf72": {
+      "nombre": "Leche semidesnatada",
+      "prefijo": "8469bf72",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "34f7b619": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "bb104ae3": {
+      "nombre": "Condimento picante",
+      "prefijo": "bb104ae3",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d262ebde": {
+      "nombre": "Arroz blanco",
+      "prefijo": "d262ebde",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "06262e59": {
+      "nombre": "Queso",
+      "prefijo": "06262e59",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "382a08c2": {
+      "nombre": "Queso mozzarella",
+      "prefijo": "382a08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c3123736": {
+      "nombre": "Judías blancas",
+      "prefijo": "c3123736",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3f7a69c2": {
+      "nombre": "Tomate pelado",
+      "prefijo": "3f7a69c2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "513d4dc7": {
+      "nombre": "Vinagre de Vino Tinto",
+      "prefijo": "513d4dc7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5036194d": {
+      "nombre": "Salsa buffalo",
+      "prefijo": "5036194d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "babf3806": {
+      "nombre": "Alubia pinta",
+      "prefijo": "babf3806",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4e8a3263": {
+      "nombre": "Alubia blanca",
+      "prefijo": "4e8a3263",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03858a00": {
+      "nombre": "Maíz dulce",
+      "prefijo": "03858a00",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "81168dd3": {
+      "nombre": "Vinagre de arroz",
+      "prefijo": "81168dd3",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fa56e340": {
+      "nombre": "Quinoa cocida",
+      "prefijo": "fa56e340",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bfda87c0": {
+      "nombre": "Alubias negras cocidas",
+      "prefijo": "bfda87c0",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eea44971": {
+      "nombre": "Espinacas frescas",
+      "prefijo": "eea44971",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7312fdee": {
+      "nombre": "Pechuga de pavo",
+      "prefijo": "7312fdee",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "286652e6": {
+      "nombre": "Salsa Ranch",
+      "prefijo": "286652e6",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "41f3bf76": {
+      "nombre": "Romero",
+      "prefijo": "41f3bf76",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8767a425": {
+      "nombre": "Harina integral de trigo",
+      "prefijo": "8767a425",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "d641c84f": {
+      "nombre": "Alcaparras",
+      "prefijo": "d641c84f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "54fe547b": {
+      "nombre": "Tallarines",
+      "prefijo": "54fe547b",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten",
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "ecc7f788": {
+      "nombre": "Carne picada de ternera",
+      "prefijo": "ecc7f788",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "5b7e9a7d": {
+      "nombre": "Champiñones",
+      "prefijo": "5b7e9a7d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "894e649b": {
+      "nombre": "Crema agria",
+      "prefijo": "894e649b",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "7fcfe0b8": {
+      "nombre": "Yogur griego natural (0%)",
+      "prefijo": "7fcfe0b8",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "11d56939": {
+      "nombre": "Cuscús",
+      "prefijo": "11d56939",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "afa334c2": {
+      "nombre": "Pimienta Cayena Molida Tarro",
+      "prefijo": "afa334c2",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e5efc372": {
+      "nombre": "Coliflor",
+      "prefijo": "e5efc372",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1714b7a3": {
+      "nombre": "Salsa Mexicana",
+      "prefijo": "1714b7a3",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ae08120b": {
+      "nombre": "Aceite de Aguacate Cristal",
+      "prefijo": "ae08120b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "895052dd": {
+      "nombre": "Aceite de sésamo",
+      "prefijo": "895052dd",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "65c05fc4": {
+      "nombre": "Chili crisp",
+      "prefijo": "65c05fc4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6e209c9e": {
+      "nombre": "Parrillada de verduras Hacendado ultracongeladas",
+      "prefijo": "6e209c9e",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "524ef8eb": {
+      "nombre": "Semillas de lino",
+      "prefijo": "524ef8eb",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "570f8ae9": {
+      "nombre": "Batido Proteína Sabor Chocolate",
+      "prefijo": "570f8ae9",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "6c177099": {
+      "nombre": "Alubia negra",
+      "prefijo": "6c177099",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "933f4779": {
+      "nombre": "Melocotón",
+      "prefijo": "933f4779",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "719280c6": {
+      "nombre": "Pimienta de Alepo o copos de chile",
+      "prefijo": "719280c6",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c17ad017": {
+      "nombre": "Cebolla en polvo",
+      "prefijo": "c17ad017",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e2dd1c2b": {
+      "nombre": "Pimentón ahumado",
+      "prefijo": "e2dd1c2b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "70b4da1a": {
+      "nombre": "Azúcar glas",
+      "prefijo": "70b4da1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Ensalada de verano con pistachos y fresas",
+      "descripcion": "Ensalada fresca de brotes verdes, fresas y espárragos con pistachos caramelizados con miel y un aliño de mostaza y eneldo.",
+      "tiempo_prep_min": 24,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "d38e02f3",
+          280
+        ],
+        [
+          "16665787",
+          600
+        ],
+        [
+          "c7ad7588",
+          227
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "0b1cb2f9",
+          280
+        ],
+        [
+          "8619b09f",
+          42
+        ],
+        [
+          "6187036a",
+          113
+        ],
+        [
+          "20367cb0",
+          10
+        ],
+        [
+          "12a8ab46",
+          8
+        ],
+        [
+          "e601abd9",
+          10
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "2fedb06b",
+          3
+        ]
+      ],
+      "instrucciones": "1. Pon los brotes verdes, las fresas, los espárragos y la cebolla en un bol grande y mezcla. Reserva.\n2. Calienta una sartén pequeña a fuego medio. Añade los pistachos y tuesta 1 minuto. Agrega la miel y remueve hasta que los pistachos empiecen a dorarse.\n3. Retira del fuego, pasa los pistachos a un plato, espolvorea la sal en escamas y deja enfriar.\n4. Mientras tanto, prepara el aliño: mezcla en un bol la miel, la mostaza, el zumo de limón, el vinagre, la sal marina, el ajo, el aceite de oliva y el eneldo, y bate hasta integrar.\n5. Vierte el aliño sobre la ensalada y mezcla. Corona con los pistachos caramelizados y el queso feta desmenuzado. Sirve inmediatamente.",
+      "consejos": "Añade el aliño y los pistachos justo antes de servir para que los brotes no se ablanden.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/honey-pistachio-summer-salad/",
+        "autor": null,
+        "kcal_web": 473
+      }
+    },
+    {
+      "nombre": "Pollo asado abierto con salsa de vino blanco",
+      "descripcion": "Pollo entero abierto y asado al horno con una mezcla de especias, acompañado de una salsa casera de vino blanco y verduras.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4b388ffd",
+          1588
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "ef1e4c61",
+          75
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "d0a93278",
+          10
+        ],
+        [
+          "41cb2b97",
+          60
+        ],
+        [
+          "eb5939be",
+          360
+        ],
+        [
+          "12a8ab46",
+          10
+        ],
+        [
+          "192e437a",
+          6
+        ],
+        [
+          "bbece24a",
+          6
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "2525c236",
+          1
+        ],
+        [
+          "46245eee",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "21a40eb5",
+          1
+        ],
+        [
+          "51176662",
+          4
+        ]
+      ],
+      "instrucciones": "1. Mezcla todas las especias en un bol y reserva.\n2. Saca el pollo del envase, colócalo sobre una tabla limpia y seca y retira el exceso de humedad con papel de cocina.\n3. Para abrir el pollo, colócalo con la pechuga hacia abajo y corta a lo largo de un lado de la columna con tijeras de cocina, atravesando las costillas; repite por el otro lado y desecha la columna.\n4. Dale la vuelta al pollo, con la pechuga hacia arriba, y presiona con las manos el centro para aplanarlo.\n5. Coloca el pollo en un plato grande y separa con cuidado la carne de la piel con la mano.\n6. Frota 1 cucharadita de sal sobre la carne, bajo la piel, asegurándote de cubrirla bien.\n7. Sazona todo el pollo con la mezcla de especias, cubriendo la piel, las patas y los muslos. Refrigera el pollo sazonado entre 15 minutos y 2 horas.\n8. Precalienta el horno a 220 °C y forra una bandeja con papel de aluminio.\n9. Saca el pollo de la nevera; no es necesario atemperarlo.\n10. Coloca la cebolla, el ajo, el tomillo, el vino blanco, 120 ml de caldo y 1 cucharada de aceite de oliva sobre el papel de aluminio y espolvorea con la ½ cucharadita de sal restante.\n11. Pon una rejilla metálica sobre las verduras y coloca el pollo plano encima, con la pechuga hacia arriba.\n12. Frota el pollo con las 2 cucharadas de aceite restantes, masajeando bien.\n13. Asa el pollo a 220 °C durante 35-45 minutos. Comprueba la temperatura en la parte más gruesa de la pechuga y, si quieres, también en el muslo; retíralo del horno cuando alcance 71 °C.\n14. Deja reposar el pollo destapado 15 minutos para que el calor residual lo lleve a la temperatura segura; confirma que la temperatura interna llega a 74 °C antes de trincharlo.\n15. Mientras reposa el pollo, prepara la salsa: pasa las verduras, el líquido y las hierbas cocinadas del fondo de la bandeja a un cazo pequeño junto con el resto del caldo (240 ml).\n16. Lleva la salsa a ebullición, baja el fuego a medio-bajo y añade el zumo de limón.\n17. Espolvorea con cuidado la maicena sobre la salsa y bate con unas varillas. Cocina a fuego medio hasta que espese. Retira del fuego y desecha los tallos de las hierbas.\n18. Trincha el pollo y sirve con la salsa.",
+      "consejos": "Usa un termómetro de cocina para asegurarte de que el pollo alcanza 74 °C en la parte más gruesa antes de servirlo.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/spatchcock-chicken/",
+        "autor": null,
+        "kcal_web": 475
+      }
+    },
+    {
+      "nombre": "Coles de Bruselas envueltas en bacon con alioli",
+      "descripcion": "Coles de Bruselas asadas envueltas en bacon crujiente y acompañadas de un alioli ligero de yogur griego y ajo.",
+      "tiempo_prep_min": 55,
+      "porciones": 6,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "866d6397",
+          56
+        ],
+        [
+          "585bd18b",
+          60
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "12a8ab46",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "f349ccc8",
+          300
+        ],
+        [
+          "32c7062f",
+          300
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 200 °C y cubre una bandeja con papel de aluminio.\n2. Para el alioli, mezcla en un bol pequeño la mayonesa, el yogur griego, el ajo picado, el zumo de limón, la sal y la pimienta. Reserva.\n3. Corta las 10 tiras de bacon por la mitad para obtener 20 trozos. Coloca un trozo de bacon plano sobre la bandeja, pon una col de Bruselas en un extremo y enróllala. Coloca el rollo con la unión hacia abajo y repite con el resto.\n4. Separa las coles envueltas para que no se toquen y hornea de 30 a 40 minutos, según lo crujiente que quieras el bacon.\n5. Sirve inmediatamente con el alioli.",
+      "consejos": "Elige coles de Bruselas de tamaño similar para que se cocinen de forma uniforme.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/bacon-wrapped-brussels-sprouts/",
+        "autor": null,
+        "kcal_web": 278
+      }
+    },
+    {
+      "nombre": "Sopa de pollo y ñoquis",
+      "descripcion": "Una sopa cremosa y reconfortante con pollo desmenuzado, verduras y ñoquis, inspirada en la clásica sopa de pollo y ñoquis.",
+      "tiempo_prep_min": 45,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bfdfdee1",
+          42
+        ],
+        [
+          "ef1e4c61",
+          75
+        ],
+        [
+          "91f40662",
+          120
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "e88e2cb8",
+          454
+        ],
+        [
+          "eb5939be",
+          1200
+        ],
+        [
+          "20c74a2a",
+          31
+        ],
+        [
+          "cb57d667",
+          60
+        ],
+        [
+          "4dacb910",
+          220
+        ],
+        [
+          "079aa047",
+          454
+        ],
+        [
+          "4834cee3",
+          120
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Calienta una olla grande a fuego medio-alto y derrite la mantequilla. Añade la cebolla y espolvorea 1 g de sal; sofríe 3-4 minutos.\n2. Añade el apio y el ajo, remueve y sofríe otros 3-4 minutos.\n3. Incorpora los muslos de pollo con la piel hacia abajo y dora 1 minuto.\n4. Vierte el caldo de pollo y añade el resto de la sal. Lleva a ebullición.\n5. Baja a fuego medio-bajo, tapa y deja cocer a fuego lento 10 minutos o hasta que el pollo esté hecho.\n6. Retira con cuidado los muslos de pollo y desmenúzalos con dos tenedores. Reserva.\n7. Añade las espinacas, la zanahoria y los ñoquis a la olla y sube a fuego medio-alto hasta que los ñoquis floten. Baja a fuego bajo.\n8. Retira con cuidado 240 ml de caldo caliente y mezcla con la harina hasta obtener una pasta espesa.\n9. Vierte la mezcla en la olla y remueve hasta que espese.\n10. Añade el pollo desmenuzado y mezcla.\n11. Retira del fuego y añade poco a poco la nata, removiendo hasta integrar.\n12. Añade la pimienta negra y remueve.\n13. Calienta de nuevo a fuego bajo hasta la temperatura deseada y sirve.",
+      "consejos": "Si la sopa queda demasiado espesa, añade un poco más de caldo de pollo caliente hasta alcanzar la consistencia deseada.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/olive-garden-chicken-gnocchi-soup/",
+        "autor": null,
+        "kcal_web": 513
+      }
+    },
+    {
+      "nombre": "Lomo de cerdo marinado con salsa barbacoa",
+      "descripcion": "Lomo de cerdo adobado con una mezcla de salsa barbacoa, soja y ajo, ideal para asar o cocinar a la plancha.",
+      "tiempo_prep_min": 240,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "2628d64e",
+          180
+        ],
+        [
+          "caa47a33",
+          60
+        ],
+        [
+          "e63f3694",
+          908
+        ]
+      ],
+      "instrucciones": "1. Mezclar el ajo picado, la salsa barbacoa y la salsa de soja en un bol mediano.\n2. Colocar el lomo de cerdo en una fuente de horno o bolsa apta para alimentos y verter la marinada por encima, asegurándose de que quede bien cubierto.\n3. Retirar el máximo de aire de la bolsa y cerrarla (o cubrir la fuente).\n4. Refrigerar y marinar durante 4 a 12 horas; si hay poco tiempo, marinar al menos 30 minutos.\n5. Cocinar el lomo según el método elegido (a la plancha, al horno, en olla exprés o sous vide).",
+      "consejos": "Deja marinar el lomo al menos 4 horas para que la carne absorba bien los sabores.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/easy-pork-tenderloin-marinade/",
+        "autor": null,
+        "kcal_web": 226
+      }
+    },
+    {
+      "nombre": "Crema de calabaza asada y manzana",
+      "descripcion": "Una crema suave y aromática de calabaza butternut asada con manzana, cebolla y ajo, especiada con canela y nuez moscada. Se sirve con un toque de crème fraîche y tomillo fresco.",
+      "tiempo_prep_min": 75,
+      "porciones": 4,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4c9d38c6",
+          840
+        ],
+        [
+          "ef1e4c61",
+          75
+        ],
+        [
+          "086e8640",
+          150
+        ],
+        [
+          "bdc11c5a",
+          40
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "de124e1a",
+          1200
+        ],
+        [
+          "d0a93278",
+          3
+        ],
+        [
+          "ce104e48",
+          30
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C y engrasa una bandeja de horno.\n2. Reparte la calabaza en cubos, la cebolla y la manzana troceada sobre la bandeja.\n3. Corta el extremo del ajo (el opuesto a la raíz) para dejar los dientes expuestos pero intactos y colócalo con el corte hacia arriba en la bandeja.\n4. Rocía el aceite de oliva sobre las verduras y el ajo.\n5. En un bol pequeño, mezcla la canela, la nuez moscada, la sal y la pimienta.\n6. Esparce la mezcla de especias sobre todos los ingredientes y masajéalos para integrarlas.\n7. Hornea durante 30 minutos.\n8. Remueve todos los ingredientes y gira la cabeza de ajo con el corte hacia abajo; hornea 10-15 minutos más, hasta que la calabaza esté tierna y empiece a caramelizar.\n9. Saca la bandeja del horno y deja enfriar 10 minutos.\n10. Cuando el ajo esté frío, exprime los dientes fuera de su piel en una batidora de alta velocidad.\n11. Añade la calabaza, la cebolla y la manzana a la batidora.\n12. Vierte el caldo y tritura hasta obtener una crema lisa.\n13. Pasa la crema a un cazo, añade las ramitas de tomillo y remueve.\n14. Calienta a fuego medio durante 10-15 minutos hasta alcanzar la temperatura deseada.\n15. Retira los tallos de tomillo, sirve con un hilo de crème fraîche y pimienta recién molida por encima.",
+      "consejos": "Ajusta la cantidad de caldo según la textura deseada: menos caldo para una crema más espesa y más para una sopa más ligera.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/roasted-butternut-squash-soup/",
+        "autor": null,
+        "kcal_web": 274
+      }
+    },
+    {
+      "nombre": "Salteado de salmón al horno con verduras",
+      "descripcion": "Una bandeja de verduras asadas con salmón desmenuzado y una salsa agridulce de soja y arce. Una comida completa y sabrosa lista en menos de una hora.",
+      "tiempo_prep_min": 50,
+      "porciones": 3,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "8820b293",
+          360
+        ],
+        [
+          "b12e5a68",
+          150
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "4dacb910",
+          150
+        ],
+        [
+          "950afc33",
+          75
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "caa47a33",
+          60
+        ],
+        [
+          "3598c189",
+          60
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "ef6ecb36",
+          4
+        ],
+        [
+          "3d2cd22d",
+          5
+        ],
+        [
+          "192e437a",
+          6
+        ],
+        [
+          "2fd7e358",
+          340
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 190 °C.\n2. Coloca el brócoli, los pimientos, la zanahoria y la cebolla troceados en una bandeja de horno grande. Rocía con el aceite de oliva y mezcla.\n3. Espolvorea el condimento todo bagel y mezcla de nuevo.\n4. Asa a 190 °C durante 20-25 minutos o hasta que las verduras estén al punto deseado.\n5. Pasa las verduras asadas a un bol grande.\n6. Mientras se asan las verduras, prepara la salsa: bate la salsa de soja, el jarabe de arce, el ajo picado, el jengibre rallado y la salsa sriracha (opcional).\n7. Disuelve la maicena en 2 cucharadas de agua tibia y añádela a la salsa, batiendo hasta integrar.\n8. Justo antes de servir, calienta la salsa en el microondas durante 90 segundos a 2 minutos.\n9. Cuando las verduras estén listas, precalienta el horno en modo grill fuerte.\n10. Coloca papel de aluminio en una bandeja y engrásalo con spray antiadherente.\n11. Seca bien los filetes de salmón con papel de cocina.\n12. Coloca el salmón sobre el papel de aluminio, rocía la superficie con spray y sazona con pimienta negra.\n13. Asa el salmón en el grill fuerte durante 8 minutos o hasta que esté completamente cocinado.\n14. Deja reposar el salmón unos minutos, dale la vuelta para retirar la piel y desmenúzalo con un tenedor.\n15. Añade el salmón al bol de verduras, vierte la salsa caliente por encima y mezcla todo.\n16. Sirve el salteado con tu grano favorito.",
+      "consejos": "Sirve con arroz integral o quinoa para completar el plato y aprovechar la salsa.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/sheet-pan-salmon-stir-fry-recipe/",
+        "autor": null,
+        "kcal_web": 455
+      }
+    },
+    {
+      "nombre": "Avena nocturna napolitana",
+      "descripcion": "Desayuno en capas de avena remojada con tres sabores: vainilla, chocolate y fresa. Se prepara la noche anterior y se sirve frío por la mañana.",
+      "tiempo_prep_min": 120,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          80
+        ],
+        [
+          "b5b5e57f",
+          4
+        ],
+        [
+          "585bd18b",
+          45
+        ],
+        [
+          "9dc9f005",
+          215
+        ],
+        [
+          "f75a3721",
+          1
+        ],
+        [
+          "8619b09f",
+          14
+        ],
+        [
+          "edb1e321",
+          4
+        ],
+        [
+          "34d6fafa",
+          10
+        ],
+        [
+          "16665787",
+          24
+        ]
+      ],
+      "instrucciones": "1. Para las capas de vainilla y chocolate, mezcla todos los ingredientes de cada capa en un bol pequeño y refrigera al menos 2 horas o toda la noche.\n2. Para la capa de fresa, tritura las fresas con la bebida de almendra en un procesador de alimentos pequeño hasta obtener un puré. Mezcla con el resto de ingredientes de esa capa en un bol pequeño y refrigera al menos 2 horas o toda la noche.\n3. Por la mañana, sirve en capas como si fuera helado napolitano.",
+      "consejos": "Puedes prepararlo la noche anterior y dejarlo listo en la nevera para desayunar al día siguiente.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/neapolitan-overnight-oats/",
+        "autor": null,
+        "kcal_web": 251
+      }
+    },
+    {
+      "nombre": "Pollo a la miel y sriracha en olla lenta",
+      "descripcion": "Pollo tierno cocinado lentamente en una salsa agridulce y picante de miel y sriracha, terminado con sésamo y cebolleta. Ideal para una comida completa acompañado de arroz.",
+      "tiempo_prep_min": 130,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "caa47a33",
+          60
+        ],
+        [
+          "8619b09f",
+          170
+        ],
+        [
+          "3d2cd22d",
+          120
+        ],
+        [
+          "4ad8714c",
+          680
+        ],
+        [
+          "192e437a",
+          6
+        ],
+        [
+          "4218ee8b",
+          6
+        ],
+        [
+          "82930270",
+          30
+        ]
+      ],
+      "instrucciones": "1. Añade la salsa de soja, la miel y la salsa sriracha a la olla lenta y mezcla bien con unas varillas.\n2. Incorpora las pechugas de pollo y remuévelas para que se impregnen de la salsa.\n3. Cocina a temperatura alta durante 2-3 horas o a baja durante 4-6 horas.\n4. Cuando el pollo alcance una temperatura interna de 74 °C, sácalo de la olla y reserva.\n5. Añade la maicena a la salsa de la olla y mezcla con unas varillas.\n6. Tapa la olla y ponla a temperatura alta mientras preparas el pollo; la salsa debe espesar y adherirse a una cuchara.\n7. Corta el pollo en cubos pequeños de aproximadamente 1,5 cm.\n8. Devuelve el pollo a la olla y remuévelo para que se cubra con la salsa.\n9. Sirve sobre arroz blanco y espolvorea con las semillas de sésamo y la cebolleta picada.",
+      "consejos": "Si la salsa no espesa lo suficiente, mantén la olla destapada a temperatura alta unos minutos más, removiendo.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/5-ingredient-honey-sriracha-crock-pot-chicken/",
+        "autor": null,
+        "kcal_web": 231
+      }
+    },
+    {
+      "nombre": "Gambas marinadas a la parrilla",
+      "descripcion": "Gambas jugosas marinadas con limón, ajo y mostaza, perfectas para hacer a la parrilla o a la plancha. Una receta rápida y llena de sabor.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "e5b7ba6b",
+          680
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "464ace19",
+          30
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "8619b09f",
+          10
+        ],
+        [
+          "3350c934",
+          0.5
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "d61c2a0f",
+          4
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla el zumo de limón, la salsa Worcestershire, el ajo picado, la mostaza de Dijon, la miel, la sal, la pimienta y los copos de guindilla. Bate bien.\n2. Añade el aceite de oliva en hilo mientras sigues batiendo hasta que todos los ingredientes estén integrados.\n3. Incorpora las gambas al marinado y remueve para que se impregnen bien.\n4. Tapa y deja marinar en la nevera entre 30 minutos y 1 hora, no más, para evitar que el limón empiece a cocer las gambas.\n5. Escurre ligeramente las gambas y ásalas a la parrilla a 200 °C (400 °F) sobre calor directo durante 1-2 minutos por cada lado, o hasta que alcancen una temperatura interna de 63 °C (145 °F).\n6. Espolvorea con cilantro fresco picado y un poco más de zumo de limón al servir.",
+      "consejos": "No dejes las gambas en el marinado más de 1 hora para que no se cocinen en el ácido del limón.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/easy-grilled-shrimp-marinade/",
+        "autor": null,
+        "kcal_web": 150
+      }
+    },
+    {
+      "nombre": "Avena cremosa de coco en olla lenta",
+      "descripcion": "Avena cortada en acero cocinada lentamente con leche de coco y leche, con un toque de vainilla y sirope de arce. Un desayuno cremoso y reconfortante que se prepara solo.",
+      "tiempo_prep_min": 490,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          188
+        ],
+        [
+          "c661ff5c",
+          425
+        ],
+        [
+          "318db297",
+          1080
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "34d6fafa",
+          40
+        ]
+      ],
+      "instrucciones": "1. Engrasar la olla lenta con spray antiadherente y añadir todos los ingredientes; remover.\n2. Cocinar a fuego bajo durante 6-8 horas o a fuego alto durante 2-4 horas. Si es posible, remover cada pocas horas para evitar que se pegue.\n3. Servir con una pizca de canela y los toppings favoritos.",
+      "consejos": "Remover cada pocas horas durante la cocción evita que la avena se pegue al fondo de la olla.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/slow-cooker-creamy-coconut-steel-cut-oats/",
+        "autor": null,
+        "kcal_web": 329
+      }
+    },
+    {
+      "nombre": "Avena nocturna con arándanos",
+      "descripcion": "Avena remojada durante la noche con arándanos, chía y yogur griego, un desayuno cremoso y refrescante listo sin cocción.",
+      "tiempo_prep_min": 10,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          90
+        ],
+        [
+          "508e2d88",
+          75
+        ],
+        [
+          "b5b5e57f",
+          24
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "8619b09f",
+          21
+        ],
+        [
+          "564c253f",
+          2
+        ],
+        [
+          "585bd18b",
+          120
+        ],
+        [
+          "9dc9f005",
+          180
+        ]
+      ],
+      "instrucciones": "1. Machaca los arándanos en un bol grande con un tenedor.\n2. Añade el yogur griego, la bebida de almendra, la miel, el extracto de vainilla y la ralladura de limón; mezcla hasta que quede homogéneo.\n3. Incorpora los copos de avena, las semillas de chía y una pizca de sal; mezcla bien.\n4. Reparte en un recipiente con tapa y refrigera al menos 2 horas o toda la noche.\n5. Sirve frío; si quieres, añade un chorrito de bebida de almendra antes de servir.",
+      "consejos": "Para un desayuno más completo, añade un puñado de granola y unos arándanos frescos por encima justo antes de comer.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/blueberry-muffin-overnight-oats/",
+        "autor": null,
+        "kcal_web": 315
+      }
+    },
+    {
+      "nombre": "Ensalada de kale y hinojo con vinagreta de limón",
+      "descripcion": "Una ensalada fresca y crujiente de kale masajeado con hinojo, manzana, orejones y anacardos, aliñada con una vinagreta de limón y eneldo.",
+      "tiempo_prep_min": 15,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "d946bd47",
+          268
+        ],
+        [
+          "c0f5aeb4",
+          150
+        ],
+        [
+          "7d5a031f",
+          150
+        ],
+        [
+          "849140d6",
+          75
+        ],
+        [
+          "c465cf20",
+          65
+        ],
+        [
+          "c98f36fc",
+          75
+        ],
+        [
+          "675965d4",
+          50
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "f68fa954",
+          10
+        ],
+        [
+          "ced19ed4",
+          38
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "8619b09f",
+          11
+        ]
+      ],
+      "instrucciones": "1. Prepara el aliño introduciendo el aceite de oliva, el vinagre de sidra, el zumo de limón, la miel y la sal en un tarro. Cierra bien y agita hasta que todos los ingredientes se integren. Reserva.\n2. Coloca el kale troceado en un bol grande y rocía con 2 cucharadas del aliño. Masajea el kale con las manos durante 2-3 minutos, hasta que reduzca su volumen a la mitad y quede tierno.\n3. Añade al bol el hinojo (bulbo, tallos y hojas), la manzana, la cebolla morada, los orejones, los anacardos y el queso de cabra desmenuzado. Mezcla bien.\n4. Vierte el resto del aliño y remueve hasta que todos los ingredientes queden bien impregnados. Sirve inmediatamente.",
+      "consejos": "Masajea bien el kale para que pierda la textura dura y absorba mejor el sabor del aliño.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/massaged-kale-and-fennel-salad-with-lemon-vinaigrette/",
+        "autor": null,
+        "kcal_web": 393
+      }
+    },
+    {
+      "nombre": "Ensalada de garbanzos y pepino con requesón",
+      "descripcion": "Una ensalada fresca y crujiente sin lechuga, con garbanzos, tomates cherry, pepino y un aliño de vinagre balsámico, servida sobre requesón.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "6f687582",
+          280
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "2e8d5d64",
+          300
+        ],
+        [
+          "b5aa40d0",
+          28
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "12a8ab46",
+          10
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "b2c88c97",
+          480
+        ]
+      ],
+      "instrucciones": "1. En un bol, mezcla los garbanzos escurridos y enjuagados, los tomates cherry cortados por la mitad, la cebolla roja picada y los pepinos cortados en medias lunas.\n2. Aliña con el vinagre balsámico, el aceite de oliva y el zumo de limón, y remueve bien.\n3. Sazona con la sal, la pimienta y el condimento todo bagel, y vuelve a mezclar.\n4. Sirve la ensalada sobre 120 g de requesón por ración y espolvorea un poco más de condimento todo bagel al gusto.",
+      "consejos": "Puedes preparar la ensalada con antelación y guardarla en la nevera; añade el aliño justo antes de servir para que las verduras mantengan su textura crujiente.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/no-lettuce-salad/",
+        "autor": null,
+        "kcal_web": 422
+      }
+    },
+    {
+      "nombre": "Cazuela de torrijas al estilo French toast con crema de almendra y nueces",
+      "descripcion": "Una cazuela de pan tipo sourdough bañado en huevo y leche, con nueces y una crema de almendra y canela, cocinada al vapor en olla a presión. Ideal para un desayuno o merienda especial.",
+      "tiempo_prep_min": 40,
+      "porciones": 8,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "af60ae7c",
+          360
+        ],
+        [
+          "6cd81fed",
+          400
+        ],
+        [
+          "318db297",
+          240
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "34d6fafa",
+          56
+        ],
+        [
+          "63c26672",
+          60
+        ],
+        [
+          "0a8c87df",
+          170
+        ],
+        [
+          "589e624a",
+          8
+        ],
+        [
+          "9286a63f",
+          14
+        ],
+        [
+          "668919bc",
+          56
+        ],
+        [
+          "51176662",
+          50
+        ]
+      ],
+      "instrucciones": "1. Engrasar un bol de vidrio apto para calor de 20 cm de diámetro y reservar.\n2. En un bol pequeño, mezclar la crema de almendra, 2 cucharadas de sirope de arce, la canela y el aceite de coco derretido hasta obtener una consistencia fluida. Si es necesario, añadir más aceite de coco derretido, 1 cucharadita a la vez.\n3. En un bol mediano, batir los huevos, la leche, la vainilla y 2 cucharadas de sirope de arce.\n4. Montar la cazuela: colocar la mitad del pan en cubos y la mitad de las nueces en el bol engrasado. Verter la mitad de la mezcla de crema de almendra y canela sobre el pan. Añadir el resto del pan y las nueces y verter el resto de la crema de almendra por encima.\n5. Verter la mezcla de huevo sobre el pan y mezclar con una espátula. Si se desea, espolvorear la mantequilla en cubos y el azúcar moreno por encima.\n6. Colocar el trébedes metálico en el fondo de la olla a presión y añadir 240 ml de agua. Colocar el bol con la mezcla sobre el trébedes.\n7. Cerrar la olla y poner la válvula en posición de sellado. Seleccionar presión alta y cocinar durante 25 minutos.\n8. Liberar la presión rápidamente y retirar la tapa. Dejar templar y servir con los toppings preferidos para torrijas.",
+      "consejos": "Sirve la cazuela templada para que la crema de almendra y canela se mantenga fluida y se integre bien con el pan.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/instant-pot-cinnamon-roll-french-toast-casserole/",
+        "autor": null,
+        "kcal_web": 368
+      }
+    },
+    {
+      "nombre": "Curry de lentejas con arroz basmati",
+      "descripcion": "Un curry vegetal de lentejas verdes con boniato, zanahoria y espinacas, aromatizado con especias y coco, servido con arroz basmati.",
+      "tiempo_prep_min": 80,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "9286a63f",
+          42
+        ],
+        [
+          "950afc33",
+          250
+        ],
+        [
+          "94ba864e",
+          6
+        ],
+        [
+          "bdc11c5a",
+          36
+        ],
+        [
+          "ef6ecb36",
+          8
+        ],
+        [
+          "cb57d667",
+          142
+        ],
+        [
+          "1390b7a4",
+          850
+        ],
+        [
+          "6be23d9d",
+          4
+        ],
+        [
+          "b07aab66",
+          2
+        ],
+        [
+          "6c5d82a5",
+          600
+        ],
+        [
+          "4dacb910",
+          120
+        ],
+        [
+          "ff64faff",
+          200
+        ],
+        [
+          "c661ff5c",
+          425
+        ],
+        [
+          "9df73a2d",
+          360
+        ],
+        [
+          "49156dfd",
+          400
+        ],
+        [
+          "d61c2a0f",
+          4
+        ]
+      ],
+      "instrucciones": "1. Calienta 1 cucharada de aceite de coco en una olla grande a fuego medio-alto. Añade la cebolla con ¼ de cucharadita de sal y la cúrcuma y sofríe 3-4 minutos. Agrega el ajo y el jengibre y cocina 1-2 minutos hasta que aromatice.\n2. Añade las espinacas, el tomate triturado y el resto de la sal y mezcla. Tapa la olla y deja que las espinacas se marchiten unos 2-3 minutos.\n3. Retira del fuego, tritura la mezcla de espinacas en una batidora de alta potencia hasta obtener un puré suave y reserva.\n4. Limpia la olla y derrite 2 cucharadas de aceite de coco a fuego medio. Añade la cúrcuma, el comino y las semillas de cilantro y tuesta las especias hasta que aromatizen.\n5. Añade la cebolla y 1 cucharadita de sal, sofríe 2-3 minutos y luego incorpora el ajo y el jengibre. Cocina 2-3 minutos más.\n6. Incorpora el boniato, la zanahoria y las lentejas y cocina todo junto 3-4 minutos. Añade el tomate triturado, la leche de coco, el caldo y el puré de espinacas y lleva a ebullición.\n7. Baja el fuego y deja simmer 30-40 minutos, removiendo de vez en cuando para que las lentejas no se peguen al fondo.\n8. Mientras se cocina el curry, prepara el arroz basmati. Lleva 3,5 tazas de agua a ebullición, añade el arroz, tapa y cocina a fuego bajo unos 20 minutos.\n9. Retira el arroz del fuego y suéltalo con un tenedor. Reserva.\n10. El curry está listo cuando las lentejas aún tienen un poco de textura. Sirve con el arroz y corona con cilantro fresco.",
+      "consejos": "Ajusta el punto de sal y añade un poco más de caldo si el curry queda demasiado espeso.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/lentil-curry-recipe/",
+        "autor": null,
+        "kcal_web": 523
+      }
+    },
+    {
+      "nombre": "Ensalada de patata cremosa con yogur y eneldo",
+      "descripcion": "Una ensalada de patata ligera y cremosa, aliñada con yogur griego, mayonesa, mostaza y eneldo fresco. Se cocinan las patatas y los huevos al mismo tiempo en olla a presión.",
+      "tiempo_prep_min": 28,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0b223775",
+          600
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "ced19ed4",
+          120
+        ],
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "866d6397",
+          56
+        ],
+        [
+          "2fedb06b",
+          6
+        ],
+        [
+          "20367cb0",
+          5
+        ],
+        [
+          "82930270",
+          25
+        ],
+        [
+          "0d971edf",
+          35
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "12a8ab46",
+          30
+        ]
+      ],
+      "instrucciones": "1. Coloca la rejilla metálica dentro de la olla a presión. Pon las patatas troceadas en cubos de unos 4 cm sobre la rejilla y coloca con cuidado los dos huevos encima de las patatas.\n2. Mezcla el vinagre de sidra y el agua en un bol. Vierte 180 ml de esta mezcla en la olla y reserva el resto.\n3. Cierra la olla y bloquea la tapa. Gira la válvula a 'sellado', selecciona cocción manual a alta presión y programa 8 minutos.\n4. Mientras la olla se calienta, pon en un bol grande el resto de ingredientes (incluido el resto de la mezcla de agua y vinagre): yogur griego, mayonesa, eneldo picado, mostaza, cebolleta, pepinillo, sal, pimienta y zumo de limón. Mezcla bien y reserva en la nevera.\n5. Cuando termine la cocción, libera la presión rápidamente girando la válvula a 'ventilación', manteniéndote alejado del vapor.\n6. Pasa los huevos cocidos a un baño de hielo y transfiere las patatas a un bol; enfría en la nevera o el congelador.\n7. Cuando los huevos estén fríos, unos 5 minutos, pélalos, trocéalos y añádelos a la mezcla de yogur. Remueve bien.\n8. Cuando las patatas estén completamente frías, añádelas a la mezcla de yogur y remueve hasta integrar. Con una espátula, aplasta ligeramente parte de las patatas para conseguir la textura deseada.\n9. Sirve con un poco de eneldo fresco por encima.",
+      "consejos": "Enfría bien las patatas antes de mezclarlas para que la salsa no se corte y la ensalada quede más cremosa.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/instant-pot-potato-salad-gluten-free-and-healthy/",
+        "autor": null,
+        "kcal_web": 180
+      }
+    },
+    {
+      "nombre": "Muslos de pollo al horno con coles de Bruselas y quinoa",
+      "descripcion": "Muslos de pollo dorados y horneados en olla holandesa sobre una cama de coles de Bruselas y quinoa aromatizada con vino blanco y tomate.",
+      "tiempo_prep_min": 45,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0de2af4e",
+          794
+        ],
+        [
+          "bbece24a",
+          6
+        ],
+        [
+          "51176662",
+          4
+        ],
+        [
+          "2525c236",
+          1
+        ],
+        [
+          "3350c934",
+          5
+        ],
+        [
+          "668919bc",
+          42
+        ],
+        [
+          "41cb2b97",
+          120
+        ],
+        [
+          "ef1e4c61",
+          75
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "f349ccc8",
+          454
+        ],
+        [
+          "53587262",
+          85
+        ],
+        [
+          "eb5939be",
+          360
+        ],
+        [
+          "5a1860a7",
+          48
+        ],
+        [
+          "d0a93278",
+          5
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 205 °C.\n2. Mezcla el ajo en polvo, el azúcar moreno, el tomillo seco, la sal, la pimienta y la piel de limón seca en un bol pequeño y reserva.\n3. Seca los muslos de pollo con papel de cocina y recorta el exceso de grasa y piel.\n4. Espolvorea los muslos con la mezcla de especias hasta que queden bien cubiertos.\n5. Calienta una olla holandesa grande a fuego medio-alto, añade la mantequilla y, cuando se derrita y empiece a burbujear, coloca los muslos con la piel hacia abajo. Dora 2-3 minutos por cada lado hasta que la piel esté dorada. Retira y reserva.\n6. Desglasa la olla con el vino blanco y raspa los restos del fondo con una espátula. Añade la cebolla y el ajo picado y sofríe 3-4 minutos.\n7. Añade las coles de Bruselas y mezcla; sofríe 2 minutos más.\n8. Mientras, mezcla el caldo, el concentrado de tomate, la sal y la pimienta en un recipiente y bate hasta integrar.\n9. Añade el tomillo fresco y la quinoa a las coles, vierte la mezcla de caldo en la olla y remueve todo.\n10. Coloca los muslos dorados sobre las coles, tapa la olla y hornea a 205 °C durante 20-25 minutos.\n11. Destapa y hornea 5 minutos más para dorar la piel.\n12. Retira del horno cuando el pollo alcance 74 °C en su interior y la quinoa esté cocida.",
+      "consejos": "Deja reposar la olla tapada 5 minutos fuera del horno antes de servir para que la quinoa termine de asentarse.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/dutch-oven-chicken-thighs-recipe/",
+        "autor": null,
+        "kcal_web": 491
+      }
+    },
+    {
+      "nombre": "Copos de avena horneados con frutos rojos",
+      "descripcion": "Muffins de avena horneados con plátano, huevo y una mezcla de arándanos, moras y frambuesas. Una opción práctica para el desayuno o la merienda.",
+      "tiempo_prep_min": 30,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "f75a3721",
+          4
+        ],
+        [
+          "34d6fafa",
+          80
+        ],
+        [
+          "9dc9f005",
+          120
+        ],
+        [
+          "9286a63f",
+          14
+        ],
+        [
+          "0f347066",
+          180
+        ],
+        [
+          "95db3d38",
+          60
+        ],
+        [
+          "242a5689",
+          4
+        ],
+        [
+          "589e624a",
+          3
+        ],
+        [
+          "508e2d88",
+          75
+        ],
+        [
+          "52cdd7b9",
+          75
+        ],
+        [
+          "0994bd1e",
+          60
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y engrasa un molde para muffins con aceite de coco en espray. Reserva.\n2. Machaca el plátano maduro en un bol mediano.\n3. Bate con el plátano los huevos, el extracto de vainilla, el sirope de arce y la bebida de almendra.\n4. En un bol grande, mezcla los copos de avena, la harina de avena, la levadura química, la canela y la sal.\n5. Incorpora los ingredientes húmedos a los secos, añade el aceite de coco derretido y mezcla de nuevo.\n6. Añade los frutos rojos y mezcla hasta que se integren.\n7. Reparte la masa en el molde para muffins, llenando cada hueco hasta arriba.\n8. Hornea a 175 °C durante 18-20 minutos.",
+      "consejos": "Deja enfriar los muffins unos minutos antes de desmoldarlos para que no se rompan.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/triple-berry-baked-oatmeal-cups-video/",
+        "autor": null,
+        "kcal_web": 282
+      }
+    },
+    {
+      "nombre": "Aguacates al horno con huevo",
+      "descripcion": "Mitades de aguacate horneadas con un huevo dentro, una receta sencilla y nutritiva ideal para desayuno o cena ligera.",
+      "tiempo_prep_min": 32,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "91ad5545",
+          600
+        ],
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 220 °C y engrasa dos moldes de bizcocho con spray antiadherente.\n2. Corta los aguacates por la mitad a lo largo y retira el hueso.\n3. Retira de 1 a 1,5 cucharadas de pulpa de cada mitad, asegurándote de hacerlo a lo ancho y no en profundidad, para que quepa más huevo. Reserva la pulpa para otro uso.\n4. Coloca las mitades de aguacate en los moldes, alineadas para que no se muevan, y casca un huevo en cada una. Puede que algo de clara se derrame, no pasa nada.\n5. Sazona la superficie de los huevos con sal y pimienta.\n6. Hornea a 220 °C durante 18-22 minutos o hasta que los huevos alcancen la consistencia deseada.\n7. Añade tus toppings favoritos y disfruta.",
+      "consejos": "Usa huevos de tamaño mediano, ya que los grandes o jumbo no caben bien en la cavidad del aguacate.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/avocado-baked-eggs/",
+        "autor": null,
+        "kcal_web": 320
+      }
+    },
+    {
+      "nombre": "Tostada de huevo y rúcula",
+      "descripcion": "Una tostada integral con huevo frito, rúcula aliñada con aceite de oliva y vinagre balsámico y láminas de rábano. Un desayuno rápido, fresco y saciante.",
+      "tiempo_prep_min": 10,
+      "porciones": 1,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1948a73a",
+          40
+        ],
+        [
+          "d23e1bdd",
+          10
+        ],
+        [
+          "37936737",
+          30
+        ],
+        [
+          "6cd81fed",
+          50
+        ],
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "b5aa40d0",
+          15
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. En un bol pequeño, mezclar la rúcula con el aceite de oliva y el vinagre balsámico. Salpimentar al gusto y reservar.\n2. Calentar una sartén mediana a fuego medio-bajo y engrasarla con spray antiadherente.\n3. Añadir el huevo a la sartén, tapar y cocinar al punto deseado (unos 3-4 minutos para que la yema quede líquida).\n4. Mientras se cocina el huevo, tostar el pan.\n5. Cuando la tostada esté lista, colocar encima la rúcula aliñada, las láminas de rábano y el huevo frito. Salpimentar al gusto.",
+      "consejos": "Escurre bien la rúcula antes de aliñarla para que la tostada no se humedezca.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/toast-tuesday-egg-arugula-toast/",
+        "autor": "Lee Hersh",
+        "kcal_web": 319
+      }
+    },
+    {
+      "nombre": "Avena nocturna de calabaza",
+      "descripcion": "Avena reposada con puré de calabaza, yogur griego y crema de almendra, un desayuno cremoso y especiado que se prepara la noche anterior.",
+      "tiempo_prep_min": 120,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          125
+        ],
+        [
+          "cfd9ca77",
+          60
+        ],
+        [
+          "0a8c87df",
+          32
+        ],
+        [
+          "34d6fafa",
+          40
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "585bd18b",
+          60
+        ]
+      ],
+      "instrucciones": "1. Pon todos los ingredientes en un bol o recipiente grande y mezcla hasta integrarlos.\n2. Tapa el recipiente y déjalo en la nevera al menos 2 horas o toda la noche.\n3. Por la mañana, remueve la avena y añade más bebida de almendra si la quieres más líquida. Consume inmediatamente.",
+      "consejos": "Puedes ajustar la cantidad de bebida de almendra al servir según el espesor que prefieras.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/pumpkin-overnight-oats-recipe/",
+        "autor": null,
+        "kcal_web": 377
+      }
+    },
+    {
+      "nombre": "Cazuela de judías verdes con bacon",
+      "descripcion": "Gratén de judías verdes y cebolla con una salsa cremosa de bacon y leche, cubierto de pan rallado crujiente y especias. Un acompañamiento sabroso y reconfortante.",
+      "tiempo_prep_min": 60,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "95efbbab",
+          680
+        ],
+        [
+          "ef1e4c61",
+          150
+        ],
+        [
+          "32c7062f",
+          250
+        ],
+        [
+          "20c74a2a",
+          63
+        ],
+        [
+          "8469bf72",
+          480
+        ],
+        [
+          "de124e1a",
+          480
+        ],
+        [
+          "d0a93278",
+          3
+        ],
+        [
+          "464ace19",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "34f7b619",
+          50
+        ],
+        [
+          "2525c236",
+          1
+        ],
+        [
+          "bbece24a",
+          3
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 175 °C y engrasa una fuente de horno de 23x33 cm.\n2. Coloca las judías verdes y la cebolla en la fuente y mezcla.\n3. Calienta una cacerola grande a fuego medio y añade el bacon troceado, separando los trozos.\n4. Cocina el bacon hasta que esté dorado, unos 5-7 minutos, removiendo de vez en cuando.\n5. Retira el bacon con una espumadera a un bol y reserva.\n6. Deja 2-3 cucharadas de grasa de bacon en la cacerola y baja el fuego. Añade la harina y bate con las varillas hasta formar una mezcla grumosa.\n7. Sube el fuego a medio y añade poco a poco la leche, batiendo constantemente hasta que espese.\n8. Añade poco a poco el caldo y bate hasta que espese. Si tras 3-4 minutos no espesa, espolvorea 1 cucharada de harina y bate.\n9. Retira del fuego y añade el tomillo fresco, la salsa Worcestershire, la sal y la pimienta; remueve.\n10. Vierte la salsa sobre las judías y la cebolla en la fuente y mezcla bien.\n11. Reserva 1/4 taza del bacon cocido y añade el resto a la fuente; mezcla de nuevo.\n12. Limpia los bordes de la fuente, cubre con papel de aluminio y hornea 40 minutos, removiendo a mitad de cocción.\n13. Mientras se hornea, tuesta el pan rallado con la salvia, el tomillo seco, la sal y el ajo en polvo en una sartén a fuego medio hasta que se dore, unos 4-6 minutos. Retira del fuego y mezcla con el bacon reservado.\n14. Cuando termine el horneado, destapa la fuente y espolvorea la mezcla de pan rallado por encima. Gratina hasta que esté crujiente, unos 2-3 minutos.\n15. Saca del horno y deja reposar 5 minutos antes de servir.",
+      "consejos": "Puedes usar caldo de verduras en lugar de carne para una versión sin carne.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/green-bean-casserole-with-bacon/",
+        "autor": null,
+        "kcal_web": 205
+      }
+    },
+    {
+      "nombre": "Cazuela de pollo, brócoli y arroz",
+      "descripcion": "Cazuela de pollo con arroz y brócoli cocinada en sartén, con un toque de queso fundido por encima.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          454
+        ],
+        [
+          "bb104ae3",
+          35
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "ef1e4c61",
+          75
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "d262ebde",
+          185
+        ],
+        [
+          "eb5939be",
+          720
+        ],
+        [
+          "8820b293",
+          360
+        ],
+        [
+          "b983723d",
+          25
+        ],
+        [
+          "06262e59",
+          25
+        ],
+        [
+          "382a08c2",
+          25
+        ]
+      ],
+      "instrucciones": "1. Corta la pechuga de pollo en trozos de 2-3 cm y mézclala con 1,5 cucharadas del condimento para pollo hasta que quede bien cubierta. Reserva.\n2. Calienta una sartén grande con tapa a fuego medio-alto y añade el aceite de oliva.\n3. Cuando el aceite esté caliente, añade la cebolla picada y sofríe durante 2-3 minutos.\n4. Añade el ajo picado y sofríe un minuto más.\n5. Incorpora el pollo condimentado a la sartén y dóralo 2 minutos por cada lado.\n6. Aparta el pollo a un lado de la sartén, añade el arroz en el espacio libre y tuesta el arroz durante 3 minutos.\n7. Mezcla el arroz tostado con el pollo, la cebolla y el ajo, y añade el caldo, la sal y la cucharada restante de condimento para pollo. Remueve.\n8. Lleva el caldo a ebullición, remueve, baja el fuego, tapa la sartén y deja que la mezcla de arroz cueza a fuego lento durante 10 minutos.\n9. Destapa la sartén, añade los ramilletes de brócoli, intégralos en la mezcla y vuelve a tapar.\n10. Cocina todo junto 10 minutos más.\n11. Destapa de nuevo y espolvorea los quesos parmesano, asiago y mozzarella por encima del arroz, el pollo y el brócoli.\n12. Tapa y deja que el queso se funda durante 1-2 minutos.",
+      "consejos": "Mantén el fuego bajo cuando tapes la sartén para que el arroz se cocine sin pegarse y el brócoli quede al dente.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/stovetop-chicken-broccoli-and-rice-casserole-recipe/",
+        "autor": null,
+        "kcal_web": 521
+      }
+    },
+    {
+      "nombre": "Judías blancas grandes sobre pan tostado",
+      "descripcion": "Una tosta abundante con judías blancas grandes en salsa de tomate especiada, terminada con gremolata fresca y parmesano.",
+      "tiempo_prep_min": 60,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "bdc11c5a",
+          28
+        ],
+        [
+          "c3123736",
+          850
+        ],
+        [
+          "12a8ab46",
+          10
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "ef1e4c61",
+          150
+        ],
+        [
+          "3f7a69c2",
+          794
+        ],
+        [
+          "5a1860a7",
+          48
+        ],
+        [
+          "51176662",
+          8
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "c63a423f",
+          6
+        ],
+        [
+          "2fedb06b",
+          6
+        ],
+        [
+          "d61c2a0f",
+          6
+        ],
+        [
+          "e601abd9",
+          15
+        ],
+        [
+          "513d4dc7",
+          15
+        ],
+        [
+          "564c253f",
+          6
+        ],
+        [
+          "668919bc",
+          28
+        ],
+        [
+          "af60ae7c",
+          300
+        ],
+        [
+          "b983723d",
+          25
+        ]
+      ],
+      "instrucciones": "1. Calienta 1 cucharada de aceite de oliva en una sartén grande a fuego medio. Añade el ajo picado y saltea 1 minuto. Agrega las judías blancas escurridas y enjuagadas, sazona con sal y saltea 3-4 minutos. Pasa las judías a un bol.\n2. Añade a las judías el zumo de limón y la pimienta negra, mezcla y reserva.\n3. En la misma sartén, calienta 2 cucharadas de aceite de oliva. Añade la cebolla picada y ¼ cucharadita de sal. Saltea 10 minutos, removiendo de vez en cuando.\n4. Mientras se pocha la cebolla, tritura los tomates enteros pelados en un procesador de alimentos o batidora hasta obtener una salsa suave.\n5. Pasados los 10 minutos, añade el ajo restante a la cebolla y saltea 1 minuto más. Incorpora el tomate triturado, el concentrado de tomate, el azúcar moreno, el resto de la sal y los copos de guindilla. Mezcla bien, lleva a ebullición a fuego fuerte, baja el fuego y deja cocer a fuego lento 15-20 minutos hasta que espese y reduzca.\n6. Prepara la gremolata: mezcla en un bol la cebolleta, la menta, el eneldo, el cilantro, el vinagre blanco, el vinagre tinto, la ralladura de limón, el zumo de limón y ½ cucharadita de sal. Reserva.\n7. Cuando la salsa haya espesado, añade las judías y remueve. Deja cocer 10 minutos y retira del fuego.\n8. Tuesta el pan: calienta la mantequilla en otra sartén y dora las rebanadas de pan 2-3 minutos por cada lado hasta que estén doradas.\n9. Coloca el pan tostado en un plato y cúbrelo con la mezcla de judías, el parmesano rallado, la gremolata y una pizca de sal marina.",
+      "consejos": "Tuesta el pan justo antes de servir para que mantenga su textura crujiente bajo las judías.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/beans-on-toast/",
+        "autor": null,
+        "kcal_web": 440
+      }
+    },
+    {
+      "nombre": "Chili de pollo estilo búfalo",
+      "descripcion": "Un chili picante y sabroso con pollo desmenuzado, verduras, alubias y maíz, terminado con un toque de yogur griego. Ideal para una comida reconfortante.",
+      "tiempo_prep_min": 40,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          14
+        ],
+        [
+          "950afc33",
+          75
+        ],
+        [
+          "4dacb910",
+          120
+        ],
+        [
+          "91f40662",
+          80
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "1390b7a4",
+          794
+        ],
+        [
+          "5036194d",
+          120
+        ],
+        [
+          "eb5939be",
+          240
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "4ad8714c",
+          454
+        ],
+        [
+          "babf3806",
+          425
+        ],
+        [
+          "4e8a3263",
+          425
+        ],
+        [
+          "03858a00",
+          425
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "585bd18b",
+          60
+        ]
+      ],
+      "instrucciones": "1. Activa la función de salteado de la olla instantánea y añade el aceite de oliva. Cuando esté caliente, añade la cebolla, la zanahoria, el apio, el ajo y la sal. Saltea las verduras durante 2 minutos y retíralas a un bol.\n2. Desactiva el salteado y añade el tomate triturado, la salsa búfalo, el caldo de pollo, el chili en polvo, el comino y el ajo en polvo. Mezcla bien. Sumerge las pechugas de pollo en la salsa y cierra la olla.\n3. Sella la válvula y programa la olla en modo manual > alta presión durante 8 minutos. Tardará unos 10 minutos en alcanzar la presión.\n4. Cuando termine el tiempo, abre la válvula para liberar la presión rápidamente. Retira el pollo a una tabla y desmenúzalo con dos tenedores. Devuélvelo a la olla.\n5. Añade las verduras salteadas, las alubias pintas, las alubias blancas, el maíz y el sirope de arce. Remueve y activa de nuevo el salteado.\n6. Deja que el chili hierva a fuego lento durante 5 minutos. Incorpora el yogur griego.\n7. Sirve con cebolleta, perejil fresco y aliño de yogur griego con queso azul.",
+      "consejos": "Puedes ajustar el picante según tu gusto añadiendo más o menos salsa búfalo.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/instant-pot-buffalo-chicken-chili-recipe/",
+        "autor": null,
+        "kcal_web": 438
+      }
+    },
+    {
+      "nombre": "Ensalada tex-mex de quinoa en tarro",
+      "descripcion": "Ensalada fresca en capas con quinoa, alubias negras, maíz, espinacas, tomate y aguacate, aliñada con una crema de yogur, cilantro y lima.",
+      "tiempo_prep_min": 20,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "585bd18b",
+          125
+        ],
+        [
+          "81168dd3",
+          28
+        ],
+        [
+          "d61c2a0f",
+          8
+        ],
+        [
+          "65756599",
+          45
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bf392211",
+          28
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "fa56e340",
+          370
+        ],
+        [
+          "bfda87c0",
+          170
+        ],
+        [
+          "03858a00",
+          165
+        ],
+        [
+          "eea44971",
+          120
+        ],
+        [
+          "7f40a393",
+          180
+        ],
+        [
+          "91ad5545",
+          300
+        ]
+      ],
+      "instrucciones": "1. Poner el yogur griego, el vinagre de arroz, el cilantro, el zumo de lima, la sal, la pimienta, el aceite de oliva, el ajo picado y el comino molido en un procesador de alimentos pequeño y triturar hasta obtener una crema homogénea.\n2. Si el aliño queda demasiado espeso, añadir un poco más de vinagre; si queda demasiado líquido, añadir un poco más de yogur griego.\n3. Reservar el aliño.\n4. Para montar la ensalada, poner unos 45 ml de aliño en el fondo de cada tarro de cristal.\n5. Añadir encima un puñado de espinacas, 45 g de tomate troceado, 90 g de quinoa, 40 g de alubias negras, 40 g de maíz y 75 g de aguacate en láminas. Repetir el proceso en los cuatro tarros.\n6. Guardar los tarros en la nevera hasta el momento de consumir.",
+      "consejos": "Añade el aliño siempre en el fondo del tarro y las hojas verdes arriba para que no se ablanden.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/tex-mex-quinoa-tangy-cilantro-lime-creamy-dressing/",
+        "autor": null,
+        "kcal_web": 469
+      }
+    },
+    {
+      "nombre": "Avena cremosa con plátano y canela",
+      "descripcion": "Un bol de avena cocida en leche de almendra con plátano machacado, sirope de arce y un toque de canela. Cremoso y reconfortante, ideal para empezar el día.",
+      "tiempo_prep_min": 20,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          90
+        ],
+        [
+          "9dc9f005",
+          600
+        ],
+        [
+          "34d6fafa",
+          40
+        ],
+        [
+          "1131a576",
+          120
+        ],
+        [
+          "f75a3721",
+          5
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "b5b5e57f",
+          12
+        ]
+      ],
+      "instrucciones": "1. Pon todos los ingredientes en un cazo mediano, reservando 120 ml de la bebida de almendra. Calienta a fuego medio-alto, remueve y lleva a ebullición.\n2. Baja el fuego a medio-bajo y cuece a fuego lento unos 5 minutos, removiendo constantemente, hasta que la avena espese.\n3. Añade los 120 ml de bebida de almendra reservados y mezcla de nuevo. Deja cocer 1-2 minutos más.\n4. Sirve y corona con nueces, rodajas de plátano y trozos de pan de plátano si lo deseas.",
+      "consejos": "Remueve con frecuencia durante la cocción para que la avena quede cremosa y no se pegue al fondo del cazo.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/fluffy-banana-bread-stove-top-oatmeal/",
+        "autor": null,
+        "kcal_web": 328
+      }
+    },
+    {
+      "nombre": "Pechuga de pavo asada con hierbas y ranch",
+      "descripcion": "Pechuga de pavo jugosa asada al horno con un aliño de ranch casero, cebolla, limón y hierbas frescas. Una receta sencilla y aromática, ideal para una comida principal.",
+      "tiempo_prep_min": 90,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "7312fdee",
+          1134
+        ],
+        [
+          "286652e6",
+          45
+        ],
+        [
+          "ef1e4c61",
+          75
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "60ad001e",
+          50
+        ],
+        [
+          "d0a93278",
+          3
+        ],
+        [
+          "41f3bf76",
+          2
+        ],
+        [
+          "eb5939be",
+          240
+        ],
+        [
+          "41cb2b97",
+          60
+        ],
+        [
+          "3350c934",
+          0.5
+        ],
+        [
+          "668919bc",
+          42
+        ]
+      ],
+      "instrucciones": "1. Precalienta el horno a 165 °C y engrasa una fuente de horno de 23x33 cm.\n2. Seca la pechuga de pavo con papel de cocina y retira el exceso de líquido.\n3. Frota el aliño ranch por toda la pechuga de pavo y déjala reposar al menos 15 minutos (para más sabor, refrigérala entre 1 y 2 horas).\n4. Coloca en el fondo de la fuente la cebolla, el limón en rodajas, el tomillo, la salvia, el romero, el caldo, el vino, la sal y la pimienta; pon la pechuga de pavo encima de la cebolla.\n5. Unta con cuidado la mantequilla blanda por encima del pavo.\n6. Hornea a 165 °C durante 30 minutos.\n7. Saca el pavo del horno y báñalo con el líquido del fondo de la fuente; repite este paso tras otros 30 minutos de horneado.\n8. Tras 60 minutos de horneado y dos baños, sube la temperatura a 205 °C y hornea 10 minutos más.\n9. Retira el pavo del horno cuando esté dorado o cuando la temperatura interna alcance 74 °C.\n10. Deja reposar el pavo 10 minutos, bañándolo con el líquido.\n11. Sirve el pavo cortado en lonchas con el líquido del fondo de la fuente.",
+      "consejos": "Usa un termómetro de cocina para asegurarte de que el pavo alcanza 74 °C en el centro y queda jugoso.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/herby-ranch-roasted-turkey-breast-recipe/",
+        "autor": null,
+        "kcal_web": 336
+      }
+    },
+    {
+      "nombre": "Pollo a la piccata",
+      "descripcion": "Pechugas de pollo empanadas en harina integral y salteadas, con una salsa ligera de vino blanco, limón y alcaparras. Un plato rápido y lleno de sabor.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          454
+        ],
+        [
+          "8767a425",
+          42
+        ],
+        [
+          "bbece24a",
+          6
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bf392211",
+          35
+        ],
+        [
+          "41cb2b97",
+          120
+        ],
+        [
+          "eb5939be",
+          120
+        ],
+        [
+          "12a8ab46",
+          30
+        ],
+        [
+          "d641c84f",
+          30
+        ]
+      ],
+      "instrucciones": "1. Cortar las pechugas de pollo por la mitad a lo largo para obtener 4 filetes.\n2. Colocar los filetes entre film transparente y golpearlos con un mazo hasta que tengan 1 cm de grosor. Reservar.\n3. Mezclar en un bol la harina integral, el ajo en polvo, la sal, la pimienta y las hierbas italianas. Reservar 1 cucharada de esta mezcla.\n4. Pasar cada filete de pollo por agua y luego por la mezcla de harina, asegurándose de que quede bien cubierto.\n5. Calentar una sartén grande a fuego medio-alto y añadir el aceite de oliva.\n6. Cuando el aceite esté caliente, añadir los filetes de pollo.\n7. Saltear cada filete 4-5 minutos por cada lado a fuego medio, hasta que estén dorados y cocidos por completo.\n8. Retirar los filetes de la sartén y reservar.\n9. Desglasar la sartén vertiendo el vino blanco y raspando los restos dorados con una espátula.\n10. Añadir 1 cucharada de la mezcla de harina reservada y batir con el vino hasta que espese.\n11. Añadir el caldo, el zumo de limón y las alcaparras, y batir para integrar.\n12. Retirar del fuego y verter la salsa piccata sobre el pollo.\n13. Servir solo o sobre pasta al gusto.",
+      "consejos": "Golpea el pollo hasta un grosor uniforme para que se cocine de manera homogénea y quede jugoso.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/chicken-piccata-recipe/",
+        "autor": null,
+        "kcal_web": 240
+      }
+    },
+    {
+      "nombre": "Tallarines anchos con carne picada y champiñones",
+      "descripcion": "Un plato único cremoso de tallarines anchos con carne picada de ternera, champiñones y una salsa suave de nata agria y yogur griego.",
+      "tiempo_prep_min": 45,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "54fe547b",
+          170
+        ],
+        [
+          "ecc7f788",
+          454
+        ],
+        [
+          "ef1e4c61",
+          55
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "668919bc",
+          56
+        ],
+        [
+          "5b7e9a7d",
+          227
+        ],
+        [
+          "20c74a2a",
+          16
+        ],
+        [
+          "de124e1a",
+          240
+        ],
+        [
+          "464ace19",
+          17
+        ],
+        [
+          "d0a93278",
+          3
+        ],
+        [
+          "894e649b",
+          120
+        ],
+        [
+          "7fcfe0b8",
+          80
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pon a hervir una olla grande con agua salada y cuece los tallarines al huevo hasta que estén al dente. Escúrrelos, enjuágalos con agua fría y resérvalos.\n2. Calienta una sartén grande a fuego medio-alto, añade la carne picada y ½ cucharadita de sal. Desmenuza la carne con una cuchara de madera.\n3. Cuando la carne esté casi hecha, añade la cebolla y el ajo picados y mezcla. Cocina 2-3 minutos más hasta que la carne esté completamente hecha.\n4. Retira la carne de la sartén y resérvala.\n5. En la misma sartén, derrite 2 cucharadas de mantequilla a fuego medio. Añade los champiñones laminados y ½ cucharadita de sal, baja el fuego a medio-bajo y saltéalos 6-8 minutos, removiendo cada 3-4 minutos.\n6. Sube el fuego a alto y dora los champiñones 1 minuto.\n7. Mientras se doran, mezcla el caldo de carne con la salsa Worcestershire y bate hasta integrar. Reserva.\n8. Baja el fuego y añade las 2 cucharadas restantes de mantequilla a la sartén. Mezcla los champiñones con la mantequilla derretida, espolvorea la harina por encima y remueve para que los champiñones queden cubiertos.\n9. Sube el fuego a medio-alto y vierte poco a poco el caldo con Worcestershire, batiendo constantemente hasta que la mezcla espese.\n10. Baja el fuego, añade el tomillo fresco picado y mezcla. Cuando el tomillo desprenda aroma, retira la sartén del fuego.\n11. Añade el yogur griego, la nata agria y la pimienta y mezcla hasta integrar. Si es necesario, añade 1 o 2 cucharadas más de caldo de carne para aclarar la salsa.\n12. Incorpora la carne picada a la salsa, mezcla y vuelve a poner al fuego. Calienta a fuego bajo hasta alcanzar la temperatura deseada.\n13. Añade los tallarines a la salsa de carne, mezcla con cuidado y sirve.",
+      "consejos": "Añade el yogur y la nata fuera del fuego para evitar que la salsa se corte.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/ground-beef-stroganoff/",
+        "autor": null,
+        "kcal_web": 313
+      }
+    },
+    {
+      "nombre": "Ensalada de cuscús israelí con verduras asadas y pesto de kale",
+      "descripcion": "Una ensalada completa y colorida con cuscús israelí al pesto de kale, calabaza y coliflor asadas con especias, garbanzos y un toque de feta.",
+      "tiempo_prep_min": 70,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "bf392211",
+          100
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "d946bd47",
+          270
+        ],
+        [
+          "b983723d",
+          50
+        ],
+        [
+          "12a8ab46",
+          45
+        ],
+        [
+          "63c26672",
+          60
+        ],
+        [
+          "11d56939",
+          240
+        ],
+        [
+          "bbece24a",
+          6
+        ],
+        [
+          "21a40eb5",
+          3
+        ],
+        [
+          "6be23d9d",
+          1
+        ],
+        [
+          "4c9d38c6",
+          560
+        ],
+        [
+          "1f1a4cd3",
+          425
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "afa334c2",
+          1
+        ],
+        [
+          "e5efc372",
+          400
+        ],
+        [
+          "08637e90",
+          80
+        ],
+        [
+          "59163485",
+          60
+        ],
+        [
+          "513d4dc7",
+          15
+        ],
+        [
+          "6187036a",
+          75
+        ]
+      ],
+      "instrucciones": "1. Para el pesto de kale, aplasta los dientes de ajo con el dorso de un cuchillo. Calienta 1,5 cucharadas (21 g) de aceite de oliva en una sartén pequeña a fuego medio-alto y sofríe el ajo hasta que esté dorado y aromático.\n2. Pon el ajo cocinado en un procesador de alimentos junto con el kale, el parmesano, el zumo de limón, las nueces, la sal y el resto del aceite de oliva. Tritura a velocidad alta durante 2-4 minutos hasta obtener una pasta espesa y cremosa, raspando los bordes un par de veces. Reserva.\n3. Para el cuscús, calienta 1 cucharada (14 g) de aceite de oliva en un cazo a fuego medio-alto y tuesta el cuscús 3-4 minutos hasta que se dore. Añade el agua, lleva a ebullición, baja el fuego y cuece tapado 10-12 minutos hasta que se absorba el agua.\n4. Destapa el cuscús, suéltalo con un tenedor y mézclalo con el pesto hasta que quede bien cubierto. Reserva.\n5. Precalienta el horno a 230 °C y engrasa una bandeja con aceite de oliva o forra con papel de horno.\n6. Mezcla en un bol pequeño el ajo en polvo, el chile en polvo, el pimentón, el comino y la sal gruesa para la mezcla de especias.\n7. Coloca la calabaza en la mitad de la bandeja, rocía con 1 cucharada (14 g) de aceite de oliva y la mitad de la mezcla de especias, y masajea para que se impregne.\n8. En otro bol, mezcla los garbanzos con el sirope de arce, la canela, ½ cucharadita de ajo en polvo, ¼ cucharadita de sal y la cayena hasta que queden cubiertos. Extiéndelos en el centro de la bandeja junto a la calabaza y hornea 15 minutos, removiendo a mitad de cocción.\n9. Mientras tanto, separa la coliflor en ramilletes grandes y córtala en láminas finas con una mandolina en un bol grande. Añade 1 cucharada (14 g) de aceite de oliva y el resto de la mezcla de especias, y mezcla con cuidado.\n10. Pasa la coliflor a la bandeja junto a la calabaza y los garbanzos y hornea 10-12 minutos más hasta que esté dorada y caliente.\n11. Mientras se cocina la coliflor, pon en un bol grande la cebolla roja picada, el perejil, el vinagre de vino tinto, ¼ cucharadita de sal y el feta, y mezcla.\n12. Cuando las verduras estén listas, añádelas al bol de la cebolla y mezcla. Incorpora el cuscús y remueve de nuevo. Termina con más feta por encima.",
+      "consejos": "Si el pesto queda seco, tritura un poco más para que las nueces suelten su aceite y quede más cremoso.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/israeli-couscous-salad/",
+        "autor": null,
+        "kcal_web": 466
+      }
+    },
+    {
+      "nombre": "Queso fundido de ternera con requesón",
+      "descripcion": "Un queso fundido cremoso y proteico hecho con ternera picada, salsa y requesón batido, gratinado al horno y servido con aguacate y cilantro.",
+      "tiempo_prep_min": 18,
+      "porciones": 8,
+      "tipo_plato": "Cena",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "30693562",
+          454
+        ],
+        [
+          "1714b7a3",
+          340
+        ],
+        [
+          "b2c88c97",
+          454
+        ],
+        [
+          "57641694",
+          60
+        ],
+        [
+          "bb104ae3",
+          37
+        ],
+        [
+          "d61c2a0f",
+          10
+        ],
+        [
+          "91ad5545",
+          100
+        ],
+        [
+          "82930270",
+          15
+        ]
+      ],
+      "instrucciones": "1. Calienta una sartén grande apta para horno a fuego medio. Añade la ternera picada y cocina 2-3 minutos. Incorpora el condimento para tacos y remueve.\n2. Continúa cocinando la carne hasta que esté bien hecha. Retira la sartén del fuego, añade la salsa y mezcla bien. Reserva.\n3. Prepara el requesón batido: pon el requesón y el queso rallado en una batidora de alta velocidad o robot de cocina y tritura hasta que quede completamente liso. Si no se mezcla bien, añade 1-2 cucharaditas de agua para aligerar.\n4. Vierte la mezcla batida en la sartén y remueve todos los ingredientes. Cubre con más queso rallado por encima.\n5. Introduce la sartén en el horno y gratina hasta que el queso de la superficie se derrita y se dore.\n6. Saca del horno y decora con cilantro fresco, aguacate y cebolleta.\n7. Sirve inmediatamente con totopos de maíz.",
+      "consejos": "Si no tienes condimento para tacos envasado, usa una mezcla casera de comino, pimentón, ajo en polvo y orégano.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/ground-beef-cottage-cheese-queso/",
+        "autor": null,
+        "kcal_web": 197
+      }
+    },
+    {
+      "nombre": "Tortilla crujiente de arroz",
+      "descripcion": "Una tortilla original y sabrosa que combina arroz crujiente, huevos y verduras, con un toque de sésamo y soja. Ideal para una comida rápida y nutritiva.",
+      "tiempo_prep_min": 30,
+      "porciones": 2,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ae08120b",
+          14
+        ],
+        [
+          "895052dd",
+          5
+        ],
+        [
+          "65c05fc4",
+          10
+        ],
+        [
+          "caa47a33",
+          10
+        ],
+        [
+          "4218ee8b",
+          3
+        ],
+        [
+          "d262ebde",
+          75
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "6e209c9e",
+          50
+        ],
+        [
+          "82930270",
+          15
+        ],
+        [
+          "d61c2a0f",
+          5
+        ]
+      ],
+      "instrucciones": "1. Calienta una sartén antiadherente de 20-25 cm a fuego medio-alto. Añade el aceite de aguacate, el aceite de sésamo y el chili crujiente y remueve suavemente. Cuando el aceite esté caliente y aromático, incorpora la salsa de soja.\n2. Añade las semillas de sésamo y el arroz blanco. Remueve hasta que el arroz quede bien impregnado. Con una espátula, extiende el arroz por el fondo de la sartén, presiona firmemente y cocina durante 2-3 minutos.\n3. Vierte los huevos batidos sobre el arroz. Gira la sartén para que el huevo cubra el arroz de manera uniforme. Tapa la sartén y deja que el huevo cuaje durante 3-4 minutos. Es posible que empieces a notar el aroma del arroz crujiente.\n4. Añade las verduras, la cebolleta y el cilantro sobre el huevo. Tapa de nuevo y cocina un minuto más o hasta que el huevo esté cuajado y las verduras calientes.\n5. Con una espátula, dobla con cuidado un lado de la tortilla sobre el otro. El exterior debe quedar dorado y crujiente.\n6. Transfiere la tortilla con cuidado a un plato. Si lo deseas, decora con mayonesa Kewpie y cebolleta adicional.",
+      "consejos": "Puedes usar arroz cocido del día anterior para obtener una textura más crujiente.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/crispy-rice-omelette/",
+        "autor": null,
+        "kcal_web": 348
+      }
+    },
+    {
+      "nombre": "Avena con proteína de chocolate",
+      "descripcion": "Un bol de avena cremosa cocida con leche de almendra, cacao y proteína de chocolate, endulzada con sirope de arce. Ideal para un desayuno completo y saciante.",
+      "tiempo_prep_min": 20,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          100
+        ],
+        [
+          "9dc9f005",
+          480
+        ],
+        [
+          "34d6fafa",
+          40
+        ],
+        [
+          "524ef8eb",
+          8
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "570f8ae9",
+          30
+        ],
+        [
+          "edb1e321",
+          12
+        ],
+        [
+          "0a8c87df",
+          16
+        ],
+        [
+          "589e624a",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pon todos los ingredientes en un cazo mediano y mezcla hasta combinarlos.\n2. Lleva a ebullición a fuego alto sin dejar de remover.\n3. Cuando hierva, baja el fuego y continúa removiendo unos 5 minutos, hasta que la avena espese al punto deseado.\n4. Sirve con más crema de almendra, una pizca de sal marina y tu fruta favorita.",
+      "consejos": "Remueve con frecuencia durante la cocción para evitar que la avena se pegue al fondo del cazo.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/protein-oatmeal-recipe/",
+        "autor": null,
+        "kcal_web": 419
+      }
+    },
+    {
+      "nombre": "Ensalada de atún festiva",
+      "descripcion": "Una ensalada fresca y colorida con atún, alubias negras, maíz y tomate, aliñada con un aderezo de lima, comino y yogur griego. Ideal para una comida ligera o para llevar.",
+      "tiempo_prep_min": 20,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "83505726",
+          560
+        ],
+        [
+          "6c177099",
+          425
+        ],
+        [
+          "03858a00",
+          165
+        ],
+        [
+          "6f687582",
+          150
+        ],
+        [
+          "08637e90",
+          40
+        ],
+        [
+          "0e40c366",
+          15
+        ],
+        [
+          "65756599",
+          30
+        ],
+        [
+          "585bd18b",
+          7
+        ],
+        [
+          "ae08120b",
+          56
+        ],
+        [
+          "8619b09f",
+          7
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "bbece24a",
+          1.5
+        ]
+      ],
+      "instrucciones": "1. En un bol grande, mezcla el atún escurrido, las alubias negras escurridas y enjuagadas, el maíz, los tomates cherry cortados por la mitad, la cebolla roja picada y el cilantro picado. Reserva.\n2. Prepara el aderezo: en un tarro con tapa, combina el zumo de lima, la sal, el yogur griego, el aceite de aguacate, la miel, el comino molido y el ajo en polvo. Cierra bien y agita hasta que todos los ingredientes se integren.\n3. Vierte el aderezo sobre la mezcla de atún y remueve hasta que quede bien combinado.\n4. Sirve inmediatamente o guarda en la nevera hasta 5 días.",
+      "consejos": "Escurre bien el atún y las alubias para evitar que la ensalada quede aguada; puedes servirla sobre hojas verdes o con tortitas integrales.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/fiesta-tuna-salad/",
+        "autor": null,
+        "kcal_web": 289
+      }
+    },
+    {
+      "nombre": "Avena nocturna de plátano",
+      "descripcion": "Avena cremosa preparada la noche anterior con plátano, chía y leche de almendra. Un desayuno fácil y saciante listo para llevar.",
+      "tiempo_prep_min": 130,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          375
+        ],
+        [
+          "b5b5e57f",
+          36
+        ],
+        [
+          "9dc9f005",
+          1080
+        ],
+        [
+          "1131a576",
+          180
+        ],
+        [
+          "8619b09f",
+          21
+        ],
+        [
+          "f75a3721",
+          6
+        ],
+        [
+          "585bd18b",
+          80
+        ]
+      ],
+      "instrucciones": "1. Machaca los plátanos en un recipiente mediano y añade el resto de los ingredientes.\n2. Mezcla bien, tapa y deja reposar en la nevera al menos 2 horas o toda la noche.",
+      "consejos": "Remueve bien antes de servir y añade un poco más de bebida de almendra si queda demasiado espesa.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/banana-overnight-oats/",
+        "autor": null,
+        "kcal_web": 250
+      }
+    },
+    {
+      "nombre": "Gachas de avena con melocotón y crumble",
+      "descripcion": "Un desayuno cremoso de avena cocida con leche y melocotón, coronado con un crujiente de avena y un toque de yogur griego.",
+      "tiempo_prep_min": 25,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          165
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "9dc9f005",
+          240
+        ],
+        [
+          "f75a3721",
+          6
+        ],
+        [
+          "34d6fafa",
+          56
+        ],
+        [
+          "933f4779",
+          150
+        ],
+        [
+          "9286a63f",
+          5
+        ],
+        [
+          "589e624a",
+          1
+        ],
+        [
+          "585bd18b",
+          60
+        ]
+      ],
+      "instrucciones": "1. Precalentar el horno a 190 °C. Preparar el crujiente mezclando en un bol los copos de avena, el sirope de arce, el aceite de coco y la canela hasta formar una masa grumosa.\n2. Extender la mezcla en una bandeja pequeña y hornear de 7 a 10 minutos hasta que esté dorada, removiendo a mitad de cocción. Sacar del horno y reservar.\n3. Combinar en un cazo pequeño todos los ingredientes de las gachas: copos de avena, semillas de chía, bebida de almendra, extracto de vainilla, sirope de arce y melocotón troceado. Poner a fuego medio-alto.\n4. Llevar a ebullición, bajar el fuego y remover continuamente de 3 a 5 minutos hasta que la avena espese.\n5. Servir las gachas con el crujiente por encima y una cucharada de yogur griego.",
+      "consejos": "Puedes usar melocotón congelado sin descongelar; solo ajusta el tiempo de cocción hasta que esté tierno.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/peach-cobbler-oatmeal/",
+        "autor": null,
+        "kcal_web": 398
+      }
+    },
+    {
+      "nombre": "Pollo a la parmesana al aire",
+      "descripcion": "Pechugas de pollo empanadas con parmesano y especias, cocinadas al aire y cubiertas con salsa marinara y más queso. Una versión ligera y crujiente del clásico pollo a la parmesana.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4ad8714c",
+          680
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "b983723d",
+          100
+        ],
+        [
+          "34f7b619",
+          60
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "bbece24a",
+          3
+        ],
+        [
+          "719280c6",
+          1
+        ],
+        [
+          "c17ad017",
+          1
+        ],
+        [
+          "e2dd1c2b",
+          1
+        ],
+        [
+          "1d197cae",
+          240
+        ],
+        [
+          "bf392211",
+          28
+        ]
+      ],
+      "instrucciones": "1. Coloca las pechugas de pollo en una tabla de cortar, cúbrelas con papel de horno y aplánalas con un mazo hasta que tengan 1,5 cm de grosor.\n2. Bate los huevos en un bol mediano y reserva.\n3. En otro bol mediano, mezcla 50 g de parmesano, el pan rallado y las especias (sal, pimienta, ajo en polvo, hierbas italianas, copos de guindilla, cebolla en polvo y pimentón ahumado).\n4. Pasa cada pechuga por el huevo batido asegurándote de que quede bien cubierta y luego por la mezcla de pan rallado y parmesano, cubriendo bien ambos lados. Repite con todas las pechugas.\n5. Precalienta la freidora de aire a 190 °C y engrasa la cesta con spray antiadherente.\n6. Coloca una pechuga en la cesta y pulveriza la superficie con spray antiadherente. Si caben dos sin tocarse, cocina dos a la vez.\n7. Cocina al aire durante 6 minutos, dale la vuelta a la pechuga y cúbrela con 60 ml de salsa marinara y un buen espolvoreo de parmesano. Cocina 5-6 minutos más o hasta que la temperatura interna alcance 74 °C.\n8. Sirve inmediatamente sobre espaguetis con pimienta recién molida y perejil fresco.\n9. Método al horno: precalienta el horno a 190 °C.\n10. Calienta 1 cucharada de aceite de oliva en una sartén grande apta para horno a fuego medio-alto. Dora las pechugas 2-3 minutos por cada lado y luego introduce la sartén en el horno y hornea a 190 °C durante 10 minutos. Puede que necesites hacerlo por tandas según el tamaño de la sartén.\n11. Saca el pollo del horno y cubre cada pechuga con unos 60 ml de salsa marinara y un buen espolvoreo de parmesano.\n12. Gratina a temperatura alta durante 1-2 minutos o hasta que el queso se derrita. Comprueba que la temperatura interna sea de 74 °C y sirve inmediatamente sobre espaguetis con pimienta recién molida y perejil fresco.",
+      "consejos": "Aplana bien las pechugas para que se cocinen de manera uniforme y queden jugosas por dentro y crujientes por fuera.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/air-fryer-chicken-parmesan-recipe/",
+        "autor": null,
+        "kcal_web": 381
+      }
+    },
+    {
+      "nombre": "Bocados de torrija en air fryer",
+      "descripcion": "Bocados de pan de masa madre empapados en una mezcla de huevo, leche y canela, cocinados al aire y terminados con mantequilla. Un desayuno o merienda rápido y aromático.",
+      "tiempo_prep_min": 40,
+      "porciones": 6,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "af60ae7c",
+          400
+        ],
+        [
+          "6cd81fed",
+          250
+        ],
+        [
+          "318db297",
+          120
+        ],
+        [
+          "589e624a",
+          5
+        ],
+        [
+          "f75a3721",
+          8
+        ],
+        [
+          "34d6fafa",
+          40
+        ],
+        [
+          "9286a63f",
+          20
+        ],
+        [
+          "668919bc",
+          45
+        ],
+        [
+          "70b4da1a",
+          10
+        ]
+      ],
+      "instrucciones": "1. Bate los huevos, la leche, la canela, la vainilla, el sirope de arce y la sal en un bol grande.\n2. Añade el pan cortado en cuadrados de unos 4 cm y mezcla hasta que quede bien impregnado. Deja reposar al menos 5 minutos, removiendo de vez en cuando.\n3. Incorpora el aceite de coco derretido y mezcla de nuevo.\n4. Cocina la mitad de los bocados en la air fryer a 175 °C durante 8 minutos. Remueve la base y cocina 2 minutos más, hasta que estén dorados. Repite con el resto.\n5. Pasa todos los bocados a un bol grande y mézclalos con la mantequilla en trozos hasta que se derrita y los cubra por igual.\n6. Sirve con sirope de arce al lado y espolvorea con azúcar glas.",
+      "consejos": "Si no tienes air fryer, hornea los bocados a 190 °C unos 12-15 minutos, dándoles la vuelta a mitad de cocción.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/air-fryer-french-toast-bites-recipe/",
+        "autor": null,
+        "kcal_web": 400
+      }
+    }
+  ]
+}

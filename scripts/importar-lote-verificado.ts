@@ -141,7 +141,7 @@ async function main() {
 
   console.log(`\n${aceptadas.length} aceptadas · ${rechazadas} rechazadas`)
   if (!APPLY) { console.log('Simulación: nada insertado. Usa --apply para importar.'); return }
-  if (rechazadas) throw new Error('Hay recetas rechazadas: corrige el lote antes de importar')
+  if (rechazadas && !process.argv.includes('--solo-aceptadas')) throw new Error('Hay recetas rechazadas: corrige el lote o usa --solo-aceptadas')
 
   const coachId = await resolverCoachId()
   const idsCreadas: string[] = []

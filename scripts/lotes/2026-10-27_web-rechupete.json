@@ -1,0 +1,3620 @@
+{
+  "lote": "web-rechupete-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "51176662": {
+      "nombre": "Azúcar moreno",
+      "prefijo": "51176662",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "57641694": {
+      "nombre": "Queso rallado",
+      "prefijo": "57641694",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "93697743": {
+      "nombre": "Piña en su Jugo Pack de 3",
+      "prefijo": "93697743",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "897e9d71": {
+      "nombre": "Lámina de lasaña",
+      "prefijo": "897e9d71",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten",
+        "Huevos"
+      ],
+      "origen": "vegetal"
+    },
+    "974247da": {
+      "nombre": "Merluza",
+      "prefijo": "974247da",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "e5b7ba6b": {
+      "nombre": "Gambas",
+      "prefijo": "e5b7ba6b",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "950afc33": {
+      "nombre": "Cebolla",
+      "prefijo": "950afc33",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7f40a393": {
+      "nombre": "Tomate",
+      "prefijo": "7f40a393",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4dacb910": {
+      "nombre": "Zanahoria",
+      "prefijo": "4dacb910",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "668919bc": {
+      "nombre": "Mantequilla",
+      "prefijo": "668919bc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "63f62776": {
+      "nombre": "Harina",
+      "prefijo": "63f62776",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "86d39197": {
+      "nombre": "Leche entera",
+      "prefijo": "86d39197",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "bf392211": {
+      "nombre": "Aceite de oliva",
+      "prefijo": "bf392211",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "081fbb40": {
+      "nombre": "Nuez moscada molida",
+      "prefijo": "081fbb40",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5a2b6b52": {
+      "nombre": "Pimiento verde",
+      "prefijo": "5a2b6b52",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f8586302": {
+      "nombre": "Calabacín",
+      "prefijo": "f8586302",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4b4759ed": {
+      "nombre": "Garbanzos",
+      "prefijo": "4b4759ed",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "21a40eb5": {
+      "nombre": "Pimentón",
+      "prefijo": "21a40eb5",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "212aa875": {
+      "nombre": "Pimienta",
+      "prefijo": "212aa875",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d0a6f91f": {
+      "nombre": "Chorizo fresco",
+      "prefijo": "d0a6f91f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "cerdo"
+    },
+    "3689d5d4": {
+      "nombre": "Morcilla de Burgos",
+      "prefijo": "3689d5d4",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "3f205208": {
+      "nombre": "Panceta Curada Doble",
+      "prefijo": "3f205208",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "cb57d667": {
+      "nombre": "Espinacas",
+      "prefijo": "cb57d667",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1f65a350": {
+      "nombre": "Ensalada mezcla brotes tiernos lavada",
+      "prefijo": "1f65a350",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "de0eb774": {
+      "nombre": "Salmón ahumado",
+      "prefijo": "de0eb774",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "0b223775": {
+      "nombre": "Patata",
+      "prefijo": "0b223775",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b5aa40d0": {
+      "nombre": "Vinagre balsámico",
+      "prefijo": "b5aa40d0",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4b388ffd": {
+      "nombre": "Pollo entero (crudo)",
+      "prefijo": "4b388ffd",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "d89cd8d1": {
+      "nombre": "Puerro",
+      "prefijo": "d89cd8d1",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ef6ecb36": {
+      "nombre": "Jengibre fresco",
+      "prefijo": "ef6ecb36",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "70d24d12": {
+      "nombre": "Tomillo",
+      "prefijo": "70d24d12",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d61c2a0f": {
+      "nombre": "Cilantro fresco",
+      "prefijo": "d61c2a0f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "41cb2b97": {
+      "nombre": "Vino blanco",
+      "prefijo": "41cb2b97",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e601abd9": {
+      "nombre": "Vinagre de vino blanco",
+      "prefijo": "e601abd9",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b70a10f2": {
+      "nombre": "Sepia",
+      "prefijo": "b70a10f2",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "origen": "marisco"
+    },
+    "b0b14be3": {
+      "nombre": "Patata (cocida)",
+      "prefijo": "b0b14be3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "05756819": {
+      "nombre": "Caldo de pescado",
+      "prefijo": "05756819",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "e4fdfad8": {
+      "nombre": "Pimentón dulce",
+      "prefijo": "e4fdfad8",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c14fdeca": {
+      "nombre": "Arroz Largo Pack 2",
+      "prefijo": "c14fdeca",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "ecc7f788": {
+      "nombre": "Carne picada de ternera",
+      "prefijo": "ecc7f788",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "de124e1a": {
+      "nombre": "Caldo de carne",
+      "prefijo": "de124e1a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "caa47a33": {
+      "nombre": "Salsa de soja",
+      "prefijo": "caa47a33",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Soja"
+      ],
+      "origen": "vegetal"
+    },
+    "464ace19": {
+      "nombre": "Salsa Worcestershire Botella",
+      "prefijo": "464ace19",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "vegetal"
+    },
+    "192e437a": {
+      "nombre": "Maicena",
+      "prefijo": "192e437a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "95efbbab": {
+      "nombre": "Judías verdes",
+      "prefijo": "95efbbab",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "effa1a94": {
+      "nombre": "Panceta de cerdo",
+      "prefijo": "effa1a94",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "31108cb4": {
+      "nombre": "Chalotas",
+      "prefijo": "31108cb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b78145d": {
+      "nombre": "Vinagre de vino",
+      "prefijo": "0b78145d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e88e2cb8": {
+      "nombre": "Muslo de pollo",
+      "prefijo": "e88e2cb8",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "3b71ee6a": {
+      "nombre": "Tomate frito",
+      "prefijo": "3b71ee6a",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "20c74a2a": {
+      "nombre": "Harina de trigo",
+      "prefijo": "20c74a2a",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "1f1a4cd3": {
+      "nombre": "Garbanzos cocidos",
+      "prefijo": "1f1a4cd3",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "86017f5c": {
+      "nombre": "Setas",
+      "prefijo": "86017f5c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e28f1cb2": {
+      "nombre": "Rape",
+      "prefijo": "e28f1cb2",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "c025805a": {
+      "nombre": "Arroz redondo",
+      "prefijo": "c025805a",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "418a1557": {
+      "nombre": "Cigala",
+      "prefijo": "418a1557",
+      "rol": "marisco",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "affe7169": {
+      "nombre": "Anilla Poton",
+      "prefijo": "affe7169",
+      "rol": "marisco",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "origen": "marisco"
+    },
+    "12616b3d": {
+      "nombre": "Pollo",
+      "prefijo": "12616b3d",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "07d6dcc1": {
+      "nombre": "Gambas Peladas Mediana",
+      "prefijo": "07d6dcc1",
+      "rol": "marisco",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "origen": "marisco"
+    },
+    "92c4eb12": {
+      "nombre": "Mejillones",
+      "prefijo": "92c4eb12",
+      "rol": "marisco",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "origen": "marisco"
+    },
+    "efdb0f46": {
+      "nombre": "Aceite de oliva virgen extra",
+      "prefijo": "efdb0f46",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "f3068317": {
+      "nombre": "Macarrones",
+      "prefijo": "f3068317",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "2c6f1573": {
+      "nombre": "Azúcar",
+      "prefijo": "2c6f1573",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5b7e9a7d": {
+      "nombre": "Champiñones",
+      "prefijo": "5b7e9a7d",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "75177bbb": {
+      "nombre": "Orégano",
+      "prefijo": "75177bbb",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "265ec681": {
+      "nombre": "Pan de molde",
+      "prefijo": "265ec681",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "359debf7": {
+      "nombre": "Alitas de pollo asadas",
+      "prefijo": "359debf7",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "1390b7a4": {
+      "nombre": "Tomate triturado",
+      "prefijo": "1390b7a4",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eb5939be": {
+      "nombre": "Caldo de Pollo 100%",
+      "prefijo": "eb5939be",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "2f6b30f6": {
+      "nombre": "Azafran",
+      "prefijo": "2f6b30f6",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d82049ee": {
+      "nombre": "Carne de pimiento choricero",
+      "prefijo": "d82049ee",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fd38e2b4": {
+      "nombre": "Yema de huevo",
+      "prefijo": "fd38e2b4",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "ac11d640": {
+      "nombre": "Cayena molida",
+      "prefijo": "ac11d640",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "463f97f0": {
+      "nombre": "Arroz",
+      "prefijo": "463f97f0",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9df73a2d": {
+      "nombre": "Caldo de verduras",
+      "prefijo": "9df73a2d",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a010ea17": {
+      "nombre": "Alubia cocida blanca",
+      "prefijo": "a010ea17",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3d373f95": {
+      "nombre": "Bacalao desalado",
+      "prefijo": "3d373f95",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "a93516c3": {
+      "nombre": "Cebollas tiernas",
+      "prefijo": "a93516c3",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08e6f429": {
+      "nombre": "Pasta integral",
+      "prefijo": "08e6f429",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "e152c2f2": {
+      "nombre": "Berenjena",
+      "prefijo": "e152c2f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a0e93685": {
+      "nombre": "Lenteja pardina",
+      "prefijo": "a0e93685",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "649799c7": {
+      "nombre": "Hueso vacuno",
+      "prefijo": "649799c7",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "c4ddb8cd": {
+      "nombre": "Hueso de Jamón",
+      "prefijo": "c4ddb8cd",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "be2022de": {
+      "nombre": "Jamón serrano",
+      "prefijo": "be2022de",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "6dc1aad1": {
+      "nombre": "Pimientos Piquillo 8/ Frasco",
+      "prefijo": "6dc1aad1",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "8619b09f": {
+      "nombre": "Miel",
+      "prefijo": "8619b09f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "miel"
+    },
+    "fea7cbe9": {
+      "nombre": "Perejil",
+      "prefijo": "fea7cbe9",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fd7e358": {
+      "nombre": "Salmón",
+      "prefijo": "2fd7e358",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "49156dfd": {
+      "nombre": "Arroz basmati",
+      "prefijo": "49156dfd",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4218ee8b": {
+      "nombre": "Semillas de sésamo",
+      "prefijo": "4218ee8b",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "895052dd": {
+      "nombre": "Aceite de sésamo",
+      "prefijo": "895052dd",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Sésamo"
+      ],
+      "origen": "vegetal"
+    },
+    "81168dd3": {
+      "nombre": "Vinagre de arroz",
+      "prefijo": "81168dd3",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "23a4f545": {
+      "nombre": "Chile jalapeño",
+      "prefijo": "23a4f545",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91ad5545": {
+      "nombre": "Aguacate",
+      "prefijo": "91ad5545",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6f687582": {
+      "nombre": "Tomates cherry pera kumato",
+      "prefijo": "6f687582",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "fd5b64f0": {
+      "nombre": "Col lombarda",
+      "prefijo": "fd5b64f0",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c98f36fc": {
+      "nombre": "Anacardos",
+      "prefijo": "c98f36fc",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "c661ff5c": {
+      "nombre": "Leche de coco",
+      "prefijo": "c661ff5c",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "4ad8714c": {
+      "nombre": "Pechuga de pollo",
+      "prefijo": "4ad8714c",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "ae0a0635": {
+      "nombre": "Espagueti",
+      "prefijo": "ae0a0635",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "c14d168a": {
+      "nombre": "Orégano seco",
+      "prefijo": "c14d168a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "91f40662": {
+      "nombre": "Apio",
+      "prefijo": "91f40662",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "88d3708b": {
+      "nombre": "Nabos",
+      "prefijo": "88d3708b",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "5a54b72c": {
+      "nombre": "Repollo",
+      "prefijo": "5a54b72c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "30e9b836": {
+      "nombre": "Pulpo cocido",
+      "prefijo": "30e9b836",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "origen": "marisco"
+    },
+    "336d941c": {
+      "nombre": "Barra pan de pueblo",
+      "prefijo": "336d941c",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "713cdd9d": {
+      "nombre": "Huevos de codorniz",
+      "prefijo": "713cdd9d",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "7e48303d": {
+      "nombre": "Jamón curado, magro y graso",
+      "prefijo": "7e48303d",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "9ff4d4bd": {
+      "nombre": "Ñora Molida Tarro",
+      "prefijo": "9ff4d4bd",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "eea44971": {
+      "nombre": "Espinacas frescas",
+      "prefijo": "eea44971",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9f1778af": {
+      "nombre": "Yogur griego",
+      "prefijo": "9f1778af",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c63a423f": {
+      "nombre": "Menta fresca",
+      "prefijo": "c63a423f",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "7ea9e70a": {
+      "nombre": "Pimentón picante",
+      "prefijo": "7ea9e70a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d0a93278": {
+      "nombre": "Tomillo Frasco",
+      "prefijo": "d0a93278",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0b6a6c68": {
+      "nombre": "Guindillas picantes",
+      "prefijo": "0b6a6c68",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "becc1fbe": {
+      "nombre": "Piñones",
+      "prefijo": "becc1fbe",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "d21b8e95": {
+      "nombre": "Pan de pita",
+      "prefijo": "d21b8e95",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "09a34011": {
+      "nombre": "Salmón fresco",
+      "prefijo": "09a34011",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "c0f5aeb4": {
+      "nombre": "Hinojo",
+      "prefijo": "c0f5aeb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "2fedb06b": {
+      "nombre": "Eneldo fresco",
+      "prefijo": "2fedb06b",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "60ad001e": {
+      "nombre": "Limón",
+      "prefijo": "60ad001e",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e63f3694": {
+      "nombre": "Lomo de cerdo",
+      "prefijo": "e63f3694",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "32c7062f": {
+      "nombre": "Bacon 1/ 5 M",
+      "prefijo": "32c7062f",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "cerdo"
+    },
+    "06262e59": {
+      "nombre": "Queso",
+      "prefijo": "06262e59",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "7fb4b7ea": {
+      "nombre": "Lechuga",
+      "prefijo": "7fb4b7ea",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "866d6397": {
+      "nombre": "Mayonesa",
+      "prefijo": "866d6397",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "37dae3b8": {
+      "nombre": "Arroz bomba",
+      "prefijo": "37dae3b8",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3fef87f6": {
+      "nombre": "Conejo",
+      "prefijo": "3fef87f6",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "c3123736": {
+      "nombre": "Judías blancas",
+      "prefijo": "c3123736",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0a1c68a7": {
+      "nombre": "Alcachofa",
+      "prefijo": "0a1c68a7",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "41f3bf76": {
+      "nombre": "Romero",
+      "prefijo": "41f3bf76",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "a362a935": {
+      "nombre": "Chuleta de Aguja",
+      "prefijo": "a362a935",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "12ce769f": {
+      "nombre": "Vino tinto",
+      "prefijo": "12ce769f",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d4341390": {
+      "nombre": "Alioli de ajo",
+      "prefijo": "d4341390",
+      "rol": "salsa_condimento",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "138c386c": {
+      "nombre": "Esparragos blancos medianos",
+      "prefijo": "138c386c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "53dfeff0": {
+      "nombre": "Habas Granel",
+      "prefijo": "53dfeff0",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3eb4a47a": {
+      "nombre": "Guisantes frescos",
+      "prefijo": "3eb4a47a",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e45fcb39": {
+      "nombre": "Ajos Tiernos",
+      "prefijo": "e45fcb39",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "938d8084": {
+      "nombre": "Tomate maduro",
+      "prefijo": "938d8084",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "347975c9": {
+      "nombre": "Gula Norte",
+      "prefijo": "347975c9",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "cecd2d22": {
+      "nombre": "Atún en aceite de oliva",
+      "prefijo": "cecd2d22",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Pescado"
+      ],
+      "origen": "pescado"
+    },
+    "b12e5a68": {
+      "nombre": "Pimiento amarillo",
+      "prefijo": "b12e5a68",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "90dd86e4": {
+      "nombre": "Maíz dulce (cocido)",
+      "prefijo": "90dd86e4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9a1002ce": {
+      "nombre": "Aceitunas verdes hueso",
+      "prefijo": "9a1002ce",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "94ba864e": {
+      "nombre": "Cúrcuma",
+      "prefijo": "94ba864e",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "df8960c1": {
+      "nombre": "Pan tostado classic",
+      "prefijo": "df8960c1",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "0628585f": {
+      "nombre": "Preparado Picada Mixta",
+      "prefijo": "0628585f",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "122e823f": {
+      "nombre": "Bechamel",
+      "prefijo": "122e823f",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "34f7b619": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Lasaña de merluza y gambas",
+      "descripcion": "Una lasaña cremosa con capas de pasta, relleno de merluza, gambas y verduras, cubierta de bechamel y queso gratinado. Un plato completo ideal para comidas familiares.",
+      "tiempo_prep_min": 60,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "897e9d71",
+          150
+        ],
+        [
+          "974247da",
+          500
+        ],
+        [
+          "e5b7ba6b",
+          150
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "7f40a393",
+          800
+        ],
+        [
+          "d106e3bb",
+          100
+        ],
+        [
+          "4dacb910",
+          100
+        ],
+        [
+          "668919bc",
+          60
+        ],
+        [
+          "63f62776",
+          60
+        ],
+        [
+          "86d39197",
+          1000
+        ],
+        [
+          "bf392211",
+          30
+        ],
+        [
+          "57641694",
+          100
+        ],
+        [
+          "081fbb40",
+          1
+        ]
+      ],
+      "instrucciones": "1. Calienta un chorrito de aceite en una sartén y marca ligeramente las rodajas de merluza por ambos lados, sin cocinarlas del todo. Retira y deja enfriar; luego límpiala de pieles y espinas.\n2. En la misma sartén, saltea las gambas peladas ligeramente y retíralas.\n3. Añade a la sartén la cebolla, la zanahoria y el pimiento rojo picados en daditos pequeños. Sofríe a fuego medio unos 15 minutos hasta que estén blandos.\n4. Incorpora el tomate pelado y triturado y cocina la salsa 20 minutos a fuego medio-bajo, removiendo de vez en cuando.\n5. Para la bechamel, derrite la mantequilla en una cazuela, añade la harina y la sal y remueve sin parar.\n6. Ve añadiendo la leche caliente poco a poco, sin dejar de remover. Cocina la bechamel unos 15 minutos removiendo constantemente.\n7. Prueba el punto de sal, añade la nuez moscada y retira del fuego.\n8. Cuando la salsa de verduras esté lista, añade las gambas troceadas y la merluza desmigada. Incorpora una cuarta parte de la bechamel y mezcla bien.\n9. Cuece las láminas de pasta según las indicaciones del fabricante, escúrrelas y colócalas sobre un paño húmedo cubierto con otro.\n10. En un molde, extiende una cucharada de bechamel en el fondo. Coloca una capa de pasta, la mitad del relleno, otra capa de pasta y el resto del relleno. Cubre con el resto de la bechamel y espolvorea el queso rallado.\n11. Hornea a 190 °C durante 20 minutos. Luego activa el grill y gratina 7-8 minutos hasta que el queso se dore.\n12. Retira del horno y sirve.",
+      "consejos": "Puedes congelar la lasaña ya horneada y bien envuelta; también puedes sustituir la merluza fresca por congelada bien escurrida.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-lasana-de-verduras-y-merluza/100/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 270
+      }
+    },
+    {
+      "nombre": "Pisto riojano con huevo",
+      "descripcion": "Un pisto de verduras pochadas con tomate y huevo cremoso, típico de La Rioja. Plato sencillo y jugoso, ideal como plato único o guarnición.",
+      "tiempo_prep_min": 45,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "5a2b6b52",
+          300
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "950afc33",
+          200
+        ],
+        [
+          "f8586302",
+          250
+        ],
+        [
+          "7f40a393",
+          600
+        ],
+        [
+          "6cd81fed",
+          250
+        ],
+        [
+          "bf392211",
+          70
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pelar y picar finamente los ajos y la cebolla.\n2. Lavar los pimientos verdes, retirar el pedúnculo y las semillas, y cortarlos en dados pequeños. Lavar el calabacín y trocearlo en dados similares, sin pelarlo si la piel es fina.\n3. Pelar los tomates (escaldarlos 30 segundos en agua hirviendo y pasarlos a agua fría), retirar la parte dura y picarlos.\n4. Calentar el aceite de oliva en una sartén amplia o cazuela baja. Añadir el ajo y la cebolla con una pizca de sal y cocinar a fuego medio-bajo unos 8 minutos, hasta que la cebolla esté blanda sin tostarse.\n5. Incorporar el pimiento verde y cocinar otros 8-10 minutos, removiendo de vez en cuando.\n6. Añadir el calabacín, mezclar y cocinar unos 8 minutos más, hasta que empiece a ablandarse sin deshacerse.\n7. Agregar el tomate picado, salpimentar y cocinar 18-20 minutos, removiendo de vez en cuando, hasta que el tomate pierda agua y la mezcla quede jugosa pero no aguada.\n8. Batir los huevos en un cuenco con una pizca de sal. Bajar el fuego al mínimo y añadirlos sobre las verduras.\n9. Remover sin parar con una cuchara de madera o espátula, integrando el huevo poco a poco, hasta que cuaje pero quede jugoso.\n10. Apagar el fuego en cuanto el huevo ligue las verduras. Servir al momento, con pan y, si se desea, un poco más de pimienta recién molida.",
+      "consejos": "Usa tomates maduros y mantén el fuego suave para lograr un pisto meloso; añade el huevo al final con el fuego bajo para que quede cremoso.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/pisto-riojano-una-receta-de-verduras-con-huevo-cremosa-y-muy-facil/169903/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 115
+      }
+    },
+    {
+      "nombre": "Potaje de garbanzos con espinacas y compango",
+      "descripcion": "Guiso tradicional de garbanzos con espinacas, chorizo, morcilla y panceta, reconfortante y perfecto como plato único.",
+      "tiempo_prep_min": 70,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4b4759ed",
+          500
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "7f40a393",
+          300
+        ],
+        [
+          "21a40eb5",
+          3
+        ],
+        [
+          "212aa875",
+          1
+        ],
+        [
+          "d0a6f91f",
+          200
+        ],
+        [
+          "3689d5d4",
+          100
+        ],
+        [
+          "3f205208",
+          100
+        ],
+        [
+          "cb57d667",
+          350
+        ]
+      ],
+      "instrucciones": "1. La noche anterior, poner los garbanzos en remojo en agua templada con una cucharadita de bicarbonato o un puñado de sal durante unas 12 horas. Escurrir y lavar bien.\n2. Picar finamente la cebolla y los ajos. Pelar y trocear los tomates.\n3. En una cazuela, calentar el aceite de oliva y sofreír la cebolla y el ajo durante 10 minutos. Añadir el tomate y la hoja de laurel y sofreír 2-3 minutos más.\n4. Incorporar el pimentón y remover bien.\n5. Cubrir con agua fría hasta la mitad y llevar a ebullición. Cuando hierva, bajar el fuego, añadir los garbanzos escurridos y más agua caliente hasta cubrirlos.\n6. Cocer a fuego lento. A la media hora, añadir sal y pimienta al gusto. Si se queda corto de agua, añadir más caliente.\n7. Añadir los chorizos, la morcilla y la panceta. Cocer a temperatura media durante 20 minutos más, removiendo de vez en cuando. Retirar las carnes para que el plato no tenga tanta grasa.\n8. En otra cazuela, blanquear las espinacas en agua hirviendo con sal. Escurrir y trocear.\n9. Añadir las espinacas al guiso en los últimos 10-15 minutos de cocción, a fuego lento.\n10. Servir en plato hondo con el chorizo, la morcilla y la panceta en rodajas por encima.",
+      "consejos": "Si preparas el guiso el día anterior, estará aún más sabroso.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-abuela-potaje-de-garbanzos-y-espinacas/2501/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 280
+      }
+    },
+    {
+      "nombre": "Ensalada marinera con salmón ahumado y gambas",
+      "descripcion": "Ensalada fresca y completa con brotes tiernos, patata cocida, salmón ahumado y gambas, aliñada con una vinagreta de aceite de oliva y aceto balsámico.",
+      "tiempo_prep_min": 35,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f65a350",
+          175
+        ],
+        [
+          "de0eb774",
+          200
+        ],
+        [
+          "e5b7ba6b",
+          360
+        ],
+        [
+          "82930270",
+          80
+        ],
+        [
+          "0b223775",
+          600
+        ],
+        [
+          "bf392211",
+          46
+        ],
+        [
+          "b5aa40d0",
+          26
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Lavar bien las patatas bajo el grifo frotando la piel y ponerlas enteras con piel en una cazuela cubiertas de agua fría.\n2. Llevar al fuego; cuando empiece a hervir, añadir sal, bajar el fuego y cocer 20-25 minutos hasta que al pincharlas con un cuchillo fino entren sin resistencia.\n3. Escurrir las patatas, dejarlas templar, pelarlas con cuidado y cortarlas en láminas no demasiado finas. Reservar.\n4. Si las gambas son cocidas, pelarlas y escurrirlas bien. Si son crudas, cocerlas en agua con sal 2-3 minutos desde que hierva, hasta que cambien de color.\n5. Sacar las gambas con espumadera, pasarlas a un bol con agua muy fría y hielo, escurrirlas, pelarlas y reservarlas.\n6. Cortar el salmón ahumado en tiras o trozos medianos y picar la cebolleta en trocitos pequeños o en pluma fina.\n7. Preparar el aliño mezclando en un cuenco el aceite de oliva virgen extra, el aceto balsámico, una pizca de sal y pimienta negra; batir con un tenedor.\n8. Colocar los brotes de ensalada en una fuente amplia y repartir por encima las láminas de patata, las gambas, el salmón ahumado y la cebolleta.\n9. Aliñar justo antes de servir, añadiendo la vinagreta poco a poco y mezclando con suavidad.\n10. Terminar con un poco más de pimienta negra y, opcionalmente, unas gotas de reducción de Módena.",
+      "consejos": "Aliña los brotes justo antes de servir para que no se ablanden y ajusta la sal al final porque el salmón ahumado ya aporta sabor.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-ensalada-marinera-o-salade-mariniere/1884/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 115
+      }
+    },
+    {
+      "nombre": "Guiso de pollo con piña, jengibre y cilantro",
+      "descripcion": "Pollo dorado guisado con cebolla, puerro, jengibre fresco y piña en su jugo, aromatizado con cilantro fresco. Un guiso jugoso con un toque agridulce y especiado.",
+      "tiempo_prep_min": 60,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4b388ffd",
+          1500
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "bf392211",
+          50
+        ],
+        [
+          "d89cd8d1",
+          200
+        ],
+        [
+          "ef6ecb36",
+          50
+        ],
+        [
+          "93697743",
+          480
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "70d24d12",
+          1
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "d61c2a0f",
+          25
+        ],
+        [
+          "41cb2b97",
+          240
+        ],
+        [
+          "e601abd9",
+          28
+        ]
+      ],
+      "instrucciones": "1. Pedir al carnicero que trocee el pollo en trozos regulares para guiso.\n2. Salpimentar el pollo y añadir tomillo y nuez moscada. Reservar.\n3. Pelar y picar muy finamente los ajos.\n4. Calentar el aceite de oliva en una cazuela amplia y añadir el ajo y el pollo. Dorar los trozos de pollo hasta que queden bien marcados. Retirar el pollo a un plato y reservar.\n5. Pelar y picar las cebollas y el puerro. Sofreír en el mismo aceite durante unos 10 minutos a fuego lento.\n6. Añadir el pollo reservado y remover con la cebolla y el puerro pochados. Subir a fuego alto e incorporar el vino blanco y el vinagre. Probar la salsa y rectificar sal y pimienta. Dejar reducir unos 10 minutos removiendo, los 5 primeros a fuego alto y los 5 últimos a fuego medio.\n7. Pelar y rallar el jengibre fresco sobre el guiso al gusto. Remover bien.\n8. Cortar las rodajas de piña en trozos pequeños y añadirlas. Cubrir con el agua y el jugo de la piña hasta que quede a ras de los ingredientes.\n9. Guisar a fuego lento hasta que reduzca el líquido y el pollo esté en su punto, unos 30-35 minutos, removiendo de vez en cuando para que no se pegue.\n10. Picar el cilantro fresco y añadirlo a la cazuela justo antes de servir.",
+      "consejos": "Elige un pollo de buena calidad y un vino blanco que te guste beber, porque ambos marcan el sabor final del guiso.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-pollo-guisado-con-jengibre-pina-y-cilantro/2877/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 236
+      }
+    },
+    {
+      "nombre": "Sepia con patatas",
+      "descripcion": "Guiso tradicional de sepia con patatas en salsa de tomate, cebolla y vino blanco. Un plato completo y sabroso, ideal para comer o cenar.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b70a10f2",
+          500
+        ],
+        [
+          "b0b14be3",
+          1000
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "7f40a393",
+          300
+        ],
+        [
+          "41cb2b97",
+          125
+        ],
+        [
+          "05756819",
+          500
+        ],
+        [
+          "e4fdfad8",
+          1
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Limpiar la sepia y cortarla en trozos de unos 2 cm.\n2. Picar la cebolla en brunoise, pelar y picar fino los ajos y triturar los tomates.\n3. En una cazuela ancha, calentar el aceite de oliva y sofreír la cebolla y el ajo a fuego medio hasta que estén tiernos y transparentes.\n4. Incorporar la sepia, salpimentar y cocinar 2 minutos a fuego alto removiendo.\n5. Verter el vino blanco y cocinar 2 minutos para que se evapore el alcohol.\n6. Añadir el tomate triturado y el pimentón dulce, mezclar y cocinar 10 minutos hasta que el tomate se sofría.\n7. Agregar el caldo de pescado y la hoja de laurel, subir el fuego hasta que hierva y luego bajar a fuego lento durante 10 minutos.\n8. Pelar las patatas y cortarlas en trozos de bocado similares a la sepia.\n9. Añadir las patatas a la cazuela y cocer 15-20 minutos hasta que estén bien hechas. Rectificar de sal si es necesario.\n10. Apagar el fuego y dejar reposar 10 minutos. Servir caliente.",
+      "consejos": "Chasquear las patatas al cortarlas (romperlas con cortes irregulares) ayuda a que suelten más almidón y la salsa espese mejor.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/papas-con-choco-receta-de-sepia-con-patatas/88979/",
+        "autor": "Rubén Amorín",
+        "kcal_web": 110
+      }
+    },
+    {
+      "nombre": "Loco Moco hawaiano",
+      "descripcion": "Plato hawaiano de arroz blanco con hamburguesa de ternera, huevo frito y una salsa espesa de soja y caldo. Contundente y lleno de sabor.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c14fdeca",
+          250
+        ],
+        [
+          "ecc7f788",
+          300
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "950afc33",
+          80
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "de124e1a",
+          250
+        ],
+        [
+          "caa47a33",
+          80
+        ],
+        [
+          "464ace19",
+          14
+        ],
+        [
+          "192e437a",
+          20
+        ],
+        [
+          "51176662",
+          4
+        ],
+        [
+          "bf392211",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Picar la cebolla y el ajo. En una sartén pequeña, calentar un poco de aceite de oliva y sofreír la cebolla y el ajo a fuego medio durante 10-12 minutos hasta que estén dorados y suaves.\n2. Añadir el caldo de carne, la salsa de soja, la salsa Worcestershire y el azúcar moreno. Disolver la maicena en un poco de agua y agregarla al caldo. Remover bien y dejar hervir a fuego bajo unos 10 minutos hasta que la salsa espese y reduzca.\n3. Enjuagar el arroz bajo el grifo para quitar el almidón. Ponerlo en una cacerola con el doble de agua (unos 500 ml para 250 g de arroz).\n4. Llevar a ebullición, bajar el fuego, cubrir y cocinar 10-12 minutos hasta que el arroz esté tierno y el agua se haya absorbido.\n5. Formar las hamburguesas con la carne de ternera, salpimentarlas. En una sartén grande, calentar un poco de aceite y cocinarlas a fuego medio-alto unos 3-4 minutos por cada lado hasta que estén doradas y cocidas. Reservar.\n6. En la misma sartén, freír los huevos al gusto, manteniendo la yema jugosa.\n7. Montar el plato: colocar una base de arroz, encima una hamburguesa y sobre ella un huevo frito. Verter generosamente la salsa caliente por encima.\n8. Servir inmediatamente.",
+      "consejos": "Puedes preparar el arroz con antelación y guardarlo en la nevera; solo tendrás que calentarlo y montar el plato al servir.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/loco-moco-la-receta-de-arroz-hawaiano-con-huevo-y-hamburguesa/136022/",
+        "autor": "Emma García",
+        "kcal_web": 500
+      }
+    },
+    {
+      "nombre": "Ensalada Liégeoise de patata, judías verdes y tocino",
+      "descripcion": "Ensalada templada de tradición belga con patata cocida, judías verdes y tocino dorado, aliñada con el desglasado de vinagre de la sartén. Un plato completo y sabroso que se sirve recién mezclado.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0b223775",
+          600
+        ],
+        [
+          "95efbbab",
+          600
+        ],
+        [
+          "effa1a94",
+          300
+        ],
+        [
+          "31108cb4",
+          80
+        ],
+        [
+          "0b78145d",
+          56
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "59163485",
+          5
+        ]
+      ],
+      "instrucciones": "1. Lavar las patatas y cocerlas enteras con piel en agua con sal unos 20 minutos, hasta que estén tiernas pero sin deshacerse.\n2. Mientras, limpiar las judías verdes, quitar las puntas y las hebras laterales si las tienen, y cortarlas en trozos de 4-5 cm.\n3. Cocer las judías en agua hirviendo con sal durante 7-10 minutos, hasta que estén tiernas pero al dente. Escurrir y reservar.\n4. Pelar y picar finas las chalotas.\n5. Cortar la panceta en tacos pequeños y dorarla en una sartén amplia sin aceite, a fuego medio, hasta que suelte la grasa y se tueste sin quemarse.\n6. Añadir la chalota a la sartén y rehogar unos minutos hasta que se ablande y coja color; retirar parte de la grasa si hay en exceso.\n7. Escurrir las patatas, dejar que pierdan el vapor y pelarlas si la piel es gruesa. Cortarlas en rodajas gruesas o en trozos de bocado.\n8. Subir el fuego de la sartén, añadir el vinagre y rascar el fondo con una cuchara de madera para desglasarlo.\n9. Incorporar las patatas y las judías verdes y mezclar con cuidado con dos cucharas para que se impregnen sin romperse.\n10. Probar y ajustar de sal y pimienta, añadir perejil picado si se desea y servir templada.",
+      "consejos": "Usa patatas de carne firme y añade el vinagre en caliente sobre la sartén para desglasarla y conservar todo el sabor del tocino.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-ensalada-belga-liegeoise-o-liegosie/1856/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 135
+      }
+    },
+    {
+      "nombre": "Huevos rellenos al horno con bechamel",
+      "descripcion": "Huevos cocidos rellenos de pollo y tomate, cubiertos de bechamel casera y gratinados con queso. Un plato contundente y reconfortante.",
+      "tiempo_prep_min": 35,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6cd81fed",
+          400
+        ],
+        [
+          "e88e2cb8",
+          450
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "3b71ee6a",
+          300
+        ],
+        [
+          "668919bc",
+          50
+        ],
+        [
+          "20c74a2a",
+          50
+        ],
+        [
+          "86d39197",
+          620
+        ],
+        [
+          "bf392211",
+          30
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "57641694",
+          80
+        ],
+        [
+          "59163485",
+          5
+        ]
+      ],
+      "instrucciones": "1. Cocer los huevos en agua hirviendo durante 10 minutos, escurrir, pelar y separar las yemas de las claras.\n2. En una sartén con un poco de aceite de oliva, saltear la cebolla picada; cuando empiece a dorarse, añadir el pollo troceado y salpimentado. Una vez dorado y cocinado, triturar todo y mezclar con el tomate frito y las yemas de huevo.\n3. En una sartén amplia, derretir la mantequilla y añadir la harina; cocer el roux durante 2 minutos removiendo.\n4. Incorporar la leche fría poco a poco (empezando por 100 ml) batiendo con varillas para evitar grumos.\n5. Sazonar con sal, pimienta negra y nuez moscada; cocer la bechamel a fuego muy suave durante 15 minutos, removiendo de vez en cuando.\n6. Precalentar el horno a 200 °C.\n7. Rellenar las claras cocidas con la mezcla de pollo y colocarlas en una fuente de horno.\n8. Cubrir con la bechamel y espolvorear con queso rallado al gusto; hornear a 200 °C en la bandeja central con calor arriba y abajo y aire durante 15 minutos o hasta que la bechamel esté dorada.\n9. Sacar del horno y servir con perejil fresco picado por encima (opcional).",
+      "consejos": "Acompaña este plato con una ensalada fresca para equilibrar su contundencia.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/huevos-rellenos-al-horno-con-bechamel-receta-deliciosa-paso-a-paso/41360/",
+        "autor": "Rubén Amorín",
+        "kcal_web": 195
+      }
+    },
+    {
+      "nombre": "Garbanzos con setas y rape",
+      "descripcion": "Guiso otoñal de garbanzos con setas, pimientos y tomate, coronado con lomo de rape cocinado en su propio caldo. Un plato completo y reconfortante.",
+      "tiempo_prep_min": 60,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "1f1a4cd3",
+          500
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "5a2b6b52",
+          150
+        ],
+        [
+          "7f40a393",
+          750
+        ],
+        [
+          "86017f5c",
+          300
+        ],
+        [
+          "e28f1cb2",
+          500
+        ],
+        [
+          "bf392211",
+          68
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "05756819",
+          1000
+        ]
+      ],
+      "instrucciones": "1. Si se usan garbanzos secos, ponerlos en remojo la noche anterior en agua templada con una cucharadita de bicarbonato o un puñado de sal durante unas 12 horas, lavarlos bien y escurrir. Si se usan garbanzos cocidos, lavarlos bien para quitar la gelatina y reservar.\n2. Limpiar el lomo de rape quitando telillas, cortarlo en rodajas gruesas, salpimentar y reservar.\n3. Para el caldo, poner en una cazuela la cabeza y las espinas del rape, añadir unos 2 litros de agua y llevar a ebullición. Bajar a fuego bajo y cocinar 20 minutos, retirando la espuma. Colar y reservar.\n4. Picar finamente la cebolla, los pimientos y el ajo. Trocear las setas en trozos más grandes. Rallar la pulpa de los tomates sin piel.\n5. En una cazuela con el aceite de oliva caliente, añadir los trozos de rape y los ajos y pochar 3 minutos para sellar el pescado. Retirar el rape y los ajos a un bol.\n6. En la misma cazuela, sofreír la cebolla y los pimientos durante 10 minutos. Añadir las setas y las hojas de laurel y sofreír 5 minutos más.\n7. Añadir la pulpa de tomate y mezclar bien a fuego alto. Salpimentar y añadir los garbanzos escurridos (si son secos, esperar al final). Remover 3 minutos.\n8. Cubrir con el caldo de rape frío. Cuando empiece a hervir, bajar el fuego y cocinar 15 minutos si los garbanzos son de conserva (unos 60 minutos si son secos).\n9. Cuando el líquido haya reducido a la mitad, probar y rectificar de sal.\n10. En los últimos 3-4 minutos, añadir los trozos de rape y los ajos reservados. Dejar que se junten los sabores y servir en plato hondo.",
+      "consejos": "Si usas garbanzos secos, ponlos en remojo la noche anterior y cuécelos hasta que estén tiernos antes de añadirlos al guiso.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/garbanzos-con-setas-y-rape-receta-de-otono/8447/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 290
+      }
+    },
+    {
+      "nombre": "Arroz con cigalas y verduras",
+      "descripcion": "Paella de arroz redondo con cigalas, gambas, mejillones, calamar y pollo, con un sofrito de verduras y caldo de fumet casero.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c025805a",
+          500
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "418a1557",
+          400
+        ],
+        [
+          "affe7169",
+          100
+        ],
+        [
+          "12616b3d",
+          200
+        ],
+        [
+          "07d6dcc1",
+          150
+        ],
+        [
+          "92c4eb12",
+          150
+        ],
+        [
+          "d106e3bb",
+          300
+        ],
+        [
+          "5a2b6b52",
+          150
+        ],
+        [
+          "05756819",
+          1500
+        ],
+        [
+          "efdb0f46",
+          84
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pelar y picar muy finos los ajos. Reservar.\n2. Picar la cebolla y los pimientos rojo y verde muy finos.\n3. Trocear en pequeños trozos las anillas de calamar. Reservar.\n4. Calentar el aceite en la paella y sofreír la cebolla con los pimientos unos 8 minutos a fuego fuerte, removiendo.\n5. Añadir el tomate troceado y las hojas de laurel.\n6. Cortar el pollo en trozos pequeños, salpimentar y añadir los ajos picados.\n7. Agregar el pollo a la paella y cocinar 10-15 minutos a temperatura media con la verdura.\n8. Pelar las cigalas (reservar 5 enteras para adornar) y las gambas; reservar las cáscaras para el fumet y la carne por separado.\n9. Lavar bien los mejillones y reservar.\n10. Añadir a la paella las anillas de calamar, las gambas y las colas de cigala; remover 3-5 minutos a fuego medio.\n11. Incorporar el arroz y remover con suavidad para que se impregne; dejar 5 minutos a fuego medio.\n12. Añadir el fumet o caldo de pescado (2,5 partes de caldo por 1 de arroz).\n13. Subir la temperatura al máximo hasta que empiece a hervir y bajar a la mitad; cocinar 15-18 minutos. A media cocción añadir los mejillones.\n14. Rectificar de líquido con agua si es necesario y probar el arroz. Retirar del fuego y dejar reposar 10 minutos.\n15. Adornar con las cigalas enteras y servir recién hecho.\n16. Para el fumet: cocer unos 2 litros de agua con las cáscaras de cigalas y gambas, 1/2 cabeza de rape, 1 puerro, media cebolla, 1 zanahoria pelada y 1 hoja de laurel.\n17. Añadir restos de pescado blanco si se tienen y cocer 20-25 minutos a fuego lento, retirando la espuma.\n18. Añadir las 5 cigalas enteras y cocer 3-5 minutos; retirarlas y reservar.\n19. Colar el caldo y añadirlo a la paella.",
+      "consejos": "Añade la sal al final, probando el arroz, ya que el fumet y los mariscos ya aportan sabor.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-arroz-con-cigalas-y-verduras/642/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 286
+      }
+    },
+    {
+      "nombre": "Macarrones tricolor con pisto y champiñones",
+      "descripcion": "Pasta tricolor con un pisto casero de cebolla, pimiento, calabacín y tomate, enriquecido con champiñones y aromatizado con orégano. Un plato completo y sabroso, ideal para comer o cenar.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "f3068317",
+          500
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "5a2b6b52",
+          300
+        ],
+        [
+          "d106e3bb",
+          200
+        ],
+        [
+          "f8586302",
+          400
+        ],
+        [
+          "7f40a393",
+          900
+        ],
+        [
+          "bf392211",
+          70
+        ],
+        [
+          "2c6f1573",
+          12
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "5b7e9a7d",
+          250
+        ],
+        [
+          "75177bbb",
+          2
+        ]
+      ],
+      "instrucciones": "1. Calentar en una cazuela grande 1 litro de agua por cada 100 g de pasta.\n2. Cuando empiece a hervir, añadir 2 puñados generosos de sal y un chorrito de aceite. Añadir la pasta y remover con una cuchara de madera para que no se pegue.\n3. Tras 10 minutos de cocción, escurrir la pasta inmediatamente y pasarla por agua fría para cortar la cocción.\n4. Rociar la pasta con un poco de aceite de oliva y reservar.\n5. Lavar muy bien las verduras y picarlas todas en tacos de tamaño similar.\n6. Añadir un buen aceite a la cazuela y sofreír las cebollas y los pimientos a fuego lento hasta que se doren, entre 5 y 10 minutos.\n7. Añadir el calabacín y cocinar unos 5 minutos sin dejar que se queme la cebolla y los pimientos. Rectificar sal y pimienta y dejar que reduzca un poco.\n8. Escaldar los tomates, quitarles la piel y trocearlos en dados.\n9. Remover todo con suavidad y añadir por último los tomates y los champiñones.\n10. Cocinar durante 15 minutos más hasta que se hagan el tomate y los champiñones. Añadir una cucharada de azúcar para corregir la acidez del tomate.\n11. Apartar del fuego y decorar cada plato de macarrones con un poco de orégano y perejil.",
+      "consejos": "Escurre la pasta y pásala por agua fría para cortar la cocción y conseguir que quede al dente.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-macarrones-tricolor-con-pisto-y-champinones/429/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 265
+      }
+    },
+    {
+      "nombre": "Huevos tontos aragoneses",
+      "descripcion": "Receta tradicional aragonesa de aprovechamiento que convierte el pan duro en unas tortitas jugosas con huevo, ajo y perejil. Se sirven calientes, con la corteza crujiente y el interior tierno.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "265ec681",
+          200
+        ],
+        [
+          "86d39197",
+          150
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "59163485",
+          8
+        ],
+        [
+          "bf392211",
+          400
+        ]
+      ],
+      "instrucciones": "1. Retirar las cortezas demasiado duras del pan y desmenuzar el resto en un bol, conservando una miga pequeña e irregular.\n2. Añadir unos 100 ml de leche y mezclar; esperar un par de minutos a que el pan la absorba e incorporar el resto poco a poco solo si hace falta. Chafar con un tenedor hasta que el pan quede tierno, sin líquido suelto en el fondo.\n3. Batir los huevos en otro recipiente. Picar muy finos los ajos y el perejil e incorporarlos junto con la sal. Verter esta mezcla sobre el pan y remover hasta repartir todo bien.\n4. La masa debe quedar espesa, húmeda y moldeable. Tapar el bol y dejar reposar 30 minutos para que el pan termine de hidratarse y la mezcla gane cuerpo.\n5. Calentar el aceite en una sartén honda a unos 175-180 °C: caliente pero sin humear.\n6. Coger una porción con una cuchara sopera y pasarla de una cuchara a otra un par de veces, como una quenelle sencilla, hasta obtener una forma ovalada y compacta.\n7. Freír 4 o 5 unidades cada vez para que la temperatura no caiga. Dar la vuelta cuando la parte inferior esté dorada y continuar hasta que tengan un dorado uniforme y estén hechas por dentro, unos 3-4 minutos en total según el tamaño. Probar la primera unidad para comprobar punto y sal.\n8. Sacar los huevos tontos a una rejilla o a un plato con papel absorbente, dejar que pierdan el exceso de aceite un par de minutos y servir calientes o templados.",
+      "consejos": "Probar la primera unidad antes de freír el resto para ajustar el punto de sal y de temperatura del aceite.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/huevos-tontos-aragoneses-la-receta-de-aprovechamiento-con-pan-duro/177515/",
+        "autor": "Rubén Amorín",
+        "kcal_web": 280
+      }
+    },
+    {
+      "nombre": "Arroz con pollo y verduras",
+      "descripcion": "Arroz redondo guisado con pollo, verduras picadas finas y caldo de pollo aromatizado con azafrán. Un plato completo, económico y fácil para toda la familia.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c025805a",
+          300
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "5a2b6b52",
+          75
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "f8586302",
+          100
+        ],
+        [
+          "95efbbab",
+          150
+        ],
+        [
+          "4dacb910",
+          80
+        ],
+        [
+          "359debf7",
+          200
+        ],
+        [
+          "1390b7a4",
+          200
+        ],
+        [
+          "eb5939be",
+          500
+        ],
+        [
+          "2f6b30f6",
+          1
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "3350c934",
+          2
+        ]
+      ],
+      "instrucciones": "1. Pelar y picar muy finos los ajos, la cebolla, el calabacín, la zanahoria y los pimientos verde y rojo.\n2. Escaldar los tomates, quitarles la piel y trocearlos en trozos pequeños.\n3. Calentar el aceite en una cazuela y sofreír la cebolla, el calabacín, los pimientos y la zanahoria unos 10 minutos a fuego fuerte, removiendo.\n4. Añadir el tomate troceado y las judías verdes y remover.\n5. Cortar las alitas en dos trozos y salpimentarlas con sal, pimienta y los ajos picados.\n6. Agregar las alitas a la cazuela y cocinarlas unos 10 minutos a temperatura media junto con la verdura.\n7. Incorporar el arroz y remover con suavidad para que se impregne del guiso; dejar 5 minutos más a fuego medio.\n8. Mezclar el azafrán en parte del caldo y añadir el caldo de pollo a la cazuela.\n9. Subir la temperatura al máximo hasta que empiece a hervir, bajar a la mitad y cocinar unos 15 minutos para arroz caldoso o 18 para arroz seco.\n10. Rectificar de líquido con agua si fuera necesario, probar el arroz, apartar del fuego y dejar reposar 10 minutos.",
+      "consejos": "Picar las verduras muy finas para que se integren en el arroz y añadir el caldo poco a poco para ajustar la textura final.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-arroz-con-pollo-y-verduras/581/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 190
+      }
+    },
+    {
+      "nombre": "Pollo al batzoki",
+      "descripcion": "Pollo guisado con una salsa rica de tomate, vino oloroso y pimiento choricero, inspirada en la receta de la Marquesa de Parabere.",
+      "tiempo_prep_min": 55,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "4b388ffd",
+          1500
+        ],
+        [
+          "7f40a393",
+          250
+        ],
+        [
+          "41cb2b97",
+          100
+        ],
+        [
+          "eb5939be",
+          250
+        ],
+        [
+          "d82049ee",
+          15
+        ],
+        [
+          "fd38e2b4",
+          17
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "ac11d640",
+          1
+        ],
+        [
+          "59163485",
+          5
+        ],
+        [
+          "efdb0f46",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "2c6f1573",
+          5
+        ],
+        [
+          "265ec681",
+          30
+        ]
+      ],
+      "instrucciones": "1. Calentar una cacerola con un buen chorro de aceite de oliva.\n2. Añadir los trozos de pollo, salpimentar y cocinar hasta que se doren. Retirar y reservar.\n3. En la misma cacerola, pochar la cebolla cortada en brunoise y el ajo picado fino durante 5 minutos a fuego medio-bajo.\n4. Agregar el pan duro troceado, la cayena y el tomate pelado, sin pepitas y picado en dados pequeños. Cocinar 2 minutos.\n5. Añadir el caldo de pollo y el vino oloroso. Remover y dejar cocer 10 minutos más.\n6. Incorporar la yema de huevo cocido y la pulpa de pimiento choricero. Rectificar la acidez con una cucharadita de azúcar. Mezclar bien.\n7. Añadir el pollo reservado a la cacerola y cocinar 35 minutos a fuego lento, dando la vuelta a la carne de vez en cuando.\n8. Retirar el pollo y reservar.\n9. Triturar la salsa y reducir hirviendo a fuego alto si está demasiado líquida, o añadir más caldo si está demasiado espesa.\n10. Cuando la salsa esté lista, añadir el pollo y cocinar un par de minutos para que se integre. Espolvorear con perejil fresco picado.\n11. Acompañar con una ensalada de pimientos asados para un plato más ligero.",
+      "consejos": "Deja reposar el guiso de un día para otro para que los sabores se intensifiquen.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/pollo-al-batzoki-la-receta-de-la-marquesa-de-parabere/113993/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 290
+      }
+    },
+    {
+      "nombre": "Arroz vegetariano con champiñones y espinacas",
+      "descripcion": "Un arroz meloso con champiñones, espinacas y cebolla, cocinado con caldo de verduras y un toque de perejil fresco. Una receta completa y sencilla para el día a día.",
+      "tiempo_prep_min": 40,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "463f97f0",
+          400
+        ],
+        [
+          "5b7e9a7d",
+          800
+        ],
+        [
+          "9df73a2d",
+          1200
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "950afc33",
+          100
+        ],
+        [
+          "cb57d667",
+          200
+        ],
+        [
+          "59163485",
+          30
+        ],
+        [
+          "efdb0f46",
+          98
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Limpiar los champiñones y cortarlos en láminas. Pelar la cebolla y los ajos y trocearlos en daditos pequeños.\n2. Calentar 2 cucharadas de aceite en una olla grande. Añadir la mitad de los champiñones y cocinar 5 minutos hasta que estén dorados. Salpimentar, retirar y reservar.\n3. Añadir 4 cucharadas más de aceite, incorporar la cebolla y los ajos y cocinar 3 minutos. Agregar el resto de los champiñones y cocinar 5 minutos más hasta que estén ligeramente dorados.\n4. Añadir las espinacas y cocinar con el resto de verduras 2 o 3 minutos. Salpimentar.\n5. Incorporar el arroz y rehogarlo con las verduras 1 minuto. Añadir el caldo de verduras y cocinar 13 minutos.\n6. Cuando el arroz esté listo, añadir los champiñones reservados, el perejil picado y una cucharada de aceite de oliva virgen extra. Remover para esponjar e integrar.\n7. Servir con un poco más de perejil fresco picado por encima.",
+      "consejos": "Deja reposar el arroz un par de minutos tapado antes de servir para que termine de asentar y quede más suelto.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/arroz-vegetariano-receta-de-un-arroz-con-verduras-delicioso/49152/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 280
+      }
+    },
+    {
+      "nombre": "Ensalada de alubias con bacalao",
+      "descripcion": "Ensalada fresca y completa de alubias blancas cocidas con bacalao desalado, pimientos, tomate y cebolla tierna, aliñada con aceite de oliva y vinagre.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "a010ea17",
+          400
+        ],
+        [
+          "3d373f95",
+          250
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "5a2b6b52",
+          150
+        ],
+        [
+          "a93516c3",
+          100
+        ],
+        [
+          "7f40a393",
+          300
+        ],
+        [
+          "efdb0f46",
+          74
+        ],
+        [
+          "0b78145d",
+          20
+        ],
+        [
+          "59163485",
+          10
+        ]
+      ],
+      "instrucciones": "1. Enjuagar las alubias blancas cocidas bajo el grifo para eliminar el líquido de conservación y escurrir bien.\n2. Revisar el bacalao desalado para comprobar el punto de sal, desmigarlo con las manos en trozos medianos y retirar posibles espinas.\n3. Lavar los pimientos y los tomates y cortarlos en dados pequeños. Pelar la cebolla tierna y picarla fina.\n4. En un bol amplio, añadir las alubias escurridas junto con el bacalao desmigado, incorporar las verduras troceadas y mezclar con cuidado para no romper las alubias.\n5. Preparar el aliño en un recipiente aparte mezclando el aceite de oliva con el vinagre y una pizca de sal, y batir ligeramente con un tenedor hasta que emulsione un poco.\n6. Verter el aliño sobre la ensalada y remover suavemente para que todos los ingredientes queden bien impregnados. Probar y ajustar de sal si fuese necesario.\n7. Picar un poco de perejil fresco y añadirlo por encima justo antes de servir. Dejar reposar unos minutos en la nevera para que los sabores se asienten y la ensalada esté bien fresquita.",
+      "consejos": "Deja reposar la ensalada al menos 15 minutos en la nevera antes de servir para que el aliño se integre mejor.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-ensalada-de-alubias-con-bacalao/1954/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 160
+      }
+    },
+    {
+      "nombre": "Pasta integral con verduras",
+      "descripcion": "Un plato de pasta integral salteada con zanahoria, berenjena, cebolla y pimiento rojo en salsa de tomate. Sano, colorido y listo en menos de una hora.",
+      "tiempo_prep_min": 45,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "08e6f429",
+          200
+        ],
+        [
+          "4dacb910",
+          150
+        ],
+        [
+          "e152c2f2",
+          150
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "1d197cae",
+          200
+        ],
+        [
+          "bf392211",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Lavar las verduras y trocearlas: zanahoria, cebolla y ajo en daditos pequeños; pimiento rojo en bastones finos; berenjena en dados de 1-2 cm.\n2. Calentar un chorrito de aceite de oliva en una cazuela amplia y sofreír la cebolla, la zanahoria, el ajo y el pimiento rojo a fuego medio-alto durante 6-7 minutos.\n3. Añadir la berenjena troceada y una pizca de sal, y cocinar 5 minutos más a temperatura media-alta, removiendo de vez en cuando.\n4. Incorporar la salsa de tomate, mezclar con las verduras y cocinar 5 minutos más.\n5. Mientras se cocinan las verduras, poner a calentar agua para la pasta (1 litro por cada 100 g) sin añadir aceite.\n6. Cuando el agua hierva, añadir sal (unas 2 cucharadas rasas por cada 500 g de pasta) y echar la pasta integral de una vez, removiendo con una cuchara de madera.\n7. Cocer la pasta durante 11 minutos para que quede al dente y escurrirla inmediatamente.\n8. Verter la pasta sobre las verduras, mezclar bien y servir caliente.",
+      "consejos": "Corta las verduras en trozos del mismo tamaño para que se cocinen de forma uniforme.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/pasta-integral-con-verduras-receta-de-pasta-sana-y-deliciosa/40794/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 275
+      }
+    },
+    {
+      "nombre": "Lentejas caseras con chorizo",
+      "descripcion": "Guiso tradicional de lentejas pardinas con verduras, chorizo y hueso de jamón, cocinado a fuego lento. Un plato completo y reconfortante para los días fríos.",
+      "tiempo_prep_min": 90,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "a0e93685",
+          500
+        ],
+        [
+          "4dacb910",
+          400
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "e4fdfad8",
+          5
+        ],
+        [
+          "bf392211",
+          56
+        ],
+        [
+          "5a2b6b52",
+          150
+        ],
+        [
+          "7f40a393",
+          300
+        ],
+        [
+          "649799c7",
+          100
+        ],
+        [
+          "d0a6f91f",
+          200
+        ],
+        [
+          "3689d5d4",
+          150
+        ],
+        [
+          "c4ddb8cd",
+          60
+        ],
+        [
+          "3350c934",
+          2
+        ]
+      ],
+      "instrucciones": "1. Lavar bien las lentejas y, si se desea, dejarlas en remojo en agua fría durante 8-12 horas. Retirar las que floten y las impurezas, aclarar y escurrir.\n2. Picar finamente la cebolla, el ajo y el pimiento verde. Pelar y trocear las zanahorias y los tomates.\n3. En una cazuela, calentar el aceite de oliva y sofreír la cebolla y el ajo durante 10 minutos.\n4. Añadir el pimiento, el tomate, la zanahoria y la hoja de laurel. Sofreír 2-3 minutos más.\n5. Incorporar el hueso de jamón, el hueso de caña y el pimentón dulce. Remover rápidamente.\n6. Añadir las lentejas escurridas y remover durante 3 minutos.\n7. Cubrir con agua fría hasta casi llenar la cazuela. Llevar a ebullición y retirar la espuma.\n8. Tras 30 minutos de cocción, añadir la sal y la pimienta. Probar el caldo y ajustar.\n9. Añadir los chorizos y la morcilla. Cocinar a fuego medio durante 30 minutos más, removiendo de vez en cuando.\n10. Retirar los chorizos, la morcilla y los huesos. Cocinar 30 minutos más a fuego lento hasta que las lentejas estén tiernas.\n11. Si el guiso queda demasiado caldo, triturar un cucharón de lentejas con verduras y devolverlo a la cazuela, o cocinar unos minutos sin tapa. Si queda espeso, añadir agua caliente.\n12. Servir en plato hondo con el chorizo en rodajas por encima.",
+      "consejos": "El remojo previo de las lentejas reduce el tiempo de cocción, aunque las pardinas no lo necesitan obligatoriamente.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-lentejas-caseras-con-chorizo/939/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 256
+      }
+    },
+    {
+      "nombre": "Huevos rotos con jamón",
+      "descripcion": "Patatas panaderas fritas con cebolla caramelizada, huevos de yema líquida y lonchas de jamón serrano. Un plato clásico y contundente para compartir.",
+      "tiempo_prep_min": 30,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b0b14be3",
+          1000
+        ],
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "be2022de",
+          100
+        ],
+        [
+          "6dc1aad1",
+          120
+        ],
+        [
+          "bf392211",
+          200
+        ],
+        [
+          "8619b09f",
+          21
+        ],
+        [
+          "fea7cbe9",
+          5
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pelar las patatas, lavarlas en agua fría y cortarlas en rodajas de medio centímetro (patatas panaderas). Secarlas con papel absorbente y reservar.\n2. Calentar abundante aceite de oliva en una sartén grande. Freír las patatas a fuego medio unos 10-12 minutos, hasta que estén en su punto, ni muy crujientes ni cocidas. Retirar con espumadera y escurrir bien.\n3. Salpimentar las patatas y reservarlas en una fuente. Retirar el aceite de la sartén.\n4. Pelar las cebollas y cortarlas en rodajas muy finas.\n5. Añadir un poco de aceite de oliva a la misma sartén y pochar la cebolla a fuego bajo. Cuando empiece a soltar agua, subir un poco la temperatura para que se dore.\n6. Bajar el fuego, salpimentar y remover con cuchara de madera unos 5 minutos. Añadir 1 cucharada de miel y remover hasta que se caramelice y la miel se pegue a la cebolla. Retirar a un plato.\n7. En la misma sartén, añadir 1 cucharada de aceite de las patatas y freír los huevos sin que terminen de cuajarse, con la yema líquida.\n8. Añadir a la sartén la cebolla y las patatas y romper los huevos con una cuchara de madera. Trocear los pimientos del piquillo en tiras para adornar.\n9. Presentar en un gran plato con las lonchas de jamón, las tiras de pimiento asado y un poco de perejil picado por encima.",
+      "consejos": "Freír los huevos justo antes de servir para que la yema quede líquida y se mezcle bien con las patatas al romperlos.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-huevos-rotos-con-jamon-al-estilo-fermin-arregui/1241/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 340
+      }
+    },
+    {
+      "nombre": "Poke de salmón",
+      "descripcion": "Un bol de arroz hawaiano con salmón marinado en soja y sésamo, aguacate y verduras frescas. Una comida completa, saludable y llena de sabor.",
+      "tiempo_prep_min": 75,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "2fd7e358",
+          500
+        ],
+        [
+          "49156dfd",
+          250
+        ],
+        [
+          "4218ee8b",
+          5
+        ],
+        [
+          "caa47a33",
+          50
+        ],
+        [
+          "895052dd",
+          42
+        ],
+        [
+          "81168dd3",
+          45
+        ],
+        [
+          "23a4f545",
+          15
+        ],
+        [
+          "91ad5545",
+          200
+        ],
+        [
+          "6f687582",
+          100
+        ],
+        [
+          "82930270",
+          30
+        ],
+        [
+          "d61c2a0f",
+          10
+        ],
+        [
+          "fd5b64f0",
+          100
+        ]
+      ],
+      "instrucciones": "1. Congelar el salmón durante al menos 48 horas para eliminar el riesgo de anisakis. Descongelarlo en la nevera la noche anterior.\n2. Retirar la piel y las espinas si se desea y cortar el salmón en dados de 1,5-2 cm.\n3. Preparar la marinada: mezclar la salsa de soja, el vinagre de arroz, la sal, el aceite de sésamo, el chile troceado, las semillas de sésamo y la cebolleta fileteada. Verter sobre el salmón y dejar marinar al menos 1 hora.\n4. Cocer el arroz basmati en agua salada (aproximadamente 2 partes de agua por 1 de arroz) durante unos 11 minutos o según las indicaciones del fabricante. Escurrir y reservar.\n5. Pelar el aguacate y cortarlo en láminas finas. Lavar y cortar la lombarda en tiras finas, los tomates cherry por la mitad y picar el cilantro.\n6. Montar los boles: colocar una base de arroz, añadir el salmón marinado escurrido, el aguacate, los tomates cherry y la lombarda. Regar con un poco de salsa de soja y espolvorear con semillas de sésamo y cilantro.\n7. Servir inmediatamente.",
+      "consejos": "Se puede sustituir el arroz por quinoa y el salmón por otro pescado azul, y añadir o cambiar las verduras al gusto.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/poke-de-salmon-receta-de-arroz-hawaiana-saludable-deliciosa/46794/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 225
+      }
+    },
+    {
+      "nombre": "Espaguetis con pollo y champiñones",
+      "descripcion": "Espaguetis con una salsa cremosa de verduras, pollo y champiñones, ligada con leche de coco y anacardos. Un plato completo y sabroso, listo en menos de una hora.",
+      "tiempo_prep_min": 45,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "4dacb910",
+          160
+        ],
+        [
+          "7f40a393",
+          750
+        ],
+        [
+          "bf392211",
+          70
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "5b7e9a7d",
+          250
+        ],
+        [
+          "c98f36fc",
+          75
+        ],
+        [
+          "c661ff5c",
+          400
+        ],
+        [
+          "4ad8714c",
+          500
+        ],
+        [
+          "ae0a0635",
+          400
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "c14d168a",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pelar las cebollas y cortarlas en juliana fina. Lavar el pimiento rojo, quitarle las semillas y los nervios y cortarlo en tiras. Poner una cazuela amplia al fuego con 70 g de aceite de oliva y sofreír la cebolla y el pimiento a fuego medio-bajo unos 10 minutos, removiendo de vez en cuando, hasta que empiecen a quedar tiernos y ligeramente dorados.\n2. Pelar las zanahorias y picarlas muy finas, mejor con picadora. Incorporarlas a la cazuela, salpimentar ligeramente y cocinar unos 5 minutos más, hasta que la base suelte dulzor y quede melosa.\n3. Cortar la pechuga de pollo en dados o tiras de bocado, salpimentar bien y añadirla a la cazuela. Subir un poco el fuego y saltear 4 o 5 minutos, lo justo para que cambie de color por fuera.\n4. Limpiar los champiñones con papel de cocina o un paño apenas húmedo, retirar la parte terrosa del pie y cortarlos en cuartos o medias lunas gruesas. Echarlos a la cazuela, mezclar bien y cocinar 5 o 6 minutos, hasta que pierdan rigidez y suelten su jugo.\n5. Probar de sal y pimienta, rectificar si hace falta y añadir los anacardos picados en trozos pequeños. Remover para repartirlos y verter la leche de coco. Bajar el fuego y dejar cocer todo junto unos 5 minutos, hasta que la salsa tome cuerpo.\n6. Lavar los tomates, partirlos en dos y añadirlos a la cazuela estrujándolos con la mano sobre la salsa para que suelten pulpa y jugo. Cocinar 5 minutos más, removiendo con suavidad, hasta que el tomate se integre y la salsa quede ligada y jugosa.\n7. Poner abundante agua a hervir en una olla grande, calculando 1 litro por cada 100 g de pasta. Cuando hierva a borbotones, añadir sal generosa y cocer los espaguetis el tiempo indicado en el paquete, removiendo al principio para que no se peguen. Escurrirlos sin enjuagarlos.\n8. Añadir la pasta escurrida a la cazuela de la salsa, mezclar con suavidad durante 1 minuto para que todo quede bien ligado y espolvorear un poco de orégano seco justo al final. Servir bien caliente, recién hecho y con algo de pimienta negra por encima si se desea.",
+      "consejos": "Lleva la pasta escurrida directamente a la cazuela de la salsa para que se agarre mejor; si queda demasiado espesa, añade un chorrito del agua de cocción.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-espaguetis-con-pollo-y-champinones/423/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 150
+      }
+    },
+    {
+      "nombre": "Patatas con bacalao al estilo tradicional",
+      "descripcion": "Guiso de patatas con bacalao desalado, cebolla, tomate y pimentón, servido con huevo duro. Un plato de cuchara completo y lleno de sabor.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0b223775",
+          900
+        ],
+        [
+          "3d373f95",
+          400
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "7f40a393",
+          150
+        ],
+        [
+          "41cb2b97",
+          50
+        ],
+        [
+          "05756819",
+          750
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "bf392211",
+          30
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "e4fdfad8",
+          2
+        ]
+      ],
+      "instrucciones": "1. Secar bien los lomos de bacalao con papel absorbente.\n2. Calentar un poco de aceite de oliva en una cazuela y marcar el bacalao por ambos lados, vuelta y vuelta sin cocinarlo apenas. Retirar y reservar.\n3. Pelar y picar finamente el ajo y la cebolla.\n4. En la misma cazuela, añadir un poco más de aceite y pochar las verduras durante 10 minutos.\n5. Rallar el tomate (desechando la piel) y añadirlo a la cazuela; subir ligeramente el fuego y sofreír 2 minutos. Agregar el vino blanco y dejar que se evapore el alcohol.\n6. Pelar las patatas, cortarlas en trozos de tamaño similar y añadirlas a la cazuela; rehogar removiendo para que se impregnen bien de aceite.\n7. Agregar el caldo de pescado y, si fuera necesario, un poco de agua, hasta que las patatas queden cubiertas de líquido pero sin flotar.\n8. Calentar un poco de aceite en una sartén pequeña, añadir el pimentón, remover para que se tueste e inmediatamente agregarlo a la cazuela junto con la hoja de laurel. Mover un poco la cazuela para integrarlo, sin remover para no romper las patatas.\n9. Cocer las patatas a fuego suave durante 15-20 minutos o hasta que estén casi tiernas. Mientras tanto, cocer los huevos en abundante agua con sal durante 10-12 minutos, refrescarlos en agua helada, pelarlos y reservarlos.\n10. Probar el punto de sal y pimienta, añadir el bacalao a la cazuela, retirar del fuego, tapar y dejar reposar un par de minutos para que el bacalao se cueza y se integren los sabores.\n11. Servir inmediatamente acompañado de huevo duro troceado y espolvoreado con perejil fresco.\n12. Añadir un pimiento verde al sofrito es opcional y le da un sabor muy rico.",
+      "consejos": "El tiempo de cocción de las patatas es orientativo; pinchad con una brocheta para comprobar el punto y evitar que se pasen.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/patatas-con-bacalao-receta-de-la-abuela/33445/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 330
+      }
+    },
+    {
+      "nombre": "Sopa de verduras en juliana",
+      "descripcion": "Sopa tradicional de verduras cortadas en juliana, con un sofrito de ajo y pimentón dulce. Reconfortante y fácil de preparar.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "7f40a393",
+          150
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "e4fdfad8",
+          2
+        ],
+        [
+          "bf392211",
+          42
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "4dacb910",
+          150
+        ],
+        [
+          "91f40662",
+          50
+        ],
+        [
+          "88d3708b",
+          50
+        ],
+        [
+          "d89cd8d1",
+          50
+        ],
+        [
+          "5a54b72c",
+          250
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "fea7cbe9",
+          10
+        ],
+        [
+          "0e40c366",
+          5
+        ]
+      ],
+      "instrucciones": "1. Lavar muy bien todas las verduras: cebolla, zanahorias, nabo, puerro, apio, repollo blanco y tomate.\n2. Cortar todas las verduras excepto el tomate en juliana fina. Reservar en un bol.\n3. Lavar y picar el perejil. Reservar.\n4. Pelar y filetear los ajos. Reservar en un cuenco. Lavar y cortar el tomate en dados.\n5. En una cazuela grande, calentar el aceite y saltear los ajos hasta que comiencen a dorarse.\n6. Retirar la cazuela del fuego y espolvorear el pimentón dulce, removiendo bien para que no se queme.\n7. Volver a poner la cazuela al fuego bajo y añadir todas las verduras cortadas en juliana, el tomate en dados y el perejil picado.\n8. Rehogar todo durante 2-3 minutos.\n9. Agregar el agua y cocer a fuego moderado durante unos 30 minutos, con la cazuela un poco tapada.\n10. Al final de la cocción, añadir sal, pimienta negra recién molida y un toque de nuez moscada rallada.\n11. Servir muy caliente en un cuenco o plato hondo. Espolvorear con un poco de cilantro picado o perejil y un chorrito de aceite de oliva.",
+      "consejos": "Para un sabor más intenso, utilice verduras de temporada y añada una hoja de laurel durante la cocción.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/sopa-de-verduras-en-juliana-receta-de-sopa-de-la-abuela/2927/",
+        "autor": "Damián Serrano",
+        "kcal_web": 160
+      }
+    },
+    {
+      "nombre": "Arroz meloso con pulpo",
+      "descripcion": "Arroz meloso de inspiración marinera, cocinado con sofrito de verduras, vino blanco y caldo de cocción del pulpo, con patas de pulpo troceadas. Un plato completo y sabroso, ideal para reuniones.",
+      "tiempo_prep_min": 90,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "463f97f0",
+          300
+        ],
+        [
+          "30e9b836",
+          400
+        ],
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "5a2b6b52",
+          150
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "7f40a393",
+          200
+        ],
+        [
+          "41cb2b97",
+          150
+        ],
+        [
+          "e4fdfad8",
+          2
+        ],
+        [
+          "bf392211",
+          30
+        ]
+      ],
+      "instrucciones": "1. Picar muy finas la cebolla y los pimientos verde y rojo. Pelar y machacar los ajos. Rallar los tomates y reservar.\n2. Calentar el aceite de oliva en una cazuela y sofreír la cebolla y los pimientos unos 5 minutos a fuego medio-fuerte, removiendo.\n3. Añadir sal, el pimentón dulce y el tomate rallado. Remover y cocinar unos minutos.\n4. Verter el vino blanco y cocinar a fuego medio 6-8 minutos hasta que evapore el alcohol.\n5. Añadir la hoja de laurel y el pulpo cocido troceado. Probar de sal y remover.\n6. Incorporar el arroz y remover con suavidad durante 1 minuto a fuego medio.\n7. Añadir 750 ml del agua de cocción del pulpo (aproximadamente 2,5 partes de líquido por 1 de arroz). Si se queda seco, añadir más agua poco a poco.\n8. Subir el fuego al máximo hasta que hierva y bajar a fuego medio. Cocinar unos 16 minutos, probando el arroz.\n9. Apartar del fuego y dejar reposar 5 minutos antes de servir.",
+      "consejos": "Sirve el arroz recién hecho y caliente, directamente en la cazuela, para que mantenga la textura melosa.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/arroz-con-pulpo-receta-de-arroz-meloso-facil-paso-a-paso/24939/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 270
+      }
+    },
+    {
+      "nombre": "Tosta de huevos rotos con jamón",
+      "descripcion": "Tostas de pan de pueblo con cebolla caramelizada, patata confitada, huevo de codorniz y picadillo de jamón. Un bocado sencillo y resultón para compartir.",
+      "tiempo_prep_min": 35,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "336d941c",
+          500
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "bf392211",
+          400
+        ],
+        [
+          "713cdd9d",
+          80
+        ],
+        [
+          "0b223775",
+          500
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "7e48303d",
+          60
+        ],
+        [
+          "59163485",
+          2
+        ],
+        [
+          "8619b09f",
+          7
+        ]
+      ],
+      "instrucciones": "1. Pelar las patatas y cortarlas en láminas de 1 cm. Calentar unos 400 ml de aceite en una cazuela a fuego medio 3 minutos y bajar a fuego bajo.\n2. Introducir las láminas de patata totalmente sumergidas y confitar a temperatura baja sin que el aceite llegue a hervir durante unos 20 minutos, hasta que estén blanditas.\n3. Sacar las patatas, retirar el aceite sobrante con papel absorbente y salar con sal fina. Reservar.\n4. Picar las lonchas de jamón y reservar.\n5. Pelar las cebollas y cortarlas en rodajas muy finas. Pocharlas en una cazuela con un poco de aceite a fuego bajo hasta que empiecen a soltar agua.\n6. Subir un poco la temperatura para que se doren, bajar el fuego, salpimentar y remover 5 minutos. Añadir la miel y remover hasta que se caramelice; retirar a un plato.\n7. Calentar un chorrito de aceite en una sartén y freír los huevos de codorniz sin darles la vuelta, de modo que queden tostaditos por abajo y poco hechos por encima. Salpimentar cada uno y reservar.\n8. Cortar el pan en lonchas de 2 cm y tostarlas ligeramente en la sartén. Calentar la cebolla y la patata un poco en el microondas.\n9. Montar cada tosta con la cebolla, la patata confitada, el huevo de codorniz y el picadillo de jamón. Adornar con perejil y un toque de aceite de oliva.",
+      "consejos": "Usa un buen pan de pueblo para que aguante el peso sin ablandarse; si quieres una versión más ligera, haz las patatas al horno o en freidora de aire.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-tosta-de-huevos-rotos-o-estrellados-con-jamon/1166/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 280
+      }
+    },
+    {
+      "nombre": "Borreta alicantina",
+      "descripcion": "Guiso tradicional alicantino de cuchara con bacalao, patata y espinacas, ligado con el almidón de la patata chascada.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "950afc33",
+          150
+        ],
+        [
+          "bdc11c5a",
+          40
+        ],
+        [
+          "0b223775",
+          400
+        ],
+        [
+          "9ff4d4bd",
+          10
+        ],
+        [
+          "3d373f95",
+          400
+        ],
+        [
+          "eea44971",
+          200
+        ],
+        [
+          "bf392211",
+          30
+        ],
+        [
+          "6cd81fed",
+          200
+        ]
+      ],
+      "instrucciones": "1. Pelar la cebolla y cortarla en dados gruesos.\n2. Pelar los dientes de la cabeza de ajos y dejarlos enteros.\n3. Pelar las patatas y chascarlas: cortar con cuchillo sin llegar al final y romper el trozo con un giro de muñeca.\n4. Calentar un fondo de aceite de oliva en una cazuela y rehogar la cebolla y los ajos unos 10 minutos hasta que la cebolla esté tierna y los ajos comiencen a dorarse.\n5. Añadir la carne de ñora y sofreír ligeramente.\n6. Incorporar la patata chascada, remover para integrar y cubrir con 1 litro de agua.\n7. Llevar a ebullición y cocer 15 minutos o hasta que la patata esté casi tierna.\n8. Sazonar el guiso con sal.\n9. Retirar la piel del bacalao y cortarlo en tacos de bocado.\n10. Cuando las patatas estén casi tiernas, añadir el bacalao, menear la cazuela y cocer 2 minutos.\n11. Cortar las espinacas, añadirlas a la cazuela, tapar y cocinar 1 minuto.\n12. Añadir los huevos, tapar y apagar el fuego; dejar que cuajen con el calor residual hasta que la clara esté opaca y firme.\n13. Servir caliente.",
+      "consejos": "No pases de punto la patata antes de añadir el bacalao, las espinacas y los huevos para que no se deshaga.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/borreta-alicantina-receta-de-cuchara-con-bacalao-y-patata/155980/",
+        "autor": "Carmen López del Hierro",
+        "kcal_web": 320
+      }
+    },
+    {
+      "nombre": "Huevos turcos o çilbir",
+      "descripcion": "Huevos escalfados sobre una base de yogur griego con ajo y menta, aliñados con mantequilla de pimentón y aceite de hierbas. Un desayuno turco lleno de sabor.",
+      "tiempo_prep_min": 22,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "9f1778af",
+          275
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "c63a423f",
+          10
+        ],
+        [
+          "668919bc",
+          60
+        ],
+        [
+          "7ea9e70a",
+          10
+        ],
+        [
+          "e4fdfad8",
+          5
+        ],
+        [
+          "6be23d9d",
+          2
+        ],
+        [
+          "d0a93278",
+          5
+        ],
+        [
+          "0b6a6c68",
+          5
+        ],
+        [
+          "59163485",
+          10
+        ],
+        [
+          "efdb0f46",
+          68
+        ],
+        [
+          "41cb2b97",
+          30
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "becc1fbe",
+          10
+        ],
+        [
+          "d21b8e95",
+          120
+        ]
+      ],
+      "instrucciones": "1. Escurrir el suero del yogur griego. Rallar un diente de ajo y picar la menta fresca. Mezclar el yogur con el ajo rallado, la menta picada, sal y pimienta negra al gusto. Reservar en la nevera durante 1 hora.\n2. Para la mantequilla de pimentón, fundir la mantequilla a fuego bajo. Añadir las escamas de pimentón picante, el comino molido y el pimentón dulce. Remover y mantener a fuego suave.\n3. Para el aceite de hierbas, picar las hojas de tomillo, menta y perejil, y rallar el otro diente de ajo. Retirar las semillas de la guindilla y machacarla en un mortero. Mezclar todo con el vino blanco y el aceite de oliva virgen extra. Salpimentar al gusto.\n4. Para escalfar los huevos, poner agua en un cazo con un chorro de vinagre (unos 15 ml por cada litro de agua). Crear un remolino en el agua y añadir el huevo justo antes de que empiece a hervir, para que la clara no se expanda.\n5. Transcurridos 5 minutos, retirar el huevo del agua y escurrirlo bien. Repetir con el segundo huevo.\n6. Montar el plato: poner en un bol una base de dos cucharadas de yogur, colocar el huevo escalfado en el centro y añadir una cucharada de aceite de hierbas y otra de mantequilla de pimentón. Decorar con piñones por encima. Acompañar con pan de pita o pan plano.",
+      "consejos": "Escurre bien el yogur para que la base quede espesa y no se mezcle con el huevo.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/huevos-turcos-o-cilbir-receta-del-desayuno-turco-paso-a-paso/49913/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 280
+      }
+    },
+    {
+      "nombre": "Salmón marinado casero",
+      "descripcion": "Salmón curado en casa con sal, azúcar, hinojo, eneldo y limón. Un gravlax aromático ideal para canapés, ensaladas o tostadas.",
+      "tiempo_prep_min": 15,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "09a34011",
+          500
+        ],
+        [
+          "51176662",
+          25
+        ],
+        [
+          "c0f5aeb4",
+          150
+        ],
+        [
+          "2fedb06b",
+          10
+        ],
+        [
+          "60ad001e",
+          5
+        ]
+      ],
+      "instrucciones": "1. Congelar el salmón fresco durante 48 horas para eliminar el riesgo de anisakis; después descongelarlo a temperatura ambiente.\n2. Con un cuchillo afilado retirar la piel de una de las caras del salmón y quitar todas las espinas con unas pinzas. Reservar.\n3. En un cuenco mezclar la sal gruesa con el azúcar moreno. Lavar y cortar el hinojo en juliana y trocear las ramitas de eneldo fresco.\n4. Colocar el salmón en una fuente honda adaptada a su tamaño y distribuir la mezcla de sal y azúcar por toda la superficie, cubriendo también los laterales.\n5. Repartir el hinojo por encima, espolvorear con eneldo fresco y rallar la piel del limón sobre toda la superficie. Tapar con papel transparente, colocar un peso encima y guardar en el frigorífico durante 24 horas.\n6. Pasado ese tiempo, lavar el salmón para retirar la sal y secarlo con papel de cocina.\n7. Conservar el salmón envuelto en papel transparente en el frigorífico hasta un máximo de 15 días, cortándolo a medida que se vaya a consumir.",
+      "consejos": "Elige un salmón fresco de buena calidad y acompáñalo de salsa de yogur con eneldo sobre una tostada.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/salmon-marinado-receta-de-gravlax/13089/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 238
+      }
+    },
+    {
+      "nombre": "Chivito valenciano",
+      "descripcion": "Bocadillo contundente de lomo de cerdo, bacon, queso fundente y huevo, con tomate y lechuga. Un clásico de almuerzo inspirado en el chivito uruguayo.",
+      "tiempo_prep_min": 15,
+      "porciones": 1,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "265ec681",
+          250
+        ],
+        [
+          "e63f3694",
+          150
+        ],
+        [
+          "32c7062f",
+          45
+        ],
+        [
+          "06262e59",
+          60
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "7f40a393",
+          90
+        ],
+        [
+          "7fb4b7ea",
+          20
+        ],
+        [
+          "866d6397",
+          15
+        ],
+        [
+          "efdb0f46",
+          10
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Lavar la lechuga, escurrirla bien y secarla con papel de cocina.\n2. Abrir el pan por la mitad sin separarlo del todo; si está muy tierno, tostarlo ligeramente por dentro en una plancha o sartén amplia.\n3. Salpimentar los filetes de lomo por ambos lados; si son gruesos, aplastarlos un poco.\n4. Calentar una plancha o sartén grande con unas gotas de aceite de oliva y cocinar los filetes de lomo a fuego medio-alto, vuelta y vuelta, hasta que estén dorados por fuera y hechos por dentro.\n5. Retirar el lomo y, en la misma sartén, cocinar el bacon hasta que quede dorado y ligeramente crujiente; retirarlo sobre papel de cocina para quitar el exceso de grasa.\n6. Cocinar los huevos en la misma sartén o en otra limpia, al gusto (fritos, a la plancha o con la yema un poco cuajada).\n7. Colocar una loncha de queso sobre cada par de filetes de lomo todavía calientes; si se quiere que funda mejor, devolverlos unos segundos a la sartén con el fuego bajo y tapar.\n8. Untar la parte inferior del pan con una cucharada de mayonesa.\n9. Poner encima la lechuga bien seca y después las rodajas de tomate; añadir una pizca de sal sobre el tomate.\n10. Colocar el lomo con el queso fundido sobre el tomate y encima las lonchas de bacon repartidas.\n11. Terminar con el huevo, colocándolo con cuidado si la yema está jugosa.\n12. Cerrar el pan y presionar ligeramente; si se quiere un acabado de bar, pasarlo unos segundos por la plancha con un poco de peso encima.\n13. Servir el chivito recién hecho, cortado por la mitad si el pan es grande.",
+      "consejos": "Usa un pan con corteza crujiente y miga suficiente para aguantar el relleno, y cocina el lomo poco tiempo para que quede jugoso.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/chivito-valenciano-receta-del-bocadillo-de-lomo-bacon-queso-y-huevo-que-une-valencia-y-uruguay/173303/",
+        "autor": "Rubén Amorín",
+        "kcal_web": 290
+      }
+    },
+    {
+      "nombre": "Arroz con conejo y verduras en paella",
+      "descripcion": "Arroz tradicional valenciano cocinado en paella con conejo, alcachofas, judías y un sofrito de tomate y pimentón. Un plato completo y sabroso para reuniones familiares.",
+      "tiempo_prep_min": 90,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "37dae3b8",
+          700
+        ],
+        [
+          "3fef87f6",
+          600
+        ],
+        [
+          "c3123736",
+          150
+        ],
+        [
+          "1390b7a4",
+          200
+        ],
+        [
+          "95efbbab",
+          150
+        ],
+        [
+          "e4fdfad8",
+          14
+        ],
+        [
+          "2f6b30f6",
+          1
+        ],
+        [
+          "bf392211",
+          140
+        ],
+        [
+          "0a1c68a7",
+          200
+        ],
+        [
+          "41f3bf76",
+          5
+        ]
+      ],
+      "instrucciones": "1. Cortar el conejo en trozos para guiso, las judías verdes sin hebras en trozos de 2-3 cm y las alcachofas limpias en mitades o cuartos.\n2. Calentar abundante aceite de oliva en la paella y sofreír el conejo, las judías verdes, la judía blanca y las alcachofas hasta que el conejo esté bien dorado.\n3. Sazonar y añadir el pimentón dulce, removiendo rápido para que no se queme; añadir el tomate triturado y rehogar el sofrito.\n4. Añadir agua (unas tres veces el volumen del arroz), llevar a ebullición y cocinar el caldo 25-30 minutos, añadiendo el azafrán y probando para ajustar de sal.\n5. Añadir el arroz distribuido de forma uniforme por la paella y cocer 18-20 minutos a fuego que se va consumiendo, hasta que quede seco y suelto; a mitad de cocción añadir unas ramitas de romero y retirarlas antes de servir.\n6. Para el socarrat, hacer pequeños agujeros con el extremo de una cuchara, añadir un poco de aceite de oliva y subir el fuego al máximo durante 1 minuto.\n7. Apagar el fuego y dejar reposar tapado con un paño de algodón 5-8 minutos antes de servir.",
+      "consejos": "Usa una paella amplia y un buen difusor de calor para que el arroz se cocine de forma uniforme y consigas un socarrat sin quemarlo.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-arroz-con-conejo-y-pollo/609/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 305
+      }
+    },
+    {
+      "nombre": "Guiso de ternera con patatas",
+      "descripcion": "Guiso tradicional de ternera con verduras, vino tinto y patatas, cocinado a fuego lento hasta que la carne queda tierna y la salsa espesa.",
+      "tiempo_prep_min": 190,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "a362a935",
+          1500
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "4dacb910",
+          200
+        ],
+        [
+          "0b223775",
+          900
+        ],
+        [
+          "bf392211",
+          84
+        ],
+        [
+          "12ce769f",
+          220
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "de124e1a",
+          750
+        ],
+        [
+          "7f40a393",
+          300
+        ],
+        [
+          "75177bbb",
+          1
+        ],
+        [
+          "59163485",
+          5
+        ],
+        [
+          "70d24d12",
+          1
+        ],
+        [
+          "41f3bf76",
+          1
+        ]
+      ],
+      "instrucciones": "1. Limpiar la carne de grasa y trocearla en pedazos grandes. Calentar un chorrito de aceite de oliva en una cazuela y dorar la carne por todos lados. Retirar y reservar.\n2. En la misma cazuela, sofreír la cebolla y los ajos picados en daditos a fuego lento durante 10 minutos, removiendo de vez en cuando.\n3. Incorporar las zanahorias cortadas en rodajitas y cocinar 10 minutos más.\n4. Añadir los tomates lavados y cortados en dados y cocinar 8-10 minutos desde que vuelva a tomar calor.\n5. Verter el vino tinto y dejar que se evapore el alcohol unos minutos. Añadir las hierbas aromáticas (laurel, orégano, perejil, tomillo y romero), preferiblemente en un ramillete para retirarlas después.\n6. Salpimentar y añadir la carne reservada a la cazuela.\n7. Cubrir con el caldo de carne y llevar a ebullición antes de tapar. Cocinar 2 horas a fuego medio con la cazuela tapada.\n8. Comprobar que la carne está tierna, retirarla y reservar. Retirar las hierbas aromáticas de la salsa y desecharlas.\n9. Triturar la salsa con una batidora y pasarla por un pasapuré si se desea más fina. Volver a incorporar la carne a la salsa y reservar.\n10. Pelar las patatas y cortarlas en pedazos grandes. Cocerlas cubiertas de agua durante 10 minutos. Escurrirlas bien y freírlas en abundante aceite hasta que adquieran una costra exterior.\n11. Escurrir las patatas del aceite sobrante y añadirlas a la cazuela de la carne con su salsa. Cocinar 15 minutos más con la cazuela destapada.\n12. Servir bien caliente, acompañando la carne con las patatas y regada con parte de su salsa.",
+      "consejos": "El guiso está mejor de un día para otro, así que conviene cocinarlo el día anterior para que los sabores reposen.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-abuela-guiso-de-ternera-con-patatas/1336/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 288
+      }
+    },
+    {
+      "nombre": "Espaguetis con sepia al ajillo",
+      "descripcion": "Pasta al dente con sepia dorada a la plancha y un majado de ajo, perejil y vino blanco. Un plato de mar y tierra rápido y lleno de sabor.",
+      "tiempo_prep_min": 25,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "ae0a0635",
+          400
+        ],
+        [
+          "b70a10f2",
+          800
+        ],
+        [
+          "bdc11c5a",
+          16
+        ],
+        [
+          "59163485",
+          30
+        ],
+        [
+          "41cb2b97",
+          30
+        ],
+        [
+          "efdb0f46",
+          70
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "d4341390",
+          50
+        ],
+        [
+          "0b6a6c68",
+          5
+        ]
+      ],
+      "instrucciones": "1. Pelar los ajos, lavar y secar el perejil. En un mortero, majar los ajos con un pellizco de sal hasta obtener una pasta.\n2. Añadir las hojas de perejil troceadas (reservar algunas para decorar), 3 cucharadas de aceite de oliva y 30 ml de vino blanco. Mezclar bien y reservar.\n3. Trocear la sepia en cuadrados de 3-4 cm, lavarla y secarla muy bien con papel de cocina.\n4. Calentar una plancha o sartén grande a fuego mínimo hasta que esté bien caliente. Añadir una cucharada de aceite de oliva y subir el fuego al máximo.\n5. Incorporar la sepia y remover durante 1 minuto. Retirarla a un plato con papel de cocina para que suelte el líquido.\n6. Limpiar la plancha, añadir otra cucharada de aceite de oliva y volver a calentar a fuego vivo. Incorporar la sepia, salpimentar y dorar durante 2 minutos más.\n7. Añadir el majado reservado y dorar unos segundos, como máximo 1 minuto. Si se desea, añadir guindilla picada al gusto. Apagar el fuego y servir con perejil por encima.\n8. En una olla grande, llevar abundante agua a ebullición y añadir sal (unas 2 cucharadas rasas por cada 400 g de pasta).\n9. Añadir los espaguetis y remover con una cuchara de madera para que no se peguen.\n10. Cocer según el tiempo indicado en el paquete (unos 10 minutos) para que queden al dente.\n11. Escurrir los espaguetis, emplatar y añadir la sepia al ajillo con su salsa. Acompañar opcionalmente de alioli o mayonesa.",
+      "consejos": "Usa una plancha bien caliente y respeta los tiempos de cocción de la sepia para que quede tierna y no gomosa.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/espaguetis-con-sepia-al-ajillo-receta-de-pasta-facil/42123/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 360
+      }
+    },
+    {
+      "nombre": "Menestra de verduras a la navarra",
+      "descripcion": "Menestra primaveral de espárragos, alcachofas, habas y guisantes con jamón serrano y una salsa ligera de harina y caldo de espárragos.",
+      "tiempo_prep_min": 70,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "138c386c",
+          350
+        ],
+        [
+          "53dfeff0",
+          200
+        ],
+        [
+          "3eb4a47a",
+          200
+        ],
+        [
+          "e45fcb39",
+          30
+        ],
+        [
+          "be2022de",
+          80
+        ],
+        [
+          "0a1c68a7",
+          900
+        ],
+        [
+          "9df73a2d",
+          250
+        ],
+        [
+          "efdb0f46",
+          56
+        ],
+        [
+          "20c74a2a",
+          10
+        ],
+        [
+          "59163485",
+          5
+        ]
+      ],
+      "instrucciones": "1. Desgranar las habas y los guisantes, retirar la parte dura de los ajetes y limpiar los espárragos blancos pelándolos desde debajo de la yema hacia la base.\n2. Cocer los espárragos en agua fría con sal, desde que empiece a hervir, 15-20 minutos a fuego medio hasta que estén tiernos pero enteros. Reservar 250 ml del caldo de cocción.\n3. Limpiar las alcachofas retirando las hojas exteriores duras hasta el corazón, pelar el tallo si está tierno, cortar la punta y partirlas en cuartos, manteniéndolas en agua fría con perejil o limón para que no se oxiden.\n4. Cocer las alcachofas en agua hirviendo con sal 15-20 minutos según el tamaño, escurrir y reservar.\n5. Cocer las habas en agua hirviendo con sal 5-8 minutos, pasarlas a agua fría y pelarlas si la piel exterior está dura.\n6. Cocer los guisantes en agua hirviendo con sal 3-5 minutos, escurrir y reservar.\n7. En una cazuela baja con el aceite de oliva, dorar suavemente los ajetes picados, incorporar el jamón en taquitos y rehogar apenas un minuto.\n8. Añadir la harina y cocinarla un minuto removiendo, verter poco a poco el caldo de los espárragos sin dejar de mover hasta formar una salsa ligera.\n9. Incorporar las alcachofas, las habas y los guisantes, menear con suavidad y cocinar todo junto 3-4 minutos.\n10. Añadir los espárragos al final, enteros o partidos, probar de sal y servir caliente con su salsa ligera por encima.",
+      "consejos": "Cuece cada verdura por separado para que cada una quede en su punto y usa el caldo de los espárragos para ligar la salsa.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/menestra-de-verduras-a-la-navarra-una-receta-de-primavera-con-mucha-huerta/168370/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 120
+      }
+    },
+    {
+      "nombre": "Bacalao con tomate",
+      "descripcion": "Guiso tradicional de bacalao desalado sellado y cocinado en una salsa de tomate, cebolla y pimiento rojo. Un plato sabroso y perfecto para preparar con antelación.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "3d373f95",
+          600
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "938d8084",
+          1000
+        ],
+        [
+          "d106e3bb",
+          150
+        ],
+        [
+          "e4fdfad8",
+          1
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "41cb2b97",
+          100
+        ],
+        [
+          "20c74a2a",
+          50
+        ],
+        [
+          "efdb0f46",
+          60
+        ]
+      ],
+      "instrucciones": "1. Cortar en daditos pequeños el pimiento rojo, las cebollas y los ajos. Pelar los tomates y trocearlos en dados pequeños.\n2. En una cazuela grande, calentar un chorrito de aceite de oliva y sofreír el pimiento unos 6-7 minutos hasta que empiece a ablandarse.\n3. Añadir la cebolla y los ajos troceados y sofreír hasta que la verdura esté blandita.\n4. Agregar el vino blanco y cocinar unos minutos hasta que se evapore el alcohol. Incorporar el tomate y el pimentón dulce.\n5. Cocinar unos 30 minutos a fuego bajo, removiendo de vez en cuando.\n6. Mientras se cocina la salsa, enharinar los lomos de bacalao y sellarlos en una sartén con un chorrito de aceite de oliva, sin que queden totalmente hechos.\n7. Incorporar los lomos de bacalao a la cazuela con la salsa, con la piel hacia abajo, y cocinar a fuego muy bajo unos 5 minutos como máximo.\n8. Apagar el fuego y dejar reposar unos minutos antes de servir.\n9. Servir acompañado de unas patatas cocidas.",
+      "consejos": "Es mejor que la salsa quede poco salada, ya que el bacalao aporta sal; probad el bacalao desalado antes de cocinar para ajustar el punto.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-bacalao-con-tomate/16218/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 270
+      }
+    },
+    {
+      "nombre": "Huevos rotos con gulas al ajillo",
+      "descripcion": "Patatas fritas con cebolla caramelizada, huevos con yema líquida y gulas salteadas al ajillo. Un plato clásico de taberna para compartir.",
+      "tiempo_prep_min": 40,
+      "porciones": 6,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b0b14be3",
+          1000
+        ],
+        [
+          "6cd81fed",
+          300
+        ],
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "bf392211",
+          150
+        ],
+        [
+          "347975c9",
+          200
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "0b6a6c68",
+          5
+        ],
+        [
+          "8619b09f",
+          21
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Pelar las patatas, lavarlas en agua fría y cortarlas en rodajas tipo patatas panaderas.\n2. Secarlas con papel absorbente y reservarlas.\n3. Calentar abundante aceite de oliva en una sartén grande y freír las patatas a fuego medio unos 10-12 minutos, hasta que estén tiernas pero no crujientes.\n4. Retirarlas con una espumadera, escurrirlas, salpimentarlas y reservarlas en una fuente.\n5. Retirar el aceite de la sartén y reutilizar una pequeña parte para la cebolla.\n6. Pelar y cortar las cebollas en rodajas muy finas y pochar a fuego bajo en la misma sartén con un poco de aceite.\n7. Cuando suelten agua, subir un poco el fuego para dorarlas; bajar el fuego, salpimentar y remover 5 minutos.\n8. Añadir 1 cucharada de miel y remover hasta que la cebolla se caramelice; retirar a un plato.\n9. En la misma sartén, con 1 cucharada de aceite de las patatas, freír los huevos sin que cuajen del todo, con la yema líquida.\n10. Añadir la cebolla y las patatas a la sartén y romper los huevos con una cuchara de madera.\n11. Picar los ajos muy finos y sofreírlos en una cazuela con aceite a fuego lento 1 minuto.\n12. Añadir las gulas y remover con suavidad 2 minutos.\n13. Añadir una pizca de guindilla molida (opcional), sal y pimienta.\n14. Presentar los huevos rotos en una fuente y coronar con las gulas al ajillo.",
+      "consejos": "Escurre bien las patatas y fríelas a fuego medio para que queden tiernas por dentro; rompe los huevos en la sartén justo antes de servir para que la yema quede líquida.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-huevos-rotos-con-gulas-al-ajillo/1136/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 290
+      }
+    },
+    {
+      "nombre": "Paella de pollo",
+      "descripcion": "Arroz en paella con pollo troceado, verduras y azafrán, cocinado con caldo de pollo. Un plato único fácil y económico para toda la familia.",
+      "tiempo_prep_min": 60,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "12616b3d",
+          750
+        ],
+        [
+          "37dae3b8",
+          320
+        ],
+        [
+          "95efbbab",
+          175
+        ],
+        [
+          "d106e3bb",
+          100
+        ],
+        [
+          "5a2b6b52",
+          100
+        ],
+        [
+          "950afc33",
+          100
+        ],
+        [
+          "4dacb910",
+          80
+        ],
+        [
+          "bdc11c5a",
+          4
+        ],
+        [
+          "1d197cae",
+          45
+        ],
+        [
+          "eb5939be",
+          1000
+        ],
+        [
+          "d82049ee",
+          14
+        ],
+        [
+          "2f6b30f6",
+          1
+        ],
+        [
+          "70d24d12",
+          1
+        ],
+        [
+          "efdb0f46",
+          42
+        ]
+      ],
+      "instrucciones": "1. Retirar restos de grasa y piel del pollo troceado. Calentar un chorrito de aceite de oliva en la paella y dorar la carne por todas sus caras hasta que esté sellada. Retirar y reservar.\n2. Lavar los pimientos y cortarlos en daditos pequeños. Pelar la cebolla y trocearla en dados pequeños. Pelar o lavar la zanahoria y cortarla en brunoise.\n3. Calentar un chorrito de aceite de oliva en la misma paella y añadir los pimientos, la cebolla y la zanahoria. Sofreír las verduras unos 15-20 minutos hasta que estén blanditas, removiendo de vez en cuando.\n4. Incorporar al sofrito la salsa de tomate, la carne de pimiento choricero, el azafrán, la hoja de laurel y la ramita de tomillo. Integrar bien y cocinar 2-3 minutos más.\n5. Añadir las judías lavadas y troceadas y el diente de ajo picadito. Cocinar 10 minutos más.\n6. Incorporar el pollo reservado y el arroz. Sofreír el arroz 2-3 minutos mezclándolo con todos los ingredientes.\n7. Cubrir con el caldo de pollo previamente calentado.\n8. Cocinar el arroz, una vez que comience a hervir el caldo, durante 20 minutos a fuego medio. Probar unos granos a media cocción y ajustar el punto de sal.\n9. Retirar del fuego y dejar reposar unos minutos tapada con un paño de algodón, unos 5-8 minutos.\n10. No remover el arroz durante la fase de cocción.",
+      "consejos": "Deja reposar la paella tapada 5-8 minutos fuera del fuego para que el grano quede suelto y en su punto.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/paella-de-pollo-receta-de-arroz-facil-y-barata/31247/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 290
+      }
+    },
+    {
+      "nombre": "Arroz meloso con atún en conserva",
+      "descripcion": "Un arroz meloso y sabroso preparado con un sofrito de pimientos, ajo y maíz, al que se añade atún en conserva y huevo cocido. Una receta fácil y completa para cualquier día.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c025805a",
+          300
+        ],
+        [
+          "05756819",
+          700
+        ],
+        [
+          "41cb2b97",
+          50
+        ],
+        [
+          "cecd2d22",
+          120
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "d106e3bb",
+          50
+        ],
+        [
+          "b12e5a68",
+          50
+        ],
+        [
+          "5a2b6b52",
+          50
+        ],
+        [
+          "90dd86e4",
+          50
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "9a1002ce",
+          30
+        ],
+        [
+          "94ba864e",
+          1
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Cocer los huevos en agua fría durante 12 minutos desde que empieza a hervir. Pasado ese tiempo, escurrirlos y ponerlos en agua fría para que se enfríen y no se sigan cocinando. Reservar.\n2. Escurrir el aceite de las latas de atún y reservar el atún. Verter ese aceite en una sartén amplia y calentarlo.\n3. Picar finamente los ajos y los pimientos (rojo, amarillo y verde). Añadir los ajos al aceite caliente y sofreír un par de minutos. Luego agregar los pimientos y cocinar a fuego suave durante 8 minutos.\n4. Incorporar el maíz cocido y las aceitunas enteras. Mezclar con el sofrito y salpimentar si fuera necesario.\n5. Añadir el arroz y remover durante un minuto para que se impregne del sabor del sofrito.\n6. Verter el caldo de pescado (o agua), el vino blanco y una pizca de cúrcuma o colorante amarillo (opcional). Remover.\n7. Cocinar a fuego lento durante 15 minutos, removiendo de vez en cuando para que no se pegue.\n8. A los 10 minutos de cocción, añadir el atún reservado y los huevos cocidos cortados en trocitos. Mezclar bien y continuar la cocción los 5 minutos restantes.\n9. Probar de sal y rectificar si fuera necesario. Retirar del fuego y servir caliente.",
+      "consejos": "Para un resultado más sabroso, utilice un buen caldo de pescado casero; si no, elija una marca de confianza.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/arroz-meloso-con-atun-en-conserva-receta-de-arroz-facil/40619/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 256
+      }
+    },
+    {
+      "nombre": "Pimientos del piquillo rellenos de gambas y bacalao",
+      "descripcion": "Pimientos del piquillo rellenos de una bechamel cremosa de bacalao y gambas, rebozados y horneados con una salsa de verduras. Un plato festivo y muy sabroso.",
+      "tiempo_prep_min": 75,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "6dc1aad1",
+          400
+        ],
+        [
+          "3d373f95",
+          300
+        ],
+        [
+          "e5b7ba6b",
+          200
+        ],
+        [
+          "950afc33",
+          650
+        ],
+        [
+          "20c74a2a",
+          60
+        ],
+        [
+          "081fbb40",
+          1
+        ],
+        [
+          "6cd81fed",
+          100
+        ],
+        [
+          "86d39197",
+          500
+        ],
+        [
+          "668919bc",
+          50
+        ],
+        [
+          "4dacb910",
+          400
+        ],
+        [
+          "df8960c1",
+          60
+        ],
+        [
+          "41cb2b97",
+          100
+        ],
+        [
+          "efdb0f46",
+          60
+        ]
+      ],
+      "instrucciones": "1. Pelar las gambas si son frescas, lavarlas, secarlas, quitarles el intestino, sazonar con sal y trocearlas. Reservar.\n2. Pelar las 3 cebollas y las 4 zanahorias, cortarlas en trozos grandes y sofreírlas en una cazuela con un poco de aceite de oliva. Añadir el pan tostado y el vino blanco y dejar reducir unos minutos.\n3. Cubrir con agua o caldo, bajar el fuego al mínimo y cocinar unos 30 minutos.\n4. En un cazo, cubrir el bacalao con agua, llevar a ebullición y retirar. Desmigarlo retirando piel y espinas.\n5. Triturar las cebollas y zanahorias pochadas con la batidora y devolver la mezcla a la sartén, dejando reducir a fuego bajo.\n6. Derretir la mantequilla a fuego bajo, añadir la cebolla restante picada y pochar hasta que esté transparente. Añadir la harina, mezclar y verter poco a poco la leche sin dejar de remover hasta que espese.\n7. Incorporar el bacalao desmigado y las gambas, mezclar bien, sazonar con sal y nuez moscada y remover hasta obtener una bechamel espesa y cremosa.\n8. Rellenar los pimientos del piquillo con la mezcla sin llenarlos demasiado.\n9. Pasar los pimientos por harina y huevo batido y freírlos ligeramente en aceite caliente hasta que el rebozado esté dorado. Escurrir sobre papel absorbente.\n10. Colocar los pimientos en una bandeja de horno, cubrir con la salsa y hornear a 180 °C durante 15 minutos.\n11. Servir bien calientes, acompañados de un poco más de salsa por encima.",
+      "consejos": "Utiliza leche caliente y remueve constantemente para evitar grumos en la bechamel; si queda muy espesa, aligérala con un poco más de leche.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/pimientos-rellenos-de-gambas-y-bacalao-una-receta-deliciosa/115701/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": 390
+      }
+    },
+    {
+      "nombre": "Musaka de calabacín",
+      "descripcion": "Una musaka original que sustituye la pasta por láminas de calabacín, con un relleno de carne picada de ternera y cerdo, verduras y una salsa de pimientos del piquillo.",
+      "tiempo_prep_min": 70,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "950afc33",
+          300
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "0628585f",
+          500
+        ],
+        [
+          "f8586302",
+          600
+        ],
+        [
+          "bf392211",
+          84
+        ],
+        [
+          "7f40a393",
+          450
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "41cb2b97",
+          120
+        ],
+        [
+          "122e823f",
+          500
+        ],
+        [
+          "6dc1aad1",
+          180
+        ],
+        [
+          "75177bbb",
+          2
+        ],
+        [
+          "fea7cbe9",
+          2
+        ],
+        [
+          "34f7b619",
+          30
+        ],
+        [
+          "4dacb910",
+          400
+        ],
+        [
+          "3b71ee6a",
+          15
+        ]
+      ],
+      "instrucciones": "1. Cortar los calabacines en rodajas de 6-8 mm de grosor.\n2. Freír las rodajas de calabacín en aceite de oliva hasta que estén doradas y tiernas por dentro. Escurrir en papel absorbente.\n3. Escaldar los tomates, pelarlos y picarlos en cuadraditos. Picar finamente las cebollas, los ajos y las zanahorias. Salpimentar la carne.\n4. En una cazuela con aceite, pochar la cebolla y el ajo 3 minutos, añadir la zanahoria y pochar 5 minutos más. Agregar la carne picada, perejil picado y tomate frito, y sofreír 5-7 minutos a fuego suave.\n5. Añadir el tomate picado y el vino blanco, y dejar reducir unos 15 minutos a fuego suave hasta obtener una salsa espesa.\n6. Rectificar de sal y reservar hasta que se enfríe.\n7. Precalentar el horno a 180 °C.\n8. Triturar los pimientos del piquillo con su agua e incorporarlos a la bechamel.\n9. Engrasar una fuente con el aceite sobrante de freír los calabacines. Montar capas alternas de calabacín, salsa de carne y bechamel, hasta 3 pisos. Terminar con bechamel y pan rallado o queso para gratinar.\n10. Hornear 20 minutos a 180 °C y 5 minutos con el gratinador para dorar.",
+      "consejos": "Coloca papel de aluminio en la bandeja del horno para recoger los jugos que suelta la musaka durante el horneado.",
+      "origen_web": {
+        "url": "https://www.abc.es/recetasderechupete/receta-de-lasana-de-calabacin/773/",
+        "autor": "Alfonso López Alonso",
+        "kcal_web": null
+      }
+    }
+  ]
+}

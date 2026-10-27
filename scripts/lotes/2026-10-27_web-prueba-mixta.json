@@ -1,0 +1,521 @@
+{
+  "lote": "web-prueba-mixta-2026-10-27",
+  "tipo_plato": "Comida",
+  "tipo_receta": "completa",
+  "fuente": "lote_verificado",
+  "alimentos": {
+    "59163485": {
+      "nombre": "Perejil fresco",
+      "prefijo": "59163485",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "65756599": {
+      "nombre": "Lima",
+      "prefijo": "65756599",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "82930270": {
+      "nombre": "Cebolleta",
+      "prefijo": "82930270",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b1caec0b": {
+      "nombre": "Aceite de oliva extra virgen",
+      "prefijo": "b1caec0b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "e9cea510": {
+      "nombre": "Coles Bruselas",
+      "prefijo": "e9cea510",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "08637e90": {
+      "nombre": "Cebolla roja",
+      "prefijo": "08637e90",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "bdc11c5a": {
+      "nombre": "Ajo",
+      "prefijo": "bdc11c5a",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d946bd47": {
+      "nombre": "Kale (col rizada)",
+      "prefijo": "d946bd47",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "b1ff971a": {
+      "nombre": "Espinacas baby",
+      "prefijo": "b1ff971a",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31f12840": {
+      "nombre": "Cilantro molido",
+      "prefijo": "31f12840",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6be23d9d": {
+      "nombre": "Comino molido",
+      "prefijo": "6be23d9d",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "cb2dca26": {
+      "nombre": "Limón exprimido",
+      "prefijo": "cb2dca26",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "6cd81fed": {
+      "nombre": "Huevo",
+      "prefijo": "6cd81fed",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "6187036a": {
+      "nombre": "Queso feta",
+      "prefijo": "6187036a",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "0f347066": {
+      "nombre": "Avena (copos)",
+      "prefijo": "0f347066",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "6328f4b9": {
+      "nombre": "Crema de cacahuete (natural)",
+      "prefijo": "6328f4b9",
+      "rol": "grasa_saludable",
+      "alergenos": [
+        "Cacahuetes"
+      ],
+      "origen": "vegetal"
+    },
+    "b5b5e57f": {
+      "nombre": "Semillas de chía",
+      "prefijo": "b5b5e57f",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34d6fafa": {
+      "nombre": "Sirope de arce",
+      "prefijo": "34d6fafa",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "9dc9f005": {
+      "nombre": "Bebida de Almendras Brik",
+      "prefijo": "9dc9f005",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Frutos Secos"
+      ],
+      "origen": "vegetal"
+    },
+    "7fcfe0b8": {
+      "nombre": "Yogur griego natural (0%)",
+      "prefijo": "7fcfe0b8",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "2249081f": {
+      "nombre": "Proteína en polvo (vainilla o chocolate)",
+      "prefijo": "2249081f",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "c1dfb4b4": {
+      "nombre": "Pechuga de pollo (cruda)",
+      "prefijo": "c1dfb4b4",
+      "rol": "proteina_principal",
+      "alergenos": [],
+      "origen": "carne"
+    },
+    "e22e238b": {
+      "nombre": "Aceite de oliva 1º",
+      "prefijo": "e22e238b",
+      "rol": "grasa_saludable",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "0e40c366": {
+      "nombre": "Cilantro",
+      "prefijo": "0e40c366",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3350c934": {
+      "nombre": "Pimienta negra molida",
+      "prefijo": "3350c934",
+      "rol": "especias_aromaticos",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "88c64a6c": {
+      "nombre": "Piña natural",
+      "prefijo": "88c64a6c",
+      "rol": "fruta_complemento",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "03858a00": {
+      "nombre": "Maíz dulce",
+      "prefijo": "03858a00",
+      "rol": "carbohidrato_base",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "c25964f2": {
+      "nombre": "Jalapeño",
+      "prefijo": "c25964f2",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "d106e3bb": {
+      "nombre": "Pimiento rojo",
+      "prefijo": "d106e3bb",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "31108cb4": {
+      "nombre": "Chalotas",
+      "prefijo": "31108cb4",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "34f7b619": {
+      "nombre": "Pan rallado",
+      "prefijo": "34f7b619",
+      "rol": "carbohidrato_base",
+      "alergenos": [
+        "Gluten"
+      ],
+      "origen": "vegetal"
+    },
+    "b983723d": {
+      "nombre": "Queso parmesano",
+      "prefijo": "b983723d",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "8f023610": {
+      "nombre": "Clara de huevo",
+      "prefijo": "8f023610",
+      "rol": "proteina_principal",
+      "alergenos": [
+        "Huevos"
+      ],
+      "origen": "huevo"
+    },
+    "b6381c1c": {
+      "nombre": "Espinacas congeladas (cocidas)",
+      "prefijo": "b6381c1c",
+      "rol": "verdura_volumen",
+      "alergenos": [],
+      "origen": "vegetal"
+    },
+    "3ad56bfc": {
+      "nombre": "Queso ricotta mezcla",
+      "prefijo": "3ad56bfc",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "382a08c2": {
+      "nombre": "Queso mozzarella",
+      "prefijo": "382a08c2",
+      "rol": "lacteo_complemento",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "origen": "lacteo"
+    },
+    "1d197cae": {
+      "nombre": "Salsa de tomate",
+      "prefijo": "1d197cae",
+      "rol": "salsa_condimento",
+      "alergenos": [],
+      "origen": "vegetal"
+    }
+  },
+  "recetas": [
+    {
+      "nombre": "Shakshuka verde con coles de Bruselas y kale",
+      "descripcion": "Huevos escalfados sobre un sofrito verde de coles de Bruselas, kale y espinacas con especias y limón. Un plato vegetal completo para comer o cenar.",
+      "tiempo_prep_min": 40,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "b1caec0b",
+          56
+        ],
+        [
+          "e9cea510",
+          227
+        ],
+        [
+          "08637e90",
+          75
+        ],
+        [
+          "bdc11c5a",
+          12
+        ],
+        [
+          "d946bd47",
+          227
+        ],
+        [
+          "b1ff971a",
+          71
+        ],
+        [
+          "31f12840",
+          2
+        ],
+        [
+          "6be23d9d",
+          1.5
+        ],
+        [
+          "cb2dca26",
+          15
+        ],
+        [
+          "6cd81fed",
+          200
+        ],
+        [
+          "82930270",
+          15
+        ],
+        [
+          "59163485",
+          10
+        ],
+        [
+          "6187036a",
+          40
+        ]
+      ],
+      "instrucciones": "1. Calienta el aceite de oliva virgen extra en una sartén de 25 cm con tapa a fuego medio-alto hasta que brille. Añade las coles de Bruselas laminadas y una pizca de sal; cocina 5-6 minutos removiendo de vez en cuando hasta que se ablanden y se doren ligeramente.\n2. Baja a fuego medio, añade la cebolla y el ajo y cocina 3-4 minutos removiendo hasta que se ablanden, sin que el ajo se queme.\n3. Añade el kale y remueve 5 minutos hasta que se ablande un poco (puedes añadirlo por tandas). Incorpora las espinacas y mezcla; sazona con una pizca de sal.\n4. Añade la pimienta de Alepo, el cilantro y el comino y mezcla. Vierte 120 ml de agua, baja a fuego medio-bajo, tapa y cocina 8-10 minutos hasta que el kale esté bien tierno. Incorpora el zumo de limón.\n5. Con una cuchara haz 4 huecos, casca un huevo en cada uno y sala ligeramente. Tapa y cocina 4 minutos más o hasta que los huevos estén al punto deseado.\n6. Retira del fuego, añade un chorrito de aceite de oliva si quieres y decora con la cebolleta, el perejil y el queso feta desmenuzado. Sirve inmediatamente con pan o pan de pita templado.",
+      "consejos": "Controla el fuego al añadir el ajo para que no se queme y ajusta el tiempo de los huevos según lo cuajados que te gusten.",
+      "origen_web": {
+        "url": "https://www.themediterraneandish.com/green-shakshuka-recipe/",
+        "autor": null,
+        "kcal_web": 229.6
+      }
+    },
+    {
+      "nombre": "Avena nocturna con crema de cacahuete",
+      "descripcion": "Desayuno cremoso de avena remojada durante la noche con crema de cacahuete, chía y yogur griego. Se prepara en minutos y se deja lista para la mañana siguiente.",
+      "tiempo_prep_min": 120,
+      "porciones": 2,
+      "tipo_plato": "Desayuno",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "0f347066",
+          125
+        ],
+        [
+          "6328f4b9",
+          32
+        ],
+        [
+          "b5b5e57f",
+          12
+        ],
+        [
+          "34d6fafa",
+          20
+        ],
+        [
+          "9dc9f005",
+          300
+        ],
+        [
+          "7fcfe0b8",
+          60
+        ],
+        [
+          "2249081f",
+          30
+        ]
+      ],
+      "instrucciones": "1. Poner todos los ingredientes en un recipiente de cristal grande, como un tarro de conserva.\n2. Remover hasta que queden bien integrados y tapar el recipiente.\n3. Refrigerar al menos 2 horas o toda la noche.\n4. Servir con un poco más de crema de cacahuete por encima.\n5. Alternativa: triturar todos los ingredientes en una batidora de alta velocidad durante aproximadamente 1 minuto hasta obtener una mezcla muy cremosa, pasar a un recipiente hermético y refrigerar al menos 2 horas o toda la noche. Por la mañana se puede comer tal cual o añadir un poco de bebida de almendra para aligerar la textura.",
+      "consejos": "Si prefieres una textura más fina, tritura la avena con la batidora antes de refrigerar; si te gusta más espesa, añade menos bebida de almendra.",
+      "origen_web": {
+        "url": "https://fitfoodiefinds.com/peanut-butter-overnight-oats/",
+        "autor": null,
+        "kcal_web": 325
+      }
+    },
+    {
+      "nombre": "Pollo a la lima con salsa de piña y jalapeño",
+      "descripcion": "Pechuga de pollo marinada en lima y cilantro, a la parrilla, con una salsa fresca de piña, maíz y jalapeño.",
+      "tiempo_prep_min": 45,
+      "porciones": 4,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c1dfb4b4",
+          680
+        ],
+        [
+          "e22e238b",
+          56
+        ],
+        [
+          "65756599",
+          36
+        ],
+        [
+          "bdc11c5a",
+          8
+        ],
+        [
+          "0e40c366",
+          2
+        ],
+        [
+          "3350c934",
+          1
+        ],
+        [
+          "88c64a6c",
+          165
+        ],
+        [
+          "03858a00",
+          165
+        ],
+        [
+          "c25964f2",
+          15
+        ],
+        [
+          "d106e3bb",
+          50
+        ],
+        [
+          "31108cb4",
+          50
+        ]
+      ],
+      "instrucciones": "1. Precalentar la parrilla a 200 °C.\n2. Si las pechugas son gruesas, abrirlas por la mitad y golpearlas suavemente hasta que tengan unos 6 mm de grosor.\n3. Introducirlas en una bolsa de congelación con el aceite de oliva, el zumo de lima, la ralladura de lima, el ajo laminado, el cilantro picado, la sal y la pimienta.\n4. Cerrar la bolsa y masajear para que el pollo quede bien cubierto de marinada.\n5. Dejar marinar 20-25 minutos antes de asar. Mientras tanto, preparar la salsa.\n6. Cortar la piña asada en cubos pequeños y ponerlos en un bol.\n7. Picar finamente la chalota y el jalapeño y añadirlos al bol.\n8. Picar el pimiento rojo y desgranar el maíz; añadir todo al bol con una pizca de sal.\n9. Añadir el zumo de lima y mezclar suavemente. Reservar.\n10. Colocar con cuidado una hoja de papel de aluminio sobre la parrilla caliente.\n11. Poner el pollo sobre el papel de aluminio.\n12. Asar unos 3 minutos por cada lado.\n13. Retirar del fuego y disponer el pollo en una fuente. Cubrir con la salsa de piña y jalapeño.\n14. Servir inmediatamente.",
+      "consejos": "Si no tienes parrilla, puedes cocinar el pollo a la plancha bien caliente.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/zesty-lime-grilled-chicken-with-pineapple-salsa/",
+        "autor": null,
+        "kcal_web": 395
+      }
+    },
+    {
+      "nombre": "Rollitos de pollo con espinacas a la parmesana",
+      "descripcion": "Rollitos de pechuga de pollo rellenos de espinacas, ricotta y mozzarella, empanados y horneados, cubiertos con salsa de tomate y queso parmesano.",
+      "tiempo_prep_min": 45,
+      "porciones": 8,
+      "tipo_plato": "Comida",
+      "tipo_receta": "completa",
+      "ingredientes": [
+        [
+          "c1dfb4b4",
+          680
+        ],
+        [
+          "34f7b619",
+          62
+        ],
+        [
+          "b983723d",
+          25
+        ],
+        [
+          "8f023610",
+          100
+        ],
+        [
+          "b6381c1c",
+          142
+        ],
+        [
+          "3ad56bfc",
+          90
+        ],
+        [
+          "382a08c2",
+          170
+        ],
+        [
+          "1d197cae",
+          240
+        ],
+        [
+          "3350c934",
+          1
+        ]
+      ],
+      "instrucciones": "1. Lavar y secar las pechugas, sazonar con sal y pimienta.\n2. Precalentar el horno a 220°C. Engrasar ligeramente una fuente para horno con spray antiadherente.\n3. Mezclar el pan rallado con 2 cucharadas de queso parmesano en un bol y las claras de huevo en otro.\n4. Rallar o picar finamente 45 g de mozzarella y mezclar con el resto del parmesano, las espinacas escurridas, 2 cucharadas de claras y la ricotta.\n5. Extender las pechugas en una superficie y poner 2 cucharadas de la mezcla de espinacas y queso en cada una. Enrollar sin apretar y dejar la unión hacia abajo.\n6. Pasar cada rollito por las claras y luego por el pan rallado, y colocar en la fuente con la unión hacia abajo.\n7. Repetir con el resto de la pechuga. Rociar ligeramente con aceite de oliva en spray. Hornear 25 minutos.\n8. Sacar del horno, cubrir con la salsa de tomate y el resto de la mozzarella.\n9. Hornear hasta que el queso se derrita y burbujee, unos 3 minutos más.\n10. Servir con salsa extra al lado y queso parmesano rallado.",
+      "consejos": "Escurrir bien las espinacas para evitar que el relleno suelte líquido y los rollitos queden blandos.",
+      "origen_web": {
+        "url": "https://www.skinnytaste.com/chicken-rollatini-with-spinach-alla/",
+        "autor": null,
+        "kcal_web": 195
+      }
+    }
+  ]
+}
