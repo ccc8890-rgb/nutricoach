@@ -10,7 +10,7 @@ const env = { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin:/opt/homebrew/
 const run = (cmd, args) => { const r = spawnSync(cmd, args, { cwd: raiz, env, encoding: 'utf8', timeout: 9 * 60 * 1000 }); return (r.stdout || '') + (r.stderr || '') }
 const lineas = (txt, re) => txt.split('\n').filter(l => re.test(l)).join('\n')
 
-const fotos = run('node', ['scripts/corregir-marcadas.mjs', '--aplica', '--limite=10'])
+const fotos = run('node', ['scripts/corregir-marcadas.mjs', '--aplica', '--limite=4'])
 const resto = run('npx', ['tsx', 'scripts/corregir-marcadas-motor.ts', '--aplica', '--limite=10'])
 const f = lineas(fotos, /^Fotos regeneradas|sin saldo/)
 const r = lineas(resto, /^Correcciones del motor|^❌|^\S.* — pendiente:/)

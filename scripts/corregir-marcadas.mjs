@@ -12,6 +12,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { v2 as cloudinary } from 'cloudinary'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
+import { spawnSync } from 'child_process'
 
 for (const l of readFileSync('.env.local', 'utf8').split('\n')) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/)
@@ -27,6 +28,7 @@ const LIMITE = Number(process.argv.find(a => a.startsWith('--limite='))?.split('
 const SALIDA = 'salidas/fotos-corregidas'
 const ANCHOS = [96, 384, 640, 1080]   // igual que lib/cloudinary-loader.ts
 const hoy = () => new Date().toLocaleDateString('es-ES')
+const esVideo = u => /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(u ?? '')
 
 // Aspectos pendientes = los de la última línea «A corregir:» y que el motor aún no haya atendido después de ella
 function pendientes(notas) {
@@ -87,8 +89,8 @@ let { data: forzadas } = FORZAR && ID ? await db.from('recetas')
 const lista = FORZAR && ID ? (forzadas ?? []).map(r => ({ r, aspectos: ['foto', 'otro'], hechos: '' }))
   : (marcadas ?? []).map(r => ({ r, ...pendientes(r.notas_coach) }))
     .filter(x => x.aspectos.includes('foto') && !x.hechos.includes('foto regenerada'))
-    // Con reel/TikTok la foto buena es un fotograma del vídeo (foto-desde-reel.mjs), nunca una de IA: esas las atiende Claude
-    .filter(x => !x.r.url_origen)
+    // Con reel/TikTok la foto buena es un fotograma del vídeo (foto-reel-auto.mjs), nunca una de IA; una receta de web (sin vídeo) no se toca
+    .filter(x => !x.r.url_origen || (esVideo(x.r.url_origen) && !x.hechos.includes('Motor ✗ foto')))
 console.log(`Marcadas «Corregir» con foto pendiente: ${lista.length} · a procesar: ${Math.min(lista.length, LIMITE)} · coste ~${(Math.min(lista.length, LIMITE) * 0.034).toFixed(2)} $`)
 if (!APLICA) { lista.forEach(({ r }, i) => console.log(`  ${i + 1}. ${r.nombre}`)); console.log('\nSimulación. Añade --aplica.'); process.exit(0) }
 
@@ -96,6 +98,20 @@ if (!existsSync(SALIDA)) mkdirSync(SALIDA, { recursive: true })
 let ok = 0, errores = 0
 for (const [i, { r, aspectos }] of lista.slice(0, LIMITE).entries()) {
   process.stdout.write(`[${i + 1}] ${r.nombre.slice(0, 55)} ... `)
+  if (r.url_origen) { // receta de reel: fotograma elegido con visión y retocado (foto-reel-auto.mjs); nunca foto de IA desde cero
+    const x = spawnSync('node', ['scripts/foto-reel-auto.mjs', `--id=${r.id}`, '--aplica'], { encoding: 'utf8', timeout: 6 * 60 * 1000, env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin' } })
+    const soloFoto = aspectos.every(a => a === 'foto')
+    if (x.status === 0) {
+      const nota = `[${hoy()}] Motor: foto regenerada (fotograma del reel elegido por el motor${soloFoto ? '; lista para revisar' : ''})`
+      await db.from('recetas').update({ notas_coach: [r.notas_coach, nota].filter(Boolean).join('\n'), ...(soloFoto ? { tags: (r.tags ?? []).filter(t => t !== 'Corregir' && t !== 'Reporte cliente') } : {}) }).eq('id', r.id)
+      console.log('✅ fotograma del reel'); ok++
+    } else {
+      const motivo = x.status === 3 ? 'ningún fotograma del vídeo muestra el plato terminado sin cara' : `no se pudo sacar el fotograma (${((x.stderr || x.stdout || '').trim().split('\n').pop() || 'error').slice(0, 120)})`
+      await db.from('recetas').update({ notas_coach: [r.notas_coach, `[${hoy()}] Motor ✗ foto: ${motivo}`].filter(Boolean).join('\n') }).eq('id', r.id)
+      console.log(`⚠️ ${motivo}`); errores++
+    }
+    continue
+  }
   try {
     const buf = await generar(prompt(r))
     if (buf === 'SIN_SALDO') { console.log('⛔ OpenAI sin saldo: se reintentará en la próxima pasada'); break }

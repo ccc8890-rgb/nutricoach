@@ -185,7 +185,7 @@ function gramosEfectivos(gramos: number, porciones?: number | null): number {
   return gramos / Math.max(1, (porciones ?? 1) / 2)
 }
 
-function validarCantidadesSospechosas(ing: IngredienteProfesionalInput, porciones?: number | null): string | null {
+export function validarCantidadesSospechosas(ing: IngredienteProfesionalInput, porciones?: number | null): string | null {
   const gramos = gramosEfectivos(ing.cantidad_gramos ?? 0, porciones)
   if (gramos <= 0) return null
   const nombre = normalizarStr((ing.nombre_libre || '').replace(/\([^)]*\)/g, ' '))
