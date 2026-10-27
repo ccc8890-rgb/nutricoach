@@ -196,7 +196,7 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
                 return (
                   <PlatoArrastrable key={c.id} id={idHueco(semana, d.dia, c.nombre)} origen={{ comida: c, dia: d.dia, semana }} className={`coach-meal-card ${T.card}`}>
                     <div className="flex items-center justify-between gap-1">
-                      <button className={`${T.label} font-semibold uppercase tracking-wide text-left`} style={{ color: 'var(--text-muted)' }} onClick={() => onHueco({ dia: d.dia, franja: c.nombre, semana })}>
+                      <button className={`${T.label} font-semibold uppercase tracking-wide text-left`} style={{ color: 'var(--text-secondary)' }} onClick={() => onHueco({ dia: d.dia, franja: c.nombre, semana })}>
                         {c.nombre}{c.recurrente ? ' · diario' : ''}{objetivos[d.dia]?.momento?.pre === c.nombre ? ' · pre' : objetivos[d.dia]?.momento?.post === c.nombre ? ' · post' : ''}
                       </button>
                       <div className="flex items-center gap-1">
