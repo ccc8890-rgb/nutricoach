@@ -1,5 +1,5 @@
 // Mismos nombres que 'lucide-react', con los dibujos de Hugeicons. Generado.
-import { H_activity_01, H_add_01, H_alert_02, H_alert_circle, H_apple, H_arrow_down_01, H_arrow_down_02, H_arrow_expand, H_arrow_left_01, H_arrow_left_02, H_arrow_right_01, H_arrow_right_02, H_arrow_shrink, H_arrow_up_01, H_arrow_up_02, H_arrow_up_down, H_arrow_up_right_01, H_award_01, H_battery_medium_01, H_bicycle, H_book_open_01, H_bookmark_add_01, H_brain, H_calendar_01, H_calendar_02, H_calendar_03, H_calendar_check_01, H_camera_01, H_cancel_01, H_cancel_circle, H_cardiogram_01, H_chart_bar_line, H_chart_line_data_01, H_chatting_01, H_checkmark_badge_01, H_checkmark_circle_02, H_chef_hat, H_clipboard, H_clock_01, H_coffee_01, H_cookie, H_copy_01, H_copy_02, H_crown, H_dashboard_speed_01, H_dashed_line_circle, H_database, H_delete_02, H_download_01, H_drag_drop_vertical, H_droplet, H_edit_02, H_egg, H_euro, H_favourite, H_file_02, H_file_validation, H_filter, H_fire, H_fish_food, H_flag_02, H_flash, H_flask_conical, H_floppy_disk, H_footprints, H_hashtag, H_image_not_found_01, H_information_circle, H_kettlebell, H_layout_01, H_link_02, H_link_square_02, H_loading_03, H_lock, H_login_01, H_logout_01, H_mail_01, H_message_01, H_message_square_reply, H_milk_bottle, H_minus_sign, H_moon_02, H_more_horizontal, H_notification_01, H_pencil_edit_02, H_percent, H_piggy_bank, H_pill, H_play, H_play_circle, H_power, H_power_off, H_radio_button, H_refresh, H_rotate_ccw, H_route_01, H_search_01, H_sent, H_shield_01, H_shield_02, H_shopping_bag_01, H_shopping_cart_01, H_sliders_horizontal, H_smart_phone_01, H_sparkles, H_spoon_and_fork, H_steak, H_store_01, H_sun_01, H_target_01, H_task_01, H_task_done_01, H_tick_02, H_timer_01, H_toggle_off, H_toggle_on, H_trending_down, H_trending_up, H_trophy, H_upload_01, H_user, H_user_add_01, H_video_01, H_view, H_view_off, H_watch_01, H_wave, H_weight_scale, H_wheat, H_wind, H_wrench_01 } from './hugeicons-core'
+import { H_activity_01, H_add_01, H_alert_02, H_alert_circle, H_apple, H_arrow_down_01, H_arrow_down_02, H_arrow_expand, H_arrow_left_01, H_arrow_left_02, H_arrow_right_01, H_arrow_right_02, H_arrow_shrink, H_arrow_up_01, H_arrow_up_02, H_arrow_up_down, H_arrow_up_right_01, H_award_01, H_battery_medium_01, H_bicycle, H_book_open_01, H_bookmark_add_01, H_brain, H_calendar_01, H_calendar_02, H_calendar_03, H_calendar_check_01, H_camera_01, H_cancel_01, H_cancel_circle, H_cardiogram_01, H_chart_bar_line, H_chart_line_data_01, H_chatting_01, H_checkmark_badge_01, H_checkmark_circle_02, H_chef_hat, H_clipboard, H_clock_01, H_coffee_01, H_cookie, H_copy_01, H_copy_02, H_crown, H_dashboard_speed_01, H_dashed_line_circle, H_database, H_delete_02, H_download_01, H_drag_drop_vertical, H_droplet, H_dumbbell_01, H_edit_02, H_egg, H_euro, H_favourite, H_file_02, H_file_validation, H_filter, H_fire, H_fish_food, H_flag_02, H_flash, H_flask_conical, H_floppy_disk, H_footprints, H_hashtag, H_image_not_found_01, H_information_circle, H_layout_01, H_link_02, H_link_square_02, H_loading_03, H_lock, H_login_01, H_logout_01, H_mail_01, H_message_01, H_message_square_reply, H_milk_bottle, H_minus_sign, H_moon_02, H_more_horizontal, H_notification_01, H_pencil_edit_02, H_percent, H_piggy_bank, H_pill, H_play, H_play_circle, H_power, H_power_off, H_radio_button, H_refresh, H_restaurant_02, H_rotate_ccw, H_route_01, H_search_01, H_sent, H_shield_01, H_shield_02, H_shopping_bag_01, H_shopping_cart_01, H_sliders_horizontal, H_smart_phone_01, H_sparkles, H_steak, H_store_01, H_sun_01, H_target_01, H_task_01, H_task_done_01, H_tick_02, H_timer_01, H_toggle_off, H_toggle_on, H_trending_down, H_trending_up, H_trophy, H_upload_01, H_user, H_user_add_01, H_video_01, H_view, H_view_off, H_watch_01, H_wave, H_weight_scale, H_wheat, H_wind, H_wrench_01 } from './hugeicons-core'
 export type { Icono, IconoProps } from './hugeicons-core'
 export const Activity = H_activity_01
 export const AlertCircle = H_alert_circle
@@ -49,7 +49,7 @@ export const Crown = H_crown
 export const Database = H_database
 export const Download = H_download_01
 export const Droplets = H_droplet
-export const Dumbbell = H_kettlebell
+export const Dumbbell = H_dumbbell_01
 export const Edit3 = H_edit_02
 export const Egg = H_egg
 export const Euro = H_euro
@@ -126,8 +126,8 @@ export const Trophy = H_trophy
 export const Upload = H_upload_01
 export const User = H_user
 export const UserPlus = H_user_add_01
-export const Utensils = H_spoon_and_fork
-export const UtensilsCrossed = H_spoon_and_fork
+export const Utensils = H_restaurant_02
+export const UtensilsCrossed = H_restaurant_02
 export const Video = H_video_01
 export const Watch = H_watch_01
 export const Waves = H_wave

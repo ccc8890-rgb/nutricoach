@@ -1,11 +1,11 @@
 // Mismos nombres que '@phosphor-icons/react', con los dibujos de Hugeicons. Generado.
-import { H_activity_01, H_add_01, H_alert_02, H_alert_circle, H_arrow_down_01, H_arrow_left_01, H_arrow_left_02, H_arrow_right_01, H_arrow_right_02, H_arrow_up_01, H_book_open_01, H_book_open_02, H_brain, H_calendar_03, H_cancel_01, H_cancel_circle, H_chatting_01, H_checkmark_circle_02, H_checkmark_square_02, H_chef_hat, H_circle, H_clock_01, H_clock_05, H_credit_card, H_dashed_line_circle, H_delete_02, H_download_01, H_drag_drop_vertical, H_edit_02, H_euro, H_favourite, H_film_01, H_filter, H_flash, H_floppy_disk, H_grid_view, H_home_01, H_idea, H_image_01, H_instagram, H_invoice_01, H_kettlebell, H_link_01, H_link_square_02, H_loading_03, H_lock, H_logout_01, H_menu_01, H_moon_02, H_package, H_pause, H_pencil_edit_02, H_play, H_play_circle, H_repeat, H_robot_01, H_rotate_ccw, H_rows_2, H_running_shoes, H_search_01, H_search_add, H_sent, H_share_08, H_sliders_horizontal, H_smart_phone_01, H_sparkles, H_spoon_and_fork, H_square, H_sun_01, H_tag_01, H_target_01, H_task_01, H_task_done_02, H_tick_02, H_trending_up, H_trophy, H_user, H_user_add_01, H_user_group, H_user_multiple, H_user_remove_01, H_video_01, H_view, H_view_off, H_watch_01 } from './hugeicons-core'
+import { H_activity_01, H_add_01, H_alert_02, H_alert_circle, H_arrow_down_01, H_arrow_left_01, H_arrow_left_02, H_arrow_right_01, H_arrow_right_02, H_arrow_up_01, H_book_open_01, H_book_open_02, H_brain, H_calendar_03, H_cancel_01, H_cancel_circle, H_chatting_01, H_checkmark_circle_02, H_checkmark_square_02, H_chef_hat, H_circle, H_clock_01, H_clock_05, H_credit_card, H_dashed_line_circle, H_delete_02, H_download_01, H_drag_drop_vertical, H_dumbbell_01, H_edit_02, H_euro, H_favourite, H_film_01, H_filter, H_flash, H_floppy_disk, H_grid_view, H_home_01, H_idea, H_image_01, H_instagram, H_invoice_01, H_link_01, H_link_square_02, H_loading_03, H_lock, H_logout_01, H_menu_01, H_moon_02, H_package, H_pause, H_pencil_edit_02, H_play, H_play_circle, H_repeat, H_restaurant_02, H_robot_01, H_rotate_ccw, H_rows_2, H_running_shoes, H_search_01, H_search_add, H_sent, H_share_08, H_sliders_horizontal, H_smart_phone_01, H_sparkles, H_square, H_sun_01, H_tag_01, H_target_01, H_task_01, H_task_done_02, H_tick_02, H_trending_up, H_trophy, H_user, H_user_add_01, H_user_group, H_user_multiple, H_user_remove_01, H_video_01, H_view, H_view_off, H_watch_01 } from './hugeicons-core'
 export type { Icono, IconoProps } from './hugeicons-core'
 export const ArrowCounterClockwise = H_rotate_ccw
 export const ArrowLeft = H_arrow_left_02
 export const ArrowRight = H_arrow_right_02
 export const ArrowSquareOut = H_link_square_02
-export const Barbell = H_kettlebell
+export const Barbell = H_dumbbell_01
 export const BookOpen = H_book_open_01
 export const BookOpenText = H_book_open_02
 export const Brain = H_brain
@@ -36,7 +36,7 @@ export const EyeSlash = H_view_off
 export const FadersHorizontal = H_sliders_horizontal
 export const FilmSlate = H_film_01
 export const FloppyDisk = H_floppy_disk
-export const ForkKnife = H_spoon_and_fork
+export const ForkKnife = H_restaurant_02
 export const Funnel = H_filter
 export const Heart = H_favourite
 export const House = H_home_01
