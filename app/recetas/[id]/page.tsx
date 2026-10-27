@@ -19,6 +19,7 @@ import { formatoCantidad } from '@/lib/recetas/equivalencia'
 import { cantidadEstimada } from '@/lib/recetas/estimadas'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 import PanelEstudio from '@/components/recetas/PanelEstudio'
+import TecnicasDeReceta from '@/components/recetas/TecnicasDeReceta'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import type { Alimento } from '@/types'
 
@@ -625,7 +626,12 @@ export default function DetalleRecetaPage() {
           )
         })()}
 
-        {seccion === 'estudio' && !isClientView && <PanelEstudio estudio={receta.estudio} factor={factorVista} editarHref={`/recetas/${id}/editar`} />}
+        {seccion === 'estudio' && !isClientView && (
+          <>
+            <PanelEstudio estudio={receta.estudio} factor={factorVista} editarHref={`/recetas/${id}/editar`} />
+            <TecnicasDeReceta recetaId={id} />
+          </>
+        )}
 
         {/* ═══════ INGREDIENTES (Checklist estilo Crouton) ═══════ */}
         <FadeIn delay={0.25}>

@@ -449,6 +449,11 @@ export default function RecetasPage() {
                 {etiqueta}
               </button>
             ))}
+            <Link href="/recetas/tecnicas"
+              className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
+              style={chipInactive}>
+              Técnicas
+            </Link>
           </div>
 
           {/* Momento del día (platos) o familia (elaboraciones) */}

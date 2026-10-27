@@ -4,6 +4,12 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 27-10-2026 (noche, Claude) — Técnicas de cocina como fichas propias
+
+- **Modelo:** tablas `tecnicas` y `receta_tecnicas` (migración `20261027130000`, aplicada); validación en `lib/tecnicas.ts` (`validarTecnica`, `resumenParametros`, formulario ↔ técnica; test `scripts/tecnicas.test.ts`), familias en `FAMILIAS_TECNICA`. API solo coach: `/api/tecnicas` (+`[id]`) y `/api/recetas/[id]/tecnicas` (PUT reemplaza, máx. 12). Prueba con BD: `scripts/probar-tecnicas.ts`.
+- **Pantallas:** `/recetas/tecnicas` (listado con búsqueda y chips de familia, dentro del espacio de recetario) y fuera de la barra `/recetas/tecnicas/nueva`, `/[id]` (ficha: qué es, principio, equipo, paso a paso, errores, variantes, seguridad, origen, «Se usa en») y `/[id]/editar` (`components/recetas/TecnicaForm.tsx`). Chip «Técnicas» en la Biblioteca. En la pestaña Estudio de cada receta, `TecnicasDeReceta` enlaza y quita técnicas al momento.
+- **Pendiente:** ver en pantalla; acceso profesional por cliente (hoy las técnicas no tienen vista de cliente); ingesta de técnicas desde Content Radar; que el agente revise técnicas/Estudio; técnicas en el editor completo de receta (hoy solo desde la ficha).
+
 ## ✅ 27-10-2026 (mediodía, Claude) — Etiqueta de franja del planificador más legible
 
 Solo UI. `SemanaDietaPlanner.tsx` (etiqueta de la tarjeta de comida: `color-mix(in srgb, var(--text-secondary) 55%, var(--text))`) y `app/globals.css` (`.light .coach-meal-card > div:first-child button { opacity: 0.85 }`; la regla general los deja al 0,55 hasta hover). **Lección:** el «gris que no se lee» en claro venía de una opacidad heredada del CSS, no del color; mirar `globals.css` antes de cambiar variables. Commits `4c72769c`→`d9a27dfe`.
