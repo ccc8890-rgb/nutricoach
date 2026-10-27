@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { validarMetodo, normalizarUrl, huellaMetodo, puedeAprobar, transicionMetodo, disponibleIaPermitido, filtrarMetodos } from '../lib/metodos/esquema'
+import { validarMetodo, normalizarUrl, huellaMetodo, huellaTrasEdicion, puedeAprobar, transicionMetodo, disponibleIaPermitido, filtrarMetodos } from '../lib/metodos/esquema'
 import type { BloqueMetodo, EjercicioMetodo, EstadoMetodo } from '../lib/metodos/constantes'
 
 const ej = (extra: Partial<EjercicioMetodo> = {}): EjercicioMetodo => ({ texto_original: 'Sentadilla búlgara', ejercicio_id: null, series: 3, reps: '8', duracion_seg: null, pausa_seg: 90, intensidad: null, nota: null, ...extra })
@@ -127,4 +127,14 @@ const base = (extra: Record<string, unknown> = {}) => ({ tipo: 'sesion', titulo:
     assert.ok(sql.includes(`${nombre} ${lista(vals)}`), `la migración no coincide con el vocabulario de ${nombre}`)
   }
   assert.ok(sql.includes(lista(c.TIPOS_EVENTO_METODO)), 'la migración no coincide con los tipos de evento')
+}
+
+// ── huellaTrasEdicion: borrar el autor o el enlace cuenta como un cambio (no se arrastra el valor anterior) ──
+{
+  const actual = { autor: 'Coach X', url_origen: 'https://instagram.com/reel/A', titulo: 'T' }
+  assert.equal(huellaTrasEdicion(actual, { resumen: 'x' }), huellaMetodo(actual))
+  assert.equal(huellaTrasEdicion(actual, { autor: null }), huellaMetodo({ ...actual, autor: null }))
+  assert.notEqual(huellaTrasEdicion(actual, { autor: null }), huellaMetodo(actual))
+  assert.equal(huellaTrasEdicion(actual, { url_origen: null }), huellaMetodo({ ...actual, url_origen: null }))
+  assert.equal(huellaTrasEdicion(actual, { titulo: 'Otro' }), huellaMetodo({ ...actual, titulo: 'Otro' }))
 }

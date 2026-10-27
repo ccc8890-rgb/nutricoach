@@ -51,6 +51,7 @@ const PLANES_ITEMS: NavItem[] = [
   { href: '/dietas/plantillas', label: 'Plantillas de dieta', icon: IconoDieta },
   { href: '/entrenos/plantillas', label: 'Plantillas de entreno', icon: IconoFuerza },
   { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: IconoCatalogo },
+  { href: '/entrenos/metodos', label: 'Biblioteca de métodos', icon: IconoCatalogo },
 ]
 
 const RECETARIO_ITEMS: NavItem[] = [

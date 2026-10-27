@@ -142,6 +142,15 @@ export function validarMetodo(entrada: unknown, modo: 'crear' | 'editar'): Resul
   return { ok: true, valor: out }
 }
 
+/** Huella de la ficha después de aplicar una edición: un campo borrado (null) cuenta como borrado, no se recupera el valor anterior. */
+export function huellaTrasEdicion(actual: Pick<Metodo, 'autor' | 'url_origen' | 'titulo'>, cambios: Partial<CamposMetodo>): string {
+  return huellaMetodo({
+    autor: 'autor' in cambios ? cambios.autor ?? null : actual.autor,
+    url_origen: 'url_origen' in cambios ? cambios.url_origen ?? null : actual.url_origen,
+    titulo: cambios.titulo ?? actual.titulo,
+  })
+}
+
 /** Una ficha solo se aprueba con modalidad, procedencia y, si es una sesión, con al menos un ejercicio. */
 export function puedeAprobar(m: Pick<Metodo, 'tipo' | 'titulo' | 'modalidad' | 'autor' | 'url_origen' | 'estructura'>): { ok: true } | { ok: false; motivo: string } {
   if (!m.titulo?.trim()) return { ok: false, motivo: 'La ficha necesita un título antes de aprobarla.' }

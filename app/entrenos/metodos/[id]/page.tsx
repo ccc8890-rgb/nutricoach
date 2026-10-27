@@ -119,7 +119,7 @@ export default function FichaMetodoPage() {
         {aviso && <p role="alert" className="text-sm" style={{ color: 'var(--danger, #c0392b)' }}>{aviso}</p>}
       </header>
 
-      <FichaMetodo key={metodo.updated_at} inicial={metodo} onGuardado={m => { setMetodo(m); void cargar() }} />
+      <FichaMetodo key={metodo.id} inicial={metodo} onGuardado={m => { setMetodo(m); void cargar() }} />
 
       <section className="space-y-2">
         <h2 className="text-xs uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono, monospace)' }}>Historial</h2>

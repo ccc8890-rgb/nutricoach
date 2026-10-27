@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { autorizarCoach } from '@/lib/contenido/auth'
-import { disponibleIaPermitido, huellaMetodo, validarMetodo } from '@/lib/metodos/esquema'
+import { disponibleIaPermitido, huellaTrasEdicion, validarMetodo } from '@/lib/metodos/esquema'
 import { cargarMetodo, registrarEvento } from '@/lib/metodos/db'
 
 type Contexto = { params: Promise<{ id: string }> }
@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest, { params }: Contexto) {
     if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 })
     Object.assign(cambios, v.valor)
     if ('autor' in v.valor || 'url_origen' in v.valor || 'titulo' in v.valor) {
-      const huella = huellaMetodo({ autor: v.valor.autor ?? metodo.autor, url_origen: v.valor.url_origen ?? metodo.url_origen, titulo: v.valor.titulo ?? metodo.titulo })
+      const huella = huellaTrasEdicion(metodo, v.valor)
       if (huella !== metodo.huella) {
         const { data: otra } = await auth.admin.from('metodos').select('id').eq('coach_id', auth.userId).eq('huella', huella).neq('id', id).maybeSingle()
         if (otra) return NextResponse.json({ error: 'Ya existe otra ficha con este enlace y autor', existente_id: otra.id }, { status: 409 })
