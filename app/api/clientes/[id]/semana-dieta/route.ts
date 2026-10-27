@@ -58,7 +58,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .filter(x => soloPostres || todas || tipoPlatoCompatibleConSlot(franja, x.tipo_plato))
       .sort((a, b) => (todas ? Number(b.tipo_receta === 'guarnicion') - Number(a.tipo_receta === 'guarnicion') : 0) || Number(!!b.verificacion) - Number(!!a.verificacion) || encaje(a) - encaje(b))
       .slice(0, 60)
-    return NextResponse.json({ recetas })
+
+    // Datos para decidir de un vistazo: macros ya ajustados al hueco, repeticiones en el plan y favoritas del cliente
+    const dia = url.searchParams.get('dia')
+    const od = dia && DIAS_SEMANA.includes(dia as typeof DIAS_SEMANA[number]) ? (await objetivosPorDia(admin, clienteId, plan))[dia] : undefined
+    const kcalDia = od?.kcal || kcalObj
+    const objetivoHueco = kcalDia > 0 ? kcalDia * (await repartoFranja(admin, plan.id, franja)) : 0
+    const [{ data: usadas }, { data: favs }] = await Promise.all([
+      admin.from('comidas').select('receta_id').eq('plan_id', plan.id).not('receta_id', 'is', null),
+      admin.from('recetas_favoritas_cliente').select('receta_id').eq('cliente_id', clienteId),
+    ])
+    const usos = new Map<string, number>()
+    for (const u of usadas ?? []) usos.set(u.receta_id, (usos.get(u.receta_id) ?? 0) + 1)
+    const favoritas = new Set((favs ?? []).map(f => f.receta_id))
+    const enriquecidas = recetas.map(x => {
+      const f = !soloPostres && !todas && objetivoHueco > 0 && x.kcal > 0 ? objetivoHueco / x.kcal : 1
+      return {
+        ...x,
+        kcal_hueco: Math.round(x.kcal * f), proteinas_hueco: Math.round(x.proteinas * f),
+        encaje: Math.round(encaje(x) * 100) / 100,
+        usos: usos.get(x.id) ?? 0, favorita: favoritas.has(x.id),
+      }
+    })
+    return NextResponse.json({ recetas: enriquecidas })
   }
 
   const [{ data: comidas, error }, { data: cliente, error: clienteError }] = await Promise.all([

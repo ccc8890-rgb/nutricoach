@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
+import cloudinaryLoader from '@/lib/cloudinary-loader'
 import DetalleDiaDieta from './DetalleDiaDieta'
 import { DndContext, DragOverlay, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
 import { Activity, BadgeCheck, CalendarDays, ChevronDown, ChevronRight, ClipboardPaste, Copy, Loader2, Maximize2, Minimize2, MoreHorizontal, Play, Plus, Search, SlidersHorizontal, Sparkles, Trash2, Video, X } from 'lucide-react'
@@ -12,7 +14,9 @@ type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta 
 type Total = { kcal: number; p: number; c: number; g: number }
 type Dia = { dia: string; comidas: Comida[]; total: Total }
 type Plan = { id: string; nombre: string; kcal_objetivo: number | null; proteinas_objetivo: number | null; carbohidratos_objetivo: number | null; grasas_objetivo: number | null }
-type RecetaOpcion = Receta & { kcal: number; proteinas: number; tiempo_prep_min: number | null }
+type RecetaOpcion = Receta & { kcal: number; proteinas: number; tiempo_prep_min: number | null; kcal_hueco?: number; proteinas_hueco?: number; encaje?: number; usos?: number; favorita?: boolean }
+type FiltroOpcion = 'rapidas' | 'proteicas' | 'favoritas'
+const FILTROS_OPCION: { id: FiltroOpcion; texto: string }[] = [{ id: 'rapidas', texto: 'Rápidas' }, { id: 'proteicas', texto: 'Alta proteína' }, { id: 'favoritas', texto: 'Favoritas' }]
 type ResultadoSemana = { ok: boolean; complementos?: number; avisos?: { dia: string; franja: string; motivo: string }[]; asignadas: number; repetidas: number; sinCubrir: { dia: string; franja: string }[]; errores: { dia: string; franja: string; error: string }[]; mensaje?: string }
 type Hueco = { dia: string; franja: string; semana: number | null }
 type Tamano = { col: string; dia: string; diaKcal: string; card: string; label: string; nombre: string; macros: string; hueco: string; grid: string }
@@ -236,6 +240,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [busqueda, setBusqueda] = useState('')
   const [opciones, setOpciones] = useState<RecetaOpcion[]>([])
   const [buscando, setBuscando] = useState(false)
+  const [filtrosOpcion, setFiltrosOpcion] = useState<FiltroOpcion[]>([])
   const [guardando, setGuardando] = useState(false)
   const [ocupado, setOcupado] = useState<string | null>(null)
   const [resultado, setResultado] = useState<ResultadoSemana | null>(null)
@@ -277,6 +282,25 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [comidasDia, setComidasDia] = useState<2 | 3 | 4 | 5 | null>(null)
   const [guardandoComidasDia, setGuardandoComidasDia] = useState(false)
   const { addToast } = useToast()
+
+  // Selector de receta: propuestas con etiqueta (un toque) + lista filtrable
+  const opcionesFiltradas = useMemo(() => opciones.filter(o =>
+    (!filtrosOpcion.includes('rapidas') || (o.tiempo_prep_min != null && o.tiempo_prep_min <= 20)) &&
+    (!filtrosOpcion.includes('proteicas') || (o.kcal > 0 && (o.proteinas * 4) / o.kcal >= 0.28)) &&
+    (!filtrosOpcion.includes('favoritas') || o.favorita)
+  ), [opciones, filtrosOpcion])
+  const sugerencias = useMemo(() => {
+    if (busqueda.trim() || filtrosOpcion.length > 0) return []
+    const nuevas = opciones.filter(o => !o.usos)
+    const elegidas: { etiqueta: string; receta: RecetaOpcion }[] = []
+    const poner = (etiqueta: string, r?: RecetaOpcion) => { if (r && !elegidas.some(e => e.receta.id === r.id)) elegidas.push({ etiqueta, receta: r }) }
+    const porEncaje = [...nuevas].sort((a, b) => (a.encaje ?? 9) - (b.encaje ?? 9))
+    poner('Mejor encaje', porEncaje[0])
+    poner('Favorita', porEncaje.find(o => o.favorita))
+    poner('Rápida', porEncaje.find(o => o.tiempo_prep_min != null && o.tiempo_prep_min <= 20))
+    poner('Variedad', porEncaje.find(o => !elegidas.some(e => e.receta.id === o.id) && (o.encaje ?? 9) <= (porEncaje[0]?.encaje ?? 0) + 0.15))
+    return elegidas
+  }, [opciones, busqueda, filtrosOpcion])
 
   // Franjas que se rellenan al generar: por defecto las que ya usa el plan; el coach puede añadir o quitar
   const franjasPlan = useMemo(() => franjas.filter(f => dias.some(d => d.comidas.some(c => c.nombre === f))), [franjas, dias])
@@ -329,7 +353,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     if (!hueco) return
     setBuscando(true)
     const t = setTimeout(async () => {
-      const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?franja=${encodeURIComponent(hueco.franja)}&q=${encodeURIComponent(busqueda)}`)
+      const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?franja=${encodeURIComponent(hueco.franja)}&dia=${encodeURIComponent(hueco.dia)}&q=${encodeURIComponent(busqueda)}`)
       const data = await res.json().catch(() => null)
       setOpciones(data?.recetas ?? []); setBuscando(false)
     }, 250)
@@ -712,14 +736,44 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar receta…" className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
             </div>
-            <p className="text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>Ordenadas por cómo encajan con tus macros. Las cantidades se ajustan solas al elegir.</p>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {FILTROS_OPCION.map(f => {
+                const activo = filtrosOpcion.includes(f.id)
+                return (
+                  <button key={f.id} onClick={() => setFiltrosOpcion(p => activo ? p.filter(x => x !== f.id) : [...p, f.id])}
+                    className="text-[12px] px-2.5 py-1 rounded-md"
+                    style={{ background: activo ? 'var(--primary)' : 'var(--bg)', color: activo ? 'var(--bg)' : 'var(--text-muted)', border: '1px solid var(--border)' }}>{f.texto}</button>
+                )
+              })}
+            </div>
             <div className="overflow-y-auto space-y-1.5 flex-1">
-              {buscando ? <div className="py-6 flex justify-center"><Loader2 size={18} className="animate-spin" /></div> :
-                opciones.length === 0 ? <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>Sin recetas para esta franja</p> :
-                opciones.map(o => (
+              {buscando ? <div className="py-6 flex justify-center"><Loader2 size={18} className="animate-spin" /></div> : <>
+                {sugerencias.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-[12px] uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>Propuestas</p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {sugerencias.map(({ etiqueta, receta }) => (
+                        <button key={receta.id} disabled={guardando} onClick={() => asignar(receta.id)}
+                          className="text-left rounded-xl overflow-hidden disabled:opacity-50" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                          {receta.imagen_url && <Image loader={cloudinaryLoader} src={receta.imagen_url} alt="" width={384} height={240} className="w-full aspect-[16/10] object-cover" />}
+                          <div className="p-2">
+                            <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--accent, var(--primary))' }}>{etiqueta}</p>
+                            <p className="text-[13px] font-medium leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
+                            <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{Math.round(receta.kcal_hueco ?? receta.kcal)} kcal · P {Math.round(receta.proteinas_hueco ?? receta.proteinas)} g</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[12px] uppercase tracking-wide mt-3" style={{ color: 'var(--text-muted)' }}>Todas</p>
+                  </div>
+                )}
+                <p className="text-[13px] mb-1" style={{ color: 'var(--text-muted)' }}>Ordenadas por encaje con los macros del hueco. Kcal y proteína ya ajustadas a este hueco.</p>
+                {opcionesFiltradas.length === 0 ? <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>Sin recetas para esta franja</p> :
+                opcionesFiltradas.map(o => (
                   <button key={o.id} disabled={guardando} onClick={() => asignar(o.id)}
-                    className="w-full text-left rounded-xl p-2.5 flex items-center gap-3 disabled:opacity-50"
+                    className="w-full text-left rounded-xl p-2 flex items-center gap-3 disabled:opacity-50"
                     style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                    {o.imagen_url ? <Image loader={cloudinaryLoader} src={o.imagen_url} alt="" width={96} height={96} className="w-12 h-12 rounded-lg object-cover shrink-0" /> : <div className="w-12 h-12 rounded-lg shrink-0" style={{ background: 'var(--surface)' }} />}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate flex items-center gap-1.5" style={{ color: 'var(--text)' }}>
                         {o.verificacion && <BadgeCheck size={13} style={{ color: 'var(--success)' }} />}
@@ -727,12 +781,15 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
                         {o.nombre}
                       </p>
                       <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
-                        {Math.round(o.kcal)} kcal · P {Math.round(o.proteinas)} g{o.tiempo_prep_min ? ` · ${o.tiempo_prep_min} min` : ''} (ración base)
+                        {Math.round(o.kcal_hueco ?? o.kcal)} kcal · P {Math.round(o.proteinas_hueco ?? o.proteinas)} g{o.tiempo_prep_min ? ` · ${o.tiempo_prep_min} min` : ''}
+                        {o.favorita ? ' · ♥ favorita' : ''}
                       </p>
+                      {!!o.usos && <p className="text-[12px]" style={{ color: 'var(--warning)' }}>Ya en el plan {o.usos === 1 ? '1 vez' : `${o.usos} veces`}</p>}
                     </div>
                     {guardando ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} style={{ color: 'var(--text-muted)' }} />}
                   </button>
                 ))}
+              </>}
             </div>
           </div>
         </div>
