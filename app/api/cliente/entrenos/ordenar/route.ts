@@ -42,7 +42,26 @@ export async function POST(request: NextRequest) {
   const lista = delDia ?? []
   const pos = lista.findIndex(x => x.id === sesionId)
   const destino = lista.findIndex(x => x.id === destinoId)
-  if (pos < 0 || destino < 0) return NextResponse.json({ error: 'La otra sesión no es del mismo día' }, { status: 400 })
+  if (pos < 0) return NextResponse.json({ error: 'Sesión no encontrada' }, { status: 404 })
+  if (destino < 0) {
+    // Una sesión movida de fecha se ve en otro día pero en la plantilla sigue en el suyo: intercambia posiciones con la otra del mismo plan.
+    const { data: otra } = await admin.from('sesiones_entrenamiento').select('id, nombre, orden').eq('id', destinoId).eq('plan_id', sesion.plan_id).maybeSingle()
+    if (!otra) return NextResponse.json({ error: 'La otra sesión no es de tu plan' }, { status: 400 })
+    const ordenA = (lista[pos].orden as number | null) ?? 0
+    const ordenB = (otra.orden as number | null) ?? 0
+    const [nuevoA, nuevoB] = ordenA === ordenB ? [ordenB + 1, ordenB] : [ordenB, ordenA]
+    const [ra, rb] = await Promise.all([
+      admin.from('sesiones_entrenamiento').update({ orden: nuevoA }).eq('id', sesionId),
+      admin.from('sesiones_entrenamiento').update({ orden: nuevoB }).eq('id', destinoId),
+    ])
+    if (ra.error || rb.error) return NextResponse.json({ error: 'No se pudo cambiar el orden' }, { status: 500 })
+    await registrarCambioCliente(admin, {
+      clienteId: clienteData.id, planId: sesion.plan_id, tipo: 'sesion_reordenada',
+      resumen: `Cambió el orden de «${lista[pos].nombre}» y «${otra.nombre}»`,
+      detalle: { sesion_id: sesionId, destino_id: destinoId },
+    })
+    return NextResponse.json({ ok: true })
+  }
 
   const nuevo = [...lista]
   const [movida] = nuevo.splice(pos, 1)

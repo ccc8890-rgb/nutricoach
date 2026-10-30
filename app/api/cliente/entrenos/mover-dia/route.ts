@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { esFechaISO, lunesDe, sumarDias, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
 import { plantillaActivaEn } from '@/lib/entrenos/ventana-plan'
+import { sincronizarGarminCliente, type ResumenSyncGarmin } from '@/lib/entrenos/garmin-sync-cliente'
 import { decidirMovimientoSesion, puedeMoverSesion, registrarCambioCliente, textoSesionDevuelta, textoSesionMovida } from '@/lib/entrenos/cambios-cliente'
+
+export const maxDuration = 120
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const hoyMadrid = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' })
@@ -66,6 +69,15 @@ export async function POST(request: NextRequest) {
     clienteId: cliente.id, planId: plan.id, tipo: devuelta ? 'sesion_devuelta' : 'sesion_movida',
     resumen: devuelta ? textoSesionDevuelta(sesion.nombre, destino) : textoSesionMovida(sesion.nombre, fechaOrigen, destino),
     detalle: { sesion_id: sesionId, desde: fechaOrigen, hasta: destino },
+  })
+  // El reloj debe tener la sesión en su nueva fecha (p. ej. series pasadas recuperadas hoy): se reenvía tras responder.
+  after(async () => {
+    try {
+      const { data: conectado } = await admin.from('integraciones_cliente').select('cliente_id').eq('cliente_id', cliente.id).eq('proveedor', 'garmin_connect').eq('activa', true).maybeSingle()
+      if (!conectado) return
+      const resumen: ResumenSyncGarmin = { clientes: 1, enviados: 0, al_dia: 0, limpiados: 0, errores: [] }
+      await sincronizarGarminCliente(admin, cliente.id as string, false, resumen)
+    } catch { /* el envío automático diario lo reintenta */ }
   })
   return NextResponse.json({ ok: true })
 }

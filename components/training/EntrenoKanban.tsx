@@ -64,7 +64,7 @@ function iconoTipo(tipo: SesionKanban['tipo_sesion'], size = 14) {
     return tipo === 'carrera' ? <IconoCarrera size={size} /> : <IconoFuerza size={size} />
 }
 
-function SesionCard({ sesion, orden, seleccionada, moviendo, soloLectura, onSeleccionar, onAbrirMover }: {
+function SesionCard({ sesion, orden, seleccionada, moviendo, soloLectura, onSeleccionar, onAbrirMover, onPasarAHoy }: {
     sesion: SesionKanban
     /** "1/2" cuando el día tiene más de una sesión */
     orden?: string
@@ -73,6 +73,8 @@ function SesionCard({ sesion, orden, seleccionada, moviendo, soloLectura, onSele
     soloLectura?: boolean
     onSeleccionar: () => void
     onAbrirMover: () => void
+    /** Solo en sesiones de días pasados sin hacer: recuperarlas hoy con un toque. */
+    onPasarAHoy?: () => void
 }) {
     const { attributes, listeners, setNodeRef: setDragRef, transform, isDragging } = useDraggable({ id: sesion.id })
     const { setNodeRef: setDropRef, isOver } = useDroppable({ id: sesion.id })
@@ -97,6 +99,13 @@ function SesionCard({ sesion, orden, seleccionada, moviendo, soloLectura, onSele
                 <span className="training-week-session__meta">{textoKm(sesion.km) ? `${textoKm(sesion.km)} · ` : ''}{sesion.ejercicios_count} ejercicios</span>
                 <CaretDown size={14} className={seleccionada ? 'rotate-180' : ''} />
             </button>
+            {!soloLectura && onPasarAHoy && <button
+                type="button"
+                className="training-week-session__move"
+                onClick={(event) => { event.stopPropagation(); onPasarAHoy() }}
+            >
+                Pasar a hoy
+            </button>}
             {!soloLectura && <button
                 type="button"
                 className="training-week-session__move"
@@ -110,7 +119,7 @@ function SesionCard({ sesion, orden, seleccionada, moviendo, soloLectura, onSele
     )
 }
 
-function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, soloLectura, onSeleccionar, onAbrirMover, onMover }: {
+function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, soloLectura, onSeleccionar, onAbrirMover, onMover, onPasarAHoy }: {
     dia: string
     sesiones: SesionKanban[]
     seleccionadaId: string | null
@@ -121,6 +130,7 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
     onSeleccionar: (id: string) => void
     onAbrirMover: (id: string) => void
     onMover: (dia: string) => void
+    onPasarAHoy: (id: string) => void
 }) {
     const { setNodeRef, isOver } = useDroppable({ id: dia })
     return (
@@ -143,6 +153,7 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
                             soloLectura={soloLectura}
                             onSeleccionar={() => onSeleccionar(s.id)}
                             onAbrirMover={() => onAbrirMover(s.id)}
+                            onPasarAHoy={!s.completada && s.fecha && s.fecha < hoyLocalISO() ? () => onPasarAHoy(s.id) : undefined}
                         />
                         {seleccionadaId === s.id && (
                             <div className="training-week-detail">
@@ -332,6 +343,7 @@ export default function EntrenoKanban({ sesiones, soloLectura = false }: { sesio
                             onSeleccionar={toggleSeleccion}
                             onAbrirMover={(id) => setMoverId(current => current === id ? null : id)}
                             onMover={(nuevoDia) => moverId && moverSesion(moverId, nuevoDia)}
+                            onPasarAHoy={(id) => moverSesion(id, DIA_HOY)}
                         />
                     ))}
                 </div>
