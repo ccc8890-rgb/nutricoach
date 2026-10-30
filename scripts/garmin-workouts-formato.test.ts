@@ -18,7 +18,8 @@ const w = pasosAGarmin('Series 5x1000', pasos, ritmos)
 assert.equal(w.workoutName, 'Series 5x1000')
 assert.equal(w.sportType.sportTypeKey, 'running')
 const steps = w.workoutSegments[0].workoutSteps
-assert.equal(steps.length, 3)
+// calentamiento + bloque (5-1 repeticiones) + última serie aparte + vuelta a la calma
+assert.equal(steps.length, 4)
 
 // Calentamiento por tiempo con objetivo de ritmo en rango (m/s, uno < dos)
 assert.equal(steps[0].stepType.stepTypeKey, 'warmup')
@@ -30,9 +31,9 @@ assert.ok(steps[0].targetValueOne! < steps[0].targetValueTwo!)
 // Bloque de repetición
 const rep = steps[1] as any
 assert.equal(rep.type, 'RepeatGroupDTO')
-assert.equal(rep.numberOfIterations, 5)
+assert.equal(rep.numberOfIterations, 4)
 assert.equal(rep.endCondition.conditionTypeKey, 'iterations')
-assert.equal(rep.endConditionValue, 5)
+assert.equal(rep.endConditionValue, 4)
 assert.equal(rep.workoutSteps.length, 2)
 assert.equal(rep.workoutSteps[0].stepType.stepTypeKey, 'interval')
 assert.equal(rep.workoutSteps[0].endCondition.conditionTypeKey, 'distance')
@@ -43,15 +44,20 @@ assert.ok(rep.workoutSteps[0].targetValueTwo > 3.7 && rep.workoutSteps[0].target
 assert.equal(rep.workoutSteps[1].stepType.stepTypeKey, 'recovery')
 assert.equal(rep.workoutSteps[1].targetType.workoutTargetTypeKey, 'no.target')
 
+// Última serie aparte, marcada y sin recuperación detrás
+assert.equal(steps[2].stepType.stepTypeKey, 'interval')
+assert.ok(String(steps[2].description).startsWith('Última serie'))
+assert.equal(steps[2].endConditionValue, 1000)
+
 // Vuelta a la calma con lap
-assert.equal(steps[2].stepType.stepTypeKey, 'cooldown')
-assert.equal(steps[2].endCondition.conditionTypeKey, 'lap.button')
+assert.equal(steps[3].stepType.stepTypeKey, 'cooldown')
+assert.equal(steps[3].endCondition.conditionTypeKey, 'lap.button')
 
 // stepOrder consecutivo y único (incluye los pasos dentro del bloque)
 const orden: number[] = []
 const rec = (s: any[]) => s.forEach(x => { orden.push(x.stepOrder); if (x.workoutSteps) rec(x.workoutSteps) })
 rec(steps)
-assert.deepEqual(orden, [1, 2, 3, 4, 5])
+assert.deepEqual(orden, [1, 2, 3, 4, 5, 6])
 
 // Sin VDOT: la zona no genera objetivo de ritmo (nunca se inventa)
 const sin = pasosAGarmin('x', pasos, null).workoutSegments[0].workoutSteps
@@ -107,7 +113,7 @@ assert.equal(cinta[0].targetType.workoutTargetTypeKey, 'no.target')
 const cintaSin = pasosAGarmin('x', pasos, null, undefined, null, 'cinta').workoutSegments[0].workoutSteps[1] as any
 assert.equal(cintaSin.workoutSteps[0].endCondition.conditionTypeKey, 'distance')
 // Pista (por defecto) no cambia
-assert.equal(pasosAGarmin('x', pasos, ritmos, undefined, null, 'pista').workoutSegments[0].workoutSteps.length, 3)
+assert.equal(pasosAGarmin('x', pasos, ritmos, undefined, null, 'pista').workoutSegments[0].workoutSteps.length, 4)
 console.log('garmin-workouts-formato (cinta) OK')
 
 // Recuperación entre series: sin techo de pulso ni ritmo (el pulso tarda en bajar)
@@ -121,7 +127,17 @@ assert.equal(wRec.workoutSteps[1].targetType.workoutTargetTypeKey, 'no.target')
 // En series, calentamiento y vuelta a la calma tampoco llevan techo de pulso
 const wS = pasosAGarmin('x', [{ tipo: 'calentamiento', duracion: { unidad: 'segundos', valor: 600 }, objetivo: { tipo: 'zona', zona: 'E' } }, ...pasosRec, { tipo: 'enfriamiento', duracion: { unidad: 'segundos', valor: 300 }, objetivo: { tipo: 'zona', zona: 'E' } }], ritmos, undefined, { E: { min: 114, max: 153 } } as any).workoutSegments[0].workoutSteps
 assert.equal(wS[0].targetType.workoutTargetTypeKey, 'no.target')
-assert.equal(wS[2].targetType.workoutTargetTypeKey, 'no.target')
+assert.equal(wS[3].targetType.workoutTargetTypeKey, 'no.target')
+// La última repetición va aparte y marcada, sin recuperación detrás: calentamiento + bloque (veces-1) + última serie + vuelta a la calma
+assert.equal(wS.length, 4)
+assert.equal(wS[1].numberOfIterations, 2)
+assert.equal(wS[2].stepType.stepTypeKey, 'interval')
+assert.ok(String(wS[2].description).startsWith('Última serie'))
+assert.equal(wS[3].stepType.stepTypeKey, 'cooldown')
+// Con una sola repetición no hay «última» aparte
+const w1 = pasosAGarmin('x', [{ tipo: 'repetir', veces: 1, pasos: pasosRec[0].tipo === 'repetir' ? pasosRec[0].pasos : [] }], ritmos).workoutSegments[0].workoutSteps
+assert.equal(w1.length, 1)
+assert.equal((w1[0] as any).numberOfIterations, 1)
 // Un rodaje sin series conserva el techo de pulso
 assert.equal(pasosAGarmin('x', [{ tipo: 'calentamiento', duracion: { unidad: 'segundos', valor: 600 }, objetivo: { tipo: 'zona', zona: 'E' } }], ritmos, undefined, { E: { min: 114, max: 153 } } as any).workoutSegments[0].workoutSteps[0].targetType.workoutTargetTypeKey, 'heart.rate.zone')
 console.log('garmin-workouts-formato (recuperación) OK')

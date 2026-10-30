@@ -148,21 +148,27 @@ export function pasosAGarmin(
   let orden = 0
   const workoutSteps: Array<GarminStep | GarminRepeat> = pasos.map(p => {
     if (p.tipo === 'repetir') {
+      // La última repetición va aparte y marcada («Última serie») para saber cuándo se acaba; sin recuperación detrás, pasa a la vuelta a la calma.
+      const ultimaAparte = p.veces >= 2 && p.pasos.length >= 2 && p.pasos[0].tipo === 'trabajo' && p.pasos[p.pasos.length - 1].tipo === 'recuperacion'
+      const veces = ultimaAparte ? p.veces - 1 : p.veces
       const grupoOrden = ++orden
       const hijos = p.pasos.map(q => convertirPaso(q, ++orden, ritmos, fc, cinta, conSeries))
-      return {
+      const grupo = {
         type: 'RepeatGroupDTO',
         stepOrder: grupoOrden,
         stepType: { stepTypeId: 6, stepTypeKey: 'repeat' },
-        numberOfIterations: p.veces,
+        numberOfIterations: veces,
         endCondition: { ...END.iteraciones },
-        endConditionValue: p.veces,
+        endConditionValue: veces,
         smartRepeat: false,
         workoutSteps: hijos,
       } satisfies GarminRepeat
+      if (!ultimaAparte) return grupo
+      const trabajo = p.pasos[0]
+      return [grupo, convertirPaso({ ...trabajo, nota: ['Última serie', trabajo.nota].filter(Boolean).join(' · ') }, ++orden, ritmos, fc, cinta, conSeries)]
     }
     return convertirPaso(p, ++orden, ritmos, fc, cinta, conSeries)
-  })
+  }).flat()
 
   return {
     workoutName: nombre.slice(0, 80),

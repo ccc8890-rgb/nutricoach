@@ -4,8 +4,9 @@ import { lunesDe, sumarDias } from './calendario-ajustes'
 
 /** Huella de lo que se envía a Garmin: los pasos, el VDOT (cambian los ritmos), el techo de pulso suave y el nombre (que debe coincidir con el de la app). */
 export function huellaPasos(pasos: unknown, vdot: number | null, techoFcE: number | null = null, nombre: string | null = null, superficie: string | null = null): string {
+  // v4: las series repetidas llevan la última aparte («Última serie»), solo reenvía las sesiones con bloques repetidos.
   // v3: en sesiones con recuperaciones/series ya no hay techo de pulso en recuperación, calentamiento ni vuelta a la calma; solo reenvía las sesiones que tienen recuperaciones.
-  const base = { pasos, vdot, ...(JSON.stringify(pasos ?? null).includes('"recuperacion"') ? { rec: 3 } : {}) }
+  const base = { pasos, vdot, ...(JSON.stringify(pasos ?? null).includes('"recuperacion"') ? { rec: 3 } : {}), ...(JSON.stringify(pasos ?? null).includes('"repetir"') ? { ult: 1 } : {}) }
   // Sin pulso ni nombre conocidos la huella es la de siempre: no reenvía lo ya programado.
   return createHash('sha256').update(JSON.stringify({ ...base, ...(techoFcE ? { techoFcE } : {}), ...(nombre ? { nombre } : {}), ...(superficie === 'cinta' ? { superficie } : {}) })).digest('hex').slice(0, 16)
 }
