@@ -55,7 +55,7 @@ if (APLICA) {
   process.exit(0)
 }
 
-const recetas = await all('recetas', 'id, nombre, categoria, instrucciones', q => q.eq('estado', 'aprobada'))
+const recetas = await all('recetas', 'id, nombre, categoria, instrucciones', q => q.in('estado', ['aprobada', 'en_revision'])) // también las fichas en revisión: así se revisan ya con sus fases
 const ings = await all('receta_ingredientes', 'id, receta_id, nombre_libre, cantidad_gramos, orden, grupo, alimento:alimentos(nombre)')
 const porReceta = new Map()
 for (const i of ings) { if (!porReceta.has(i.receta_id)) porReceta.set(i.receta_id, []); porReceta.get(i.receta_id).push(i) }

@@ -450,6 +450,25 @@ Devuelve JSON: {"cantidades":[{"n":1,"gramos":0}]}`,
   return { ok: true, detalle: `${edits.length} cantidades estimadas con criterio (${resumen})${recalc ? ` · ${recalc.kcal} kcal/ración` : ''}` }
 }
 
+
+// ── Kcal declaradas por el autor en el pie («371 cal | 51P | 12F | 15C»): sirven de control de que cantidades y enlaces cuadran ──
+/** Primera cifra de kcal/cal/calorías del texto del vídeo (80-1.500), o null. */
+export function kcalDeclaradas(texto: string | null | undefined): number | null {
+  const m = (texto ?? '').match(/(\d{2,4})\s*(?:k?cal(?:or[ií]as|ories)?)\b/i)
+  const v = m ? Number(m[1]) : NaN
+  return v >= 80 && v <= 1500 ? v : null
+}
+async function contrasteKcal(r: Receta): Promise<Resultado> {
+  const declaradas = kcalDeclaradas(r.raw_scrape?.texto)
+  if (!declaradas) return { ok: true, detalle: 'sin kcal declaradas en el vídeo' }
+  const { data } = await db.from('recetas').select('kcal').eq('id', r.id).single()
+  const ficha = Number(data?.kcal ?? 0)
+  const dif = ficha > 0 ? Math.abs(ficha - declaradas) / declaradas : 1
+  return dif <= 0.3
+    ? { ok: true, detalle: `kcal cuadran con el autor (declara ${declaradas}, ficha ${Math.round(ficha)})` }
+    : { ok: false, motivo: `el autor declara ${declaradas} kcal/ración y la ficha da ${Math.round(ficha)}: revisar raciones, cantidades o el enlace de algún ingrediente (p. ej. cortes crudos frente a cocidos)` }
+}
+
 // ── Alérgenos y etiquetas: se apoyan en las auditorías que ya corren en la pasada de 6 h ─────────
 function ejecutar(args: string[]): string {
   const r = spawnSync('node', args, { cwd: join(__dirname, '..'), encoding: 'utf8', timeout: 5 * 60 * 1000, env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin' } })
@@ -491,6 +510,7 @@ async function mainAuto() {
       ['base', () => reenlazarABase(r)],
       ['enlaces', () => corregirIngredientes(r)],
       ...(reel ? [['cantidades', () => estimarCantidades(r)] as [string, () => Promise<Resultado>]] : []),
+      ...(reel ? [['kcal', () => contrasteKcal(r)] as [string, () => Promise<Resultado>]] : []),
       ...(reel ? [['raciones', async () => { const x = await corregirDesdeNota(r, '', ['raciones_kcal']); return !x.ok && x.motivo.includes('no ven nada que cambiar') ? { ok: true, detalle: 'raciones plausibles' } as Resultado : x }] as [string, () => Promise<Resultado>]] : []),
     ]
     for (const [aspecto, hacer] of pasos) {
