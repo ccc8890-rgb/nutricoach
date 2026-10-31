@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, MagnifyingGlass, BookOpen, CheckSquare, Square, Sparkle, ChefHat, Package, Trophy, Lightning, CaretDown, Check, X } from '@/components/icons/phosphor'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
+import { ENDULZANTES, endulzanteDeReceta, interpretarBusquedaEndulzante, type Endulzante } from '@/lib/recetas/endulzante'
 import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, SUBCATEGORIAS, ALERGENOS_NEGATIVOS, APTA_PARA, nombreSin, recetaTieneEtiqueta, recetaLibreDe, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { filtrosRecetarioDeUrl, migrarCategoriaAntigua, visibleEnTipo, type TipoVista } from '@/lib/recetas/clasificacion'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
@@ -148,6 +149,9 @@ export default function RecetasPage() {
   const [sinParam, setSinParam] = useEstadoUrl<string | null>('sin', null)
   const sinFiltros = useMemo(() => (sinParam ? sinParam.split(',').filter(Boolean) : []), [sinParam])
   const alternarSin = (v: string) => { const n = sinFiltros.includes(v) ? sinFiltros.filter(x => x !== v) : [...sinFiltros, v]; setSinParam(n.length ? n.join(',') : null) }
+  const [dulceParam, setDulceParam] = useEstadoUrl<string | null>('dulce', null)
+  const dulceFiltros = useMemo(() => (dulceParam ? dulceParam.split(',').filter(Boolean) : []), [dulceParam])
+  const alternarDulce = (v: string) => { const n = dulceFiltros.includes(v) ? dulceFiltros.filter(x => x !== v) : [...dulceFiltros, v]; setDulceParam(n.length ? n.join(',') : null) }
   const [aptaParam, setAptaParam] = useEstadoUrl<string | null>('apta', null)
   const aptaFiltros = useMemo(() => (aptaParam ? aptaParam.split(',').filter(Boolean) : []), [aptaParam])
   const alternarApta = (v: string) => { const n = aptaFiltros.includes(v) ? aptaFiltros.filter(x => x !== v) : [...aptaFiltros, v]; setAptaParam(n.length ? n.join(',') : null) }
@@ -205,7 +209,8 @@ export default function RecetasPage() {
   }, [])
 
 
-  const palabrasBusqueda = useMemo(() => palabrasDeBusqueda(busqueda), [busqueda])
+  const busquedaEndulzante = useMemo(() => interpretarBusquedaEndulzante(busqueda), [busqueda])
+  const palabrasBusqueda = useMemo(() => palabrasDeBusqueda(busquedaEndulzante.texto), [busquedaEndulzante])
 
   const filtradas = useMemo(() => {
     return recetas.map(r => ({ ...r, ...normalizarReceta(r) })).filter(r => {
@@ -268,7 +273,13 @@ export default function RecetasPage() {
           : recetaTieneEtiqueta(recetaIntolerancias, v))
 
       const matchSin = sinFiltros.every(v => v === 'Sin Cerdo' ? !contieneCerdo(r) : recetaLibreDe(r.intolerancias ?? [], v))
-      return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchCuracion && matchKcal && matchTiempo && matchIntolerancia && matchSin
+      const endulzante = endulzanteDeReceta((Array.isArray(r.receta_ingredientes) ? r.receta_ingredientes : []).map(ing => {
+        const alimento = Array.isArray(ing.alimento) ? ing.alimento[0] : ing.alimento
+        return `${ing.nombre_libre ?? ''} ${alimento?.nombre ?? ''}`
+      }))
+      const matchDulce = (dulceFiltros.length === 0 || dulceFiltros.includes(endulzante))
+        && (!busquedaEndulzante.admite || busquedaEndulzante.admite.includes(endulzante))
+      return matchBusqueda && matchDulce && matchCategoria && matchCoccion && matchTag && matchCuracion && matchKcal && matchTiempo && matchIntolerancia && matchSin
     })
       .sort((a, b) => {
         if (!a.created_at || !b.created_at) return 0
@@ -276,7 +287,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, palabrasBusqueda, tipo, categoria, familia, metodoCoccion, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, aptaFiltros, sinFiltros])
+  }, [recetas, palabrasBusqueda, tipo, categoria, familia, metodoCoccion, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, aptaFiltros, sinFiltros, dulceFiltros, busquedaEndulzante])
 
   // Sugerencias de tags que coinciden con la búsqueda actual
   const tagSugeridos = useMemo(() => {
@@ -318,6 +329,7 @@ export default function RecetasPage() {
     tiempoPrep !== null,
     aptaFiltros.length > 0,
     sinFiltros.length > 0,
+    dulceFiltros.length > 0,
   ].filter(Boolean).length
 
   const filtrosCuracion = [
@@ -530,6 +542,12 @@ export default function RecetasPage() {
               ))}
             </FiltroMenu>
 
+            <FiltroMenu etiqueta="Endulzado con" valor={dulceFiltros.length ? dulceFiltros.map(v => ENDULZANTES.find(e => e.valor === v)?.etiqueta.split(' (')[0] ?? v).join(', ') : null} onLimpiar={() => setDulceParam(null)}>
+              {() => ENDULZANTES.map(({ valor, etiqueta }) => (
+                <OpcionMenu key={valor} activa={dulceFiltros.includes(valor as Endulzante)} onClick={() => alternarDulce(valor)}>{etiqueta}</OpcionMenu>
+              ))}
+            </FiltroMenu>
+
             <FiltroMenu etiqueta="Cocción" valor={metodoCoccion !== 'Todos' ? metodoCoccion : null} onLimpiar={() => setMetodoCoccion('Todos')}>
               {cerrar => METODOS_COCCION.filter(m => m.value !== 'Todos' && coccionEnUso.has(m.value)).map(m => (
                 <OpcionMenu key={m.value} activa={metodoCoccion === m.value} onClick={() => { setMetodoCoccion(metodoCoccion === m.value ? 'Todos' : m.value); cerrar() }}>{m.label}</OpcionMenu>
@@ -551,7 +569,7 @@ export default function RecetasPage() {
             {(activeFilterCount > 0 || tagFilter || categoria !== 'Todos' || familia || tipoUrl) && (
               <button
                 type="button"
-                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setAptaParam(null); setCuracionFilter(null); setSinParam(null); setCategoria('Todos'); setFamUrl(null); setTipoUrl(null); setTagFilter(null) }}
+                onClick={() => { setMetodoCoccion('Todos'); setRangoKcal(null); setTiempoPrep(null); setAptaParam(null); setCuracionFilter(null); setSinParam(null); setDulceParam(null); setCategoria('Todos'); setFamUrl(null); setTipoUrl(null); setTagFilter(null) }}
                 className="px-2 py-1.5 text-xs underline-offset-2 hover:underline"
                 style={{ color: 'var(--text-muted)' }}
               >
