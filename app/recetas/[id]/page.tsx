@@ -25,6 +25,8 @@ import type { Alimento } from '@/types'
 
 // La capa Estudio (cocina profesional) queda oculta por ahora; el editor sigue permitiendo rellenarla.
 const MOSTRAR_PESTANA_ESTUDIO = false
+// El «≈» de cantidad estimada se oculta (31-10-2026): el motor ya estima con criterio y no hace falta ver la marca. Poner true para volver a verla.
+const MARCAR_CANTIDADES_ESTIMADAS = false
 
 interface RecetaDetalle {
   id: string
@@ -329,7 +331,7 @@ export default function DetalleRecetaPage() {
     ).calorias * factorVista) : (ing.elaboracion_id && kcalElaboracion[ing.elaboracion_id] !== undefined
       ? Math.round(kcalElaboracion[ing.elaboracion_id] * ing.cantidad_gramos / 100 * factorVista) : undefined),
     // Solo el coach ve qué cantidades inventó el sistema
-    estimada: !isClientView && cantidadEstimada(ing, receta),
+    estimada: MARCAR_CANTIDADES_ESTIMADAS && !isClientView && cantidadEstimada(ing, receta),
     href: ing.elaboracion_id ? `/recetas/${ing.elaboracion_id}?returnTo=${encodeURIComponent(`/recetas/${id}`)}` : undefined,
   })), parsePasos(r.instrucciones ?? receta.instrucciones))
 
