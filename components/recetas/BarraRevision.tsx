@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Check, ChevronLeft, ChevronRight, Loader2, Trash2, Wrench } from '@/components/icons/lucide'
 import { esRecetaAprobable, type QualityIssues } from '@/lib/recetas/revision'
-import { ASPECTOS_CORRECCION } from '@/lib/recetas/correcciones'
+import SelectorAspectos from '@/components/recetas/SelectorAspectos'
 
 type Item = { id: string; estado: string | null; quality_issues: QualityIssues | null }
 
@@ -97,13 +97,8 @@ export default function BarraRevision({ id, pendiente, returnTo, accion }: {
       </div>
       {corrigiendo && (
         <div className="mx-auto mt-2.5 max-w-3xl rounded-xl border p-3" style={{ borderColor: 'var(--warning)', background: 'var(--surface)' }}>
-          <p className="mb-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>¿Qué hay que corregir? <span style={{ color: 'var(--text-muted)' }}>(la IA le dará una pasada y volverá a revisión)</span></p>
-          <div className="flex flex-wrap gap-1.5">
-            {ASPECTOS_CORRECCION.map(a => {
-              const on = aspectos.includes(a.id)
-              return <button key={a.id} onClick={() => setAspectos(prev => prev.includes(a.id) ? prev.filter(x => x !== a.id) : [...prev, a.id])} className="rounded-full border px-2.5 py-1 text-xs font-medium" style={{ borderColor: on ? 'var(--warning)' : 'var(--border)', color: on ? 'var(--warning)' : 'var(--text-secondary)', background: on ? 'color-mix(in srgb, var(--warning) 12%, transparent)' : 'transparent' }}>{a.label}</button>
-            })}
-          </div>
+          <p className="mb-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>¿Qué hay que corregir? <span style={{ color: 'var(--text-muted)' }}>(el motor lo corrige en su siguiente pasada y vuelve a revisión)</span></p>
+          <SelectorAspectos valor={aspectos} onCambio={setAspectos} />
           <textarea value={nota} onChange={e => setNota(e.target.value)} rows={2} maxLength={600} placeholder="Detalle (opcional): «la salsa de soja son 15 g, no 45», «el título no encaja»…" className="mt-2 w-full rounded-lg border px-2.5 py-2 text-xs outline-none" style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
           {errorMarca && <p className="mt-1 text-xs" style={{ color: 'var(--error)' }}>{errorMarca}</p>}
           <div className="mt-2 flex justify-end gap-2">

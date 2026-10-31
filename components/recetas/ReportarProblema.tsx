@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Loader2, X } from '@/components/icons/lucide'
-import { ASPECTOS_CORRECCION } from '@/lib/recetas/correcciones'
+import SelectorAspectos from '@/components/recetas/SelectorAspectos'
 import { ORIGENES_REPORTE, type OrigenReporte } from '@/lib/recetas/reportes'
 
 type Resultado = { reportadas: string[]; omitidas: { id: string; motivo: string }[] }
@@ -56,7 +56,7 @@ export default function ReportarProblema({ ids, abierto, onCerrar, onHecho }: {
   const uno = ids.length === 1
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={onCerrar}>
-      <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }} onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-xl rounded-t-2xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }} onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>{uno ? 'Reportar problema' : `Reportar ${ids.length} recetas`}</h2>
@@ -69,18 +69,7 @@ export default function ReportarProblema({ ids, abierto, onCerrar, onHecho }: {
 
         <div>
           <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>¿Qué falla?</p>
-          <div className="flex flex-wrap gap-2">
-            {ASPECTOS_CORRECCION.map(a => {
-              const activo = aspectos.includes(a.id)
-              return (
-                <button key={a.id} type="button" onClick={() => setAspectos(prev => activo ? prev.filter(x => x !== a.id) : [...prev, a.id])}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium border"
-                  style={{ borderColor: activo ? 'var(--accent)' : 'var(--border)', background: activo ? 'var(--accent-bg)' : 'transparent', color: activo ? 'var(--accent)' : 'var(--text-secondary)' }}>
-                  {a.label}
-                </button>
-              )
-            })}
-          </div>
+          <SelectorAspectos valor={aspectos} onCambio={setAspectos} color="var(--accent)" />
         </div>
 
         <textarea value={nota} onChange={e => setNota(e.target.value)} maxLength={600} rows={3} placeholder="Nota (opcional si has marcado algo)"

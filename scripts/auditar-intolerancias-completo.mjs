@@ -3,6 +3,7 @@
  * Compara las etiquetas de `intolerancias` de CADA receta con sus ingredientes.
  *   node scripts/auditar-intolerancias-completo.mjs            # informe (no cambia nada)
  *   node scripts/auditar-intolerancias-completo.mjs --aplica   # corrige + copia en salidas/
+ *   node scripts/auditar-intolerancias-completo.mjs --aplica --id=<prefijo>   # solo una ficha
  * Corrige solo lo seguro:
  *   1. Añade el alérgeno positivo (Huevos, Gluten…) si algún ingrediente lo contiene.
  *   2. Quita «Sin X» cuando la receta SÍ contiene X (etiqueta falsa).
@@ -15,6 +16,7 @@ import fs from 'fs'
 const env = Object.fromEntries(fs.readFileSync('.env.local', 'utf8').split('\n').filter(l => l.includes('=') && !l.startsWith('#')).map(l => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim().replace(/^["']|["']$/g, '')] }))
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
 const APLICA = process.argv.includes('--aplica')
+const SOLO = process.argv.find(a => a.startsWith('--id='))?.slice(5) // prefijo de id: una sola ficha (lo usa el motor de correcciones)
 
 const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim()
 
@@ -54,6 +56,7 @@ const disparos = {}
 const cuenta = { add: {}, quitaSin: {}, quitaVeg: {}, avena: 0, sinIngredientes: 0 }
 const cambios = []
 for (const r of recetas) {
+  if (SOLO && !r.id.startsWith(SOLO)) continue
   const nombres = (porReceta.get(r.id) ?? []).filter(Boolean)
   if (!nombres.length) { cuenta.sinIngredientes++; continue }
   const actual = r.intolerancias ?? []

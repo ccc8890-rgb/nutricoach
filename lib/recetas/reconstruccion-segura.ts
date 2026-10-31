@@ -18,7 +18,7 @@ export type Evaluacion = {
 const quitarAcentos = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 const STOP = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'con', 'sin', 'y', 'o', 'en', 'al', 'un', 'una', 'para', 'a', 'extra', 'tipo'])
 // Envases y variantes que no cambian de qué alimento se trata
-const IGNORABLES = new Set(['botella', 'tarro', 'lata', 'caja', 'paquete', 'frasco', 'bandeja', 'bolsa', 'sobre', 'bote', 'doble', 'casero', 'casera', 'pack'])
+const IGNORABLES = new Set(['botella', 'tarro', 'lata', 'caja', 'paquete', 'frasco', 'bandeja', 'bolsa', 'sobre', 'bote', 'doble', 'casero', 'casera', 'pack', 'lonchas', 'loncha', 'barra', 'rodajas', 'rodaja'])
 // Si el ingrediente lleva alguna de estas palabras y el alimento no, siguen siendo lo mismo (forma, variedad o corte)
 const FORMAS_SEGURAS = new Set(['fresco', 'fresca', 'picado', 'picada', 'molido', 'molida', 'rallado', 'rallada', 'troceado', 'troceada', 'maduro', 'madura',
   'zumo', 'persa', 'roma', 'cherry', 'baby', 'kosher', 'marina', 'fina', 'gruesa', 'tierno', 'tierna', 'crudo', 'cruda', 'ralladura'])
@@ -94,6 +94,15 @@ const ALIAS: Record<string, string> = {
   'salchicha de pavo para desayuno': 'Salchicha de pavo',
   'huevo frito': 'Huevo',
   'panko': 'Pan Rallado Estilo Japonés Panko',
+  // genéricos que se enlazaban a un producto de marca o a otra cosa por compartir una palabra
+  'levadura en polvo': 'Levadura química',
+  'levadura quimica': 'Levadura química',
+  'vino de cocina': 'Vino blanco',
+  'vino blanco de cocina': 'Vino blanco',
+  'chips de chocolate': 'Chocolate negro en pepitas',
+  'chips de chocolate negro': 'Chocolate negro en pepitas',
+  'chocolate chips': 'Chocolate negro en pepitas',
+  'pepitas de chocolate': 'Chocolate negro en pepitas',
 }
 export function aliasAlimento(nombre: string): string | null {
   return ALIAS[quitarAcentos(nombre).replace(/\s+/g, ' ').trim()] ?? null

@@ -10,6 +10,11 @@ assert.equal(q('Tomate', 'Salsa de tomate casera'), 'dudosa')        // salsa �
 assert.equal(q('Albahaca fresca', 'Salsa fresca Pesto con albahaca'), 'dudosa')
 assert.equal(q('Yogur griego', 'Yogur Griego Fresa'), 'dudosa')      // sabor
 assert.equal(q('Pechuga de pollo', 'Pechuga de pollo'), 'exacta')
+// Casos vistos en revisión (27-10): genérico enlazado a otra cosa o a un producto de marca
+assert.equal(q('Vino de cocina', 'Vinagre de vino'), 'dudosa')                       // vino ≠ vinagre
+assert.equal(q('Chips de chocolate negro', 'Chocolate con Chips Ahoy'), 'dudosa')   // marca de galletas
+assert.equal(q('Queso Edam', 'Queso Edam Lonchas'), 'exacta')                       // el formato no cambia el alimento
+assert.equal(q('chocolate negro', 'Chocolate negro 75-80%'), 'exacta')              // las cifras no cuentan: la IA no debe cuestionarlo
 assert.equal(q('Aceite de oliva virgen extra', 'Aceite de oliva extra virgen'), 'exacta')
 assert.equal(q('Carne picada de ternera', 'Carne picada de ternera (5% grasa)'), 'exacta')
 assert.equal(q('Pimentón de la Vera', 'Pimentón dulce de la Vera'), 'buena')
@@ -153,5 +158,10 @@ r = evaluarReconstruccion({ ingredientes: base([ing('Agua', 3000, al('Agua', 0, 
 assert.equal(r.ok, false)
 r = evaluarReconstruccion({ ingredientes: base([ing('Nada', 0, pollo)]), porciones_propuesta: 4, actual })
 assert.equal(r.ok, false)
+
+// Alias revisados a mano para esos genéricos
+assert.equal(aliasAlimento('Vino de cocina'), 'Vino blanco')
+assert.equal(aliasAlimento('Chips de chocolate'), 'Chocolate negro en pepitas')
+assert.equal(aliasAlimento('chocolate chips'), 'Chocolate negro en pepitas')
 
 console.log('reconstruccion-segura OK')

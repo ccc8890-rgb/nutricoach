@@ -7,14 +7,17 @@
 // Lo que el motor no puede hacer con seguridad queda marcado «Corregir» con el motivo en las notas (lo atiende Claude: «pasa las correcciones»).
 //   npx tsx scripts/corregir-marcadas-motor.ts                 → simula
 //   npx tsx scripts/corregir-marcadas-motor.ts --aplica [--limite=10] [--id=<prefijo>]
+//   npx tsx scripts/corregir-marcadas-motor.ts --auto [--aplica] [--limite=8]   → fichas en revisión SIN marcar: enlaces a la BD + cantidades estimadas + alérgenos (una vez por ficha, anota «Motor auto»)
 import { readFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { auditarRecetaProfesional } from '../lib/recetas/auditoria'
 import { recalcularMacrosReceta } from '../lib/recetas/elaboraciones-db'
 import { camposAlCambiarTipo, clasificarFicha, familiaElaboracion } from '../lib/recetas/clasificacion'
 import { validarCantidadesSospechosas } from '../lib/recetas/profesional'
-import { calidadVinculo, raicesBusqueda, type CalidadVinculo } from '../lib/recetas/reconstruccion-segura'
+import { extraerJsonPlan } from '../lib/entrenos/evidencia-plan'
+import { aliasAlimento, calidadVinculo, raicesBusqueda, type CalidadVinculo } from '../lib/recetas/reconstruccion-segura'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/)
@@ -25,11 +28,13 @@ const arg = (n: string) => process.argv.find(a => a.startsWith(`--${n}=`))?.spli
 const APLICA = process.argv.includes('--aplica')
 const LIMITE = Number(arg('limite') ?? 10)
 const SOLO = arg('id')
+const PARTE = arg('parte')?.split('/').map(Number) // --parte=k/n: reparte la cola entre procesos en paralelo (k de 0 a n-1)
+const AUTO = process.argv.includes('--auto') // fichas en revisión sin marcar «Corregir»: saneado automático
 const REINTENTAR = process.argv.includes('--reintentar') // vuelve a probar también los aspectos que el motor dejó con ✗
 const hoy = () => new Date().toLocaleDateString('es-ES')
 
-type Ing = { id: string; nombre_libre: string | null; cantidad_gramos: number | null; alimento_id: string | null; elaboracion_id: string | null; es_opcional: boolean | null; alimentos: { id: string; nombre: string } | { id: string; nombre: string }[] | null }
-type Receta = { id: string; nombre: string; tipo_contenido: string | null; familia: string | null; categoria: string | null; tipo_receta: string | null; tipo_plato: string | null; kcal: number | null; proteinas: number | null; tags: string[] | null; notas_coach: string | null; porciones: number | null; instrucciones: string | null; descripcion: string | null; consejos: string | null; receta_ingredientes: Ing[] }
+type Ing = { id: string; nombre_libre: string | null; cantidad_gramos: number | null; cantidad_original?: number | null; alimento_id: string | null; elaboracion_id: string | null; es_opcional: boolean | null; alimentos: { id: string; nombre: string } | { id: string; nombre: string }[] | null }
+type Receta = { id: string; nombre: string; tipo_contenido: string | null; familia: string | null; categoria: string | null; tipo_receta: string | null; tipo_plato: string | null; kcal: number | null; proteinas: number | null; tags: string[] | null; notas_coach: string | null; porciones: number | null; instrucciones: string | null; descripcion: string | null; consejos: string | null; url_origen?: string | null; raw_scrape?: { texto?: string } | null; receta_ingredientes: Ing[] }
 type Resultado = { ok: true; detalle: string } | { ok: false; motivo: string }
 const nombreAlimento = (i: Ing) => (Array.isArray(i.alimentos) ? i.alimentos[0]?.nombre : i.alimentos?.nombre) ?? null
 
@@ -77,6 +82,11 @@ const nuevosBloqueantes = (antes: string[], despues: string[]) => despues.filter
 type Al = { id: string; nombre: string; es_generico: boolean | null }
 const rango: Record<CalidadVinculo, number> = { exacta: 3, buena: 2, dudosa: 1, sin: 0 }
 async function buscarMejor(nombre: string): Promise<{ al: Al; calidad: CalidadVinculo } | null> {
+  const alias = aliasAlimento(nombre.split(/\s+o\s+/)[0]) // equivalencias revisadas a mano: mandan sobre la búsqueda por palabras
+  if (alias) {
+    const { data: a } = await db.from('alimentos').select('id, nombre, es_generico').eq('nombre', alias).eq('es_comestible', true).limit(1)
+    if (a?.[0]) return { al: a[0] as Al, calidad: 'buena' }
+  }
   const raices = raicesBusqueda(nombre)
   if (raices.length === 0) return null
   const vistos = new Map<string, Al>()
@@ -98,7 +108,7 @@ async function buscarMejor(nombre: string): Promise<{ al: Al; calidad: CalidadVi
 async function revisarEnlacesConIA(filas: Ing[]): Promise<{ fila: Ing; generico: string }[]> {
   const con = filas.filter(i => nombreAlimento(i))
   if (con.length === 0) return []
-  const out = await deepseek(`Revisa si cada ALIMENTO enlazado es el mismo producto que el INGREDIENTE de una receta, a efectos nutricionales. Otra forma, marca, corte o preparación del mismo alimento VALE. Otro alimento distinto (o un postre/producto elaborado en vez del ingrediente base) NO vale.
+  const out = await deepseek(`Revisa si cada ALIMENTO enlazado es el mismo producto que el INGREDIENTE de una receta, a efectos nutricionales. Otra forma, corte o preparación del mismo alimento VALE. NO vale: otro alimento distinto, un postre o producto elaborado en vez del ingrediente base, ni un PRODUCTO DE MARCA o variedad concreta (galletas, sabores, rellenos, «Chips Ahoy», «con arándanos») cuando el ingrediente es genérico: ante la duda, el genérico es lo correcto («vino de cocina» = vino blanco, no vinagre).
 ${con.map((i, n) => `${n + 1}. INGREDIENTE: ${i.nombre_libre} | ALIMENTO: ${nombreAlimento(i)}`).join('\n')}
 Para los que NO valen, da el nombre del alimento genérico correcto (español, singular, sin marca, p. ej. «Nata para montar», «Harina de sorgo»).
 Devuelve JSON: {"incorrectos":[{"n":1,"generico":"..."}]}`)
@@ -133,6 +143,7 @@ Devuelve JSON: {"nombre_estandar":"nombre genérico en español, singular, sin m
 }
 
 async function corregirIngredientes(r: Receta): Promise<Resultado> {
+  const todoBien: Resultado = AUTO ? { ok: true, detalle: 'todos los enlaces son correctos' } : { ok: false, motivo: 'revisados todos los enlaces (reglas + IA) y todos parecen correctos: dime qué ingrediente falla' }
   const filas = r.receta_ingredientes.filter(i => !i.elaboracion_id && !i.es_opcional && i.nombre_libre)
   type Cambio = { fila: Ing; antes: string | null; despues: Al; creado?: boolean }
   const cambios: Cambio[] = []
@@ -147,15 +158,19 @@ async function corregirIngredientes(r: Receta): Promise<Resultado> {
   // 2) IA: segunda opinión sobre el resto → busca el genérico correcto en el catálogo o lo crea
   const yaCambiadas = new Set(cambios.map(c => c.fila.id))
   const sinSolucion: string[] = []
-  for (const { fila, generico } of await revisarEnlacesConIA(filas.filter(i => !yaCambiadas.has(i.id)))) {
+  // Si las reglas dan el enlace por exacto (mismas palabras, solo cambian cifras o envases) la IA no lo cuestiona: evita cambiar «chocolate negro 75-80 %» por «70 %»
+  const paraIA = filas.filter(i => !yaCambiadas.has(i.id) && !(nombreAlimento(i) && calidadVinculo(i.nombre_libre!, nombreAlimento(i)!) === 'exacta'))
+  for (const { fila, generico } of await revisarEnlacesConIA(paraIA)) {
     const actual = nombreAlimento(fila)
     const mejor = await buscarMejor(generico)
     if (mejor && mejor.al.nombre !== actual) { cambios.push({ fila, antes: actual, despues: mejor.al }); continue }
-    const nuevo = await crearAlimentoFaltante(generico)
+    // un ingrediente que es en realidad una sub-receta («caramelo de kabocha, miso, sésamo y frutos secos») no se convierte en alimento inventado
+    const subReceta = (fila.nombre_libre ?? '').split(/\s+/).length >= 6 || /,/.test(fila.nombre_libre ?? '')
+    const nuevo = subReceta ? null : await crearAlimentoFaltante(generico)
     if (nuevo) cambios.push({ fila, antes: actual, despues: nuevo.al, creado: nuevo.creado })
     else sinSolucion.push(`${fila.nombre_libre} (hoy «${actual}», debería ser «${generico}»)`)
   }
-  if (cambios.length === 0 && sinSolucion.length === 0) return { ok: false, motivo: 'revisados todos los enlaces (reglas + IA) y todos parecen correctos: dime qué ingrediente falla' }
+  if (cambios.length === 0 && sinSolucion.length === 0) return todoBien
   const resumen = cambios.map(c => `${c.fila.nombre_libre}: ${c.antes ?? 'sin enlace'} → ${c.despues.nombre}${c.creado ? ' (alimento nuevo, macros estimados: revisar)' : ''}`).join('; ')
   const faltan = sinSolucion.length ? `sin alimento válido ni forma segura de crearlo para: ${sinSolucion.join(', ')}` : ''
   if (!APLICA) return { ok: sinSolucion.length === 0, ...(sinSolucion.length === 0 ? { detalle: `[simulación] ${resumen}` } : { motivo: `[simulación] ${cambios.length ? `${resumen}; ` : ''}${faltan}` }) } as Resultado
@@ -340,10 +355,128 @@ Devuelve JSON: {"titulo": null | "nuevo título", "raciones": null | número ent
   return { ok: true, detalle: `${resumen}${recalc ? ` · ${recalc.kcal} kcal/ración` : ''}${estimados.length ? ' · valores estimados por el motor: conviene revisarlos' : ''}` }
 }
 
+
+// ── Cantidades estimadas: el vídeo solo da el 16 %; el resto se estima con criterio (receta, pasos, raciones, texto original) ──
+let tokensIA = 0
+/** Estima con IA (Claude → GPT → DeepSeek) las cantidades que NO dijo el vídeo («≈»). Nunca toca las dichas; las estimadas siguen marcadas «≈». */
+async function estimarCantidades(r: Receta): Promise<Resultado> {
+  const est = r.receta_ingredientes.filter(i => !i.elaboracion_id && !i.es_opcional && (i.cantidad_gramos ?? 0) > 0 && !i.cantidad_original)
+  if (est.length === 0) return { ok: true, detalle: 'sin cantidades estimadas' }
+  const dichas = r.receta_ingredientes.filter(i => !i.elaboracion_id && !i.es_opcional && (i.cantidad_gramos ?? 0) > 0 && i.cantidad_original)
+  const { llamarIA } = await import('../lib/ia/enrutador')
+  const texto = (r.raw_scrape?.texto ?? '').slice(0, 3500)
+  let respuesta
+  try {
+    respuesta = await llamarIA('revision_receta', {
+      sistema: 'Eres un dietista-cocinero español con criterio de cantidades. Respondes SOLO con JSON válido.',
+      usuario: `Estima las cantidades que el vídeo NO dijo, para que la receta sea coherente y realista.
+RECETA: ${r.nombre} · ${r.porciones ?? 1} raciones · ${r.tipo_plato ?? 'plato'} · hoy ${Math.round(Number(r.kcal ?? 0))} kcal/ración
+PASOS: ${(r.instrucciones ?? '(sin pasos)').slice(0, 1500)}
+${texto ? `TEXTO ORIGINAL DEL VÍDEO (pista, no verdad absoluta):\n${texto}\n` : ''}CANTIDADES DICHAS POR EL VÍDEO (no se tocan):\n${dichas.map(i => `- ${i.nombre_libre}: ${i.cantidad_gramos} g`).join('\n') || '(ninguna)'}
+INGREDIENTES A ESTIMAR (valor actual por defecto, gramos TOTALES de toda la receta):\n${est.map((i, n) => `${n + 1}. ${i.nombre_libre}: ${i.cantidad_gramos} g`).join('\n')}
+CRITERIO: cantidades habituales de cocina para este plato y este número de raciones (un plato principal pesa ~250-450 g por ración; un postre ~80-150 g); coherentes con los pasos, con las cantidades dichas y con lo que cuente el texto original (si da kcal o proteína por ración, que cuadre). Especias y sal, pocos gramos; aceite para freír o saltar, lo que absorbe, no el bote; líquidos en ml ≈ g. Si el valor actual ya es razonable, déjalo igual.
+Devuelve JSON: {"cantidades":[{"n":1,"gramos":0}]}`,
+      json: true, maxTokens: 1500, esfuerzo: 'low', presupuestoMs: 90000,
+    })
+  } catch (e: any) { return { ok: false, motivo: `error: la IA no respondió (${String(e.message).slice(0, 80)})` } }
+  tokensIA += (respuesta.usoTotal.entrada ?? 0) + (respuesta.usoTotal.salida ?? 0)
+  let out: any
+  try { out = extraerJsonPlan(respuesta.texto) } catch { return { ok: false, motivo: 'error: la IA no devolvió JSON válido' } }
+  const edits: EditGramos[] = []
+  for (const x of Array.isArray(out?.cantidades) ? out.cantidades : []) {
+    const fila = est[Number(x?.n) - 1]; const v = Math.round(Number(x?.gramos) * 10) / 10
+    if (!fila || !(v > 0) || v > 1500) continue
+    const actual = Number(fila.cantidad_gramos)
+    if (Math.abs(v - actual) < Math.max(2, actual * 0.1)) continue // cambios de ruido
+    if (validarCantidadesSospechosas({ nombre_libre: fila.nombre_libre, cantidad_gramos: v }, r.porciones) !== null) continue
+    edits.push({ fila, gramos: v, origen: 'cantidad irreal' })
+  }
+  if (edits.length === 0) return { ok: true, detalle: 'las cantidades estimadas ya eran razonables' }
+  const resumen = edits.map(e => `${e.fila.nombre_libre} ${e.fila.cantidad_gramos}→${e.gramos} g`).join('; ')
+  if (!APLICA) return { ok: true, detalle: `[simulación] ${resumen}` }
+
+  const antes = await bloqueantes(r.id)
+  for (const e of edits) await db.from('receta_ingredientes').update({ cantidad_gramos: e.gramos }).eq('id', e.fila.id) // cantidad_original sigue nula: la «≈» se mantiene
+  const recalc = await recalcularMacrosReceta(db as any, r.id)
+  const principal = /comida|cena|almuerzo/i.test(r.tipo_plato ?? '') && (r.tipo_receta ?? 'completa') === 'completa'
+  const [min, max] = principal ? [150, 1000] : [60, 1100]
+  const kcalAntes = Number(r.kcal ?? 0), plausibleAntes = kcalAntes >= min && kcalAntes <= max
+  const peor = nuevosBloqueantes(antes, await bloqueantes(r.id))
+  const absurdo = recalc && plausibleAntes && (recalc.kcal < min || recalc.kcal > max)
+  if (peor.length || absurdo) {
+    for (const e of edits) await db.from('receta_ingredientes').update({ cantidad_gramos: e.fila.cantidad_gramos }).eq('id', e.fila.id)
+    await recalcularMacrosReceta(db as any, r.id)
+    return { ok: false, motivo: `las cantidades propuestas ${absurdo ? `dejaban ${recalc!.kcal} kcal/ración` : `dejaban bloqueantes (${peor.join(', ')})`}; deshecho` }
+  }
+  await db.from('recetas_auditoria').insert({ receta_id: r.id, evento: 'correccion_motor', origen: 'motor_correcciones', issues: { aspecto: 'cantidades_estimadas', gramos_anteriores: edits.map(e => ({ fila: e.fila.id, gramos: e.fila.cantidad_gramos })) } })
+  return { ok: true, detalle: `${edits.length} cantidades estimadas con criterio (${resumen})${recalc ? ` · ${recalc.kcal} kcal/ración` : ''}` }
+}
+
+// ── Alérgenos y etiquetas: se apoyan en las auditorías que ya corren en la pasada de 6 h ─────────
+function ejecutar(args: string[]): string {
+  const r = spawnSync('node', args, { cwd: join(__dirname, '..'), encoding: 'utf8', timeout: 5 * 60 * 1000, env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin' } })
+  return `${r.stdout ?? ''}${r.stderr ?? ''}`
+}
+function corregirAlergenos(r: Receta): Resultado {
+  const salida = ejecutar(['scripts/auditar-intolerancias-completo.mjs', ...(APLICA ? ['--aplica'] : []), `--id=${r.id.slice(0, 8)}`])
+  const cambios = salida.split('\n').filter(l => l.startsWith('- ')).map(l => l.slice(2).trim().replace(/^.{0,46}\s{2,}/, ''))
+  if (/ERROR|Error/.test(salida) && !cambios.length) return { ok: false, motivo: 'error al auditar los alérgenos' }
+  return { ok: true, detalle: cambios.length ? `${APLICA ? '' : '[simulación] '}alérgenos ajustados: ${cambios.join(' ')}` : 'las etiquetas de alérgenos ya coinciden con los ingredientes' }
+}
+function corregirEtiquetas(): Resultado {
+  const salida = ejecutar(['--import', 'tsx', 'scripts/completar-campos-recetas.mts', ...(APLICA ? ['--aplica'] : [])])
+  const m = salida.match(/(\d+)\s+(?:recetas?|cambios)/i)
+  return { ok: true, detalle: `${APLICA ? '' : '[simulación] '}clasificación y etiquetas completadas con las reglas automáticas${m ? ` (${m[0]})` : ''}` }
+}
+
 // ── Orquestación ───────────────────────────────────────────────────────────────────────────────
+const SELECT_RECETA = 'id, nombre, tipo_contenido, familia, categoria, tipo_receta, tipo_plato, kcal, proteinas, tags, notas_coach, porciones, instrucciones, descripcion, consejos, url_origen, raw_scrape, receta_ingredientes!receta_ingredientes_receta_id_fkey(id, nombre_libre, cantidad_gramos, cantidad_original, alimento_id, elaboracion_id, es_opcional, alimentos!left(id, nombre))'
+
+/** Saneado automático de las fichas en revisión que nadie ha marcado: enlaces a la BD, cantidades estimadas y alérgenos. Una vez por ficha (nota «Motor auto»). */
+async function mainAuto() {
+  const { data, error } = await db.from('recetas').select(SELECT_RECETA)
+    .eq('estado', 'en_revision').not('url_origen', 'is', null)
+    .or('notas_coach.is.null,notas_coach.not.ilike.%Motor auto%')
+    .order('created_at', { ascending: false }).limit(SOLO ? 50 : Math.max(LIMITE, 1))
+  if (error) { console.error(error.message); process.exit(1) }
+  const reparte = (id: string) => !PARTE || [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % PARTE[1] === PARTE[0]
+  const cola = ((data ?? []) as unknown as Receta[]).filter(r => (!SOLO || r.id.startsWith(SOLO)) && reparte(r.id))
+  console.log(`Fichas en revisión sin saneado automático: a procesar ${cola.length}`)
+  let ok = 0, dudas = 0
+  for (const r of cola) {
+    console.log(`\n${r.nombre}`)
+    const lineas: string[] = []
+    let reintentar = false
+    const pasos: [string, () => Promise<Resultado>][] = [
+      ['enlaces', () => corregirIngredientes(r)],
+      ['cantidades', () => estimarCantidades(r)],
+      ['raciones', async () => { const x = await corregirDesdeNota(r, '', ['raciones_kcal']); return !x.ok && x.motivo.includes('no ven nada que cambiar') ? { ok: true, detalle: 'raciones plausibles' } as Resultado : x }],
+    ]
+    for (const [aspecto, hacer] of pasos) {
+      let res: Resultado
+      try { res = await hacer() } catch (e: any) { res = { ok: false, motivo: `error: ${e.message}` } }
+      if (!res.ok && res.motivo.startsWith('error')) reintentar = true // fallo de red/IA: se vuelve a intentar en la siguiente pasada
+      lineas.push(res.ok ? `${aspecto} ✓ ${res.detalle}` : `${aspecto} ✗ ${res.motivo}`)
+      console.log(`  ${res.ok ? '✅' : '⚠️'} ${aspecto}: ${res.ok ? res.detalle : res.motivo}`)
+    }
+    if (APLICA && !reintentar) {
+      await db.from('recetas').update({ notas_coach: [r.notas_coach, `[${hoy()}] Motor auto — ${lineas.join(' · ')}`].filter(Boolean).join('\n') }).eq('id', r.id)
+    }
+    lineas.every(l => l.includes(' ✓ ')) ? ok++ : dudas++
+  }
+  // Los alérgenos dependen de los enlaces ya corregidos: una sola pasada al final para todo el recetario (la misma auditoría de la pasada de 6 h)
+  if (cola.length) {
+    const a = corregirAlergenos({ id: '' } as Receta)
+    console.log(`\nAlérgenos: ${a.ok ? a.detalle : a.motivo}`)
+  }
+  console.log(`\nSaneado automático: ${ok} sin dudas · ${dudas} con algo que mirar · ~${tokensIA.toLocaleString('es-ES')} tokens de IA`)
+  if (!APLICA) console.log('Simulación. Añade --aplica.')
+}
+
 async function main() {
+  if (AUTO) return mainAuto()
   const { data, error } = await db.from('recetas')
-    .select('id, nombre, tipo_contenido, familia, categoria, tipo_receta, tipo_plato, kcal, proteinas, tags, notas_coach, porciones, instrucciones, descripcion, consejos, receta_ingredientes!receta_ingredientes_receta_id_fkey(id, nombre_libre, cantidad_gramos, alimento_id, elaboracion_id, es_opcional, alimentos!left(id, nombre))')
+    .select('id, nombre, tipo_contenido, familia, categoria, tipo_receta, tipo_plato, kcal, proteinas, tags, notas_coach, porciones, instrucciones, descripcion, consejos, url_origen, raw_scrape, receta_ingredientes!receta_ingredientes_receta_id_fkey(id, nombre_libre, cantidad_gramos, cantidad_original, alimento_id, elaboracion_id, es_opcional, alimentos!left(id, nombre))')
     .contains('tags', ['Corregir']).in('estado', ['en_revision', 'borrador'])
   if (error) { console.error(error.message); process.exit(1) }
   const cola = ((data ?? []) as unknown as Receta[])
@@ -357,12 +490,17 @@ async function main() {
     console.log(`\n${r.nombre} — pendiente: ${n.pendientes.join(', ')}${n.nota ? ` · nota: ${n.nota}` : ''}`)
     const lineas: string[] = []
     const hechosAhora: string[] = []
-    const desdeNota = n.pendientes.filter(a => ['titulo', 'gramos', 'raciones_kcal', 'otro'].includes(a))
+    const gramosSinNota = n.pendientes.includes('gramos') && !n.nota // sin cifras en la nota: se estiman con criterio las cantidades que el vídeo no dijo
+    const desdeNota = n.pendientes.filter(a => ['titulo', 'gramos', 'raciones_kcal', 'otro'].includes(a) && !(a === 'gramos' && gramosSinNota))
     const tareas: [string[], () => Promise<Resultado>][] = []
-    if (n.pendientes.includes('ingredientes')) tareas.push([['ingredientes'], () => corregirIngredientes(r)])
+    const deEnlaces = n.pendientes.filter(a => ['ingredientes', 'enlaces', 'alimento_falta'].includes(a))
+    if (deEnlaces.length) tareas.push([deEnlaces, () => corregirIngredientes(r)])
     if (n.pendientes.includes('pasos')) tareas.push([['pasos'], () => corregirPasos(r, n.nota)])
     if (n.pendientes.includes('textos')) tareas.push([['textos'], () => corregirTextos(r, n.nota)])
     if (desdeNota.length) tareas.push([desdeNota, () => corregirDesdeNota(r, n.nota, desdeNota)])
+    if (gramosSinNota) tareas.push([['gramos'], () => estimarCantidades(r)])
+    if (n.pendientes.includes('alergenos')) tareas.push([['alergenos'], async () => corregirAlergenos(r)])
+    if (n.pendientes.includes('etiquetas')) tareas.push([['etiquetas'], async () => corregirEtiquetas()])
     for (const [aspectos, hacer] of tareas) {
       let res: Resultado
       try { res = await hacer() } catch (e: any) { res = { ok: false, motivo: `error: ${e.message}` } }

@@ -23,6 +23,9 @@ import TecnicasDeReceta from '@/components/recetas/TecnicasDeReceta'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import type { Alimento } from '@/types'
 
+// La capa Estudio (cocina profesional) queda oculta por ahora; el editor sigue permitiendo rellenarla.
+const MOSTRAR_PESTANA_ESTUDIO = false
+
 interface RecetaDetalle {
   id: string
   estudio?: unknown   // capa Estudio (jsonb), solo se muestra al coach
@@ -610,7 +613,7 @@ export default function DetalleRecetaPage() {
           const pestanas: (readonly ['ingredientes' | 'preparacion' | 'estudio', string])[] = [
             ...(ingredientes.length > 0 ? [['ingredientes', 'Ingredientes'] as const] : []),
             ...(pasos.length > 0 ? [['preparacion', 'Preparación'] as const] : []),
-            ...(!isClientView ? [['estudio', 'Estudio'] as const] : []),
+            ...(MOSTRAR_PESTANA_ESTUDIO && !isClientView ? [['estudio', 'Estudio'] as const] : []),
           ]
           if (pestanas.length < 2) return null
           return (

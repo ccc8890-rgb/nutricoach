@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Atiende las recetas marcadas «Corregir» (foto + resto de aspectos). Lo lanza launchd cada 10 min (com.carlos.nutricoach-correcciones);
+// Atiende las recetas marcadas «Corregir» (foto + resto de aspectos) y sanea las fichas nuevas en revisión (modo --auto: enlaces a la BD, cantidades estimadas, alérgenos). Lo lanza launchd cada 10 min (com.carlos.nutricoach-correcciones);
 // si no hay nada marcado solo hace una consulta. La pasada de 6 h ya no las atiende (evita doble proceso y doble gasto de imágenes).
 import { spawnSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
@@ -12,6 +12,9 @@ const lineas = (txt, re) => txt.split('\n').filter(l => re.test(l)).join('\n')
 
 const fotos = run('node', ['scripts/corregir-marcadas.mjs', '--aplica', '--limite=4'])
 const resto = run('npx', ['tsx', 'scripts/corregir-marcadas-motor.ts', '--aplica', '--limite=10'])
+// Fichas nuevas sin marcar: máx. 6 por pasada (cada una cuesta ~1 céntimo de IA). Una vez por ficha (nota «Motor auto»).
+const auto = run('npx', ['tsx', 'scripts/corregir-marcadas-motor.ts', '--auto', '--aplica', '--limite=6'])
 const f = lineas(fotos, /^Fotos regeneradas|sin saldo/)
 const r = lineas(resto, /^Correcciones del motor|^❌|^\S.* — pendiente:/)
-if (f || r) console.log(`=== ${new Date().toLocaleString('es-ES')} ===\n${[f, r].filter(Boolean).join('\n')}`)
+const a = lineas(auto, /^Saneado automático|^❌/)
+if (f || r || a) console.log(`=== ${new Date().toLocaleString('es-ES')} ===\n${[f, r, a].filter(Boolean).join('\n')}`)
