@@ -183,7 +183,7 @@ export default function RecetasPage() {
 
         const { data, error } = await supabase
           .from('recetas')
-          .select('id, nombre, descripcion, imagen_url, categoria, tipo_contenido, familia, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, objetivos, deportes, momentos, estilos, premium_chef, batch_cooking, tupper, digestibilidad, adherencia_score, recipe_intelligence_score, recipe_intelligence_tier, macro_flex_score, planning_roles, coste_estimado_nivel, nivel_elaboracion, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+          .select('id, nombre, descripcion, imagen_url, categoria, tipo_contenido, familia, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, objetivos, deportes, momentos, estilos, premium_chef, batch_cooking, tupper, digestibilidad, adherencia_score, recipe_intelligence_score, recipe_intelligence_tier, macro_flex_score, planning_roles, coste_estimado_nivel, nivel_elaboracion, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre, azucares))')
           .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
@@ -275,7 +275,7 @@ export default function RecetasPage() {
       const matchSin = sinFiltros.every(v => v === 'Sin Cerdo' ? !contieneCerdo(r) : recetaLibreDe(r.intolerancias ?? [], v))
       const endulzante = endulzanteDeReceta((Array.isArray(r.receta_ingredientes) ? r.receta_ingredientes : []).map(ing => {
         const alimento = Array.isArray(ing.alimento) ? ing.alimento[0] : ing.alimento
-        return `${ing.nombre_libre ?? ''} ${alimento?.nombre ?? ''}`
+        return { nombre: `${ing.nombre_libre ?? ''} ${alimento?.nombre ?? ''}`, azucares: alimento?.azucares }
       }))
       const matchDulce = (dulceFiltros.length === 0 || dulceFiltros.includes(endulzante))
         && (!busquedaEndulzante.admite || busquedaEndulzante.admite.includes(endulzante))
