@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { BotonFavorita } from './BotonFavorita'
 import { MagnifyingGlass, ForkKnife, X, Rows, SquaresFour, CaretDown, Check } from '@/components/icons/portal-phosphor'
+import { ENDULZANTES } from '@/lib/recetas/endulzante'
 import { CATEGORIAS_PLATO, FAMILIAS_ELABORACION, FAMILIAS_PLATO, TIPOS_COCCION, APTA_PARA, ALERGENOS_NEGATIVOS, nombreSin } from '@/lib/recetas-constants'
 import { filtrosRecetarioDeUrl, migrarCategoriaAntigua, type TipoVista } from '@/lib/recetas/clasificacion'
 
@@ -115,14 +116,16 @@ export default function RecetarioExplorador({
   const [usoF, setUsoF] = useEstadoUrl<string | null>('uso', null)
   const [aptaP, setAptaP] = useEstadoUrl<string | null>('apta', null)
   const [sinP, setSinP] = useEstadoUrl<string | null>('sin', null)
+  const [dulceP, setDulceP] = useEstadoUrl<string | null>('dulce', null)
   const [metodo, setMetodo] = useEstadoUrl<string | null>('metodo', null)
   const aptaL = aptaP ? aptaP.split(',').filter(Boolean) : []
+  const dulceL = dulceP ? dulceP.split(',').filter(Boolean) : []
   const sinL = sinP ? sinP.split(',').filter(Boolean) : []
   const alternar = (lista: string[], v: string, set: (x: string | null) => void) => {
     const n = lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]
     set(n.length ? n.join(',') : null)
   }
-  const hayFiltros = Boolean(usoF || aptaP || sinP || metodo)
+  const hayFiltros = Boolean(usoF || aptaP || sinP || dulceP || metodo)
   const [vista, setVista] = useState<'lista' | 'cuadricula'>('lista')
   useEffect(() => {
     try {
@@ -186,7 +189,7 @@ export default function RecetarioExplorador({
     }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, tipo, categoria, familia, usoF, aptaP, sinP, metodo, sinFiltros])
+  }, [q, tipo, categoria, familia, usoF, aptaP, sinP, dulceP, metodo, sinFiltros])
 
   async function cargar(paginaSolicitada: number, reemplazar: boolean) {
     setCargando(true)
@@ -196,7 +199,7 @@ export default function RecetarioExplorador({
       params.set('tipo', tipo)
       if (categoria !== 'Todos') params.set('categoria', categoria)
       if (familia) params.set('familia', familia)
-      const extra: Record<string, string | null> = { uso: usoF, apta: aptaP, sin: sinP, metodo }
+      const extra: Record<string, string | null> = { uso: usoF, apta: aptaP, sin: sinP, dulce: dulceP, metodo }
       for (const [k, v] of Object.entries(extra)) if (v) params.set(k, v)
       const res = await fetch(`/api/cliente/${codigo}/recetario?${params.toString()}`)
       const data = await res.json()
@@ -277,6 +280,11 @@ export default function RecetarioExplorador({
             <Opcion key={v} activa={sinL.includes(v)} onClick={() => alternar(sinL, v, setSinP)}>{mayuscula(nombreSin(v))}</Opcion>
           ))}
         </Filtro>
+        <Filtro etiqueta="Endulzado con" valor={dulceL.length ? dulceL.map(v => ENDULZANTES.find(e => e.valor === v)?.etiqueta.split(' (')[0] ?? v).join(', ') : null} onLimpiar={() => setDulceP(null)}>
+          {ENDULZANTES.map(({ valor, etiqueta }) => (
+            <Opcion key={valor} activa={dulceL.includes(valor)} onClick={() => alternar(dulceL, valor, setDulceP)}>{etiqueta}</Opcion>
+          ))}
+        </Filtro>
         {tipo === 'platos' && (
           <Filtro etiqueta="Familia" valor={familia} onLimpiar={() => setFamUrl(null)}>
             {FAMILIAS_PLATO.map(f => (
@@ -291,7 +299,7 @@ export default function RecetarioExplorador({
         </Filtro>
         {hayFiltros && (
           <button type="button" className="shrink-0 px-2 text-xs underline" style={{ color: 'var(--text-muted)' }}
-            onClick={() => { setUsoF(null); setAptaP(null); setSinP(null); setMetodo(null) }}>
+            onClick={() => { setUsoF(null); setAptaP(null); setSinP(null); setDulceP(null); setMetodo(null) }}>
             Limpiar todo
           </button>
         )}

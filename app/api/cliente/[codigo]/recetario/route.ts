@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import { palabrasDeBusqueda, coincidePalabras } from '@/lib/recetas/busqueda'
+import { endulzanteDeReceta, interpretarBusquedaEndulzante } from '@/lib/recetas/endulzante'
 import { cumpleRestriccionesReligiosas, pideRestriccionReligiosa, contieneCerdo, esHalalPorIngredientes } from '@/lib/recetas/halal'
 import { recetaLibreDe, recetaTieneEtiqueta } from '@/lib/recetas-constants'
 
@@ -46,6 +47,9 @@ export async function GET(
   const lista = (k: string) => (searchParams.get(k) ?? '').split(',').map(x => x.trim()).filter(Boolean)
   const aptaFiltros = lista('apta')
   const sinFiltros = lista('sin')
+  const dulceFiltros = lista('dulce')
+  const busquedaEndulzante = interpretarBusquedaEndulzante(q)
+  const pideEndulzante = dulceFiltros.length > 0 || busquedaEndulzante.admite !== null
   const uso = searchParams.get('uso')?.trim() ?? ''
   const metodo = searchParams.get('metodo')?.trim() ?? ''
   const rangoKcal = searchParams.get('kcal')?.trim() ?? ''
@@ -84,12 +88,12 @@ export async function GET(
   const restricciones = (onboarding?.restricciones as string[] | null) ?? []
 
   // Halal / Sin cerdo se deciden por los ingredientes: solo en ese caso se pide también la lista de ingredientes
-  let recetas: (NonNullable<typeof recetasBase>[number] & { receta_ingredientes?: { nombre_libre?: string | null; alimento?: { nombre?: string | null } | { nombre?: string | null }[] | null }[] })[] | null = recetasBase
-  const pideIngredientes = pideRestriccionReligiosa(restricciones) || aptaFiltros.includes('Halal') || sinFiltros.includes('Sin Cerdo')
+  let recetas: (NonNullable<typeof recetasBase>[number] & { receta_ingredientes?: { nombre_libre?: string | null; alimento?: { nombre?: string | null; azucares?: number | null } | { nombre?: string | null; azucares?: number | null }[] | null }[] })[] | null = recetasBase
+  const pideIngredientes = pideRestriccionReligiosa(restricciones) || aptaFiltros.includes('Halal') || sinFiltros.includes('Sin Cerdo') || pideEndulzante
   if (recetasBase && pideIngredientes) {
     let conIngredientes = supabase
       .from('recetas')
-      .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, tags, tipo_coccion, tiempo_prep_min, tiempo_coccion_min, premium_chef, estilos, adherencia_score, batch_cooking, tupper, momentos, deportes, receta_ingredientes!receta_ingredientes_receta_id_fkey(elaboracion_id, nombre_libre, alimento:alimentos(nombre))')
+      .select('id, nombre, imagen_url, kcal, proteinas, categoria, intolerancias, tags, tipo_coccion, tiempo_prep_min, tiempo_coccion_min, premium_chef, estilos, adherencia_score, batch_cooking, tupper, momentos, deportes, receta_ingredientes!receta_ingredientes_receta_id_fkey(elaboracion_id, nombre_libre, alimento:alimentos(nombre, azucares))')
       .eq('estado', 'aprobada')
       .order('nombre', { ascending: true })
     if (tipo === 'platos' && categoria && categoria !== 'Todos') conIngredientes = conIngredientes.eq('categoria', categoria)
@@ -114,7 +118,7 @@ export async function GET(
 
 
   // Búsqueda por palabras sueltas y sin tildes: «tarta chocolate» encuentra «Tarta de chocolate con…» y «limon» encuentra «limón».
-  const buscadas = palabrasDeBusqueda(q)
+  const buscadas = palabrasDeBusqueda(busquedaEndulzante.texto)
 
   const filtradas = recetas.filter(r => {
     if (!coincidePalabras(r.nombre, buscadas)) return false
@@ -154,6 +158,14 @@ export async function GET(
       : v === 'Sin Gluten' || v === 'Sin Lactosa' ? recetaLibreDe(tagsInt, v) : recetaTieneEtiqueta(tagsInt, v))
     if (!okApta) return false
     if (!sinFiltros.every(v => v === 'Sin Cerdo' ? !contieneCerdo(r) : recetaLibreDe(tagsInt, v))) return false
+    if (pideEndulzante) {
+      const e = endulzanteDeReceta((r.receta_ingredientes ?? []).map(ing => {
+        const al = Array.isArray(ing.alimento) ? ing.alimento[0] : ing.alimento
+        return { nombre: `${ing.nombre_libre ?? ''} ${al?.nombre ?? ''}`, azucares: al?.azucares }
+      }))
+      if (dulceFiltros.length && !dulceFiltros.includes(e)) return false
+      if (busquedaEndulzante.admite && !busquedaEndulzante.admite.includes(e)) return false
+    }
     return true
   })
 
