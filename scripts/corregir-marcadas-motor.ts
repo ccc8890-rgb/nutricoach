@@ -17,6 +17,7 @@ import { recalcularMacrosReceta } from '../lib/recetas/elaboraciones-db'
 import { camposAlCambiarTipo, clasificarFicha, familiaElaboracion } from '../lib/recetas/clasificacion'
 import { validarCantidadesSospechosas } from '../lib/recetas/profesional'
 import { extraerJsonPlan } from '../lib/entrenos/evidencia-plan'
+import { esUrlDeReel } from '../lib/recetas/estimadas'
 import { aliasAlimento, calidadVinculo, raicesBusqueda, type CalidadVinculo } from '../lib/recetas/reconstruccion-segura'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
@@ -447,10 +448,12 @@ async function mainAuto() {
     console.log(`\n${r.nombre}`)
     const lineas: string[] = []
     let reintentar = false
+    // Solo los reels tienen cantidades estimadas por el sistema; las webs traen las de su receta original y no se tocan (ni cantidades ni raciones)
+    const reel = esUrlDeReel(r.url_origen)
     const pasos: [string, () => Promise<Resultado>][] = [
       ['enlaces', () => corregirIngredientes(r)],
-      ['cantidades', () => estimarCantidades(r)],
-      ['raciones', async () => { const x = await corregirDesdeNota(r, '', ['raciones_kcal']); return !x.ok && x.motivo.includes('no ven nada que cambiar') ? { ok: true, detalle: 'raciones plausibles' } as Resultado : x }],
+      ...(reel ? [['cantidades', () => estimarCantidades(r)] as [string, () => Promise<Resultado>]] : []),
+      ...(reel ? [['raciones', async () => { const x = await corregirDesdeNota(r, '', ['raciones_kcal']); return !x.ok && x.motivo.includes('no ven nada que cambiar') ? { ok: true, detalle: 'raciones plausibles' } as Resultado : x }] as [string, () => Promise<Resultado>]] : []),
     ]
     for (const [aspecto, hacer] of pasos) {
       let res: Resultado

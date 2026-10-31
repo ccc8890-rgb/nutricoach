@@ -1,4 +1,5 @@
 // Orquestación del revisor de recetas (servidor): cargar ficha → ¿ha cambiado? → IA → validar → guardar → aplicar lo seguro → 2ª revisión.
+import { esUrlDeReel } from '@/lib/recetas/estimadas'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { llamarIA, ErrorIA, type Adaptador } from '@/lib/ia/enrutador'
 import { extraerJsonPlan } from '@/lib/entrenos/evidencia-plan'
@@ -44,7 +45,7 @@ export async function cargarFicha(db: Db, recetaId: string): Promise<FichaParaRe
       const a = Array.isArray(l.alimento) ? l.alimento[0] : l.alimento
       return { nombre: l.nombre_libre ?? a?.nombre ?? '', alimento: a?.nombre ?? null, gramos: Number(l.cantidad_gramos) || 0, kcal100: a?.calorias ?? null,
         // Solo hay cantidad dicha si la dijo el vídeo; si no, los gramos son una estimación del sistema
-        cantidad_dicha: l.cantidad_original ? `${l.cantidad_original} ${l.unidad_display ?? ''}`.trim() : null }
+        cantidad_dicha: l.cantidad_original ? `${l.cantidad_original} ${l.unidad_display ?? ''}`.trim() : (r.url_origen && !esUrlDeReel(r.url_origen) ? `${l.cantidad_gramos} g (de la receta web original)` : null) }
     }),
     hallazgos_deterministas: issuesATexto(r.quality_issues),
     usada_en_recetas: count ?? 0,
