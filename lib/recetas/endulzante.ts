@@ -52,3 +52,6 @@ export function interpretarBusquedaEndulzante(q: string | null | undefined): { t
   t = t.replace(/\bcon\s+azucar(es)?(\s+anadid[oa]s?)?\b/g, () => { admite = ['refinado']; return ' ' })
   return { texto: admite ? t.replace(/\s+/g, ' ').trim() : (q ?? ''), admite }
 }
+
+/** Nota única de la ficha del cliente cuando la receta lleva azúcar, miel, dátiles o agave. Eritritol y xilitol se miden como el azúcar. */
+export const SUSTITUTO_SIN_AZUCAR = 'Para endulzar sin azúcar: eritritol o xilitol, en la misma cantidad.'

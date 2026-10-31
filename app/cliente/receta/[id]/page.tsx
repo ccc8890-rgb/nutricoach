@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { ArrowLeft, Loader2, AlertTriangle, UtensilsCrossed, PlayCircle } from '@/components/icons/portal-lucide'
 import { BotonFavorita } from '@/components/PortalCliente/BotonFavorita'
 import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
+import { endulzanteDeReceta, SUSTITUTO_SIN_AZUCAR } from '@/lib/recetas/endulzante'
 import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
 import { StepByStep } from '@/components/premium/StepByStep'
 import type { Racion } from '@/lib/nutricion/racion'
@@ -50,7 +51,7 @@ interface IngredienteConAlimento {
   unidad_display?: string | null
   grupo?: string | null
   es_opcional?: boolean | null
-  alimento?: { nombre: string } | null
+  alimento?: { nombre: string; azucares?: number | null } | null
 }
 
 /** Copia local de app/recetas/[id]/page.tsx — mismo parseo, sin las
@@ -80,6 +81,7 @@ export default function RecetaClientePage() {
   }>(codigo ? claveReceta(codigo, id, searchParams.get('comida')) : null, fetchJson)
   const receta = data?.receta ?? null
   const ingredientes = data?.ingredientes ?? []
+  const endulzante = endulzanteDeReceta(ingredientes.filter(i => !i.es_opcional).map(i => ({ nombre: `${i.nombre_libre ?? ''} ${i.alimento?.nombre ?? ''}`, azucares: i.alimento?.azucares })))
   const racion = data?.racion ?? null
   const salsas = data?.salsas ?? []
   const profesional = Boolean(data?.profesional)
@@ -285,6 +287,9 @@ export default function RecetaClientePage() {
                 {seccion === 'ingredientes' && ingredientesFormato.length > 0 && (
                   <div>
                     <IngredientChecklist ingredientes={ingredientesFormato} sinCabecera />
+                    {(endulzante === 'refinado' || endulzante === 'natural') && (
+                      <p className="mt-4 text-center" style={{ fontSize: 12, color: 'var(--text-muted)' }}>{SUSTITUTO_SIN_AZUCAR}</p>
+                    )}
                   </div>
                 )}
 
