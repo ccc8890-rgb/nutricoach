@@ -127,7 +127,7 @@ type RecetaRow = {
   created_at?: string | null
   receta_ingredientes?: Array<{
     nombre_libre?: string | null
-    alimento?: { nombre?: string | null } | Array<{ nombre?: string | null }> | null
+    alimento?: { nombre?: string | null; azucares?: number | null } | Array<{ nombre?: string | null; azucares?: number | null }> | null
   }> | null
 }
 
