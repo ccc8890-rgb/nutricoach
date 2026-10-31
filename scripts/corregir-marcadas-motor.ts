@@ -18,6 +18,7 @@ import { camposAlCambiarTipo, clasificarFicha, familiaElaboracion } from '../lib
 import { validarCantidadesSospechosas } from '../lib/recetas/profesional'
 import { extraerJsonPlan } from '../lib/entrenos/evidencia-plan'
 import { esUrlDeReel } from '../lib/recetas/estimadas'
+import { reemplazarTermino, validarAcciones } from '../lib/recetas/acciones-nota'
 import { simplificarNombre, aliasAlimento, calidadVinculo, raicesBusqueda, type CalidadVinculo } from '../lib/recetas/reconstruccion-segura'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
@@ -49,7 +50,9 @@ function leerNotas(notas: string | null) {
   const aspectos = lista.split(',').map(s => s.trim()).filter(Boolean)
   const despues = lineas.slice(i + 1).join('\n')
   const hecho = (a: string) => new RegExp(`Motor [${REINTENTAR ? '✓' : '✓✗'}] ${a}\\b`).test(despues) || (a === 'foto' && despues.includes('foto regenerada'))
-  return { aspectos, nota: resto.join('—').trim(), pendientes: aspectos.filter(a => !hecho(a)) }
+  // últimas notas escritas por el coach (las anteriores pueden seguir sin atender: el motor solo las veía si eran la última)
+  const previas = lineas.slice(0, i).filter(l => l.includes('A corregir:') && l.includes('—')).map(l => l.split('A corregir:')[1].split('—').slice(1).join('—').trim()).filter(Boolean).slice(-2)
+  return { aspectos, despues, nota: resto.join('—').trim(), previas, pendientes: aspectos.filter(a => !hecho(a)) }
 }
 
 // ── DeepSeek ───────────────────────────────────────────────────────────────────────────────────
@@ -358,6 +361,139 @@ Devuelve JSON: {"titulo": null | "nuevo título", "raciones": null | número ent
 }
 
 
+// ── La nota del coach como ORDEN: la IA la traduce a acciones concretas, se validan y se aplican con copia y marcha atrás ──
+// Cubre lo que antes acababa en «dime qué ingrediente falla»: renombrar/sinónimos, quitar la marca, ingrediente que no computa
+// (acompañamiento), duplicados, cantidades puestas en duda (se contrastan con el texto original) y preguntas del coach.
+const ASPECTOS_DE_NOTA = ['enlaces', 'ingredientes', 'alimento_falta', 'gramos', 'raciones_kcal', 'titulo', 'otro']
+async function ejecutarNota(r: Receta, notaActual: string, aspectos: string[], previas: string[] = []): Promise<Resultado> {
+  const nota = [...previas, notaActual].join('\n')
+  const filas = r.receta_ingredientes
+  const dup = new Map<string, number[]>()
+  filas.forEach((i, n) => { const k = norm(i.nombre_libre ?? ''); if (k) dup.set(k, [...(dup.get(k) ?? []), n + 1]) })
+  const posiblesDup = [...dup.values()].filter(v => v.length > 1).map(v => v.join(' y '))
+  const texto = (r.raw_scrape?.texto ?? '').slice(0, 6000)
+  const { llamarIA } = await import('../lib/ia/enrutador')
+  let respuesta
+  try {
+    respuesta = await llamarIA('revision_receta', {
+      sistema: 'Eres el ayudante de cocina y nutrición de un dietista español. La NOTA DEL COACH es una ORDEN: cúmplela al pie de la letra con acciones concretas. Respondes SOLO con JSON válido.',
+      usuario: `RECETA: ${r.nombre} · ${r.porciones ?? 1} raciones
+INGREDIENTES (n · texto de la receta · alimento enlazado · gramos totales · ≈ = cantidad estimada por el sistema, no dicha por el vídeo):
+${filas.map((i, n) => `${n + 1}. ${i.nombre_libre} · ${nombreAlimento(i) ?? 'sin enlace'} · ${i.cantidad_gramos ?? 0} g${!i.cantidad_original && (i.cantidad_gramos ?? 0) > 0 && !i.es_opcional && esUrlDeReel(r.url_origen) ? ' ≈' : ''}${i.es_opcional ? ' · opcional' : ''}`).join('\n')}
+${posiblesDup.length ? `POSIBLES REPETIDOS (mismo nombre): filas ${posiblesDup.join('; ')}\n` : ''}PASOS: ${(r.instrucciones ?? '(sin pasos)').slice(0, 1800)}
+${texto ? `TEXTO ORIGINAL DEL VÍDEO (evidencia; el autor puede equivocarse u omitir):\n${texto}\n` : ''}ASPECTOS MARCADOS: ${aspectos.join(', ')}
+NOTAS DEL COACH (de más antigua a más reciente; las antiguas pueden seguir sin atender, si ya están cumplidas no hagas nada):\n${nota}
+
+Traduce la nota a acciones. Tipos permitidos:
+- {"tipo":"renombrar","n":1,"nombre":"Boniato","termino_anterior":"batata"}  → cambia cómo se llama el ingrediente en la receta (sinónimos españoles, quitar marcas); termino_anterior = la palabra que hay que sustituir también en pasos y descripción
+- {"tipo":"reenlazar","n":1,"alimento":"Panela"}  → enlaza a un alimento genérico (español, singular, SIN marca)
+- {"tipo":"gramos","n":1,"gramos":30,"evidencia":"cita literal del texto original, 'nota' o 'criterio'"}  → la cifra la da la nota o el texto original; 'criterio' SOLO si el coach duda de una cantidad que el vídeo no dijo (estimada, marcada «≈») y propones una cantidad culinaria razonable
+- {"tipo":"no_computa","n":1}  → el ingrediente se muestra como sugerencia/acompañamiento pero NO cuenta en kcal, macros ni compra
+- {"tipo":"quitar","n":1}  → quita una línea (duplicada o que la nota pide quitar)
+- {"tipo":"unir","n":[1,2],"gramos":40}  → fusiona dos líneas repetidas con el total correcto
+- {"tipo":"raciones","valor":4} · {"tipo":"titulo","valor":"..."}
+- {"tipo":"responder","n":1,"texto":"..."}  → la nota es una DUDA o pregunta («¿20 g es mucho?»): contrástala con el texto original y los pasos y contesta con la evidencia; NO cambies cifras por una duda si el texto original la confirma. Si el original dice otra cosa, usa "gramos" con su cita.
+- {"tipo":"pregunta","texto":"..."}  → SOLO si es imposible actuar sin un dato concreto del coach: formula esa pregunta exacta, corta
+Reglas: no inventes cifras ni ingredientes; una acción por fila salvo renombrar+reenlazar; si la nota dice que algo «no cuente en las kcal» usa no_computa; si pide un sinónimo, renombrar.
+Devuelve JSON: {"acciones":[...]}`,
+      json: true, maxTokens: 2000, esfuerzo: 'low', presupuestoMs: 90000,
+    })
+  } catch (e: any) { return { ok: false, motivo: `error: la IA no respondió (${String(e.message).slice(0, 80)})` } }
+  tokensIA += (respuesta.usoTotal.entrada ?? 0) + (respuesta.usoTotal.salida ?? 0)
+  let out: any
+  try { out = extraerJsonPlan(respuesta.texto) } catch { return { ok: false, motivo: 'error: la IA no devolvió JSON válido' } }
+  const validado = validarAcciones(out?.acciones, { filas: filas.length, textoOriginal: texto, notaCoach: nota, porciones: r.porciones ?? 1, palabrasProhibidas: PROHIBIDAS, filasInfo: filas.map(i => ({ nombre: i.nombre_libre ?? '', gramos: Number(i.cantidad_gramos ?? 0), estimada: !i.cantidad_original && esUrlDeReel(r.url_origen) })) })
+  const descartadas = validado.descartadas
+  // Acciones que no cambian nada (misma cifra, mismo nombre) no son cambios: la cifra confirmada se cuenta como respuesta
+  const sinEfecto: string[] = []
+  const validas = validado.validas.filter(a => {
+    if (a.tipo === 'gramos') {
+      const f = filas[a.n - 1], act = Number(f.cantidad_gramos ?? 0)
+      if (Math.abs(a.gramos - act) < Math.max(0.5, act * 0.02)) { sinEfecto.push(`${f.nombre_libre}: se mantiene en ${act} g${a.evidencia && !['nota', 'criterio'].includes(a.evidencia) ? ` (el original dice «${a.evidencia}»)` : ''}`); return false }
+    }
+    if (a.tipo === 'renombrar' && !a.termino_anterior && norm(filas[a.n - 1].nombre_libre ?? '') === norm(a.nombre)) return false
+    return true
+  })
+  const cambiosReales = validas.filter(a => a.tipo !== 'responder' && a.tipo !== 'pregunta')
+  const respuestas = validas.filter((a): a is Extract<typeof a, { tipo: 'responder' }> => a.tipo === 'responder')
+  const preguntas = validas.filter((a): a is Extract<typeof a, { tipo: 'pregunta' }> => a.tipo === 'pregunta')
+  if (!cambiosReales.length && !respuestas.length && !sinEfecto.length) {
+    return { ok: false, motivo: preguntas.length ? `PREGUNTA PARA TI: ${preguntas.map(p => p.texto).join(' / ')}` : `no he podido convertir la nota en acciones seguras${descartadas.length ? ` (${descartadas.join('; ')})` : ''}` }
+  }
+  const nombreFila = (n: number) => filas[n - 1].nombre_libre ?? nombreAlimento(filas[n - 1]) ?? `fila ${n}`
+  const resumen: string[] = []
+  for (const a of cambiosReales) {
+    if (a.tipo === 'renombrar') resumen.push(`«${nombreFila(a.n)}» → «${a.nombre}»${a.termino_anterior ? ` (y «${a.termino_anterior}» en pasos/textos)` : ''}`)
+    else if (a.tipo === 'reenlazar') resumen.push(`${nombreFila(a.n)} enlazado a «${a.alimento}»`)
+    else if (a.tipo === 'gramos') resumen.push(`${nombreFila(a.n)}: ${filas[a.n - 1].cantidad_gramos} → ${a.gramos} g`)
+    else if (a.tipo === 'no_computa') resumen.push(`${nombreFila(a.n)} pasa a sugerencia (no cuenta en macros)`)
+    else if (a.tipo === 'quitar') resumen.push(`quitada la línea «${nombreFila(a.n)}»`)
+    else if (a.tipo === 'unir') resumen.push(`unidas «${nombreFila(a.n[0])}» y «${nombreFila(a.n[1])}» en ${a.gramos} g`)
+    else if (a.tipo === 'raciones') resumen.push(`raciones ${r.porciones} → ${a.valor}`)
+    else if (a.tipo === 'titulo') resumen.push(`título → «${a.valor}»`)
+  }
+  const dichas = [...sinEfecto, ...respuestas.map(x => `respuesta${x.n ? ` sobre ${nombreFila(x.n)}` : ''}: ${x.texto}`)]
+  const extra = [...dichas, ...preguntas.map(p => `PREGUNTA PARA TI: ${p.texto}`)]
+  if (!APLICA) return { ok: true, detalle: `[simulación] ${[...resumen, ...extra].join('; ')}` }
+  if (!cambiosReales.length) return { ok: true, detalle: extra.join('; ') }
+
+  // Copia completa de lo que se toca, para deshacer si el quality gate sale peor
+  const antesBloq = await bloqueantes(r.id)
+  const idsTocados = [...new Set(cambiosReales.flatMap(a => ('n' in a ? (Array.isArray(a.n) ? a.n : [a.n]) : [])).map(n => filas[n - 1].id))]
+  const { data: copiaFilas } = await db.from('receta_ingredientes').select('*').in('id', idsTocados)
+  const copiaReceta = { nombre: r.nombre, porciones: r.porciones, instrucciones: r.instrucciones, descripcion: r.descripcion, consejos: r.consejos }
+  const creados: string[] = []
+  const alimentosRenombrados: { id: string; antes: string }[] = []
+  const noAplicadas: string[] = []
+  let nombre = r.nombre, porciones = r.porciones, pasos = r.instrucciones, descripcion = r.descripcion, consejos = r.consejos
+  for (const a of cambiosReales) {
+    if (a.tipo === 'renombrar') {
+      const f = filas[a.n - 1]
+      await db.from('receta_ingredientes').update({ nombre_libre: a.nombre }).eq('id', f.id)
+      if (a.termino_anterior) for (const [c, v] of [['pasos', pasos], ['desc', descripcion], ['cons', consejos]] as const) {
+        const x = reemplazarTermino(v, a.termino_anterior, a.nombre)
+        if (c === 'pasos') pasos = x.texto; else if (c === 'desc') descripcion = x.texto; else consejos = x.texto
+      }
+    } else if (a.tipo === 'reenlazar') {
+      const f = filas[a.n - 1]
+      const mejor = await buscarMejor(a.alimento)
+      const al = mejor?.al ?? (await crearAlimentoFaltante(a.alimento))?.al
+      if (!al || al.id === 'simulado') { noAplicadas.push(`no encuentro ni puedo crear «${a.alimento}»`); continue }
+      if (al.id === f.alimento_id) {
+        // ya está enlazado a ese alimento: si solo le sobra la marca, se limpia su nombre en el catálogo (si no hay otro con ese nombre)
+        if (norm(al.nombre) !== norm(a.alimento)) {
+          const { data: ya } = await db.from('alimentos').select('id').ilike('nombre', a.alimento).limit(1)
+          if (!ya?.length) { await db.from('alimentos').update({ nombre: a.alimento[0].toUpperCase() + a.alimento.slice(1) }).eq('id', al.id); alimentosRenombrados.push({ id: al.id, antes: al.nombre }) }
+        }
+        continue
+      }
+      if (!mejor) creados.push(al.id)
+      await db.from('receta_ingredientes').update({ alimento_id: al.id, elaboracion_id: null }).eq('id', f.id)
+    } else if (a.tipo === 'gramos') {
+      await db.from('receta_ingredientes').update({ cantidad_gramos: a.gramos, cantidad_original: null, unidad_display: null }).eq('id', filas[a.n - 1].id)
+    } else if (a.tipo === 'no_computa') {
+      await db.from('receta_ingredientes').update({ es_opcional: true, cantidad_gramos: 0, alimento_id: null, elaboracion_id: null }).eq('id', filas[a.n - 1].id)
+    } else if (a.tipo === 'quitar') {
+      await db.from('receta_ingredientes').delete().eq('id', filas[a.n - 1].id)
+    } else if (a.tipo === 'unir') {
+      await db.from('receta_ingredientes').update({ cantidad_gramos: a.gramos, cantidad_original: null, unidad_display: null }).eq('id', filas[a.n[0] - 1].id)
+      await db.from('receta_ingredientes').delete().eq('id', filas[a.n[1] - 1].id)
+    } else if (a.tipo === 'raciones') porciones = a.valor
+    else if (a.tipo === 'titulo') nombre = a.valor
+  }
+  await db.from('recetas').update({ nombre, porciones, instrucciones: pasos, descripcion, consejos }).eq('id', r.id)
+  const recalc = await recalcularMacrosReceta(db as any, r.id)
+  const peor = nuevosBloqueantes(antesBloq, await bloqueantes(r.id))
+  if (peor.length) {
+    for (const f of copiaFilas ?? []) await db.from('receta_ingredientes').upsert(f)
+    for (const x of alimentosRenombrados) await db.from('alimentos').update({ nombre: x.antes }).eq('id', x.id)
+    await db.from('recetas').update(copiaReceta).eq('id', r.id)
+    await recalcularMacrosReceta(db as any, r.id)
+    return { ok: false, motivo: `aplicar la nota dejaba bloqueantes en el quality gate (${peor.join(', ')}); deshecho. Intentaba: ${resumen.join('; ')}` }
+  }
+  await db.from('recetas_auditoria').insert({ receta_id: r.id, evento: 'correccion_motor', origen: 'motor_correcciones', issues: { aspecto: 'nota_como_orden', nota, filas_anteriores: copiaFilas, receta_anterior: copiaReceta, alimentos_creados: creados, alimentos_renombrados: alimentosRenombrados } })
+  return { ok: noAplicadas.length === 0, ...(noAplicadas.length === 0 ? { detalle: `${[...resumen, ...extra].join('; ')}${recalc ? ` · ${recalc.kcal} kcal/ración` : ''}` } : { motivo: `${resumen.join('; ')}; pero ${noAplicadas.join('; ')}` }) } as Resultado
+}
 
 // ── Enlazar a lo simple: alimento BASE con el nombre simplificado («sal kosher» → Sal, «mantequilla sin sal fría» → Mantequilla sin sal) ──
 /** Solo si existe un alimento base con ESE nombre exacto (sin tocar palabras que cambian el alimento) y sus kcal son parecidas a las del actual. */
@@ -559,6 +695,20 @@ async function main() {
     .filter(r => !SOLO || r.id.startsWith(SOLO))
     .map(r => ({ r, n: leerNotas(r.notas_coach) }))
     .filter((x): x is { r: Receta; n: NonNullable<ReturnType<typeof leerNotas>> } => !!x.n && x.n.pendientes.some(a => a !== 'foto'))
+  // Fichas que el motor ya revisó por completo sin encontrar nada y sin nota tuya: no se quedan marcadas para siempre, vuelven a «Por revisar»
+  if (APLICA && !SOLO) {
+    const todas = ((data ?? []) as unknown as Receta[]).map(r => ({ r, n: leerNotas(r.notas_coach) }))
+    for (const { r, n } of todas) {
+      if (!n || n.nota || n.aspectos.includes('foto') || n.pendientes.length > 0 || (r.tags ?? []).includes('Reporte cliente')) continue
+      const fallos = n.despues.split('\n').filter(l => l.includes('Motor ✗'))
+      if (!fallos.length || !fallos.every(l => /no ven nada que cambiar|no sé qué|dime qu[eé]|todos parecen correctos|no veo enlaces/.test(l))) continue
+      await db.from('recetas').update({
+        notas_coach: [r.notas_coach, `[${hoy()}] Motor: revisados enlaces, cantidades y raciones y no encuentra nada que cambiar sin una nota tuya; vuelve a «Por revisar». Si sigue mal, márcala otra vez con una frase de qué falla.`].join('\n'),
+        tags: (r.tags ?? []).filter(t => t !== 'Corregir'),
+      }).eq('id', r.id)
+      console.log(`↩️  ${r.nombre}: sin nada que hacer sin nota → vuelve a Por revisar`)
+    }
+  }
   console.log(`Marcadas «Corregir» con aspectos que atiende el motor: ${cola.length} · a procesar: ${Math.min(cola.length, LIMITE)}`)
 
   let hechas = 0, parciales = 0
@@ -566,17 +716,34 @@ async function main() {
     console.log(`\n${r.nombre} — pendiente: ${n.pendientes.join(', ')}${n.nota ? ` · nota: ${n.nota}` : ''}`)
     const lineas: string[] = []
     const hechosAhora: string[] = []
-    const gramosSinNota = n.pendientes.includes('gramos') && !n.nota // sin cifras en la nota: se estiman con criterio las cantidades que el vídeo no dijo
-    const desdeNota = n.pendientes.filter(a => ['titulo', 'gramos', 'raciones_kcal', 'otro'].includes(a) && !(a === 'gramos' && gramosSinNota))
+    // 1) La nota es una orden: se interpreta primero; lo que cubre no pasa por los caminos genéricos
+    let pend = n.pendientes
+    const deNota = n.nota ? n.pendientes.filter(a => ASPECTOS_DE_NOTA.includes(a)) : []
+    if (deNota.length) {
+      let res: Resultado
+      try { res = await ejecutarNota(r, n.nota, n.pendientes, n.previas) } catch (e: any) { res = { ok: false, motivo: `error: ${e.message}` } }
+      console.log(`  ${res.ok ? '✅' : '⚠️'} nota: ${res.ok ? res.detalle : res.motivo}`)
+      if (res.ok) {
+        for (const a of deNota) lineas.push(`[${hoy()}] Motor ✓ ${a}: ${res.detalle}`)
+        hechosAhora.push(...deNota)
+        pend = pend.filter(a => !deNota.includes(a))
+      } else if (res.motivo.startsWith('PREGUNTA PARA TI')) {
+        for (const a of deNota) lineas.push(`[${hoy()}] Motor ✗ ${a}: ${res.motivo}`)
+        pend = pend.filter(a => !deNota.includes(a)) // la pregunta ya está anotada: no se vuelve a probar con las reglas genéricas
+      }
+      // otro fallo: los caminos genéricos de abajo lo intentan igualmente
+    }
+    const gramosSinNota = pend.includes('gramos') && !n.nota // sin cifras en la nota: se estiman con criterio las cantidades que el vídeo no dijo
+    const desdeNota = pend.filter(a => ['titulo', 'gramos', 'raciones_kcal', 'otro'].includes(a) && !(a === 'gramos' && gramosSinNota))
     const tareas: [string[], () => Promise<Resultado>][] = []
-    const deEnlaces = n.pendientes.filter(a => ['ingredientes', 'enlaces', 'alimento_falta'].includes(a))
+    const deEnlaces = pend.filter(a => ['ingredientes', 'enlaces', 'alimento_falta'].includes(a))
     if (deEnlaces.length) tareas.push([deEnlaces, () => corregirIngredientes(r)])
-    if (n.pendientes.includes('pasos')) tareas.push([['pasos'], () => corregirPasos(r, n.nota)])
-    if (n.pendientes.includes('textos')) tareas.push([['textos'], () => corregirTextos(r, n.nota)])
+    if (pend.includes('pasos')) tareas.push([['pasos'], () => corregirPasos(r, n.nota)])
+    if (pend.includes('textos')) tareas.push([['textos'], () => corregirTextos(r, n.nota)])
     if (desdeNota.length) tareas.push([desdeNota, () => corregirDesdeNota(r, n.nota, desdeNota)])
     if (gramosSinNota) tareas.push([['gramos'], () => estimarCantidades(r)])
-    if (n.pendientes.includes('alergenos')) tareas.push([['alergenos'], async () => corregirAlergenos(r)])
-    if (n.pendientes.includes('etiquetas')) tareas.push([['etiquetas'], async () => corregirEtiquetas()])
+    if (pend.includes('alergenos')) tareas.push([['alergenos'], async () => corregirAlergenos(r)])
+    if (pend.includes('etiquetas')) tareas.push([['etiquetas'], async () => corregirEtiquetas()])
     for (const [aspectos, hacer] of tareas) {
       let res: Resultado
       try { res = await hacer() } catch (e: any) { res = { ok: false, motivo: `error: ${e.message}` } }

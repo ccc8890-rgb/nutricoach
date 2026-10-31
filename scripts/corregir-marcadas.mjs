@@ -37,7 +37,8 @@ function pendientes(notas) {
   if (i < 0) return { aspectos: [], hechos: [] }
   const aspectos = (lineas[i].split('A corregir:')[1] ?? '').split('—')[0].split(',').map(s => s.trim()).filter(Boolean)
   const hechos = lineas.slice(i + 1).filter(l => l.includes('Motor:')).join(' ')
-  return { aspectos, hechos }
+  const nota = (lineas[i].split('A corregir:')[1] ?? '').split('—').slice(1).join('—').trim()
+  return { aspectos, hechos, nota }
 }
 
 // Prompt realista (22-10-2026): solo los ingredientes de la receta con sus proporciones, sin atrezo inventado y con aspecto de foto casera
@@ -91,15 +92,20 @@ const lista = FORZAR && ID ? (forzadas ?? []).map(r => ({ r, aspectos: ['foto', 
     .filter(x => x.aspectos.includes('foto') && !x.hechos.includes('foto regenerada'))
     // Con reel/TikTok la foto buena es un fotograma del vídeo (foto-reel-auto.mjs), nunca una de IA; una receta de web (sin vídeo) no se toca
     .filter(x => !x.r.url_origen || (esVideo(x.r.url_origen) && !x.hechos.includes('Motor ✗ foto')))
+// Recetas de web o manuales (sin vídeo): el motor no puede sacar la foto; en vez de ignorarlas en silencio lo deja dicho en la ficha
+const sinVideo = (marcadas ?? []).map(r => ({ r, ...pendientes(r.notas_coach) })).filter(x => x.aspectos.includes('foto') && x.r.url_origen && !esVideo(x.r.url_origen) && !x.hechos.includes('Motor ✗ foto') && !x.hechos.includes('foto regenerada'))
+if (APLICA && !FORZAR) for (const { r } of sinVideo) {
+  await db.from('recetas').update({ notas_coach: [r.notas_coach, `[${hoy()}] Motor ✗ foto: receta sin vídeo de origen (web o manual): el motor no inventa fotos; sube una propia con «Subir foto»`].filter(Boolean).join('\n') }).eq('id', r.id)
+}
 console.log(`Marcadas «Corregir» con foto pendiente: ${lista.length} · a procesar: ${Math.min(lista.length, LIMITE)} · coste ~${(Math.min(lista.length, LIMITE) * 0.034).toFixed(2)} $`)
 if (!APLICA) { lista.forEach(({ r }, i) => console.log(`  ${i + 1}. ${r.nombre}`)); console.log('\nSimulación. Añade --aplica.'); process.exit(0) }
 
 if (!existsSync(SALIDA)) mkdirSync(SALIDA, { recursive: true })
 let ok = 0, errores = 0
-for (const [i, { r, aspectos }] of lista.slice(0, LIMITE).entries()) {
+for (const [i, { r, aspectos, nota }] of lista.slice(0, LIMITE).entries()) {
   process.stdout.write(`[${i + 1}] ${r.nombre.slice(0, 55)} ... `)
   if (r.url_origen) { // receta de reel: fotograma elegido con visión y retocado (foto-reel-auto.mjs); nunca foto de IA desde cero
-    const x = spawnSync('node', ['scripts/foto-reel-auto.mjs', `--id=${r.id}`, '--aplica'], { encoding: 'utf8', timeout: 6 * 60 * 1000, env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin' } })
+    const x = spawnSync('node', ['scripts/foto-reel-auto.mjs', `--id=${r.id}`, '--aplica', ...(nota ? [`--nota=${nota.slice(0, 300)}`] : [])], { encoding: 'utf8', timeout: 6 * 60 * 1000, env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin' } })
     const soloFoto = aspectos.every(a => a === 'foto')
     if (x.status === 0) {
       const nota = `[${hoy()}] Motor: foto regenerada (fotograma del reel elegido por el motor${soloFoto ? '; lista para revisar' : ''})`
