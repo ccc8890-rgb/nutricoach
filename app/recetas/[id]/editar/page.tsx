@@ -354,8 +354,8 @@ export default function EditarRecetaPage() {
             tipo_plato: form.tipo_plato || null,
             tipo_coccion: form.tipo_coccion || null,
             dificultad: form.dificultad || null,
-            intolerancias: intolerancias.length ? intolerancias : null,
-            tags: tags.length ? tags : null,
+            intolerancias, // NOT NULL como tags: sin alérgenos va []
+            tags, // la columna es NOT NULL: sin etiquetas va []
             porciones: parseInt(form.porciones) || 1,
             descripcion_porcion: form.descripcion_porcion || null,
             tiempo_prep_min: form.tiempo_prep_min ? parseInt(form.tiempo_prep_min) : null,
