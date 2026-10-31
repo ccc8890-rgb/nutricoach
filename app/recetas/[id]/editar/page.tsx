@@ -175,13 +175,14 @@ export default function EditarRecetaPage() {
                     if (r.ok) enlazadas = (await r.json()).elaboraciones ?? []
                 } catch { /* sin datos: la línea se ve sin kcal */ }
             }
-            setIngredientes((ingRes.data ?? []).map(ing => ({
+            // Mismo orden (más cantidad primero) y mismos nombres que la ficha: con alimento enlazado se ve el nombre del alimento («Sal»), no el texto original del reel («sal kosher»)
+            setIngredientes([...(ingRes.data ?? [])].sort((a, b) => (Number(b.cantidad_gramos) || 0) - (Number(a.cantidad_gramos) || 0)).map(ing => ({
                 id: ing.id,
                 tempId: crypto.randomUUID(),
                 elaboracion_id: ing.elaboracion_id ?? null,
                 elaboracion: enlazadas.find(e => e.id === ing.elaboracion_id),
                 alimento_id: ing.alimento_id,
-                nombre_libre: ing.nombre_libre ?? ing.alimento?.nombre ?? '',
+                nombre_libre: (ing.alimento_id && !ing.es_opcional ? ing.alimento?.nombre : null) ?? ing.nombre_libre ?? ing.alimento?.nombre ?? '',
                 cantidad_gramos: ing.cantidad_gramos,
                 cantidad_original: ing.cantidad_original ?? null,
                 unidad_display: ing.unidad_display ?? null,

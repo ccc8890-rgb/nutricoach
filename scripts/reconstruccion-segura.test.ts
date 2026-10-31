@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { acotarCantidad, nombreParaGuardar, aliasAlimento, limpiarNombreIngrediente, calidadVinculo, raicesBusqueda, evaluarReconstruccion, type IngredienteResuelto } from '../lib/recetas/reconstruccion-segura'
+import { simplificarNombre, acotarCantidad, nombreParaGuardar, aliasAlimento, limpiarNombreIngrediente, calidadVinculo, raicesBusqueda, evaluarReconstruccion, type IngredienteResuelto } from '../lib/recetas/reconstruccion-segura'
 
 // --- Calidad de la vinculación (casos reales de las propuestas del 02-10)
 const q = calidadVinculo
@@ -163,5 +163,15 @@ assert.equal(r.ok, false)
 assert.equal(aliasAlimento('Vino de cocina'), 'Vino blanco')
 assert.equal(aliasAlimento('Chips de chocolate'), 'Chocolate negro en pepitas')
 assert.equal(aliasAlimento('chocolate chips'), 'Chocolate negro en pepitas')
+
+// Simplificar el nombre para enlazar al alimento base: solo descriptores neutros, nunca lo que cambia el alimento
+assert.equal(simplificarNombre('mantequilla sin sal fría'), 'mantequilla sin sal')
+assert.equal(simplificarNombre('Sal kosher'), 'sal')
+assert.equal(simplificarNombre('sal en escamas'), 'sal')
+assert.equal(simplificarNombre('harina de trigo común'), 'harina de trigo')
+assert.equal(simplificarNombre('huevo (para pincelar)'), 'huevo')
+assert.equal(simplificarNombre('Mantequilla de cacahuete'), 'mantequilla de cacahuete')   // «de cacahuete» cambia el alimento
+assert.equal(simplificarNombre('Pan integral'), 'pan integral')
+assert.equal(simplificarNombre('cebolla picada para decorar'), 'cebolla')
 
 console.log('reconstruccion-segura OK')

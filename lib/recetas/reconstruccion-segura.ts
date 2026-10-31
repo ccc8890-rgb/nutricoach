@@ -104,6 +104,18 @@ const ALIAS: Record<string, string> = {
   'chocolate chips': 'Chocolate negro en pepitas',
   'pepitas de chocolate': 'Chocolate negro en pepitas',
 }
+// Descriptores que no cambian el alimento a efectos de enlazarlo (temperatura, variedad de sal, tamaño, corte): «mantequilla sin sal fría» = «mantequilla sin sal»,
+// «sal kosher» / «sal en escamas» = «sal». NUNCA se quitan palabras que cambian el alimento («de cacahuete», «integral», «sin sal»).
+const DESCRIPTORES = new Set(['fria', 'frio', 'frias', 'frios', 'caliente', 'templada', 'templado', 'tibia', 'tibio', 'kosher', 'marina', 'escamas', 'comun', 'comunes', 'normal',
+  'fino', 'fina', 'gruesa', 'grueso', 'grande', 'grandes', 'mediano', 'mediana', 'medianos', 'pequeno', 'pequena', 'fresco', 'fresca', 'frescos', 'frescas', 'maduro', 'madura',
+  'picado', 'picada', 'rallado', 'rallada', 'troceado', 'troceada', 'laminado', 'laminada', 'derretido', 'derretida', 'blando', 'blanda', 'ablandado', 'ablandada'])
+/** Nombre del ingrediente sin descriptores neutros, aclaraciones entre paréntesis ni la finalidad («para pincelar», «para decorar»). */
+export function simplificarNombre(nombre: string): string {
+  const base = quitarAcentos(nombre).replace(/\([^)]*\)/g, ' ').split(/\s+para\s+/)[0].replace(/[,;:]/g, ' ').replace(/\ben escamas\b/g, ' ')
+  const palabras = base.split(/\s+/).filter(t => t && !DESCRIPTORES.has(t))
+  return palabras.join(' ').trim()
+}
+
 export function aliasAlimento(nombre: string): string | null {
   return ALIAS[quitarAcentos(nombre).replace(/\s+/g, ' ').trim()] ?? null
 }

@@ -18,7 +18,7 @@ import { camposAlCambiarTipo, clasificarFicha, familiaElaboracion } from '../lib
 import { validarCantidadesSospechosas } from '../lib/recetas/profesional'
 import { extraerJsonPlan } from '../lib/entrenos/evidencia-plan'
 import { esUrlDeReel } from '../lib/recetas/estimadas'
-import { aliasAlimento, calidadVinculo, raicesBusqueda, type CalidadVinculo } from '../lib/recetas/reconstruccion-segura'
+import { simplificarNombre, aliasAlimento, calidadVinculo, raicesBusqueda, type CalidadVinculo } from '../lib/recetas/reconstruccion-segura'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/)
@@ -30,6 +30,7 @@ const APLICA = process.argv.includes('--aplica')
 const LIMITE = Number(arg('limite') ?? 10)
 const SOLO = arg('id')
 const PARTE = arg('parte')?.split('/').map(Number) // --parte=k/n: reparte la cola entre procesos en paralelo (k de 0 a n-1)
+const SOLO_BASE = process.argv.includes('--base') // reenlaza a alimentos base las fichas en revisión (sin IA)
 const AUTO = process.argv.includes('--auto') // fichas en revisión sin marcar «Corregir»: saneado automático
 const REINTENTAR = process.argv.includes('--reintentar') // vuelve a probar también los aspectos que el motor dejó con ✗
 const hoy = () => new Date().toLocaleDateString('es-ES')
@@ -357,6 +358,42 @@ Devuelve JSON: {"titulo": null | "nuevo título", "raciones": null | número ent
 }
 
 
+
+// ── Enlazar a lo simple: alimento BASE con el nombre simplificado («sal kosher» → Sal, «mantequilla sin sal fría» → Mantequilla sin sal) ──
+/** Solo si existe un alimento base con ESE nombre exacto (sin tocar palabras que cambian el alimento) y sus kcal son parecidas a las del actual. */
+async function reenlazarABase(r: Receta): Promise<Resultado> {
+  type Cambio = { fila: Ing; antes: string | null; despues: { id: string; nombre: string } }
+  const cambios: Cambio[] = []
+  for (const i of r.receta_ingredientes.filter(x => !x.elaboracion_id && !x.es_opcional && x.nombre_libre)) {
+    const simple = simplificarNombre(i.nombre_libre!)
+    if (simple.length < 3) continue
+    const { data: base } = await db.from('alimentos').select('id, nombre, calorias, es_base').eq('es_comestible', true).eq('es_base', true).ilike('nombre', simple.replace(/[%_]/g, ' ')).limit(5)
+    const candidato = (base ?? [])[0]
+    if (!candidato || candidato.id === i.alimento_id) continue
+    if (i.alimento_id) {
+      const { data: actual } = await db.from('alimentos').select('calorias, es_base').eq('id', i.alimento_id).single()
+      if (actual?.es_base) continue // ya apunta a un alimento base: no se toca
+      const [a, b] = [Number(actual?.calorias ?? 0), Number(candidato.calorias ?? 0)]
+      if (a > 20 && Math.abs(a - b) / a > 0.2) continue // valores nutricionales distintos: no es «lo mismo, más simple»
+    }
+    cambios.push({ fila: i, antes: nombreAlimento(i), despues: { id: candidato.id, nombre: candidato.nombre } })
+  }
+  if (cambios.length === 0) return { ok: true, detalle: 'enlaces ya en alimentos base' }
+  const resumen = cambios.map(c => `${c.fila.nombre_libre}: ${c.antes ?? 'sin enlace'} → ${c.despues.nombre}`).join('; ')
+  if (!APLICA) return { ok: true, detalle: `[simulación] ${resumen}` }
+  const antes = await bloqueantes(r.id)
+  for (const c of cambios) await db.from('receta_ingredientes').update({ alimento_id: c.despues.id }).eq('id', c.fila.id)
+  const recalc = await recalcularMacrosReceta(db as any, r.id)
+  const peor = nuevosBloqueantes(antes, await bloqueantes(r.id))
+  if (peor.length) {
+    for (const c of cambios) await db.from('receta_ingredientes').update({ alimento_id: c.fila.alimento_id }).eq('id', c.fila.id)
+    await recalcularMacrosReceta(db as any, r.id)
+    return { ok: false, motivo: `enlazar a base dejaba bloqueantes (${peor.join(', ')}); deshecho` }
+  }
+  await db.from('recetas_auditoria').insert({ receta_id: r.id, evento: 'correccion_motor', origen: 'motor_correcciones', issues: { aspecto: 'enlaces_a_base', enlaces_anteriores: cambios.map(c => ({ fila: c.fila.id, alimento_id: c.fila.alimento_id })) } })
+  return { ok: true, detalle: `${cambios.length} enlaces a alimento base (${resumen})${recalc ? ` · ${recalc.kcal} kcal/ración` : ''}` }
+}
+
 // ── Cantidades estimadas: el vídeo solo da el 16 %; el resto se estima con criterio (receta, pasos, raciones, texto original) ──
 let tokensIA = 0
 /** Estima con IA (Claude → GPT → DeepSeek) las cantidades que NO dijo el vídeo («≈»). Nunca toca las dichas; las estimadas siguen marcadas «≈». */
@@ -451,6 +488,7 @@ async function mainAuto() {
     // Solo los reels tienen cantidades estimadas por el sistema; las webs traen las de su receta original y no se tocan (ni cantidades ni raciones)
     const reel = esUrlDeReel(r.url_origen)
     const pasos: [string, () => Promise<Resultado>][] = [
+      ['base', () => reenlazarABase(r)],
       ['enlaces', () => corregirIngredientes(r)],
       ...(reel ? [['cantidades', () => estimarCantidades(r)] as [string, () => Promise<Resultado>]] : []),
       ...(reel ? [['raciones', async () => { const x = await corregirDesdeNota(r, '', ['raciones_kcal']); return !x.ok && x.motivo.includes('no ven nada que cambiar') ? { ok: true, detalle: 'raciones plausibles' } as Resultado : x }] as [string, () => Promise<Resultado>]] : []),
@@ -476,7 +514,22 @@ async function mainAuto() {
   if (!APLICA) console.log('Simulación. Añade --aplica.')
 }
 
+/** Una sola vez sobre todas las fichas en revisión: enlaza a alimentos base lo que apunta a un producto concreto (sin IA). */
+async function mainBase() {
+  const { data, error } = await db.from('recetas').select(SELECT_RECETA).eq('estado', 'en_revision').order('created_at', { ascending: false }).limit(1000)
+  if (error) { console.error(error.message); process.exit(1) }
+  const cola = ((data ?? []) as unknown as Receta[]).filter(r => !SOLO || r.id.startsWith(SOLO))
+  let cambiadas = 0
+  for (const r of cola) {
+    const res = await reenlazarABase(r)
+    if (res.ok && res.detalle !== 'enlaces ya en alimentos base') { cambiadas++; console.log(`\n${r.nombre}\n  ✅ ${res.detalle}`) }
+    else if (!res.ok) console.log(`\n${r.nombre}\n  ⚠️ ${res.motivo}`)
+  }
+  console.log(`\nFichas revisadas: ${cola.length} · con enlaces a base: ${cambiadas}${APLICA ? '' : ' (simulación; añade --aplica)'}`)
+}
+
 async function main() {
+  if (SOLO_BASE) return mainBase()
   if (AUTO) return mainAuto()
   const { data, error } = await db.from('recetas')
     .select('id, nombre, tipo_contenido, familia, categoria, tipo_receta, tipo_plato, kcal, proteinas, tags, notas_coach, porciones, instrucciones, descripcion, consejos, url_origen, raw_scrape, receta_ingredientes!receta_ingredientes_receta_id_fkey(id, nombre_libre, cantidad_gramos, cantidad_original, alimento_id, elaboracion_id, es_opcional, alimentos!left(id, nombre))')
