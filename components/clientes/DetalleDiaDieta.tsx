@@ -33,6 +33,8 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
   const [modo, setModo] = useState<'alimento' | 'postre' | 'plato'>('alimento')
   const [q, setQ] = useState('')
   const [alimentos, setAlimentos] = useState<AlimentoBusqueda[]>([])
+  const [hayMasAlimentos, setHayMasAlimentos] = useState(false)
+  const [verTodoAlimentos, setVerTodoAlimentos] = useState(false)
   const [postres, setPostres] = useState<PostreBusqueda[]>([])
   const [buscando, setBuscando] = useState(false)
   const [elegido, setElegido] = useState<AlimentoBusqueda | null>(null)
@@ -46,9 +48,10 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
     const t = setTimeout(async () => {
       if (modo === 'alimento') {
         if (q.trim().length < 2) { setAlimentos([]); setBuscando(false); return }
-        const res = await fetch(`/api/alimentos?q=${encodeURIComponent(q.trim())}&soloConDatos=true&generico=1`)
-        const data = await res.json().catch(() => [])
-        setAlimentos(Array.isArray(data) ? data.slice(0, 12) : [])
+        const res = await fetch(`/api/alimentos?q=${encodeURIComponent(q.trim())}&soloConDatos=true&selector=1${verTodoAlimentos ? '&todo=1' : ''}`)
+        const data = await res.json().catch(() => null)
+        setAlimentos(Array.isArray(data?.items) ? data.items : [])
+        setHayMasAlimentos(!!data?.hayMas)
       } else {
         const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?franja=${encodeURIComponent(franja)}${modo === 'postre' ? '&postres=1' : '&todas=1'}&q=${encodeURIComponent(q.trim())}`)
         const data = await res.json().catch(() => null)
@@ -57,7 +60,7 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
       setBuscando(false)
     }, 250)
     return () => clearTimeout(t)
-  }, [modo, q, clienteId, franja])
+  }, [modo, q, clienteId, franja, verTodoAlimentos])
 
   async function anadir(body: Record<string, unknown>) {
     setGuardando(true); setError(null)
@@ -86,7 +89,7 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
         </div>
         <div className="relative mb-3">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-          <input autoFocus autoComplete="off" value={q} onChange={e => { setQ(e.target.value); setElegido(null) }} placeholder={modo === 'alimento' ? 'Plátano, yogur, chocolate negro…' : modo === 'plato' ? 'Tostada, arroz, patatas, yogur con granola…' : 'Buscar postre…'} className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
+          <input autoFocus autoComplete="off" value={q} onChange={e => { setQ(e.target.value); setElegido(null); setVerTodoAlimentos(false) }} placeholder={modo === 'alimento' ? 'Plátano, yogur, chocolate negro…' : modo === 'plato' ? 'Tostada, arroz, patatas, yogur con granola…' : 'Buscar postre…'} className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
         </div>
         <label className="flex items-center gap-2 text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>
           <input type="checkbox" checked={ajustar} onChange={e => setAjustar(e.target.checked)} />
@@ -116,7 +119,7 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
                 <span className="text-sm truncate" style={{ color: 'var(--text)' }}>{a.nombre}</span>
                 <span className="text-[13px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(a.calorias)} kcal/100 g</span>
               </button>
-            ))
+            )).concat(hayMasAlimentos && !verTodoAlimentos ? [<button key="ver-mas" onClick={() => setVerTodoAlimentos(true)} className="w-full text-left rounded-xl p-2.5 text-xs" style={{ color: 'var(--primary)' }}>Ver más opciones (marcas y variantes)</button>] : [])
           ) : postres.length === 0 ? (
             <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>{modo === 'plato' ? 'Sin recetas' : 'Sin postres'}</p>
           ) : postres.map(r => (

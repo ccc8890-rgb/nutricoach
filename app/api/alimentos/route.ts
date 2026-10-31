@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { esProductoNoComestible } from '@/lib/scraping/guard-no-comestible'
 import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
+import { rankearParaSelector } from '@/lib/alimentos/ranking-selector'
 
 /**
  * UNIFICADO: La lógica de "qué es no comestible" está únicamente en
@@ -50,6 +51,37 @@ export async function GET(request: NextRequest) {
 
         if (soloConDatos) {
             query = query.gt('calorias', 0)
+        }
+
+        // selector=1: buscador para AÑADIR un alimento (editor de recetas, constructor de dietas): primero los alimentos base,
+        // ordenados por «lo que es la palabra» y con las variantes de marca/envase agrupadas. Devuelve { items, hayMas }.
+        // todo=1 amplía a todo el catálogo; sin la columna es_base (migración sin aplicar) busca en todo igualmente.
+        if (searchParams.get('selector') === '1' && q.trim().length >= 2) {
+            const todo = searchParams.get('todo') === '1'
+            const VISIBLES = todo ? 40 : 5
+            const consulta = (soloBase: boolean) => {
+                let c = supabase.from('alimentos').select('id, nombre, categoria, fuente, calorias, proteinas, carbohidratos, grasas, fibra' + (soloBase ? ', es_base' : '')).eq('es_comestible', true)
+                c = aplicarBusquedaNombre(c, q)
+                if (searchParams.get('soloConDatos') === 'true') c = c.gt('calorias', 0)
+                return soloBase ? c.eq('es_base', true).limit(300) : c.limit(600)
+            }
+            const limpiar = (filas: any[] | null) => (filas ?? []).filter(a => a.nombre && !esProductoNoComestible(a.nombre))
+            const base = await consulta(true)
+            const hayColumna = !base.error
+            let candidatos: any[] = hayColumna ? limpiar(base.data) : []
+            const rankBase = rankearParaSelector(candidatos, q)
+            // el resto del catálogo solo si se pide, si falta la columna o si la base da muy pocas opciones
+            let hayMasQueBase = false
+            if (todo || !hayColumna || rankBase.length < 3) {
+                const resto = limpiar((await consulta(false)).data).filter(a => !candidatos.some(c => c.id === a.id)).map(a => ({ ...a, es_base: false }))
+                candidatos = [...candidatos, ...resto]
+            } else {
+                // ¿hay más fuera de la base? (solo para ofrecer «ver más»)
+                const { count: total } = await aplicarBusquedaNombre(supabase.from('alimentos').select('id', { count: 'exact', head: true }).eq('es_comestible', true), q)
+                hayMasQueBase = (total ?? 0) > candidatos.length
+            }
+            const ranked = rankearParaSelector(candidatos, q)
+            return NextResponse.json({ items: ranked.slice(0, VISIBLES), hayMas: ranked.length > VISIBLES || hayMasQueBase })
         }
 
         // generico=1: búsqueda acotada para añadir un alimento a una comida (la fruta, no «bebida sabor a …»)

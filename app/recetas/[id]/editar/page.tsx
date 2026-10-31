@@ -94,6 +94,8 @@ export default function EditarRecetaPage() {
     const [buscadorAbierto, setBuscadorAbierto] = useState<string | null>(null)
     const [queryAlimento, setQueryAlimento] = useState('')
     const [resultados, setResultados] = useState<Alimento[]>([])
+    const [hayMasAlimentos, setHayMasAlimentos] = useState(false)
+    const [verTodoAlimentos, setVerTodoAlimentos] = useState(false) // «Ver más»: amplía de 5 opciones base a todo el catálogo
     const [resultadosElab, setResultadosElab] = useState<ElaboracionEnlazada[]>([])
     const [buscando, setBuscando] = useState(false)
 
@@ -199,10 +201,12 @@ export default function EditarRecetaPage() {
         const timer = setTimeout(async () => {
             try {
                 const [res, resElab] = await Promise.all([
-                    fetch(`/api/alimentos?q=${encodeURIComponent(queryAlimento)}&custom=all`),
+                    fetch(`/api/alimentos?q=${encodeURIComponent(queryAlimento)}&selector=1${verTodoAlimentos ? '&todo=1' : ''}`),
                     fetch(`/api/recetas/elaboraciones?q=${encodeURIComponent(queryAlimento)}`),
                 ])
-                setResultados(res.ok ? (await res.json()) ?? [] : [])
+                const j = res.ok ? await res.json() : null
+                setResultados(j?.items ?? [])
+                setHayMasAlimentos(!!j?.hayMas)
                 // No se puede enlazar una receta dentro de sí misma
                 setResultadosElab(resElab.ok ? ((await resElab.json()).elaboraciones ?? []).filter((e: ElaboracionEnlazada) => e.id !== id) : [])
             } catch {
@@ -212,7 +216,7 @@ export default function EditarRecetaPage() {
             setBuscando(false)
         }, 300)
         return () => clearTimeout(timer)
-    }, [queryAlimento, id])
+    }, [queryAlimento, id, verTodoAlimentos])
 
     function añadirIngredienteLibre(grupo?: string | null) {
         const nuevo: Ingrediente = { tempId: crypto.randomUUID(), alimento_id: null, nombre_libre: '', cantidad_gramos: 100, grupo: grupo ?? null }
@@ -535,7 +539,7 @@ export default function EditarRecetaPage() {
                                                                 style={{ background: 'transparent', color: 'var(--text)' }}
                                                                 placeholder="Buscar alimento…"
                                                                 value={queryAlimento}
-                                                                onChange={e => setQueryAlimento(e.target.value)}
+                                                                onChange={e => { setQueryAlimento(e.target.value); setVerTodoAlimentos(false) }}
                                                                 autoComplete="off"
                                                             />
                                                             <button onClick={() => { setBuscadorAbierto(null); setQueryAlimento(''); setResultados([]) }} className="px-2" style={{ color: 'var(--text-muted)' }}>
@@ -543,7 +547,7 @@ export default function EditarRecetaPage() {
                                                             </button>
                                                         </div>
                                                         {(resultados.length > 0 || resultadosElab.length > 0 || buscando) && (
-                                                            <div className="absolute z-10 left-0 right-0 mt-1 rounded-lg max-h-40 overflow-y-auto" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                                                            <div className="absolute z-10 left-0 right-0 mt-1 rounded-lg max-h-72 overflow-y-auto" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                                                                 {buscando && <p className="px-3 py-2 text-xs" style={{ color: 'var(--text-muted)' }}>Buscando…</p>}
                                                                 {resultadosElab.map(e => (
                                                                     <button key={e.id} onClick={() => vincularElaboracion(ing.tempId, e)}
@@ -562,6 +566,11 @@ export default function EditarRecetaPage() {
                                                                         <span className="ml-1" style={{ color: 'var(--text-muted)' }}>{a.calorias} kcal/100g</span>
                                                                     </button>
                                                                 ))}
+                                                                {hayMasAlimentos && !verTodoAlimentos && (
+                                                                    <button onClick={() => setVerTodoAlimentos(true)} className="w-full text-left px-3 py-2 text-xs" style={{ color: 'var(--primary)' }}>
+                                                                        Ver más opciones (marcas y variantes)
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
