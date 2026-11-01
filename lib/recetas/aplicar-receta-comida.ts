@@ -257,6 +257,7 @@ export async function aplicarRecetaAComida(
     .from('comidas')
     .update({
       receta_id: receta.id,
+      plato_cliente_id: null, // una receta sustituye al plato propio que hubiera en este hueco
       kcal_target: Math.round(macrosAplicados.kcal + complementos.kcal) || (params.targetKcal ? Math.round(Number(params.targetKcal)) : Math.round(Number(receta.kcal ?? 0)) || null),
       proteinas_target: Math.round(macrosAplicados.proteinas + complementos.p) || null,
       carbos_target: Math.round(macrosAplicados.carbohidratos + complementos.c) || null,

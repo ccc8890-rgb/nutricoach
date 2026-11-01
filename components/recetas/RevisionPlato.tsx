@@ -27,13 +27,14 @@ export default function RevisionPlato({ platoId, onCerrar }: { platoId: string; 
   const [q, setQ] = useState('')
   const [sugeridos, setSugeridos] = useState<Sugerido[]>([])
   const [nota, setNota] = useState('')
+  const [porciones, setPorciones] = useState(1)
   const [dia, setDia] = useState(DIAS[0]); const [franja, setFranja] = useState('Comida'); const [raciones, setRaciones] = useState(1)
 
   const cargar = useCallback(async () => {
     const r = await fetch(`/api/platos/${platoId}`, { cache: 'no-store' })
     if (!r.ok) { setMsg({ tipo: 'error', texto: 'No se pudo cargar el plato' }); return }
     const j = await r.json()
-    setPlato(j.plato); setObjetivo(j.objetivo); setCliente(j.cliente_nombre ?? ''); setSucio(false)
+    setPlato(j.plato); setPorciones(Number(j.plato.porciones) || 1); setObjetivo(j.objetivo); setCliente(j.cliente_nombre ?? ''); setSucio(false)
     setLineas((j.lineas ?? []).map((l: Linea) => ({ nombre_libre: l.nombre_libre, cantidad_gramos: Number(l.cantidad_gramos), alimento_id: l.alimento_id })))
   }, [platoId])
   useEffect(() => { void cargar() }, [cargar])
@@ -51,7 +52,7 @@ export default function RevisionPlato({ platoId, onCerrar }: { platoId: string; 
   async function guardar(): Promise<boolean> {
     setOcupado(true); setMsg(null)
     try {
-      const r = await fetch(`/api/platos/${platoId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lineas }) })
+      const r = await fetch(`/api/platos/${platoId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lineas, porciones }) })
       const j = await r.json()
       if (!r.ok) { setMsg({ tipo: 'error', texto: j.error ?? 'No se pudo guardar' }); return false }
       await cargar(); setMsg({ tipo: 'ok', texto: 'Correcciones guardadas' }); return true
@@ -79,7 +80,9 @@ export default function RevisionPlato({ platoId, onCerrar }: { platoId: string; 
   if (!plato) return <div className="py-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>{msg?.texto ?? 'Cargando…'}</div>
   const pendiente = plato.estado === 'pendiente'
   const aprobado = plato.estado === 'aprobado'
-  const pct = objetivo?.kcal_objetivo ? Math.round((plato.kcal / objetivo.kcal_objetivo) * 100) : null
+  // El % se calcula por ración (lo que el cliente se come), no por el plato entero
+  const porRacion = (v: number) => v / (porciones || 1)
+  const pct = objetivo?.kcal_objetivo ? Math.round((porRacion(plato.kcal) / objetivo.kcal_objetivo) * 100) : null
   const sinEnlazar = lineas.filter(l => !l.alimento_id).length
 
   return (
@@ -93,7 +96,8 @@ export default function RevisionPlato({ platoId, onCerrar }: { platoId: string; 
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{cliente} · {plato.tipo_comida} · {plato.estado}</p>
           {plato.nota_cliente && <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>«{plato.nota_cliente}»</p>}
           <p className="text-sm mt-2 font-mono" style={{ color: 'var(--text)' }}>{Math.round(plato.kcal)} kcal · P {Math.round(plato.proteinas)} · C {Math.round(plato.carbohidratos)} · G {Math.round(plato.grasas)}</p>
-          {pct !== null && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{pct} % de sus {Math.round(objetivo!.kcal_objetivo!)} kcal diarias{objetivo?.proteinas_objetivo ? ` · proteína ${Math.round((plato.proteinas / objetivo.proteinas_objetivo) * 100)} % de su objetivo` : ''}</p>}
+          {pct !== null && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{pct} % de sus {Math.round(objetivo!.kcal_objetivo!)} kcal diarias (por ración){objetivo?.proteinas_objetivo ? ` · proteína ${Math.round((porRacion(plato.proteinas) / objetivo.proteinas_objetivo) * 100)} % de su objetivo` : ''}</p>}
+          {pendiente && <label className="text-xs mt-1 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>Raciones del plato<input type="number" min={0.5} max={12} step={0.5} value={porciones} onChange={e => { setPorciones(Number(e.target.value) || 1); setSucio(true) }} className="w-16 text-sm p-1 text-right" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }} /></label>}
           {plato.incompleto && <p className="text-xs mt-1" style={{ color: 'var(--warning, #b7791f)' }}>{sinEnlazar} ingrediente(s) sin enlazar: enlázalos o quítalos para poder aprobar.</p>}
         </div>
       </div>

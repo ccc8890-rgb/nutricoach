@@ -4,9 +4,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { analizarFotoPlato } from './analizar'
 import { fotoValida } from './entrada'
-import { MAX_ANALISIS_POR_DIA } from './estado'
 import type { TipoComida } from './entrada'
-import { alimentosCache, cargarPlatoDeCliente, contarAnalisisUltimas24h, guardarLineas, type PlatoFila } from './guardar'
+import { alimentosCache, cargarPlatoDeCliente, guardarLineas, reservarAnalisis, type PlatoFila } from './guardar'
 
 export type DepsCrear = {
   db: SupabaseClient
@@ -29,9 +28,8 @@ export async function crearPlatoDesdeFoto(
   const v = fotoValida(p.tipoMime, p.buffer.length)
   if (!v.ok) return { estado: 'foto_invalida', motivo: v.motivo }
 
-  // El límite se comprueba y se anota ANTES de llamar a la IA: así un fallo posterior tampoco permite repetir sin tope
-  if ((await contarAnalisisUltimas24h(deps.db, p.clienteId)) >= MAX_ANALISIS_POR_DIA) return { estado: 'limite' }
-  await deps.db.from('platos_analisis_log').insert({ cliente_id: p.clienteId })
+  // El límite se reserva ANTES de llamar a la IA (y de forma atómica frente a peticiones simultáneas)
+  if (!(await reservarAnalisis(deps.db, p.clienteId))) return { estado: 'limite' }
 
   const url = await deps.subirFoto(p.buffer, p.clienteId)
   const analizar = deps.analizar ?? analizarFotoPlato

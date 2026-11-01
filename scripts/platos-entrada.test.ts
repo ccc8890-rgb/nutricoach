@@ -22,7 +22,7 @@ assert.ok(validarEdicion({}).ok, 'una edición vacía es válida (no cambia nada
 
 // Foto: tipo y tamaño (Review Focus 4)
 assert.equal(fotoValida('text/plain', 100).ok, false)
-assert.equal(fotoValida('image/jpeg', 8 * 1024 * 1024 + 1).ok, false)
+assert.equal(fotoValida('image/jpeg', 4 * 1024 * 1024 + 1).ok, false)
 assert.equal(fotoValida('image/jpeg', 0).ok, false)
 assert.ok(fotoValida('image/heic', 5000).ok)
 assert.ok(fotoValida('image/webp', 5000).ok)

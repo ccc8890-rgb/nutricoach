@@ -3,7 +3,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { FRANJAS } from '@/lib/nutricion/semana-dieta'
 import { materializarComidasRecurrentes } from '@/lib/nutricion/materializar-comidas'
-import type { EntradaDieta } from './dieta'
+import { factorDeActualizacion, lineasParaDieta, type EntradaDieta } from './dieta'
 
 export class ErrorPlatoDieta extends Error {
   constructor(public codigo: 'no_aprobado' | 'sin_plan' | 'sin_ingredientes', mensaje: string) { super(mensaje) }
@@ -17,8 +17,8 @@ export async function anadirPlatoADieta(db: SupabaseClient, p: { platoId: string
   if (!plan) throw new ErrorPlatoDieta('sin_plan', 'El cliente no tiene plan de dieta activo')
 
   const { data: lineas } = await db.from('platos_cliente_ingredientes').select('alimento_id, cantidad_gramos').eq('plato_id', p.platoId)
-  const validas = (lineas ?? []).filter(l => l.alimento_id && Number(l.cantidad_gramos) > 0)
-  if (validas.length === 0 || validas.length !== (lineas ?? []).length) throw new ErrorPlatoDieta('sin_ingredientes', 'El plato tiene ingredientes sin enlazar')
+  const calculo = lineasParaDieta(lineas ?? [], p.raciones, Number(plato.porciones || 1))
+  if (!calculo.ok) throw new ErrorPlatoDieta('sin_ingredientes', calculo.motivo)
 
   await materializarComidasRecurrentes(db, plan.id)
   const { data: delDia } = await db.from('comidas').select('id, nombre').eq('plan_id', plan.id).eq('dia_semana', p.dia)
@@ -33,10 +33,31 @@ export async function anadirPlatoADieta(db: SupabaseClient, p: { platoId: string
     await db.from('comida_alimentos').delete().eq('comida_id', comidaId)
   }
 
-  const factor = p.raciones / Number(plato.porciones || 1)
-  const filas = validas.map(l => ({ comida_id: comidaId!, alimento_id: l.alimento_id as string, cantidad_gramos: Math.round(Number(l.cantidad_gramos) * factor * 10) / 10 }))
-  const { error: errAl } = await db.from('comida_alimentos').insert(filas)
+  const { error: errAl } = await db.from('comida_alimentos').insert(calculo.filas.map(f => ({ comida_id: comidaId!, ...f })))
   if (errAl) throw new Error('No se pudieron añadir los ingredientes')
   await db.from('comidas').update({ receta_id: null, plato_cliente_id: p.platoId }).eq('id', comidaId)
   return { comidaId: comidaId! }
+}
+
+/**
+ * El coach ha aprobado una versión nueva de un plato que ya está en la dieta: se reescriben esas comidas con los ingredientes nuevos,
+ * conservando las raciones que tenía cada una. `gramosVersionAnterior` = suma de gramos de la versión aprobada antes de este cambio.
+ */
+export async function actualizarComidasDePlato(db: SupabaseClient, platoId: string, gramosVersionAnterior: number): Promise<number> {
+  const { data: comidas } = await db.from('comidas').select('id').eq('plato_cliente_id', platoId)
+  if (!comidas?.length) return 0
+  const { data: plato } = await db.from('platos_cliente').select('porciones').eq('id', platoId).maybeSingle()
+  const { data: lineas } = await db.from('platos_cliente_ingredientes').select('alimento_id, cantidad_gramos').eq('plato_id', platoId)
+  let actualizadas = 0
+  for (const c of comidas) {
+    const { data: actuales } = await db.from('comida_alimentos').select('cantidad_gramos').eq('comida_id', c.id)
+    const gramosComida = (actuales ?? []).reduce((n, a) => n + Number(a.cantidad_gramos || 0), 0)
+    const factor = factorDeActualizacion(gramosComida, gramosVersionAnterior, Number(plato?.porciones || 1))
+    const nuevas = lineasParaDieta(lineas ?? [], factor * Number(plato?.porciones || 1), Number(plato?.porciones || 1))
+    if (!nuevas.ok) continue
+    await db.from('comida_alimentos').delete().eq('comida_id', c.id)
+    await db.from('comida_alimentos').insert(nuevas.filas.map(f => ({ comida_id: c.id, ...f })))
+    actualizadas++
+  }
+  return actualizadas
 }

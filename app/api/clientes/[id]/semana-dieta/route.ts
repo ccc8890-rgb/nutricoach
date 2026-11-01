@@ -9,6 +9,7 @@ import { aplicarBusquedaNombre } from '@/lib/recetas/busqueda'
 
 type ComidaFila = {
   id: string; nombre: string; dia_semana: string | null; orden: number; receta_id: string | null
+  plato?: { nombre: string } | { nombre: string }[] | null
   receta: { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null } | null
   comida_alimentos: { cantidad_gramos: number; alimento: { calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[]
 }
@@ -93,12 +94,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ recetas: enriquecidas, variedad })
   }
 
-  const [{ data: comidas, error }, { data: cliente, error: clienteError }] = await Promise.all([
-    admin.from('comidas')
-      .select('id, nombre, dia_semana, orden, receta_id, receta:recetas(id, nombre, imagen_url, contenido_estado, verificacion), comida_alimentos(cantidad_gramos, alimento:alimentos(calorias, proteinas, carbohidratos, grasas))')
-      .eq('plan_id', plan.id),
+  const COLS_COMIDA = 'id, nombre, dia_semana, orden, receta_id, receta:recetas(id, nombre, imagen_url, contenido_estado, verificacion), comida_alimentos(cantidad_gramos, alimento:alimentos(calorias, proteinas, carbohidratos, grasas))'
+  const [conPlato, { data: cliente, error: clienteError }] = await Promise.all([
+    // «Mis platos»: el nombre del plato propio que ocupa el hueco. Si la columna aún no existe (migración sin aplicar), se pide sin él.
+    admin.from('comidas').select(`${COLS_COMIDA}, plato:platos_cliente(nombre)`).eq('plan_id', plan.id),
     admin.from('clientes').select('comidas_dia').eq('id', clienteId).single(),
   ])
+  const sinPlato = conPlato.error ? await admin.from('comidas').select(COLS_COMIDA).eq('plan_id', plan.id) : null
+  const comidas = sinPlato ? sinPlato.data : conPlato.data
+  const error = sinPlato ? sinPlato.error : null
   if (error) return NextResponse.json({ error: 'Error cargando comidas' }, { status: 500 })
   if (clienteError) return NextResponse.json({ error: 'Error cargando cliente' }, { status: 500 })
 
@@ -106,7 +110,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const dias = DIAS_SEMANA.map((dia, i) => {
     const delDia = comidasDelDia(filas, i).map(c => {
       const m = macros(c)
-      return { id: c.id, nombre: c.nombre, recurrente: !c.dia_semana, receta: c.receta, kcal: Math.round(m.kcal), p: Math.round(m.p), c: Math.round(m.c), g: Math.round(m.g) }
+      const plato = Array.isArray(c.plato) ? c.plato[0] : c.plato
+      return { id: c.id, nombre: c.nombre, recurrente: !c.dia_semana, receta: c.receta, plato_nombre: plato?.nombre ?? null, kcal: Math.round(m.kcal), p: Math.round(m.p), c: Math.round(m.c), g: Math.round(m.g) }
     })
     const total = delDia.reduce((a, c) => ({ kcal: a.kcal + c.kcal, p: a.p + c.p, c: a.c + c.c, g: a.g + c.g }), { kcal: 0, p: 0, c: 0, g: 0 })
     return { dia, comidas: delDia, total }

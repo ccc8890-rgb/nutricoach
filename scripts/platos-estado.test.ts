@@ -22,6 +22,10 @@ assert.deepEqual(vistaPublica({ ...base, estado: 'aprobado', aprobado_snapshot: 
 assert.equal(vistaPublica({ ...nuevo, estado: 'borrador', aprobado_snapshot: null }), null)
 assert.equal(vistaPublica({ ...nuevo, estado: 'pendiente', aprobado_snapshot: null }), null, 'pendiente sin snapshot no se enseña como plato')
 
+// Un plato devuelto tras editar un aprobado sigue enseñando la versión aprobada (Final #1)
+assert.deepEqual(vistaPublica({ ...nuevo, estado: 'devuelto', aprobado_snapshot: base }), base, 'devuelto con snapshot sigue enseñando lo aprobado')
+assert.equal(vistaPublica({ ...nuevo, estado: 'devuelto', aprobado_snapshot: null }), null, 'devuelto sin snapshot no se enseña')
+
 // Aprobar exige líneas enlazadas
 assert.equal(puedeAprobar({ lineas: [] }).ok, false)
 assert.equal(puedeAprobar({ lineas: [{ alimento_id: null, cantidad_gramos: 100 }] }).ok, false)
@@ -29,7 +33,7 @@ assert.equal(puedeAprobar({ lineas: [{ alimento_id: 'a', cantidad_gramos: 100 },
 assert.equal(puedeAprobar({ lineas: [{ alimento_id: 'a', cantidad_gramos: 100 }] }).ok, true)
 
 assert.equal(MAX_ANALISIS_POR_DIA, 10)
-assert.equal(MAX_FOTO_BYTES, 8 * 1024 * 1024)
+assert.equal(MAX_FOTO_BYTES, 4 * 1024 * 1024, 'Vercel corta el cuerpo a ~4,5 MB')
 assert.ok(TIPOS_FOTO.includes('image/jpeg'))
 
 console.log('platos-estado OK')

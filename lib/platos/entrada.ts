@@ -57,7 +57,7 @@ export function validarEdicion(body: unknown): { ok: true; valor: EdicionPlato }
 export function fotoValida(tipo: string, bytes: number): { ok: true } | { ok: false; motivo: string } {
   if (!(TIPOS_FOTO as readonly string[]).includes(tipo)) return { ok: false, motivo: 'Formato de imagen no permitido' }
   if (bytes <= 0) return { ok: false, motivo: 'El archivo está vacío' }
-  if (bytes > MAX_FOTO_BYTES) return { ok: false, motivo: 'La foto supera los 8 MB' }
+  if (bytes > MAX_FOTO_BYTES) return { ok: false, motivo: 'La foto supera los 4 MB' }
   return { ok: true }
 }
 

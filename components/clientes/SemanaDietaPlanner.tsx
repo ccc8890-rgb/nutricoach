@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/Toast'
 import { GuardarPlantillaModal, ListaPlantillasModal, type PlantillaSemana, type SemanaPlantilla } from './PlantillasSemanaDieta'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
-type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta | null; kcal: number; p: number; c: number; g: number }
+type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta | null; plato_nombre?: string | null; kcal: number; p: number; c: number; g: number }
 type Total = { kcal: number; p: number; c: number; g: number }
 type Dia = { dia: string; comidas: Comida[]; total: Total }
 type Plan = { id: string; nombre: string; kcal_objetivo: number | null; proteinas_objetivo: number | null; carbohidratos_objetivo: number | null; grasas_objetivo: number | null }
@@ -107,7 +107,7 @@ function SemanaResumen({ dias, kcalObjetivo, objetivos, semana, diaSel, onDia, r
                   return (
                     <span key={c.id} className="block text-[13px] leading-snug line-clamp-2 break-words" title={`${c.nombre}: ${c.receta?.nombre ?? 'Sin receta'}${veces > 1 ? ` · se repite ${veces} veces` : ''}`}
                       style={{ color: veces > 1 ? 'var(--warning)' : 'var(--text)' }}>
-                      {veces > 1 ? '↻ ' : ''}{c.receta?.nombre ?? 'Sin receta'}
+                      {veces > 1 ? '↻ ' : ''}{c.receta?.nombre ?? (c.plato_nombre ? `Mi plato · ${c.plato_nombre}` : 'Sin receta')}
                     </span>
                   )
                 })}
@@ -212,7 +212,7 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
                       </div>
                     </div>
                     <button className={`${T.nombre} font-medium text-left mt-0.5 w-full`} style={{ color: 'var(--text)' }} onClick={() => onHueco({ dia: d.dia, franja: c.nombre, semana })}>
-                      {c.receta?.nombre ?? 'Sin receta'}
+                      {c.receta?.nombre ?? (c.plato_nombre ? `Mi plato · ${c.plato_nombre}` : 'Sin receta')}
                     </button>
                     <p className={`${T.macros} mt-0.5`} style={{ color: 'var(--text-muted)' }}>{c.kcal} · P{c.p} C{c.c} G{c.g}</p>
                   </PlatoArrastrable>

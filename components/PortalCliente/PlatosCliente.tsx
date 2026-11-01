@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { Camera, Plus } from '@/components/icons/portal-lucide'
+import { reducirFoto } from '@/lib/platos/reducir-foto'
 import EditorPlato, { type PlatoDetalle } from './EditorPlato'
 
 type PlatoResumen = {
@@ -40,7 +41,7 @@ export default function PlatosCliente({ codigo, abrirId, onAbierto }: { codigo: 
   async function subir(file: File) {
     setSubiendo(true); setError(null); setAviso(null)
     const fd = new FormData()
-    fd.append('foto', file); fd.append('tipo_comida', tipo); if (nota.trim()) fd.append('nota', nota.trim())
+    fd.append('foto', await reducirFoto(file)); fd.append('tipo_comida', tipo); if (nota.trim()) fd.append('nota', nota.trim())
     try {
       const r = await fetch(`/api/cliente/${codigo}/platos`, { method: 'POST', body: fd })
       const j = await r.json()

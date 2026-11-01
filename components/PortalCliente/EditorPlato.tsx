@@ -25,6 +25,7 @@ export default function EditorPlato({ codigo, platoId, aviso, onVolver }: { codi
   const [lineas, setLineas] = useState<Linea[]>([])
   const [nombre, setNombre] = useState('')
   const [pasos, setPasos] = useState('')
+  const [porciones, setPorciones] = useState(1)
   const [sucio, setSucio] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,7 +33,7 @@ export default function EditorPlato({ codigo, platoId, aviso, onVolver }: { codi
 
   function aplicar(p: PlatoDetalle, l: Linea[]) {
     setPlato(p); setLineas(l.map(x => ({ nombre_libre: x.nombre_libre, cantidad_gramos: Number(x.cantidad_gramos), alimento_id: x.alimento_id })))
-    setNombre(p.nombre); setPasos(p.pasos ?? ''); setSucio(false)
+    setNombre(p.nombre); setPasos(p.pasos ?? ''); setPorciones(Number(p.porciones) || 1); setSucio(false)
   }
   useEffect(() => {
     let vivo = true
@@ -45,7 +46,7 @@ export default function EditorPlato({ codigo, platoId, aviso, onVolver }: { codi
     try {
       const r = await fetch(`/api/cliente/${codigo}/platos/${platoId}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, pasos, lineas: lineas.filter(l => l.nombre_libre.trim().length >= 2) }),
+        body: JSON.stringify({ nombre, pasos, porciones, lineas: lineas.filter(l => l.nombre_libre.trim().length >= 2) }),
       })
       const j = await r.json()
       if (!r.ok) { setError(j.error ?? 'No se pudo guardar'); return false }
@@ -92,8 +93,14 @@ export default function EditorPlato({ codigo, platoId, aviso, onVolver }: { codi
       <input value={nombre} onChange={e => { setNombre(e.target.value); setSucio(true) }} maxLength={80} placeholder="Nombre del plato" aria-label="Nombre del plato"
         className="text-lg font-semibold p-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }} />
 
+      <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+        Raciones que salen de este plato
+        <input type="number" min={0.5} max={12} step={0.5} value={porciones} onChange={e => { setPorciones(Number(e.target.value) || 1); setSucio(true) }}
+          className="w-16 text-sm p-1 text-right" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }} />
+      </label>
+
       <div>
-        <p className="editorial-kicker">{plato.estimado ? 'Valores estimados' : 'Valores'}</p>
+        <p className="editorial-kicker">{plato.estimado ? 'Valores estimados' : 'Valores'}{porciones > 1 ? ' · plato entero' : ''}</p>
         <p className="font-mono text-sm mt-1" style={{ color: 'var(--text)' }}>
           {Math.round(plato.kcal)} kcal · P {Math.round(plato.proteinas)} · C {Math.round(plato.carbohidratos)} · G {Math.round(plato.grasas)}
         </p>

@@ -25,3 +25,24 @@ export function validarRevision(body: unknown): { ok: true; valor: { accion: 'ap
   }
   return { ok: false, motivo: 'Acción no válida' }
 }
+
+/**
+ * Filas de `comida_alimentos` para un plato aprobado. Las líneas a 0 g no cuentan (p. ej. «sal al gusto»); una línea sin enlazar sí impide
+ * añadirlo, porque sus macros no existirían. Cantidad = gramos × raciones / porciones del plato.
+ */
+export function lineasParaDieta(
+  lineas: { alimento_id: string | null; cantidad_gramos: number }[],
+  raciones: number,
+  porciones: number,
+): { ok: true; filas: { alimento_id: string; cantidad_gramos: number }[] } | { ok: false; motivo: string } {
+  if (lineas.some(l => !l.alimento_id)) return { ok: false, motivo: 'El plato tiene ingredientes sin enlazar' }
+  const factor = raciones / (porciones || 1)
+  const filas = lineas.filter(l => Number(l.cantidad_gramos) > 0).map(l => ({ alimento_id: l.alimento_id as string, cantidad_gramos: Math.round(Number(l.cantidad_gramos) * factor * 10) / 10 }))
+  if (filas.length === 0) return { ok: false, motivo: 'El plato no tiene ingredientes con cantidad' }
+  return { ok: true, filas }
+}
+
+/** Al re-aprobar un plato, cada comida ya creada conserva su proporción de raciones: gramos actuales de la comida ÷ gramos de la versión anterior. */
+export function factorDeActualizacion(gramosComida: number, gramosVersionAnterior: number, porciones: number): number {
+  return gramosComida > 0 && gramosVersionAnterior > 0 ? gramosComida / gramosVersionAnterior : 1 / (porciones || 1)
+}

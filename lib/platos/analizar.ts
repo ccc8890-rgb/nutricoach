@@ -20,9 +20,6 @@ export function validarAnalisisPlato(crudo: unknown): { ok: true; valor: Analisi
   if (nombre.length < 2 || nombre.length > 80) return { ok: false, motivo: 'Nombre no válido' }
   if (PROHIBIDO.test(nombre)) return { ok: false, motivo: 'Nombre con texto no permitido' }
 
-  const porcionesCruda = o.porciones === undefined ? 1 : Number(o.porciones)
-  if (!Number.isFinite(porcionesCruda) || porcionesCruda < 1 || porcionesCruda > 12) return { ok: false, motivo: 'Raciones no válidas' }
-
   if (!Array.isArray(o.ingredientes) || o.ingredientes.length < 1 || o.ingredientes.length > 25) return { ok: false, motivo: 'Número de ingredientes no válido' }
   const ingredientes: AnalisisPlato['ingredientes'] = []
   for (const i of o.ingredientes) {
@@ -41,13 +38,14 @@ export function validarAnalisisPlato(crudo: unknown): { ok: true; valor: Analisi
     if (!t || t.length > 300 || PROHIBIDO.test(t)) return { ok: false, motivo: 'Paso no válido' }
     pasos.push(t)
   }
-  return { ok: true, valor: { nombre, porciones: porcionesCruda, ingredientes, pasos } }
+  // Una foto es un plato servido = 1 ración; las raciones las ajustan después el cliente o el coach, no el modelo
+  return { ok: true, valor: { nombre, porciones: 1, ingredientes, pasos } }
 }
 
 export function construirPromptPlato(nota: string | null): { sistema: string; usuario: string } {
   const sistema = [
     'Eres un dietista que identifica platos caseros a partir de una foto. Responde SOLO con un objeto JSON con esta forma:',
-    '{"nombre": string, "porciones": number, "ingredientes": [{"nombre": string, "gramos": number}], "pasos": [string]}',
+    '{"nombre": string, "ingredientes": [{"nombre": string, "gramos": number}], "pasos": [string]}',
     'Reglas: español de España; nombres de ingredientes genéricos y sin marcas (por ejemplo «Huevo», «Patata», «Aceite de oliva»);',
     'gramos de lo que se ve en el plato servido, en crudo salvo que sea evidente que va cocinado; máximo 12 pasos cortos.',
     'No inventes elementos que no se ven en la foto ni cantidades exageradas; si dudas de un ingrediente, déjalo fuera.',

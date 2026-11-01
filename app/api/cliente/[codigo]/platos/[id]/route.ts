@@ -70,6 +70,7 @@ export async function DELETE(request: NextRequest, { params }: Ctx) {
   const plato = await cargarPlatoDeCliente(db, auth.clienteId, id)
   if (!plato) return NO_ENCONTRADO()
   if (plato.estado !== 'borrador' && plato.estado !== 'devuelto') return NextResponse.json({ error: 'Solo se pueden borrar borradores o platos devueltos' }, { status: 409 })
+  if (plato.aprobado_snapshot) return NextResponse.json({ error: 'Este plato ya fue aprobado por tu coach y puede estar en tu dieta: corrígelo y vuelve a enviarlo en lugar de borrarlo' }, { status: 409 })
   await db.from('platos_cliente').delete().eq('id', id).eq('cliente_id', auth.clienteId)
   return NextResponse.json({ ok: true })
 }

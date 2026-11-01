@@ -4,7 +4,7 @@
 export type EstadoPlato = 'borrador' | 'pendiente' | 'aprobado' | 'devuelto'
 
 export const MAX_ANALISIS_POR_DIA = 10
-export const MAX_FOTO_BYTES = 8 * 1024 * 1024
+export const MAX_FOTO_BYTES = 4 * 1024 * 1024 // Vercel corta el cuerpo de la petición a ~4,5 MB
 export const TIPOS_FOTO = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'] as const
 
 export type VistaPlato = {
@@ -36,7 +36,8 @@ export function vistaPublica(p: VistaPlato & { estado: EstadoPlato; aprobado_sna
   if (p.estado === 'aprobado') {
     return { nombre: p.nombre, kcal: p.kcal, proteinas: p.proteinas, carbohidratos: p.carbohidratos, grasas: p.grasas, ingredientes: p.ingredientes, estimado: p.estimado }
   }
-  if (p.estado === 'pendiente' && p.aprobado_snapshot) return p.aprobado_snapshot
+  // Pendiente o devuelto tras editar un aprobado: sigue valiendo la versión aprobada hasta que el coach apruebe la nueva
+  if ((p.estado === 'pendiente' || p.estado === 'devuelto') && p.aprobado_snapshot) return p.aprobado_snapshot
   return null
 }
 

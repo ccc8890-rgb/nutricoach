@@ -14,6 +14,8 @@ assert.equal(validarAnalisisPlato({ ...valido, pasos: ['Mira https://spam.exampl
 const v = validarAnalisisPlato({ ...valido, porciones: undefined })
 assert.ok(v.ok && v.valor.porciones === 1, 'porciones por defecto 1')
 assert.ok(validarAnalisisPlato(valido).ok)
+const dos = validarAnalisisPlato({ ...valido, porciones: 2 })
+assert.ok(dos.ok && dos.valor.porciones === 1, 'la IA no decide las raciones: una foto es un plato = 1 ración (Final #2)')
 
 // Prompt: JSON, español, sin inventar
 const pr = construirPromptPlato('lo como casi a diario')

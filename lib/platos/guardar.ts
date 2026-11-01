@@ -6,6 +6,7 @@ import { calcularMacrosPlato } from './macros'
 import { enlazarSoloExistente, type AlimentoCache } from './enlazar'
 import type { EstadoPlato } from './estado'
 import type { LineaEntrada } from './entrada'
+import { MAX_ANALISIS_POR_DIA } from './estado'
 
 export type PlatoFila = {
   id: string; cliente_id: string; nombre: string; tipo_comida: string; nota_cliente: string | null; estado: EstadoPlato
@@ -72,8 +73,18 @@ export async function recalcularYGuardar(db: SupabaseClient, clienteId: string, 
     .eq('id', platoId).eq('cliente_id', clienteId)
 }
 
-export async function contarAnalisisUltimas24h(db: SupabaseClient, clienteId: string): Promise<number> {
+/**
+ * Reserva un análisis del día: se APUNTA primero y se cuenta después, así peticiones simultáneas no pueden pasarse del tope
+ * (con «contar y luego apuntar», 25 a la vez veían todas 0). Si no cabe, devuelve la reserva y responde false. Falla cerrado.
+ */
+export async function reservarAnalisis(db: SupabaseClient, clienteId: string): Promise<boolean> {
+  const { data: fila, error } = await db.from('platos_analisis_log').insert({ cliente_id: clienteId }).select('id').single()
+  if (error || !fila) return false
   const desde = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
-  const { count } = await db.from('platos_analisis_log').select('id', { count: 'exact', head: true }).eq('cliente_id', clienteId).gte('created_at', desde)
-  return count ?? 0
+  const { count, error: errCuenta } = await db.from('platos_analisis_log').select('id', { count: 'exact', head: true }).eq('cliente_id', clienteId).gte('created_at', desde)
+  if (errCuenta || (count ?? 0) > MAX_ANALISIS_POR_DIA) {
+    await db.from('platos_analisis_log').delete().eq('id', fila.id)
+    return false
+  }
+  return true
 }
