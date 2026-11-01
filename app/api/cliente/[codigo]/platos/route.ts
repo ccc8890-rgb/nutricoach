@@ -5,7 +5,7 @@ import { crearPlatoDesdeFoto } from '@/lib/platos/crear'
 import { depsReales } from '@/lib/platos/deps-reales'
 import { TIPOS_COMIDA, construirVista, type TipoComida } from '@/lib/platos/entrada'
 import { vistaPublica, type EstadoPlato, type VistaPlato } from '@/lib/platos/estado'
-import { cargarLineas, listarPlatosDeCliente } from '@/lib/platos/guardar'
+import { cargarLineas, cargarPlatoDeCliente, listarPlatosDeCliente } from '@/lib/platos/guardar'
 
 export const maxDuration = 60
 
@@ -21,7 +21,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (auth instanceof NextResponse) return auth
   const db = createServiceSupabase()
   try {
-    const recetario = new URL(request.url).searchParams.get('vista') === 'recetario'
+    const vistaParam = new URL(request.url).searchParams.get('vista')
+    // «En tu plan»: los platos que el coach ha metido en la dieta (comidas con plato_cliente_id del plan activo)
+    if (vistaParam === 'plan') {
+      const { data: comidas } = await db.from('comidas').select('plato_cliente_id, nombre, dia_semana').eq('plan_id', auth.planId).not('plato_cliente_id', 'is', null)
+      const huecos = new Map<string, string[]>()
+      for (const c of comidas ?? []) huecos.set(c.plato_cliente_id, [...(huecos.get(c.plato_cliente_id) ?? []), [c.dia_semana, c.nombre].filter(Boolean).join(' · ')])
+      const enPlan: (VistaPlato & { id: string; foto: string | null; huecos: string[] })[] = []
+      for (const [platoId, h] of huecos) {
+        const p = await cargarPlatoDeCliente(db, auth.clienteId, platoId)
+        if (!p) continue
+        const vista = vistaPublica({ ...construirVista(p, await cargarLineas(db, p.id)), estado: p.estado, aprobado_snapshot: (p.aprobado_snapshot as VistaPlato | null) ?? null })
+        if (vista) enPlan.push({ ...vista, id: p.id, foto: p.foto_limpia_url ?? p.foto_original_url, huecos: h })
+      }
+      return NextResponse.json({ platos: enPlan })
+    }
+    const recetario = vistaParam === 'recetario'
     const estados = recetario ? (['aprobado', 'pendiente'] as EstadoPlato[]) : auth.esCliente ? ESTADOS : ESTADOS.filter(e => e !== 'borrador')
     const platos = await listarPlatosDeCliente(db, auth.clienteId, estados)
     if (!recetario) return NextResponse.json({ platos })

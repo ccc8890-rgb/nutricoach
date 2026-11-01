@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState, Suspense, type ComponentType } from 'react'
+import { useCallback, useEffect, useRef, useState, Suspense, type ComponentType } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -50,6 +50,8 @@ const MiPlan = aislar(MiPlanEstatico)
 const EntrenoSubTabs = aislar(EntrenoSubTabsEstatico)
 const ListaCompraPortal = aislar(dynamic(() => import('@/components/PortalCliente/ListaCompraPortal')))
 const MisPlatos = aislar(dynamic(() => import('@/components/PortalCliente/MisPlatos')))
+const PlatosCliente = aislar(dynamic(() => import('@/components/PortalCliente/PlatosCliente')))
+const PlatosMarcados = aislar(dynamic(() => import('@/components/PortalCliente/PlatosMarcados')))
 const RecetarioExplorador = aislar(RecetarioExploradorEstatico)
 const RecetasFavoritas = aislar(RecetasFavoritasEstatico)
 const ChatPanel = aislar(dynamic(() => import('@/components/PortalCliente/ChatPanel')))
@@ -187,7 +189,10 @@ function PortalClientePageContent() {
     return TABS_VALIDOS.includes(tabParam as Tab) ? (tabParam as Tab) : 'hoy'
   })
   // En la URL (no en estado local): al volver desde una receta reaparece «Archivo completo», no «En tu plan»
-  const [subRecetas, setSubRecetas] = useEstadoUrl<'plan' | 'recetario' | 'favoritas' | null>('sub', null, ['plan', 'recetario', 'favoritas'])
+  const [subRecetas, setSubRecetas] = useEstadoUrl<'plan' | 'recetario' | 'favoritas' | 'platos' | null>('sub', null, ['plan', 'recetario', 'favoritas', 'platos'])
+  // «Mis platos»: id del plato que se abre al tocarlo desde «En tu plan» o «Archivo completo» (estado local: no sale de la pestaña)
+  const [platoAbrir, setPlatoAbrir] = useState<string | null>(null)
+  const abrirPlato = useCallback((id: string) => { setPlatoAbrir(id); setSubRecetas('platos') }, [setSubRecetas])
   const [vistaPlan, setVistaPlan] = useState<'lista' | 'cuadricula'>('lista')
   useEffect(() => {
     try {
@@ -600,7 +605,7 @@ function PortalClientePageContent() {
                     <IndustrialTabs
                       ariaLabel="Vista de recetas"
                       activeKey={activa}
-                      items={[{ key: 'plan', label: 'En tu plan' }, { key: 'favoritas', label: 'Favoritas' }, { key: 'recetario', label: 'Archivo completo' }]}
+                      items={[{ key: 'plan', label: 'En tu plan' }, { key: 'favoritas', label: 'Favoritas' }, { key: 'platos', label: 'Mis platos' }, { key: 'recetario', label: 'Archivo completo' }]}
                       onChange={setSubRecetas}
                     />
                   )
@@ -684,6 +689,7 @@ function PortalClientePageContent() {
                     {recetasDelPlan().length === 0 && (
                       <EmptyState icon={BookOpenText} text="Aún no tienes recetas en tu plan. Mira el recetario completo." />
                     )}
+                    <PlatosMarcados codigo={codigo} vista="plan" onAbrir={abrirPlato} />
                     <MisPlatos codigo={codigo} clienteId={cliente.id} />
                   </>
                 )}
@@ -692,8 +698,15 @@ function PortalClientePageContent() {
                   <RecetasFavoritas codigo={codigo} recetaHref={recetaHref} />
                 )}
 
+                {subRecetas === 'platos' && (
+                  <PlatosCliente codigo={codigo} abrirId={platoAbrir} onAbierto={() => setPlatoAbrir(null)} />
+                )}
+
                 {(subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')) === 'recetario' && (
-                  <RecetarioExplorador codigo={codigo} recetaHref={recetaHref} />
+                  <>
+                    <PlatosMarcados codigo={codigo} vista="recetario" onAbrir={abrirPlato} />
+                    <RecetarioExplorador codigo={codigo} recetaHref={recetaHref} />
+                  </>
                 )}
               </>
             ) : (
