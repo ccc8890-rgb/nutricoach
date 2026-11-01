@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { vinculoParaReceta, esSubReceta } from '@/lib/alimentos/vinculo-receta'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
@@ -667,7 +668,13 @@ function puntuarCandidato(
 // ──────────────────────────────────────────────
 // Helper: match ingredient name to alimentos table
 // ──────────────────────────────────────────────
-async function matchIngredient(
+// Las recetas enlazan a alimentos básicos: se descarta el resultado si es un producto elaborado, de marca o la línea es otra preparación
+async function matchIngredient(supabaseService: any, nombre: string): Promise<{ id: string; nombre: string } | null> {
+  const r = await matchIngredientBruto(supabaseService, nombre)
+  return r && vinculoParaReceta(nombre, r).ok ? r : null
+}
+
+async function matchIngredientBruto(
   supabaseService: any,
   nombre: string
 ): Promise<{ id: string; nombre: string } | null> {
@@ -814,6 +821,7 @@ async function autoCrearAlimento(
   supabaseService: any,
   nombre: string
 ): Promise<{ id: string; nombre: string } | null> {
+  if (esSubReceta(nombre)) return null // otra preparación, no un ingrediente: no se crea un alimento con su nombre
   const q = nombre.toLowerCase().trim()
   if (q.length < 3) return null
 
