@@ -21,7 +21,7 @@ const STOP = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'con', 'sin', 'y', 
 const IGNORABLES = new Set(['botella', 'tarro', 'lata', 'caja', 'paquete', 'frasco', 'bandeja', 'bolsa', 'sobre', 'bote', 'doble', 'casero', 'casera', 'pack', 'lonchas', 'loncha', 'barra', 'rodajas', 'rodaja'])
 // Si el ingrediente lleva alguna de estas palabras y el alimento no, siguen siendo lo mismo (forma, variedad o corte)
 const FORMAS_SEGURAS = new Set(['fresco', 'fresca', 'picado', 'picada', 'molido', 'molida', 'rallado', 'rallada', 'troceado', 'troceada', 'maduro', 'madura',
-  'zumo', 'persa', 'roma', 'cherry', 'baby', 'kosher', 'marina', 'fina', 'gruesa', 'tierno', 'tierna', 'crudo', 'cruda', 'ralladura'])
+  'zumo', 'persa', 'roma', 'cherry', 'baby', 'kosher', 'marina', 'fina', 'gruesa', 'tierno', 'tierna', 'crudo', 'cruda', 'ralladura', 'deshuesado', 'deshuesados', 'deshuesada', 'deshuesadas'])
 // Matices que el alimento puede añadir sin dejar de ser lo mismo
 const MATICES_OK = new Set(['dulce', 'negra', 'negro', 'blanco', 'blanca', 'rojo', 'roja', 'verde', 'amarillo', 'amarilla', 'virgen', 'vera', 'molida', 'molido', 'picante',
   'ahumado', 'ahumada', 'tostado', 'tostada', 'hueso', 'maxi', 'sal', 'estilo', 'japones', 'natural', 'brote', 'brotes', 'fresco', 'fresca', 'crudo', 'cruda', 'tierno', 'tierna', 'maduro', 'madura'])
@@ -46,7 +46,19 @@ function partes(s: string) {
   return { principal: tokensDe(s.replace(/\([^)]*\)/g, ' ')), aclaracion: tokensDe(paren) }
 }
 
+/** El texto del ingrediente y el alimento dicen lo contrario en algo que cambia las kcal (con/sin piel, crudo/cocido). */
+function contradiceEstado(libre: string, alimento: string): boolean {
+  const l = quitarAcentos(libre), a = quitarAcentos(alimento)
+  if (/\bsin piel\b/.test(l) && /\bcon piel\b/.test(a)) return true
+  if (/\bcon piel\b/.test(l) && /\bsin piel\b/.test(a)) return true
+  const cocido = /\b(cocid|cocinad|hervid)/, crudo = /\bcrud/
+  if (cocido.test(l) && crudo.test(a) && !cocido.test(a)) return true
+  if (crudo.test(l) && cocido.test(a) && !crudo.test(a)) return true
+  return false
+}
+
 function calidadUnaAlternativa(libre: string, alimento: string): CalidadVinculo {
+  if (contradiceEstado(libre, alimento)) return 'dudosa'
   const l = partes(libre), a = partes(alimento)
   const L = new Set(l.principal.filter(t => !IGNORABLES.has(t)))
   const A = new Set(a.principal.filter(t => !IGNORABLES.has(t)))

@@ -175,3 +175,10 @@ assert.equal(simplificarNombre('Pan integral'), 'pan integral')
 assert.equal(simplificarNombre('cebolla picada para decorar'), 'cebolla')
 
 console.log('reconstruccion-segura OK')
+
+// El texto dice «sin piel» o «cocida» y el alimento lo contradice (Dak Bulgogi: 200 kcal en vez de ~150)
+assert.equal(q('Muslos de pollo deshuesados sin piel', 'Muslos de pollo deshuesados con piel'), 'dudosa')
+assert.equal(q('Muslos de pollo deshuesados sin piel', 'Muslo de pollo sin piel'), 'buena')
+assert.equal(q('Patata cocida', 'Patata cruda'), 'dudosa')
+assert.equal(q('Remolacha cruda', 'Remolacha cocida y pelada'), 'dudosa')
+assert.equal(q('Pechuga de pollo', 'Pechuga de pollo (cruda)'), 'exacta')
