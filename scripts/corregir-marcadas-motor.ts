@@ -19,7 +19,7 @@ import { validarCantidadesSospechosas } from '../lib/recetas/profesional'
 import { extraerJsonPlan } from '../lib/entrenos/evidencia-plan'
 import { esUrlDeReel } from '../lib/recetas/estimadas'
 import { reemplazarTermino, validarAcciones } from '../lib/recetas/acciones-nota'
-import { vinculoParaReceta } from '../lib/alimentos/vinculo-receta'
+import { vinculoParaReceta, esSubReceta } from '../lib/alimentos/vinculo-receta'
 import { simplificarNombre, aliasAlimento, calidadVinculo, raicesBusqueda, type CalidadVinculo } from '../lib/recetas/reconstruccion-segura'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
@@ -173,7 +173,7 @@ async function corregirIngredientes(r: Receta): Promise<Resultado> {
     const mejor = await buscarMejor(generico)
     if (mejor && mejor.al.nombre !== actual) { cambios.push({ fila, antes: actual, despues: mejor.al }); continue }
     // un ingrediente que es en realidad una sub-receta («caramelo de kabocha, miso, sésamo y frutos secos») no se convierte en alimento inventado
-    const subReceta = (fila.nombre_libre ?? '').split(/\s+/).length >= 6 || /,/.test(fila.nombre_libre ?? '')
+    const subReceta = (fila.nombre_libre ?? '').split(/\s+/).length >= 6 || /,/.test(fila.nombre_libre ?? '') || esSubReceta(fila.nombre_libre ?? '')
     const nuevo = subReceta ? null : await crearAlimentoFaltante(generico)
     if (nuevo) cambios.push({ fila, antes: actual, despues: nuevo.al, creado: nuevo.creado })
     else sinSolucion.push(`${fila.nombre_libre} (hoy «${actual}», debería ser «${generico}»)`)

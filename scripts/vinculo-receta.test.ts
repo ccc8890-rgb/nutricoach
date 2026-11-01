@@ -23,3 +23,11 @@ assert.equal(v('Zumo de limón', 'Zumo de limón', 'Platos preparados'), true)
 assert.equal(v('Aceitunas negras', 'Aceitunas negras sin hueso'), true)
 assert.equal(v('Crepes rellenos de chocolate', 'Crepes rellenos de chocolate'), true)
 console.log('vinculo-receta OK')
+
+// componentes de una receta (otra preparación): nunca un ingrediente ni un alimento nuevo
+import { esSubReceta } from '../lib/alimentos/vinculo-receta'
+for (const n of ['Crema diplomática de mantequilla dorada y arce', 'Ganache de crema agria', 'Caramelo de kabocha, miso, sésamo y frutos secos', 'Crujiente de copos de maíz, arce y soja', 'Pan de calabaza y arce', 'Frosting con sabor a café'])
+  assert.equal(esSubReceta(n), true, n)
+for (const n of ['Salsa de soja baja en sal', 'Aceite de oliva 0,4º', 'Cacao en polvo, sin azúcar', 'Pan de burger integral o de boniato (opcional)', 'Masa de hojaldre refrigerada', 'Crema de cacahuete', 'Nata', 'Caramelo líquido'])
+  assert.equal(esSubReceta(n), false, n)
+console.log('sub-receta OK')

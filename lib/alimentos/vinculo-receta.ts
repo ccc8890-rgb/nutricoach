@@ -22,9 +22,21 @@ const BENIGNAS = new Set([
 const ELABORADO = /\b(con|rellen\w*|sobres?|3 en 1|tarrit\w*|cachit\w*|gourmet|listos?|ultracongelad\w*|crepes?|helad\w*|bebida|cuadradit\w*|lingote|macerad\w*|paqueta|pastillas?|salteado|guisad\w*|campero|docena|d\.?o\.?p\.?)\b/
 const MARCA_PROPIA = /\b(hacendado|carrefour|eroski|alcampo|lidl|dia|mercadona|bonpreu|esclat|maredeus|rodolfo|lodosa|ecobasics|we|graza|cero mas)\b/
 
+// Una línea que es un COMPONENTE de la receta (otra preparación), no un ingrediente: «Crema diplomática de mantequilla dorada y arce», «Ganache de crema agria».
+// No debe enlazarse a un alimento ni crearse uno con ese nombre (macros inventados): es una elaboración aparte o hay que desglosarla en sus ingredientes.
+// Espejo en Python: Content-Radar/scripts/bridge_nutricoach.py (es_sub_receta); al cambiar una, cambiar la otra y sus tests.
+const COMPONENTE = /^(crema (diplomatica|pastelera|inglesa|chantilly|de mantequilla)|ganache|caramelo (de|con) \w+|crujiente|praline|glaseado|frosting|cobertura|relleno|streusel|crumble|base de brownie) /
+const COMPONENTE_PAN = /^(pan|bizcocho|masa|base|tarta|galleta) de \w+( y \w+| ,)+/
+export function esSubReceta(nombre: string): boolean {
+  const n = quitar(nombre).replace(/\([^)]*\)/g, ' ').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim()
+  const palabras = n.split(' ').length
+  return palabras >= 4 && (COMPONENTE.test(n + ' ') || COMPONENTE_PAN.test(n))
+}
+
 export type VinculoReceta = { ok: boolean; motivo?: string }
 
 export function vinculoParaReceta(libre: string, alimento: { nombre: string; categoria?: string | null }): VinculoReceta {
+  if (esSubReceta(libre)) return { ok: false, motivo: 'sub-receta (otra preparación, no un ingrediente)' }
   const calidad = calidadVinculo(libre, alimento.nombre)
   if (quitar(libre).trim() === quitar(alimento.nombre).trim()) return { ok: true } // el alimento se llama igual que la línea: lo creó la receta
   const L = new Set(tokens(libre))
