@@ -34,8 +34,7 @@ export function transicionPermitida(de: EstadoPlato, a: EstadoPlato, actor: 'cli
  */
 export function vistaPublica(p: VistaPlato & { estado: EstadoPlato; aprobado_snapshot: VistaPlato | null }): VistaPlato | null {
   if (p.estado === 'aprobado') {
-    const { estado: _e, aprobado_snapshot: _s, ...vista } = p
-    return vista
+    return { nombre: p.nombre, kcal: p.kcal, proteinas: p.proteinas, carbohidratos: p.carbohidratos, grasas: p.grasas, ingredientes: p.ingredientes, estimado: p.estimado }
   }
   if (p.estado === 'pendiente' && p.aprobado_snapshot) return p.aprobado_snapshot
   return null

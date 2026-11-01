@@ -44,10 +44,11 @@ export async function alimentosCache(db: SupabaseClient): Promise<AlimentoCache[
   return (todo.data as AlimentoCache[] | null) ?? []
 }
 
-/** Sustituye las líneas del plato. Conserva el enlace manual del coach (mismo alimento_id ya presente); el resto se enlaza por nombre. */
-export async function guardarLineas(db: SupabaseClient, clienteId: string, platoId: string, lineas: LineaEntrada[], cache: AlimentoCache[]): Promise<void> {
+/** Sustituye las líneas del plato. Conserva el enlace manual (mismo alimento_id ya presente o elegido por el coach); el resto se enlaza por nombre. */
+export async function guardarLineas(db: SupabaseClient, clienteId: string, platoId: string, lineas: LineaEntrada[], cache: AlimentoCache[], idsPermitidos: string[] = []): Promise<void> {
   const existentes = await cargarLineas(db, platoId)
-  const idsConocidos = new Set(existentes.map(l => l.alimento_id).filter((x): x is string => !!x))
+  // idsPermitidos: alimentos que el coach ha elegido a mano (ya validados por la ruta)
+  const idsConocidos = new Set([...existentes.map(l => l.alimento_id).filter((x): x is string => !!x), ...idsPermitidos])
   const filas: { plato_id: string; nombre_libre: string; alimento_id: string | null; cantidad_gramos: number; orden: number }[] = []
   for (const [i, l] of lineas.entries()) {
     let alimentoId = l.alimento_id && idsConocidos.has(l.alimento_id) ? l.alimento_id : null

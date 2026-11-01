@@ -14,9 +14,14 @@ async function main() {
   const { error: sinTabla } = await db.from('platos_cliente').select('id').limit(1)
   if (sinTabla) { console.error('La tabla «platos_cliente» no existe todavía: falta aplicar 20261101120000_platos_cliente.sql'); process.exit(2) }
 
-  const { data: clientes } = await db.from('clientes').select('id').limit(2)
-  assert.ok(clientes && clientes.length === 2, 'hacen falta 2 clientes de prueba')
-  const [A, B] = clientes.map(c => c.id as string)
+  // A: cliente con plan de dieta activo (para probar «Añadir a la dieta»); B: cualquier otro
+  const { data: plan } = await db.from('planes_nutricion').select('id, cliente_id').eq('activo', true).limit(1).single()
+  assert.ok(plan, 'hace falta un cliente con plan de dieta activo')
+  const A = plan.cliente_id as string
+  const { data: otros } = await db.from('clientes').select('id').neq('id', A).limit(1)
+  assert.ok(otros && otros.length === 1, 'hace falta un segundo cliente')
+  const B = otros[0].id as string
+  const comidasCreadas: string[] = []
   const creados: string[] = []
   let analisisLlamadas = 0
 
@@ -58,6 +63,23 @@ async function main() {
     const t = await crearPlatoDesdeFoto(deps(buena), { ...foto, tipoMime: 'text/plain' })
     assert.equal(t.estado, 'foto_invalida'); assert.equal(analisisLlamadas, antes)
 
+    // Aprobar con una línea sin enlazar está prohibido (Review Focus 2); con todo enlazado sí, y entonces entra en la dieta
+    const { puedeAprobar } = await import('../lib/platos/estado')
+    assert.equal(puedeAprobar({ lineas }).ok, false, 'hay una línea sin enlazar')
+    const { anadirPlatoADieta, ErrorPlatoDieta } = await import('../lib/platos/anadir-a-dieta')
+    await assert.rejects(() => anadirPlatoADieta(db, { platoId: r.plato.id, dia: 'Lunes', franja: 'Comida', raciones: 1 }), (e: unknown) => e instanceof ErrorPlatoDieta && e.codigo === 'no_aprobado', 'un plato no aprobado no entra en la dieta (Review Focus 6)')
+    await db.from('platos_cliente_ingredientes').delete().eq('plato_id', r.plato.id).is('alimento_id', null)
+    assert.equal(puedeAprobar({ lineas: await cargarLineas(db, r.plato.id) }).ok, true)
+    await db.from('platos_cliente').update({ estado: 'aprobado', estimado: false }).eq('id', r.plato.id)
+    const antes = await db.from('comidas').select('id').eq('plan_id', plan.id).eq('dia_semana', 'Lunes').eq('nombre', 'Comida')
+    const dieta = await anadirPlatoADieta(db, { platoId: r.plato.id, dia: 'Lunes', franja: 'Comida', raciones: 1 })
+    comidasCreadas.push(dieta.comidaId)
+    const { data: comida } = await db.from('comidas').select('plato_cliente_id').eq('id', dieta.comidaId).single()
+    assert.equal(comida?.plato_cliente_id, r.plato.id)
+    const { data: ca } = await db.from('comida_alimentos').select('cantidad_gramos').eq('comida_id', dieta.comidaId)
+    assert.equal(ca?.length, 1); assert.equal(Number(ca![0].cantidad_gramos), 150)
+    void antes
+
     // Límite diario: tras MAX análisis, el siguiente es 'limite' y no llama a la IA
     const ya = await db.from('platos_analisis_log').select('id', { count: 'exact', head: true }).eq('cliente_id', A)
     const faltan = MAX_ANALISIS_POR_DIA - (ya.count ?? 0)
@@ -68,6 +90,7 @@ async function main() {
 
     console.log('OK: comprobaciones de «Mis platos» (cliente)')
   } finally {
+    for (const c of comidasCreadas) { await db.from('comida_alimentos').delete().eq('comida_id', c); await db.from('comidas').delete().eq('id', c) }
     if (creados.length) await db.from('platos_cliente').delete().in('id', creados)
     await db.from('platos_analisis_log').delete().in('cliente_id', [A, B])
   }
