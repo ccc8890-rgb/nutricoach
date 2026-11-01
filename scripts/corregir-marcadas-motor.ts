@@ -201,6 +201,9 @@ async function corregirIngredientes(r: Receta): Promise<Resultado> {
 // ── Pasos / textos / título ────────────────────────────────────────────────────────────────────
 const listaIngredientes = (r: Receta) => r.receta_ingredientes.filter(i => !i.es_opcional).map(i => `- ${i.nombre_libre ?? nombreAlimento(i)}: ${i.cantidad_gramos ?? 0} g`).join('\n')
 
+// «ron negro» se nombra con «ron»: para los pasos valen palabras de 3 letras (en claves() se descartan por ruido)
+const clavesPasos = (s: string) => norm(s).split(' ').filter(w => w.length >= 3 && !STOP.has(w)).map(w => w.replace(/(es|s)$/, ''))
+
 function validarPasos(r: Receta, texto: string): string | null {
   const pasos = texto.split('\n').filter(l => /^\s*\d+[.)]\s+\S/.test(l))
   const antiguos = (r.instrucciones ?? '').split('\n').filter(l => /^\s*\d+[.)]\s+\S/.test(l)).length
@@ -209,10 +212,12 @@ function validarPasos(r: Receta, texto: string): string | null {
   const n = norm(texto)
   for (const i of r.receta_ingredientes) {
     if ((i.cantidad_gramos ?? 0) <= 10 || i.es_opcional) continue
-    const k = claves(i.nombre_libre ?? nombreAlimento(i) ?? '')
+    const k = clavesPasos(i.nombre_libre ?? nombreAlimento(i) ?? '')
     if (k.length && !k.some(w => n.includes(w))) return `no nombra el ingrediente ${i.nombre_libre}`
   }
   const permitidas = r.receta_ingredientes.map(i => Number(i.cantidad_gramos)).filter(Boolean)
+  // lo que ya decían los pasos actuales (bolas de 20 g, 15 g de crema por cocotte) es de procedimiento, no inventado
+  for (const m of (r.instrucciones ?? '').matchAll(/(\d+(?:[.,]\d+)?)\s?(g|gr|gramos|ml)\b/gi)) permitidas.push(parseFloat(m[1].replace(',', '.')))
   for (const m of texto.matchAll(/(\d+(?:[.,]\d+)?)\s?(g|gr|gramos|ml)\b/gi)) {
     const v = parseFloat(m[1].replace(',', '.'))
     if (/agua[^.]{0,25}$/i.test(texto.slice(Math.max(0, m.index! - 30), m.index! + m[0].length))) continue
@@ -227,6 +232,7 @@ function validarPasos(r: Receta, texto: string): string | null {
 }
 
 async function corregirPasos(r: Receta, nota: string): Promise<Resultado> {
+  if (!nota && r.instrucciones && validarPasos(r, r.instrucciones) === null) return { ok: false, motivo: 'los pasos actuales ya son coherentes con los ingredientes y sin nota no encuentro qué cambiar' }
   let error: string | null = null
   let texto = ''
   for (let intento = 0; intento < 2; intento++) { // si falla la validación, se reintenta una vez diciéndole a la IA qué falló
@@ -700,8 +706,10 @@ async function main() {
     const todas = ((data ?? []) as unknown as Receta[]).map(r => ({ r, n: leerNotas(r.notas_coach) }))
     for (const { r, n } of todas) {
       if (!n || n.nota || n.aspectos.includes('foto') || n.pendientes.length > 0 || (r.tags ?? []).includes('Reporte cliente')) continue
-      const fallos = n.despues.split('\n').filter(l => l.includes('Motor ✗'))
-      if (!fallos.length || !fallos.every(l => /no ven nada que cambiar|no sé qué|dime qu[eé]|todos parecen correctos|no veo enlaces/.test(l))) continue
+      const ultimo = new Map<string, string>() // solo cuenta el último resultado de cada aspecto (un ✗ antiguo no impide soltar la ficha)
+      for (const l of n.despues.split('\n')) { const m = l.match(/Motor [✓✗] (\w+)/); if (m) ultimo.set(m[1], l) }
+      const fallos = [...ultimo.values()].filter(l => l.includes('Motor ✗'))
+      if (!fallos.length || !fallos.every(l => /no ven nada que cambiar|no encuentro qué cambiar|no sé qué|dime qu[eé]|todos parecen correctos|no veo enlaces/.test(l))) continue
       await db.from('recetas').update({
         notas_coach: [r.notas_coach, `[${hoy()}] Motor: revisados enlaces, cantidades y raciones y no encuentra nada que cambiar sin una nota tuya; vuelve a «Por revisar». Si sigue mal, márcala otra vez con una frase de qué falla.`].join('\n'),
         tags: (r.tags ?? []).filter(t => t !== 'Corregir'),

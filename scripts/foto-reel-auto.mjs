@@ -51,7 +51,7 @@ const content = [{ type: 'text', text: `Hay ${N} fotogramas numerados del 1 al $
 ${NOTA ? `INDICACIÓN DEL COACH (manda sobre el criterio general; si el fotograma la cumple, "cumple" alto): ${NOTA}\n` : ''}Valora CADA fotograma para usarlo como foto principal de la receta (se recortará un cuadrado del ancho completo). Devuelve SOLO JSON:
 {"frames":[{"n":1,"plato":0,"cara":false,"texto":false,"manos":false,"tapado":false,"nitido":true,"crop_y":0.0${NOTA ? ',"cumple":0' : ''}}, ...]}
 - plato: 0 = no se ve la comida; 1 = ingredientes crudos o a medio hacer; 2 = comida casi terminada o poco clara; 3 = el PLATO TERMINADO se ve claro y apetecible, bien encuadrado.
-- cara: true si se ve la cara de una persona (aunque sea parcial).
+- cara: true si se ve la cara de una persona (aunque sea parcial) O su REFLEJO u silueta en una superficie brillante (salsa, sartén, cuchara, vidrio).
 - texto: true si hay subtítulos o rótulos grandes sobre la imagen.
 - manos: true si se ven manos o utensilios en primer plano.
 - tapado: true si algo (botella, mano, utensilio, cámara) tapa o corta parte de la comida en el cuadrado.
