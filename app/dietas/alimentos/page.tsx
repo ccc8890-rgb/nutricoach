@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
+import { rankearParaSelector } from '@/lib/alimentos/ranking-selector'
 
 // Todas las categorías existentes en la BD (en orden lógico para display)
 const CATEGORIAS = [
@@ -182,6 +183,7 @@ interface OFFResultado {
 export default function AlimentosPage() {
     const { addToast } = useToast()
     const [alimentos, setAlimentos] = useState<Alimento[]>([])
+    const [verVariantes, setVerVariantes] = useState(false)
     const [loading, setLoading] = useState(true)
     useRestaurarScroll(!loading)
     const [seedLoading, setSeedLoading] = useState(false)
@@ -394,12 +396,15 @@ export default function AlimentosPage() {
         setImportandoOFF(null)
     }
 
-    const filtradas = alimentos.filter(a =>
+    const filtradasTodas = alimentos.filter(a =>
         (!categoriaFiltro || a.categoria === categoriaFiltro) &&
         (!soloCustom || a.custom) &&
         (!soloIA || a.fuente === 'ia') &&
         (!soloConDatos || (a.calorias ?? 0) > 0)
     )
+    // Al buscar, las variantes de marca/supermercado con los mismos macros salen como un solo producto simple
+    const agrupar = debouncedSearch.trim().length >= 2 && !verVariantes
+    const filtradas = agrupar ? rankearParaSelector(filtradasTodas, debouncedSearch) : filtradasTodas
 
     // Agrupar por categoría
     const grupos = filtradas.reduce<Record<string, Alimento[]>>((acc, a) => {
@@ -424,6 +429,7 @@ export default function AlimentosPage() {
                     <h1 className="text-2xl font-bold text-[var(--text)]">Alimentos</h1>
                     <p className="text-[var(--text-muted)] text-sm mt-1">
                         Base de datos de {alimentos.length} alimentos
+                        {agrupar && filtradas.length < filtradasTodas.length && ` · agrupados por producto (${filtradas.length})`}
                         {resultadosOFF.length > 0 && ` + ${resultadosOFF.length} de Open Food Facts`}
                     </p>
                 </div>
@@ -474,6 +480,15 @@ export default function AlimentosPage() {
                         className="rounded" style={{ accentColor: '#16a34a' }}
                     />
                     Solo con datos nutricionales
+                </label>
+                <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                    <input
+                        type="checkbox"
+                        checked={verVariantes}
+                        onChange={e => setVerVariantes(e.target.checked)}
+                        className="rounded"
+                    />
+                    Ver todas las marcas
                 </label>
             </div>
 

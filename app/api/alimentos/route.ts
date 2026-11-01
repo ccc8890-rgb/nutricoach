@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         } else if (q) {
             query = query.order("calorias", { ascending: false, nullsFirst: false })
             query = query.order("nombre", { ascending: true })
-            query = query.limit(80)
+            query = query.limit(300)
         } else {
             query = query.order("categoria", { ascending: true })
             query = query.order("nombre", { ascending: true })
