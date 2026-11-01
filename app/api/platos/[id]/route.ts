@@ -9,7 +9,10 @@ export async function GET(request: NextRequest, { params }: Ctx) {
   const { id } = await params
   const a = await autorizarCoachPlato(request, id)
   if (a instanceof NextResponse) return a
-  return NextResponse.json({ plato: a.plato, lineas: await cargarLineas(a.db, id) })
+  // Objetivo diario del plan activo, para ver qué parte de su día supone el plato
+  const { data: plan } = await a.db.from('planes_nutricion').select('kcal_objetivo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo').eq('cliente_id', a.plato.cliente_id).eq('activo', true).maybeSingle()
+  const { data: cliente } = await a.db.from('clientes').select('nombre').eq('id', a.plato.cliente_id).maybeSingle()
+  return NextResponse.json({ plato: a.plato, lineas: await cargarLineas(a.db, id), objetivo: plan ?? null, cliente_nombre: cliente?.nombre ?? '' })
 }
 
 /** El coach corrige gramos, quita líneas o enlaza una línea a un alimento concreto (`alimento_id`). Solo platos pendientes. */

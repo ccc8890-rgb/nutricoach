@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Plus } from '@/components/icons/lucide'
 
-type Cuentas = { nueva: number | null; en_agente: number | null; segunda: number | null }
+type Cuentas = { nueva: number | null; en_agente: number | null; segunda: number | null; platos: number | null }
 
 type Vista = { href: string; label: string; clave?: keyof Cuentas; activa: (pathname: string, fase: string) => boolean }
 
@@ -21,6 +21,7 @@ const GRUPOS: { titulo: string; vistas: Vista[] }[] = [
       { href: '/recetas/revisar?fase=nueva', label: 'Por revisar', clave: 'nueva', activa: (p, f) => p === '/recetas/revisar' && f === 'nueva' },
       { href: '/recetas/revisar?fase=en_agente', label: 'Con el agente', clave: 'en_agente', activa: (p, f) => p === '/recetas/revisar' && f === 'en_agente' },
       { href: '/recetas/revisar?fase=segunda', label: '2ª revisión', clave: 'segunda', activa: (p, f) => p === '/recetas/revisar' && f === 'segunda' },
+      { href: '/recetas/platos-clientes', label: 'Platos del cliente', clave: 'platos', activa: p => p === '/recetas/platos-clientes' },
     ],
   },
   {
@@ -39,13 +40,15 @@ export default function CabeceraRevision() {
   const pathname = usePathname()
   const faseUrl = useSearchParams().get('fase')
   const fase = faseUrl === 'en_agente' || faseUrl === 'segunda' ? faseUrl : 'nueva'
-  const [cuentas, setCuentas] = useState<Cuentas>({ nueva: null, en_agente: null, segunda: null })
+  const [cuentas, setCuentas] = useState<Cuentas>({ nueva: null, en_agente: null, segunda: null, platos: null })
 
   useEffect(() => {
     let vivo = true
     const cargar = () => {
       fetch('/api/recetas/revisar?tarea=cola&page=1&pageSize=1', { cache: 'no-store' })
-        .then(r => r.json()).then(j => { if (vivo && j.counts?.fases) setCuentas({ nueva: j.counts.fases.nueva ?? 0, en_agente: j.counts.fases.en_agente ?? 0, segunda: j.counts.fases.segunda ?? 0 }) }).catch(() => null)
+        .then(r => r.json()).then(j => { if (vivo && j.counts?.fases) setCuentas(c => ({ ...c, nueva: j.counts.fases.nueva ?? 0, en_agente: j.counts.fases.en_agente ?? 0, segunda: j.counts.fases.segunda ?? 0 })) }).catch(() => null)
+      fetch('/api/platos?estado=pendiente', { cache: 'no-store' })
+        .then(r => (r.ok ? r.json() : null)).then(j => { if (vivo && j?.contadores) setCuentas(c => ({ ...c, platos: j.contadores.pendiente ?? 0 })) }).catch(() => null)
     }
     cargar()
     const alVolver = () => { if (document.visibilityState === 'visible') cargar() }
