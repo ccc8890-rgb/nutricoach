@@ -71,14 +71,12 @@ async function main() {
     await db.from('platos_cliente_ingredientes').delete().eq('plato_id', r.plato.id).is('alimento_id', null)
     assert.equal(puedeAprobar({ lineas: await cargarLineas(db, r.plato.id) }).ok, true)
     await db.from('platos_cliente').update({ estado: 'aprobado', estimado: false }).eq('id', r.plato.id)
-    const antes = await db.from('comidas').select('id').eq('plan_id', plan.id).eq('dia_semana', 'Lunes').eq('nombre', 'Comida')
     const dieta = await anadirPlatoADieta(db, { platoId: r.plato.id, dia: 'Lunes', franja: 'Comida', raciones: 1 })
     comidasCreadas.push(dieta.comidaId)
     const { data: comida } = await db.from('comidas').select('plato_cliente_id').eq('id', dieta.comidaId).single()
     assert.equal(comida?.plato_cliente_id, r.plato.id)
     const { data: ca } = await db.from('comida_alimentos').select('cantidad_gramos').eq('comida_id', dieta.comidaId)
     assert.equal(ca?.length, 1); assert.equal(Number(ca![0].cantidad_gramos), 150)
-    void antes
 
     // Límite diario: tras MAX análisis, el siguiente es 'limite' y no llama a la IA
     const ya = await db.from('platos_analisis_log').select('id', { count: 'exact', head: true }).eq('cliente_id', A)
