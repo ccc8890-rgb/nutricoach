@@ -112,8 +112,9 @@ function tokensSignificativos(s: string): string[] {
 
 // Palabras distintas que nombran lo mismo en el recetario (cada grupo es un solo concepto)
 const SINONIMOS: string[][] = [
-  ['cebollin', 'cebolleta'], ['cacahuate', 'cacahuete', 'mani'], ['paprika', 'pimenton'], ['chile', 'guindilla'],
+  ['cacahuate', 'cacahuete', 'mani'], ['paprika', 'pimenton'], ['chile', 'guindilla'],
   ['jugo', 'salmuera'], ['especias', 'pimenton'], ['glaseado', 'glas'], ['alino', 'aceite'], ['espaguetis', 'spaghetti', 'pasta'],
+  ['whey', 'suero'], ['protein', 'proteina'], ['cebolleta', 'cebollin', 'cebolla'],
 ]
 function canonico(token: string): string {
   const t = singularizarToken(token)
@@ -131,7 +132,8 @@ function normalizarStr(s: string): string {
 }
 
 function singularizarToken(token: string): string {
-  if (token.endsWith('es') && token.length > 4) return token.slice(0, -2)
+  // «limones» → «limon», «tomates» → «tomate» (el plural en -es solo se quita entero tras l, n, r, d, z, j)
+  if (/[lnrdzj]es$/.test(token) && token.length > 4) return token.slice(0, -2)
   if (token.endsWith('s') && token.length > 3) return token.slice(0, -1)
   return token
 }
@@ -200,7 +202,7 @@ export function validarCantidadesSospechosas(ing: IngredienteProfesionalInput, p
   // Aceite > 120g por receta (recetas de tanda: salsas, mayonesas, masas; el límite por ración lo cubre el rango de kcal)
   if (/(aceite|aceite de oliva|aceite de girasol|aceite de coco|aceite de aguacate|aceite de sesamo|aceite de cacahuete|aceite de soja|aceite de maiz|aceite de canola|aceite vegetal|aceite de palma|aceite de almendras|aceite de nuez|aceite de avellana|aceite de uva|aceite de linaza|aceite de onagra|aceite de borraja|aceite de pescado|aceite de higado de bacalao)/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
   // Condimentos tipo vinagre/zumo/limon > 120g salvo bebida (solo líquidos/condimentos, no frutas enteras)
-  if (/(vinagre|(zumo|jugo) de (limon|lima)|limon|lima|salsa|aliño|aderezo)/.test(nombre) && !/salsa (de )?(tomate|pesto)|tomate frito|ragu/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
+  if (/(vinagre|(zumo|jugo) de (limon|lima)|limon|lima|salsa|aliño|aderezo)/.test(nombre) && !/salsa (de )?(tomate|pesto|enchilada|curry|barbacoa)|salsa verde|tomate frito|ragu/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
   return null
 }
 

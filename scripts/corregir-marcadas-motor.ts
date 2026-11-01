@@ -32,6 +32,8 @@ const LIMITE = Number(arg('limite') ?? 10)
 const SOLO = arg('id')
 const PARTE = arg('parte')?.split('/').map(Number) // --parte=k/n: reparte la cola entre procesos en paralelo (k de 0 a n-1)
 const SOLO_BASE = process.argv.includes('--base') // reenlaza a alimentos base las fichas en revisión (sin IA)
+const ORDENA = arg('ordena') // orden directa sobre UNA ficha (--id=…): se trata como una nota del coach
+const BLOQUEOS = process.argv.includes('--bloqueos') // fichas en revisión bloqueadas por el control de calidad: intenta desbloquearlas
 const AUTO = process.argv.includes('--auto') // fichas en revisión sin marcar «Corregir»: saneado automático
 const REINTENTAR = process.argv.includes('--reintentar') // vuelve a probar también los aspectos que el motor dejó con ✗
 const hoy = () => new Date().toLocaleDateString('es-ES')
@@ -240,7 +242,7 @@ async function corregirPasos(r: Receta, nota: string): Promise<Resultado> {
 RECETA: ${r.nombre} (${r.porciones ?? 1} raciones)
 INGREDIENTES (únicos permitidos, gramos totales):\n${listaIngredientes(r)}
 PASOS ACTUALES:\n${r.instrucciones ?? '(ninguno)'}
-LO QUE HA MARCADO EL COACH COMO MAL: ${nota || '(sin nota: revisa que los pasos sean coherentes con los ingredientes y completos)'}
+${r.raw_scrape?.texto ? `TEXTO ORIGINAL DEL VÍDEO (es la fuente de los pasos: no cuentes nada que no diga):\n${r.raw_scrape.texto.slice(0, 3500)}\n` : ''}LO QUE HA MARCADO EL COACH COMO MAL: ${nota || '(sin nota: revisa que los pasos sean coherentes con los ingredientes y completos)'}
 REGLAS: pasos numerados "1. ...", solo los necesarios; TODOS los ingredientes de más de 10 g deben aparecer nombrados en algún paso; solo ingredientes de la lista y, si citas gramos, los de la lista; conserva lo que estaba bien; sin víspera/carrera/recuperación; español de España.${error ? `\nTU INTENTO ANTERIOR FALLÓ: ${error}. Corrígelo.` : ''}
 Devuelve JSON: {"instrucciones":"1. ...\\n2. ..."}`)
     texto = typeof out?.instrucciones === 'string' ? out.instrucciones.trim() : ''
@@ -676,6 +678,43 @@ async function mainAuto() {
   if (!APLICA) console.log('Simulación. Añade --aplica.')
 }
 
+/** Fichas en revisión que el control de calidad bloquea: cada bloqueo se atiende con la pieza del motor que le toca (una sola vez por ficha, nota «Motor bloqueos»). Nunca aprueba ni inventa pasos sin texto original. */
+async function mainBloqueos() {
+  const { data, error } = await db.from('recetas').select(SELECT_RECETA).eq('estado', 'en_revision').eq('quality_estado_sugerido', 'bloqueada').order('created_at', { ascending: false }).limit(300)
+  if (error) { console.error(error.message); process.exit(1) }
+  const reparte = (id: string) => !PARTE || [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % PARTE[1] === PARTE[0]
+  const cola = ((data ?? []) as unknown as Receta[]).filter(r => (!SOLO || r.id.startsWith(SOLO)) && reparte(r.id) && (REINTENTAR || !(r.notas_coach ?? '').includes('Motor bloqueos'))).slice(0, LIMITE)
+  console.log(`Fichas bloqueadas sin intentar: ${cola.length}`)
+  let desbloqueadas = 0
+  for (const r of cola) {
+    const antes = await bloqueantes(r.id)
+    console.log(`\n${r.nombre} — bloqueos: ${antes.join(', ') || '(ninguno ya)'}`)
+    const lineas: string[] = []
+    const reel = esUrlDeReel(r.url_origen)
+    const corre = async (nombre: string, f: () => Promise<Resultado>) => {
+      let res: Resultado
+      try { res = await f() } catch (e: any) { res = { ok: false, motivo: `error: ${e.message}` } }
+      lineas.push(res.ok ? `${nombre} ✓ ${res.detalle}` : `${nombre} ✗ ${res.motivo}`)
+      console.log(`  ${res.ok ? '✅' : '⚠️'} ${nombre}: ${res.ok ? res.detalle : res.motivo}`)
+    }
+    if (antes.includes('instrucciones_vacias')) {
+      if ((r.raw_scrape?.texto ?? '').length >= 200) await corre('pasos', () => corregirPasos(r, ''))
+      else lineas.push('pasos ✗ sin pasos y sin texto original: no los invento; hay que abrir el enlace')
+    }
+    if (antes.some(b => ['cantidades_sospechosas', 'cantidad_muy_pequena', 'potenciador_excesivo'].includes(b))) {
+      await corre('cantidades', async () => { const x = await corregirDesdeNota(r, '', ['gramos']); return !x.ok && x.motivo.includes('no ven nada que cambiar') && reel ? estimarCantidades(r) : x })
+    }
+    if (antes.includes('macros_fuera_rango')) await corre('raciones', () => corregirDesdeNota(r, '', ['raciones_kcal']))
+    if (antes.includes('match_semantico_sospechoso')) await corre('enlaces', () => corregirIngredientes(r))
+    if (!APLICA) continue
+    const despues = await bloqueantes(r.id)
+    if (despues.length === 0) desbloqueadas++
+    console.log(`  → ${despues.length ? `siguen: ${despues.join(', ')}` : 'DESBLOQUEADA'}`)
+    await db.from('recetas').update({ notas_coach: [r.notas_coach, `[${hoy()}] Motor bloqueos — ${lineas.join(' · ')} → ${despues.length ? `siguen: ${despues.join(', ')}` : 'desbloqueada'}`].filter(Boolean).join('\n') }).eq('id', r.id)
+  }
+  console.log(`\nBloqueos: ${desbloqueadas} fichas desbloqueadas de ${cola.length}${APLICA ? '' : ' (simulación; añade --aplica)'} · ~${tokensIA.toLocaleString('es-ES')} tokens de IA`)
+}
+
 /** Una sola vez sobre todas las fichas en revisión: enlaza a alimentos base lo que apunta a un producto concreto (sin IA). */
 async function mainBase() {
   const { data, error } = await db.from('recetas').select(SELECT_RECETA).eq('estado', 'en_revision').order('created_at', { ascending: false }).limit(1000)
@@ -692,6 +731,17 @@ async function mainBase() {
 
 async function main() {
   if (SOLO_BASE) return mainBase()
+  if (BLOQUEOS) return mainBloqueos()
+  if (ORDENA) {
+    if (!SOLO) { console.error('--ordena necesita --id=<prefijo>'); process.exit(1) }
+    const { data: d } = await db.from('recetas').select(SELECT_RECETA).eq('estado', 'en_revision').limit(1000)
+    const r = ((d ?? []) as unknown as Receta[]).find(x => x.id.startsWith(SOLO))
+    if (!r) { console.error('Ficha no encontrada (¿en revisión?)'); process.exit(1) }
+    const res = await ejecutarNota(r, ORDENA, ['otro'])
+    console.log(`${r.nombre}\n  ${res.ok ? '✅' : '⚠️'} ${res.ok ? res.detalle : res.motivo}`)
+    if (APLICA) await db.from('recetas').update({ notas_coach: [r.notas_coach, `[${hoy()}] Orden directa: ${ORDENA} → Motor ${res.ok ? '✓ ' + res.detalle : '✗ ' + res.motivo}`].filter(Boolean).join('\n') }).eq('id', r.id)
+    return
+  }
   if (AUTO) return mainAuto()
   const { data, error } = await db.from('recetas')
     .select('id, nombre, tipo_contenido, familia, categoria, tipo_receta, tipo_plato, kcal, proteinas, tags, notas_coach, porciones, instrucciones, descripcion, consejos, url_origen, raw_scrape, receta_ingredientes!receta_ingredientes_receta_id_fkey(id, nombre_libre, cantidad_gramos, cantidad_original, alimento_id, elaboracion_id, es_opcional, alimentos!left(id, nombre))')

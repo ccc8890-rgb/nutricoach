@@ -14,7 +14,10 @@ const fotos = run('node', ['scripts/corregir-marcadas.mjs', '--aplica', '--limit
 const resto = run('npx', ['tsx', 'scripts/corregir-marcadas-motor.ts', '--aplica', '--limite=10'])
 // Fichas nuevas sin marcar: máx. 6 por pasada (cada una cuesta ~1 céntimo de IA). Una vez por ficha (nota «Motor auto»).
 const auto = run('npx', ['tsx', 'scripts/corregir-marcadas-motor.ts', '--auto', '--aplica', '--limite=6'])
+// Fichas que el control de calidad bloquea: máx. 4 por pasada, una vez por ficha (nota «Motor bloqueos»); nunca inventa pasos sin texto original
+const bloq = run('npx', ['tsx', 'scripts/corregir-marcadas-motor.ts', '--bloqueos', '--aplica', '--limite=4'])
 const f = lineas(fotos, /^Fotos regeneradas|sin saldo/)
 const r = lineas(resto, /^Correcciones del motor|^❌|^\S.* — pendiente:/)
 const a = lineas(auto, /^Saneado automático|^❌/)
-if (f || r || a) console.log(`=== ${new Date().toLocaleString('es-ES')} ===\n${[f, r, a].filter(Boolean).join('\n')}`)
+const b = lineas(bloq, /^Bloqueos:|^❌/)
+if (f || r || a || b) console.log(`=== ${new Date().toLocaleString('es-ES')} ===\n${[f, r, a, b].filter(Boolean).join('\n')}`)

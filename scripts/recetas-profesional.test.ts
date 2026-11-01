@@ -381,3 +381,9 @@ assert.equal(clasificarRecetaProfesional({ nombre: 'Peras al vino tinto', catego
 }
 console.log('profesional: falsos positivos OK')
 assert.equal(clasificarRecetaProfesional({ nombre: 'Muesli casero', categoria: 'Desayuno', kcal: 246, ingredientes: [{ nombre_libre: 'Pasas moscatel sin semillas' }] }).alcohol_culinario, false)
+
+// Falsos positivos corregidos (01-11-2026): «tomates» se singularizaba como «tomat», whey/suero y salsa verde como base del plato
+import { validarCantidadesSospechosas as _vcs } from '../lib/recetas/profesional'
+assert.equal(_vcs({ nombre_libre: 'Salsa verde', cantidad_gramos: 454 }, 6), null)
+assert.equal(_vcs({ nombre_libre: 'Salsa de ajo', cantidad_gramos: 454 }, 6), 'cantidades_sospechosas')
+console.log('profesional: salsa verde OK')
