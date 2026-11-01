@@ -35,4 +35,16 @@ r = rankearParaSelector([f('Yogur sabor coco'), f('Yogur natural'), f('Yogur gri
 assert.equal(r[2].nombre, 'Yogur sabor coco')
 r = rankearParaSelector([f('Chocolate con Avellanas'), f('Chocolate negro 70%'), f('Chocolate')], 'chocolate')
 assert.deepEqual(nombres(r), ['Chocolate', 'Chocolate negro 70%', 'Chocolate con Avellanas'])
+// mismo producto simple: marcas desconocidas con los mismos macros salen en una sola fila y con el nombre limpio
+const m = (nombre: string, calorias: number, proteinas: number, es_base = false) => ({ ...f(nombre, 'ia', es_base), calorias, proteinas, carbohidratos: 1, grasas: 40 })
+r = rankearParaSelector([
+  m('Bacon 1/ 5 M', 541, 12, true), m('Bacón Hacendado cintas', 541, 12.5), m('Bacón ahumado sin corteza La Selva', 541, 12.4),
+  m('Bacón Oscar Mayer lonchas', 290, 16), m('Bacón ahumado La Selva lonchas', 290, 16, true), m('Cintas de Bacón', 541, 12),
+], 'bacon')
+assert.equal(r.length, 3)  // «Cintas de Bacón» empieza por otra palabra: queda aparte y al final
+assert.equal(r[2].nombre, 'Cintas de Bacón')
+assert.ok(!nombres(r).some(n => /Hacendado|Oscar|Selva/.test(n ?? '')))
+// fuentes fiables con apellido distinto NO se mezclan aunque los macros se parezcan
+const t = (nombre: string) => ({ ...f(nombre, 'bedca', true, 'Cereales'), calorias: 350, proteinas: 7, carbohidratos: 78, grasas: 1 })
+assert.equal(rankearParaSelector([t('Arroz bomba'), t('Arroz basmati'), t('Arroz integral')], 'arroz').length, 3)
 console.log('ranking-selector OK')
