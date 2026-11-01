@@ -202,7 +202,7 @@ export default function EditarRecetaPage() {
         const timer = setTimeout(async () => {
             try {
                 const [res, resElab] = await Promise.all([
-                    fetch(`/api/alimentos?q=${encodeURIComponent(queryAlimento)}&selector=1${verTodoAlimentos ? '&todo=1' : ''}`),
+                    fetch(`/api/alimentos?q=${encodeURIComponent(queryAlimento)}&selector=1&ref=1${verTodoAlimentos ? '&todo=1' : ''}`),
                     fetch(`/api/recetas/elaboraciones?q=${encodeURIComponent(queryAlimento)}`),
                 ])
                 const j = res.ok ? await res.json() : null
@@ -569,7 +569,7 @@ export default function EditarRecetaPage() {
                                                                 ))}
                                                                 {hayMasAlimentos && !verTodoAlimentos && (
                                                                     <button onClick={() => setVerTodoAlimentos(true)} className="w-full text-left px-3 py-2 text-xs" style={{ color: 'var(--primary)' }}>
-                                                                        Ver más opciones (marcas y variantes)
+                                                                        Ver también productos de supermercado
                                                                     </button>
                                                                 )}
                                                             </div>

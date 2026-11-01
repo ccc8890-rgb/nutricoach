@@ -58,6 +58,8 @@ export async function GET(request: NextRequest) {
         // todo=1 amplía a todo el catálogo; sin la columna es_base (migración sin aplicar) busca en todo igualmente.
         if (searchParams.get('selector') === '1' && q.trim().length >= 2) {
             const todo = searchParams.get('todo') === '1'
+            // ref=1 (editor de recetas): ingredientes de REFERENCIA (tipo BEDCA); los productos de supermercado solo con todo=1
+            const soloRef = searchParams.get('ref') === '1'
             const VISIBLES = todo ? 40 : 5
             const consulta = (soloBase: boolean) => {
                 let c = supabase.from('alimentos').select('id, nombre, categoria, fuente, calorias, proteinas, carbohidratos, grasas, fibra' + (soloBase ? ', es_base' : '')).eq('es_comestible', true)
@@ -72,7 +74,13 @@ export async function GET(request: NextRequest) {
             const rankBase = rankearParaSelector(candidatos, q)
             // el resto del catálogo solo si se pide, si falta la columna o si la base da muy pocas opciones
             let hayMasQueBase = false
-            if (todo || !hayColumna || rankBase.length < 3) {
+            if (soloRef && !todo && hayColumna) {
+                // primero lo fiable (BEDCA, curada, coach); si da poco, el resto de la base; nunca el catálogo de supermercado
+                const fiables = candidatos.filter(a => ['bedca', 'curada', 'coach'].includes(a.fuente))
+                if (rankearParaSelector(fiables, q).length >= 3) candidatos = fiables
+                const { count: total } = await aplicarBusquedaNombre(supabase.from('alimentos').select('id', { count: 'exact', head: true }).eq('es_comestible', true), q)
+                hayMasQueBase = (total ?? 0) > candidatos.length
+            } else if (todo || !hayColumna || rankBase.length < 3) {
                 const resto = limpiar((await consulta(false)).data).filter(a => !candidatos.some(c => c.id === a.id)).map(a => ({ ...a, es_base: false }))
                 candidatos = [...candidatos, ...resto]
             } else {
