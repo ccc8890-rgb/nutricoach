@@ -11,13 +11,13 @@ const clienteAnthropic = () => (cliente ??= new Anthropic()) // lee ANTHROPIC_AP
  * Claude con razonamiento adaptativo (siempre activo en Opus 5.5), esfuerzo alto y respaldo automático ante rechazos de seguridad
  * (`fallbacks: 'default'`). Streaming porque las respuestas son largas. `signal` corta la llamada si se agota el tiempo.
  */
-export async function llamarClaude(p: { modelo: string; sistema: string; usuario: string; maxTokens?: number; esfuerzo?: 'low' | 'medium' | 'high' | 'xhigh' | 'max'; signal?: AbortSignal }): Promise<RespuestaClaude> {
+export async function llamarClaude(p: { modelo: string; sistema: string; usuario: string; maxTokens?: number; esfuerzo?: 'low' | 'medium' | 'high' | 'xhigh' | 'max'; imagenes?: { mediaType: 'image/jpeg' | 'image/png' | 'image/webp'; base64: string }[]; signal?: AbortSignal }): Promise<RespuestaClaude> {
   const stream = clienteAnthropic().beta.messages.stream(
     {
       model: p.modelo,
       max_tokens: p.maxTokens ?? 32000,
       system: p.sistema,
-      messages: [{ role: 'user', content: p.usuario }],
+      messages: [{ role: 'user', content: p.imagenes?.length ? [...p.imagenes.map(i => ({ type: 'image' as const, source: { type: 'base64' as const, media_type: i.mediaType, data: i.base64 } })), { type: 'text' as const, text: p.usuario }] : p.usuario }],
       thinking: { type: 'adaptive' },
       output_config: { effort: p.esfuerzo ?? 'high' },
       betas: ['server-side-fallback-2026-07-01'],

@@ -6,7 +6,7 @@ import { llamarClaude } from './anthropic'
 import { extraerJsonPlan } from '@/lib/entrenos/evidencia-plan'
 
 export type Proveedor = 'anthropic' | 'openai' | 'deepseek'
-export type TareaIA = 'plan_entreno' | 'plan_dieta' | 'auditoria' | 'analisis_rendimiento' | 'revision_receta' | 'texto_barato'
+export type TareaIA = 'plan_entreno' | 'plan_dieta' | 'auditoria' | 'analisis_rendimiento' | 'revision_receta' | 'texto_barato' | 'plato_foto'
 
 /** `minMs`: tiempo que suele necesitar este modelo para una tarea larga; si queda menos, se salta (no tiene sentido empezar algo que no termina). */
 export interface RutaModelo { proveedor: Proveedor; modelo: string; minMs?: number }
@@ -32,6 +32,8 @@ export const RUTAS_POR_DEFECTO: Record<TareaIA, RutaModelo[]> = {
   // Revisor del recetario: calidad/coste (Opus solo bajo petición con IA_RUTA_REVISION_RECETA)
   revision_receta: [CLAUDE_SONNET_RAPIDO, GPT_RAPIDO, DEEPSEEK],
   texto_barato: [DEEPSEEK, DEEPSEEK_PRO],
+  // «Mis platos»: lee una foto. DeepSeek no ve imágenes, así que no entra en esta ruta.
+  plato_foto: [CLAUDE_SONNET_RAPIDO, GPT_RAPIDO],
 }
 
 const CLAVE_ENV: Record<Proveedor, string> = { anthropic: 'ANTHROPIC_API_KEY', openai: 'OPENAI_API_KEY', deepseek: 'DEEPSEEK_API_KEY' }
@@ -71,15 +73,18 @@ export interface ParamsIA {
   maxTokens?: number
   /** Esfuerzo de razonamiento de Claude: más alto = mejor y más lento y caro. */
   esfuerzo?: 'low' | 'medium' | 'high' | 'xhigh' | 'max'
+  /** Imágenes que acompañan al mensaje (solo Anthropic y OpenAI las admiten). */
+  imagenes?: { mediaType: 'image/jpeg' | 'image/png' | 'image/webp'; base64: string }[]
 }
 export type Adaptador = (ruta: RutaModelo, p: ParamsIA, signal: AbortSignal) => Promise<{ texto: string; uso: { entrada: number | null; salida: number | null } }>
 
 /** Adaptador real: Claude por el SDK; OpenAI y DeepSeek por su API compatible con chat/completions. */
 export const adaptadorReal: Adaptador = async (ruta, p, signal) => {
   if (ruta.proveedor === 'anthropic') {
-    const r = await llamarClaude({ modelo: ruta.modelo, sistema: p.sistema, usuario: p.usuario, maxTokens: p.maxTokens, esfuerzo: p.esfuerzo, signal })
+    const r = await llamarClaude({ modelo: ruta.modelo, sistema: p.sistema, usuario: p.usuario, maxTokens: p.maxTokens, esfuerzo: p.esfuerzo, imagenes: p.imagenes, signal })
     return { texto: r.texto, uso: r.uso }
   }
+  if (p.imagenes?.length && ruta.proveedor === 'deepseek') throw new Error('deepseek no admite imágenes')
   const razonamiento = ruta.proveedor === 'openai'
   const res = await fetch(URL_COMPAT[ruta.proveedor], {
     method: 'POST',
@@ -87,7 +92,7 @@ export const adaptadorReal: Adaptador = async (ruta, p, signal) => {
     signal,
     body: JSON.stringify({
       model: ruta.modelo,
-      messages: [{ role: 'system', content: p.sistema }, { role: 'user', content: p.usuario }],
+      messages: [{ role: 'system', content: p.sistema }, { role: 'user', content: p.imagenes?.length ? [{ type: 'text', text: p.usuario }, ...p.imagenes.map(i => ({ type: 'image_url', image_url: { url: `data:${i.mediaType};base64,${i.base64}` } }))] : p.usuario }],
       ...(p.json ? { response_format: { type: 'json_object' } } : {}),
       ...(razonamiento ? { max_completion_tokens: p.maxTokens ?? 20000 } : { temperature: 0.35, max_tokens: p.maxTokens ?? 8000 }),
     }),
