@@ -90,7 +90,7 @@ function tokenizar(nombre: string): string[] {
 // ── FASE 1: Match contra alimentos existentes ────────────────
 // ESTRICTAMENTE por solapamiento léxico. NADA de contains bidireccional.
 
-async function fase1_matchAlimentos(
+export async function fase1_matchAlimentos(
   supabase: SupabaseClient,
   nombre: string,
   alimentosCache: { id: string; nombre: string; calorias: number | null; proteinas: number | null; carbohidratos: number | null; grasas: number | null; fibra: number | null }[]
