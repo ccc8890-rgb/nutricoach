@@ -40,6 +40,8 @@ console.log(pas.split('\n')[0])
 console.log(run('node', ['scripts/auditar-nombres-alimentos.mjs']).split('\n')[0])
 // Restos internos en textos públicos (avisos de borrador, enlaces, marcas de IA, placeholders): vacía la descripción si lleva alguno grave
 console.log(run('node', ['scripts/auditar-textos-filtrados.mjs', '--aplica']).split('\n').slice(0, 3).join(' | '))
+// «Mis platos»: borradores del cliente sin enviar con más de 30 días (y sus fotos)
+console.log(lineas(run('npx', ['tsx', 'scripts/limpiar-borradores-platos.ts', '--aplica']), /^\d+ borradores|^Borrados/))
 const urg = (mat.match(/URGENTES[^:]*: (\d+)/) || [])[1]
 console.log(`Enlaces urgentes pendientes de revisión manual: ${urg ?? '?'}`)
 
