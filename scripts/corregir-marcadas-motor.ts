@@ -19,6 +19,7 @@ import { validarCantidadesSospechosas } from '../lib/recetas/profesional'
 import { extraerJsonPlan } from '../lib/entrenos/evidencia-plan'
 import { esUrlDeReel } from '../lib/recetas/estimadas'
 import { reemplazarTermino, validarAcciones } from '../lib/recetas/acciones-nota'
+import { vinculoParaReceta } from '../lib/alimentos/vinculo-receta'
 import { simplificarNombre, aliasAlimento, calidadVinculo, raicesBusqueda, type CalidadVinculo } from '../lib/recetas/reconstruccion-segura'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
@@ -107,7 +108,7 @@ async function buscarMejor(nombre: string): Promise<{ al: Al; calidad: CalidadVi
     for (const a of (data ?? []) as Al[]) vistos.set(a.id, a)
   }
   return [...vistos.values()].map(al => ({ al, calidad: calidadVinculo(nombre, al.nombre) }))
-    .filter(x => x.calidad === 'exacta' || x.calidad === 'buena')
+    .filter(x => (x.calidad === 'exacta' || x.calidad === 'buena') && vinculoParaReceta(nombre, x.al).ok)
     .sort((a, b) => rango[b.calidad] - rango[a.calidad] || Number(!!b.al.es_generico) - Number(!!a.al.es_generico) || a.al.nombre.length - b.al.nombre.length)[0] ?? null
 }
 

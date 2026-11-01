@@ -21,6 +21,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createDeepSeek } from '@ai-sdk/deepseek'
 import { generateText } from 'ai'
+import { vinculoParaReceta } from '@/lib/alimentos/vinculo-receta'
 
 // ── Tipos ────────────────────────────────────────────────────
 
@@ -126,6 +127,7 @@ async function fase1_matchAlimentos(
     const ratio = ratioSolapamiento(n, key)
 
     if (ratio >= 0.6 && ratio > mejorRatio) {
+      if (!vinculoParaReceta(nombre, a).ok) continue // las recetas enlazan a alimentos básicos, no a productos elaborados o de marca
       // Validación extra: si ambos tienen ≥2 tokens, mínimo 2 comunes
       const tokensB = tokenizar(key)
       const comunes = tokensN.filter(t => tokensB.some(bt => quitarAcentos(bt) === quitarAcentos(t))).length
@@ -163,7 +165,7 @@ async function fase1_matchAlimentos(
         for (const candidate of ilikeMatches) {
           const key = normalizar(candidate.nombre)
           const ratio = ratioSolapamiento(n, key)
-          if (ratio >= 0.5) {
+          if (ratio >= 0.5 && vinculoParaReceta(nombre, candidate).ok) {
             return {
               estado: 'match_existente',
               alimento_id: candidate.id,
@@ -232,7 +234,7 @@ async function fase2_matchProductos(
               continue
             }
 
-            if (alimento) {
+            if (alimento && vinculoParaReceta(nombre, alimento).ok) {
               return {
                 estado: 'match_producto',
                 alimento_id: alimento.id,
